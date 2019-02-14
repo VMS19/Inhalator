@@ -26,10 +26,10 @@ class Ads7844A2D(object):
     VOLTAGE_CALIBRATION = (VOLTAGE_REF / VOLTAGE_STEP_COUNT)
     FIRST_READING_BIT_SHIFT = 5
     SECOND_READING_BIT_SHIFT = 3
-    SAMPLE_CHANNELS = [0, 1] # channels to sample, 0 = oxygen, 1 = battery
+    SAMPLE_CHANNELS = [0, 1, 2] # channels to sample, 0 = oxygen, 1 = battery_percentage, 2 = battery existence
     CHANNEL_MAP = [0, 4, 1, 5, 2, 6, 3, 7]
     A2D_OXYGEN_RATIO = 38.4
-    A2D_BATTERY_RATIO = 29.64197
+    A2D_BATTERY_RATIO = 0.0337359433
 
     def __init__(self):
         self._spi = spidev.SpiDev()
@@ -89,6 +89,11 @@ class Ads7844A2D(object):
     def a2d_to_oxygen(a2d_sample):
         return a2d_sample * Ads7844A2D.A2D_OXYGEN_RATIO
 
-    @staticmethod
-    def a2d_to_battery(a2d_sample):
-        return a2d_sample * Ads7844A2D.A2D_BATTERY_RATIO
+    @classmethod
+    def a2d_to_battery(cls, a2d_sample):
+        return a2d_sample /  Ads7844A2D.A2D_BATTERY_RATIO
+
+    @classmethod
+    def battery_percentage(cls, a2d_sample):
+        return min(int(cls.a2d_to_battery(a2d_sample) / 6.024644649924462 * 100), 100)
+
