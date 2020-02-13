@@ -17,7 +17,7 @@ class HscPressureSensor(HoneywellPressureSensor):
         float(MAX_OUT_PRESSURE - MIN_OUT_PRESSURE)
     MBAR_CMH2O_RATIO = 1.0197162129779
     CMH2O_RATIO = MBAR_CMH2O_RATIO
-    SYSTEM_RATIO_SCALE = 36.609
+    SYSTEM_RATIO_SCALE = 33.37
     SYSTEM_RATIO_OFFSET = 3.115
 
     def __init__(self):
@@ -29,10 +29,9 @@ class HscPressureSensor(HoneywellPressureSensor):
         if pressure_cmh2o < 0:
             flow = -flow
 
-        flow += self.SYSTEM_RATIO_OFFSET
         return flow
 
     def read(self):
         dp_cmh2o = super(HscPressureSensor, self).read()
-        print(dp_cmh2o)
-        return self._pressure_to_flow(dp_cmh2o)
+        flow = self._pressure_to_flow(dp_cmh2o)
+        return flow

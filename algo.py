@@ -239,6 +239,7 @@ class VentilationStateMachine(object):
         self.log.debug("TV exp: : %sml", exp_volume_ml)
         self._measurements.expiration_volume = exp_volume_ml
         self.expiration_volume.reset()
+        self.inspiration_volume.reset()
         self.exp_volumes.append((timestamp, exp_volume_ml))
         cycle_finish = True
 
@@ -250,6 +251,7 @@ class VentilationStateMachine(object):
         self.log.debug("TV insp: : %sml", insp_volume_ml)
         self._measurements.inspiration_volume = insp_volume_ml
         self.inspiration_volume.reset()
+        self.expiration_volume.reset()
         self.insp_volumes.append((timestamp, insp_volume_ml))
 
         if self._config.volume_range.below(insp_volume_ml):
