@@ -10,6 +10,8 @@ class Sfm3200:
 
     def __init__(self):
         self._bus = smbus.SMBus(1)
+        self._start_measure()
+        # Dummy read
 
     def _read_byte(self):
         return self._bus.read_byte(self.I2C_ADDRESS)
@@ -26,12 +28,14 @@ class Sfm3200:
     def soft_reset(self):
         self._write_cmd(self.SOFT_RST_CMD)
 
-    def
-
     def read_pressure(self):
-        raw_value_a = self._read_byte()
-        raw_value_b = self._read_byte()
-        raw_value_c = self._read_byte()
+        raw_value_high = self._read_byte()
+        raw_value_low = self._read_byte()
+        crc_value = self._read_byte()
+        raw_value = raw_value_high << 8 | raw_value_low;
+        # Calc & compare CRC
+        flow = float(raw_value - self.OFFSET_FLOW) / self.SCALE_FACTOR_FLOW
+        return flow
 
 
 
