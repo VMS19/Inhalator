@@ -17,7 +17,7 @@ def exitProgram(signal, frame):
 
 signal.signal(signal.SIGTERM, exitProgram)
 root = Tk()
-root.title("Respirator")
+root.title("Inhalator")
 root.geometry('800x480')
 
 x = np.arange(0, 3, .01)
