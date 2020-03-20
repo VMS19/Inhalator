@@ -1,4 +1,5 @@
 import tkinter
+import signal
 
 tk = tkinter
 from tkinter import *
@@ -10,6 +11,11 @@ import numpy as np
 
 from functools import partial
 
+def exitProgram(signal, frame):
+    print("Exit Button pressed")
+    root.quit()
+
+signal.signal(signal.SIGTERM, exitProgram)
 root = Tk()
 root.title("Respirator")
 root.geometry('800x480')
@@ -25,12 +31,6 @@ AIR_VOLUME_MIN_THRESHOLD = 0
 AIR_VOLUME_MAX_THRESHOLD = 0
 
 THRESHOLD_STEP_SIZE = 0.5
-
-
-def exitProgram():
-    print("Exit Button pressed")
-    # GPIO.cleanup()
-    root.quit()
 
 
 def change_vol_graph_each_time():
@@ -128,8 +128,6 @@ def prompt_for_confirmation(is_pressure, going_to_increase, is_min, value):
     return messagebox.askyesno(u"ARE YOU SURE?", message)
 
 
-exitButton = Button(root, text="Exit", command=exitProgram, height=2, width=6)
-exitButton.pack(side=BOTTOM)
 
 volume_button_frame = tkinter.Frame(root)
 volume_increase_min_threshold_button = Button(volume_button_frame, text="+ Min Volume Threshold",
@@ -182,10 +180,14 @@ pressure_decrease_max_threshold_button.grid(row=1, column=1, sticky=tk.W + tk.E)
 
 pressure_graph = Figure(figsize=(5, 2), dpi=100)
 pressure_axis = pressure_graph.add_subplot(111, label="pressure")
+pressure_axis.set_ylabel('Pressure [cmH20]')
+pressure_axis.set_xlabel('sec')
 pressure_y, = pressure_axis.plot(x, 2 * np.sin(2 * np.pi * x))
 
 volume_graph = Figure(figsize=(5, 2), dpi=100)
 volume_axis = volume_graph.add_subplot(111, label="volume")
+volume_axis.set_ylabel('Flow [L/min]')
+volume_axis.set_xlabel('sec')
 volume_y, = volume_axis.plot(x, 2 * np.sin(2 * np.pi * x))
 
 canvas1 = FigureCanvasTkAgg(pressure_graph, master=root)  # A tk.DrawingArea.
@@ -196,3 +198,5 @@ canvas1.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
 canvas2.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
 
 mainloop()
+
+print(5)
