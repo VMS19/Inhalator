@@ -2,3 +2,6 @@ sudo apt-get install pigpio
 pip install -r requirements.txt
 
 sudo pigpiod
+
+How-To on enabling i2c and spi
+https://learn.sparkfun.com/tutorials/raspberry-pi-spi-and-i2c-tutorial/all
