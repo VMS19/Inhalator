@@ -21,13 +21,13 @@ class hce_pressure_sensor:
 		self._spi.max_speed_hz = SPI_CLK_SPEED_KHZ
 		self._spi.mode = SPI_MODE
 
-	def calculate_pressure(pressure_reading):
+	def _calculate_pressure(pressure_reading):
 		return (((pressure_reading - MIN_OUT_PRESSURE)/SENSITIVITY) + MIN_PRESSURE)
 
 	def read_pressure(self):
 		pressure_raw = self._spi.xfer(SPI_READ_CMD, PERIPHERAL_MINIMAL_DELAY * 10)
 		pressure_reading = (raw_pressure[1] << 16) | (raw_pressure[2])
-		pressure_parsed = calculate_pressure(pressure_reading)
+		pressure_parsed = _calculate_pressure(pressure_reading)
 		return pressure_parsed
 
 
