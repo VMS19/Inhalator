@@ -1,4 +1,5 @@
-sudo apt-get install pigpio
-pip install -r requirements.txt
-
-sudo pigpiod
+1. enable spi & i2c via: 'sudo raspi-config' -> interfaces
+2. sudo apt-get install pigpio
+3. git clone https://www.github.com/Reznic/Inhalator
+4. pip install -r requirements.txt
+5. sudo pigpiod
