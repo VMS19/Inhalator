@@ -22,3 +22,9 @@ class FlowSensorWriteError(InhalatorError):
 
 class FlowSensorCRCError(InhalatorError):
     pass
+
+class HCEDriverInitError(InhalatorError):
+    pass
+
+class HCEIOError(InhalatorError):
+    pass
