@@ -17,16 +17,17 @@ class hce_pressure_sensor:
 
 	def __init__(self):
 		self._spi = spidev.SpiDev()
-		self._spi.open(SPI_BUS, SPI_DEV)
+		self._spi.open(self.SPI_BUS, SPI_DEV)
 		self._spi.max_speed_hz = SPI_CLK_SPEED_KHZ
 		self._spi.mode = SPI_MODE
 
+	@staticmethod
 	def _calculate_pressure(pressure_reading):
 		return (((pressure_reading - MIN_OUT_PRESSURE)/SENSITIVITY) + MIN_PRESSURE)
 
 	def read_pressure(self):
-		pressure_raw = self._spi.xfer(SPI_READ_CMD, PERIPHERAL_MINIMAL_DELAY * 10)
-		pressure_reading = (raw_pressure[1] << 16) | (raw_pressure[2])
+		pressure_raw = self._spi.xfer(self.SPI_READ_CMD, self.PERIPHERAL_MINIMAL_DELAY * 10)
+		pressure_reading = (pressure_raw[1] << 16) | (raw_pressure[2])
 		pressure_parsed = _calculate_pressure(pressure_reading)
 		return pressure_parsed
 
