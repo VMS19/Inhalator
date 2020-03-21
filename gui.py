@@ -1,5 +1,4 @@
 import tkinter
-import signal
 
 tk = tkinter
 from tkinter import *
@@ -15,7 +14,7 @@ def exitProgram(signal, frame):
     print("Exit Button pressed")
     root.quit()
 
-signal.signal(signal.SIGTERM, exitProgram)
+
 root = Tk()
 root.title("Inhalator")
 root.geometry('800x480')
@@ -141,77 +140,102 @@ def prompt_for_confirmation(is_pressure, going_to_increase, is_min, value):
     return messagebox.askyesno(u"ARE YOU SURE?", message)
 
 
-flow_button_frame = tkinter.Frame(root)
-flow_increase_min_threshold_button = Button(flow_button_frame, text="+ Min Flow Threshold",
+#  ---------------------- Flow -------------------------
+flow_frame = LabelFrame(master=root, text="Air Flow", bg='red')
+flow_frame.pack(fill='both', expand=True, side="top")
+
+# Left-Right panes
+left_flow_frame = LabelFrame(master=flow_frame, bg='green')
+left_flow_frame.pack(fill='both', side="left", expand=True)
+right_flow_frame = LabelFrame(master=flow_frame, bg='yellow', width="40px")
+right_flow_frame.pack(fill='both', side="right", expand=True)
+
+# Threshold panes
+flow_max_threshold_frame = Frame(right_flow_frame, bg='gray')
+flow_max_threshold_frame.pack(fill='both', side="top", expand=True)
+flow_min_threshold_frame = Frame(right_flow_frame, bg='darkblue')
+flow_min_threshold_frame.pack(fill='both', side="bottom", expand=True)
+
+# Buttons
+flow_increase_min_threshold_button = Button(flow_min_threshold_frame, text="+ Min Flow Threshold",
                                               command=partial(change_air_flow_threshold, raise_value=True, min_threshold=True),
-                                              height=2, width=6)
-flow_decrease_min_threshold_button = Button(flow_button_frame, text="- Min Flow Threshold",
+                                              height=2, width=3)
+flow_increase_min_threshold_button.pack(fill="both", expand=True)
+flow_decrease_min_threshold_button = Button(flow_min_threshold_frame, text="- Min Flow Threshold",
                                               command=partial(change_air_flow_threshold, raise_value=False, min_threshold=True),
-                                              height=2, width=6)
-flow_increase_max_threshold_button = Button(flow_button_frame, text="+ Max Flow Threshold",
+                                              height=2, width=3)
+flow_decrease_min_threshold_button.pack(fill="both", expand=True)
+
+flow_increase_max_threshold_button = Button(flow_max_threshold_frame, text="+ Max Flow Threshold",
                                               command=partial(change_air_flow_threshold, raise_value=True, min_threshold=False),
-                                              height=2, width=6)
-flow_decrease_max_threshold_button = Button(flow_button_frame, text="- Max Flow Threshold",
+                                              height=2, width=3)
+flow_increase_max_threshold_button.pack(fill="both", expand=True)
+
+flow_decrease_max_threshold_button = Button(flow_max_threshold_frame, text="- Max Flow Threshold",
                                               command=partial(change_air_flow_threshold, raise_value=False, min_threshold=False),
-                                              height=2, width=6)
+                                              height=2, width=3)
+flow_decrease_max_threshold_button.pack(fill="both", expand=True)
 
 
-flow_button_frame.pack(fill=tkinter.X, side=tkinter.BOTTOM)
-flow_button_frame.columnconfigure(0, weight=1)
-flow_button_frame.columnconfigure(1, weight=1)
-flow_increase_min_threshold_button.grid(row=0, column=0, sticky=tk.W + tk.E)
-flow_decrease_min_threshold_button.grid(row=0, column=1, sticky=tk.W + tk.E)
-flow_increase_max_threshold_button.grid(row=1, column=0, sticky=tk.W + tk.E)
-flow_decrease_max_threshold_button.grid(row=1, column=1, sticky=tk.W + tk.E)
-
-
-pressure_button_frame = tkinter.Frame(root)
-pressure_increase_min_threshold_button = Button(pressure_button_frame, text="+ Min Pressure Threshold",
-                                          command=partial(change_air_pressure_threshold, raise_value=True, min_threshold=True),
-                                          height=2, width=6)
-pressure_decrease_min_threshold_button = Button(pressure_button_frame, text="- Min Pressure Threshold",
-                                          command=partial(change_air_pressure_threshold, raise_value=False, min_threshold=True),
-                                          height=2, width=6)
-pressure_increase_max_threshold_button = Button(pressure_button_frame, text="+ Max Pressure Threshold",
-                                          command=partial(change_air_pressure_threshold, raise_value=True, min_threshold=False),
-                                          height=2, width=6)
-pressure_decrease_max_threshold_button = Button(pressure_button_frame, text="- Max Pressure Threshold",
-                                          command=partial(change_air_pressure_threshold, raise_value=False, min_threshold=False),
-                                          height=2, width=6)
-
-
-pressure_button_frame.pack(fill=tkinter.X, side=tkinter.BOTTOM)
-pressure_button_frame.columnconfigure(0, weight=1)
-pressure_button_frame.columnconfigure(1, weight=1)
-pressure_increase_min_threshold_button.grid(row=0, column=0, sticky=tk.W + tk.E)
-pressure_decrease_min_threshold_button.grid(row=0, column=1, sticky=tk.W + tk.E)
-pressure_increase_max_threshold_button.grid(row=1, column=0, sticky=tk.W + tk.E)
-pressure_decrease_max_threshold_button.grid(row=1, column=1, sticky=tk.W + tk.E)
-
-
-pressure_figure = Figure(figsize=(5, 2), dpi=100)
-pressure_axis = pressure_figure.add_subplot(111, label="pressure")
-pressure_axis.set_ylabel('Pressure [cmH20]')
-pressure_axis.set_xlabel('sec')
-pressure_graph, = pressure_axis.plot(x, pressure_y)
-
+# Graph
 flow_figure = Figure(figsize=(5, 2), dpi=100)
 flow_axis = flow_figure.add_subplot(111, label="flow")
 flow_axis.set_ylabel('Flow [L/min]')
 flow_axis.set_xlabel('sec')
+
 flow_graph, = flow_axis.plot(x, flow_y)
+flow_canvas = FigureCanvasTkAgg(flow_figure, master=left_flow_frame)
+flow_canvas.draw()
+flow_canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
 
-canvas1 = FigureCanvasTkAgg(pressure_figure, master=root)  # A tk.DrawingArea.
-canvas2 = FigureCanvasTkAgg(flow_figure, master=root)  # A tk.DrawingArea.
-canvas1.draw()
-canvas2.draw()
-canvas1.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
-canvas2.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
 
-random_flow_point = Button(master=root, text="New Flow Data", command=change_flow_graph_each_time)
-random_pressure_point = Button(master=root, text="New Pressure Data", command=change_pres_graph_each_time)
+#  ---------------------- Pressure -------------------------
+pressure_frame = LabelFrame(master=root, text="Air Pressure", bg='blue')
+pressure_frame.pack(fill='both', expand=True, side=BOTTOM)
 
-random_flow_point.pack(side=tkinter.BOTTOM)
-random_pressure_point.pack(side=tkinter.BOTTOM)
+# Left-Right panes
+left_pressure_frame = LabelFrame(master=pressure_frame, bg='maroon')
+left_pressure_frame.pack(fill='both', side="left", expand=True)
+right_pressure_frame = LabelFrame(master=pressure_frame, bg='cyan')
+right_pressure_frame.pack(fill='both', side="right", expand=True)
+
+# Threshold panes
+pressure_max_threshold_frame = Frame(right_pressure_frame, bg='orange')
+pressure_max_threshold_frame.pack(fill='both', side="top", expand=True)
+pressure_min_threshold_frame = Frame(right_pressure_frame, bg='pink')
+pressure_min_threshold_frame.pack(fill='both', side="bottom", expand=True)
+
+# Buttons
+pressure_increase_min_threshold_button = Button(pressure_min_threshold_frame, text="+ Min Pressure Threshold",
+                                              command=partial(change_air_pressure_threshold, raise_value=True, min_threshold=True),
+                                              height=2, width=6)
+pressure_increase_min_threshold_button.pack(fill="both", expand=True)
+pressure_decrease_min_threshold_button = Button(pressure_min_threshold_frame, text="- Min Pressure Threshold",
+                                              command=partial(change_air_pressure_threshold, raise_value=False, min_threshold=True),
+                                              height=2, width=6)
+pressure_decrease_min_threshold_button.pack(fill="both", expand=True)
+
+pressure_increase_max_threshold_button = Button(pressure_max_threshold_frame, text="+ Max Pressure Threshold",
+                                              command=partial(change_air_pressure_threshold, raise_value=True, min_threshold=False),
+                                              height=2, width=6)
+pressure_increase_max_threshold_button.pack(fill="both", expand=True)
+
+pressure_decrease_max_threshold_button = Button(pressure_max_threshold_frame, text="- Max Pressure Threshold",
+                                              command=partial(change_air_pressure_threshold, raise_value=False, min_threshold=False),
+                                              height=2, width=6)
+pressure_decrease_max_threshold_button.pack(fill="both", expand=True)
+
+# Graph
+pressure_figure = Figure(figsize=(5, 2), dpi=100)
+pressure_axis = pressure_figure.add_subplot(111, label="pressure")
+pressure_axis.set_ylabel('Pressure [cmH20]')
+pressure_axis.set_xlabel('sec')
+
+pressure_graph, = pressure_axis.plot(x, pressure_y)
+pressure_canvas = FigureCanvasTkAgg(pressure_figure, master=left_pressure_frame)
+pressure_canvas.draw()
+pressure_canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+
+
 
 mainloop()
