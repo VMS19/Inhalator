@@ -1,0 +1,5 @@
+pigpio
+matplotlib
+numpy
+tkinter; python_version >= '2'
+spidev
