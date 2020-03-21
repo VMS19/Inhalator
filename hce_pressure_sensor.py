@@ -11,12 +11,13 @@ class HcePressureSensor(object):
     SPI_DEV = 0x0
     SPI_CLK_SPEED_KHZ = 2500000  # 100-640khz
     SPI_MODE = 0x00  # Default CPOL-0 CPHA-0
-    PERIPHERAL_MINIMAL_DELAY = 0.05  # 5 milli, but really is 5 micro
+    PERIPHERAL_MINIMAL_DELAY = 500  # 0.5 milli-sec = 500 micro-sec
+    XFER_SPEED_HZ = 0  # Default to max supported speed
     MOSI_DATA = 0xFF  # HIGH values are needed, otherwise undefined behaviour
     SPI_READ_CMD = [MOSI_DATA] * 3
-    MAX_PRESSURE = 0x00  # operating pressure? page 2
+    MAX_PRESSURE = 0x01  # operating pressure? page 2
     MIN_PRESSURE = 0x00
-    MAX_OUT_PRESSURE = 0x00  # Output? page 3
+    MAX_OUT_PRESSURE = 0x01  # Output? page 3
     MIN_OUT_PRESSURE = 0x00
     SENSITIVITY = (MAX_OUT_PRESSURE - MIN_OUT_PRESSURE) /\
         (MAX_PRESSURE - MIN_PRESSURE)
@@ -29,20 +30,20 @@ class HcePressureSensor(object):
         except IOError as e:
             log.error("Couldn't init spi device, \
                 is the peripheral initialized?")
-            raise HCEDriverInitError("spidev peripheral init error") from e
+            raise HCEDriverInitError("spidev peripheral init error")
 
         try:
             self._spi.max_speed_hz = self.SPI_CLK_SPEED_KHZ
         except IOError as e:
             log.error("setting spi speed failed, \
                 is speed in the correct range?")
-            raise HCEDriverInitError("spidev peripheral init error") from e
+            raise HCEDriverInitError("spidev peripheral init error")
 
         try:
             self._spi.mode = self.SPI_MODE
         except TypeError as e:
             log.error(e.strerror)
-            raise HCEDriverInitError("spi mode error") from e
+            raise HCEDriverInitError("spi mode error")
 
         log.info("HCE pressure sensor initialized")
 
@@ -52,11 +53,12 @@ class HcePressureSensor(object):
 
     def read_pressure(self):
         try:
-            pressure_raw = self._spi.xfer(self.SPI_READ_CMD,
-                self.PERIPHERAL_MINIMAL_DELAY * 10)
+            pressure_raw = self._spi.xfer(self.SPI_READ_CMD, 
+                                          self.XFER_SPEED_HZ, 
+                    self.PERIPHERAL_MINIMAL_DELAY)
         except IOError as e:
-            log.error("check if peripheral is initialized correctly")
-            raise HCEIOError("pressure read error") from e
+            log.error("Failed to read pressure sensor. check if peripheral is initialized correctly")
+            raise HCEIOError("pressure read error") 
 
         pressure_reading = (pressure_raw[1] << 16) | (pressure_raw[2])
         pressure_parsed = self._calculate_pressure(pressure_reading)
