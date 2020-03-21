@@ -20,9 +20,10 @@ root = Tk()
 root.title("Inhalator")
 root.geometry('800x480')
 
-x = np.arange(0, 3, .01)
-
-debug_running_counter = 0
+# Graphs X's and Y's
+x = np.arange(0, 40, 1)
+flow_y = np.arange(0, 40, 1)
+pressure_y = np.arange(0, 40, 1)
 
 AIR_PRESSURE_MIN_THRESHOLD = 0
 AIR_PRESSURE_MAX_THRESHOLD = 0
@@ -34,27 +35,39 @@ THRESHOLD_STEP_SIZE = 0.5
 
 
 def change_flow_graph_each_time():
-    global debug_running_counter
-    update_flow_graph(np.sin(x + debug_running_counter))
-    debug_running_counter += 1
+    import random
+    update_flow_graph(random.randint(1, 10))
 
 
 def change_pres_graph_each_time():
-    global debug_running_counter
-    update_pressure_graph(np.sin(x + debug_running_counter))
-    debug_running_counter += 1
+    import random
+    update_pressure_graph(random.randint(1, 10))
 
 
-def update_pressure_graph(ydata):
-    pressure_y.set_ydata(ydata)
-    pressure_graph.canvas.draw()
-    pressure_graph.canvas.flush_events()
+def update_pressure_graph(yvalue):
+    global pressure_y
+    if len(pressure_y) == len(x):
+        pressure_y = np.append(np.delete(pressure_y, 0), yvalue)
+
+    else:
+        pressure_y = np.append(pressure_y, yvalue)
+
+    pressure_graph.set_ydata(pressure_y)
+    pressure_figure.canvas.draw()
+    pressure_figure.canvas.flush_events()
 
 
-def update_flow_graph(ydata):
-    flow_y.set_ydata(ydata)
-    flow_graph.canvas.draw()
-    flow_graph.canvas.flush_events()
+def update_flow_graph(yvalue):
+    global flow_y
+    if len(flow_y) == len(x):
+        flow_y = np.append(np.delete(flow_y, 0), yvalue)
+
+    else:
+        flow_y = np.append(flow_y, yvalue)
+
+    flow_graph.set_ydata(flow_y)
+    flow_figure.canvas.draw()
+    flow_figure.canvas.flush_events()
 
 
 def change_air_pressure_threshold(raise_value=True, min_threshold=True, prompt=True):
@@ -176,25 +189,29 @@ pressure_increase_max_threshold_button.grid(row=1, column=0, sticky=tk.W + tk.E)
 pressure_decrease_max_threshold_button.grid(row=1, column=1, sticky=tk.W + tk.E)
 
 
-pressure_graph = Figure(figsize=(5, 2), dpi=100)
-pressure_axis = pressure_graph.add_subplot(111, label="pressure")
+pressure_figure = Figure(figsize=(5, 2), dpi=100)
+pressure_axis = pressure_figure.add_subplot(111, label="pressure")
 pressure_axis.set_ylabel('Pressure [cmH20]')
 pressure_axis.set_xlabel('sec')
-pressure_y, = pressure_axis.plot(x, 2 * np.sin(2 * np.pi * x))
+pressure_graph, = pressure_axis.plot(x, pressure_y)
 
-flow_graph = Figure(figsize=(5, 2), dpi=100)
-flow_axis = flow_graph.add_subplot(111, label="flow")
+flow_figure = Figure(figsize=(5, 2), dpi=100)
+flow_axis = flow_figure.add_subplot(111, label="flow")
 flow_axis.set_ylabel('Flow [L/min]')
 flow_axis.set_xlabel('sec')
-flow_y, = flow_axis.plot(x, 2 * np.sin(2 * np.pi * x))
+flow_graph, = flow_axis.plot(x, flow_y)
 
-canvas1 = FigureCanvasTkAgg(pressure_graph, master=root)  # A tk.DrawingArea.
-canvas2 = FigureCanvasTkAgg(flow_graph, master=root)  # A tk.DrawingArea.
+canvas1 = FigureCanvasTkAgg(pressure_figure, master=root)  # A tk.DrawingArea.
+canvas2 = FigureCanvasTkAgg(flow_figure, master=root)  # A tk.DrawingArea.
 canvas1.draw()
 canvas2.draw()
 canvas1.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
 canvas2.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
 
-mainloop()
+random_flow_point = Button(master=root, text="New Flow Data", command=change_flow_graph_each_time)
+random_pressure_point = Button(master=root, text="New Pressure Data", command=change_pres_graph_each_time)
 
-print(5)
+random_flow_point.pack(side=tkinter.BOTTOM)
+random_pressure_point.pack(side=tkinter.BOTTOM)
+
+mainloop()
