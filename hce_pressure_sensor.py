@@ -10,10 +10,10 @@ class HcePressureSensor(object):
     MOSI_DATA = 0xFF  # HIGH values are needed, otherwise undefined behaviour
     SPI_READ_CMD = [MOSI_DATA] * 3
     # change names of these
-    MAX_PRESSURE = None  # operating pressure? page 2
-    MIN_PRESSURE = None
-    MAX_OUT_PRESSURE = None  # Output? page 3
-    MIN_OUT_PRESSURE = None
+    MAX_PRESSURE = 0x00  # operating pressure? page 2
+    MIN_PRESSURE = 0x00
+    MAX_OUT_PRESSURE = 0x00  # Output? page 3
+    MIN_OUT_PRESSURE = 0x00
     SENSITIVITY = (MAX_OUT_PRESSURE - MIN_OUT_PRESSURE) /\
         (MAX_PRESSURE - MIN_PRESSURE)
 
