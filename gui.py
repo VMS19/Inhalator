@@ -6,12 +6,15 @@ from tkinter import messagebox
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
+import logging
+from logging.handlers import RotatingFileHandler
 from functools import partial
 
 from data_store import DataStore
 from algo import Sampler
-from mocks.mock_hce_pressure_sensor import MockHcePressureSensor
+from sound import SoundDevice
 
+from mocks.mock_hce_pressure_sensor import MockHcePressureSensor
 from mocks.mock_sfm3200_flow_sensor import MockSfm3200
 
 root = Tk()
@@ -106,6 +109,7 @@ def prompt_for_confirmation(is_pressure, going_to_increase, is_min, value):
 def alert(msg):
     # TODO: Play sounds as well and display flashing icon or whatever
     tkinter.messagebox.askokcancel(title="Allah Yistor", message=msg)
+    SoundDevice.beep()
     pass
 
 
@@ -163,6 +167,8 @@ def render_gui():
     flow_axis.set_ylabel('Flow [L/min]')
     flow_axis.set_xlabel('sec')
     flow_graph, = flow_axis.plot(store.x_axis, store.flow_display_values)
+    store.flow_display_values = [0] * 40
+    update_flow_graph()
     flow_canvas = FigureCanvasTkAgg(flow_figure, master=left_flow_frame)
     flow_canvas.draw()
     flow_canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH,
@@ -205,13 +211,15 @@ def render_gui():
                         min_threshold=False),
         height=2, width=6)
     pressure_decrease_max_threshold_button.pack(fill="both", expand=True)
-    # Graph
+    # Pressure Graph
     pressure_figure = Figure(figsize=(5, 2), dpi=100)
     pressure_axis = pressure_figure.add_subplot(111, label="pressure")
     pressure_axis.set_ylabel('Pressure [cmH20]')
     pressure_axis.set_xlabel('sec')
     pressure_graph, = pressure_axis.plot(store.x_axis,
                                          store.pressure_display_values)
+    store.pressure_display_values = [0] * 40
+    update_pressure_graph()
     pressure_canvas = FigureCanvasTkAgg(pressure_figure,
                                         master=left_pressure_frame)
     pressure_canvas.draw()
@@ -219,8 +227,27 @@ def render_gui():
                                          expand=1)
 
 
+def configure_logging():
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    # create file handler which logs even debug messages
+    fh = RotatingFileHandler('inhalator.log', maxBytes=1024 * 100, backupCount=3)
+    fh.setLevel(logging.DEBUG)
+    # create console handler with a higher log level
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    # create formatter and add it to the handlers
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    fh.setFormatter(formatter)
+    ch.setFormatter(formatter)
+    # add the handlers to the logger
+    logger.addHandler(fh)
+    logger.addHandler(ch)
+
 
 def main():
+    configure_logging()
     root.title("Inhalator")
     root.geometry('800x480')
     flow_sensor = MockSfm3200()
@@ -228,8 +255,8 @@ def main():
     sampler = Sampler(store, flow_sensor, pressure_sensor,
                       update_flow_graph, update_pressure_graph, alert)
     render_gui()
-    for _ in range(300):
-        sampler.interval_loop_job()
+    for _ in range(320):
+        sampler.sampling_iteration()
 
     mainloop()
 

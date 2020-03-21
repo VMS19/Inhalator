@@ -12,8 +12,10 @@ class MockSfm3200(object):
         if value < 0:
             value = 0
 
-        self.sample_x += 1
+        self.sample_x += self.sample_interval
 
+        # if self.sample_x >= 10:
+        #     return 100000
         return value + 3
 
     def soft_reset(self):
