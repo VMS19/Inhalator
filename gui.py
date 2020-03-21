@@ -16,6 +16,8 @@ from mocks.mock_sfm3200_flow_sensor import MockSfm3200
 
 root = Tk()
 store = DataStore()
+flow_graph = None
+pressure_graph = None
 
 
 def exitProgram(signal, frame):
@@ -103,7 +105,8 @@ def prompt_for_confirmation(is_pressure, going_to_increase, is_min, value):
 
 def alert(msg):
     # TODO: Play sounds as well and display flashing icon or whatever
-    tkinter.messagebox.askokcancel(msg)
+    tkinter.messagebox.askokcancel(title="Allah Yistor", message=msg)
+    pass
 
 
 def render_gui():
@@ -224,8 +227,10 @@ def main():
     pressure_sensor = MockHcePressureSensor()
     sampler = Sampler(store, flow_sensor, pressure_sensor,
                       update_flow_graph, update_pressure_graph, alert)
-    sampler.start()
     render_gui()
+    for _ in range(300):
+        sampler.interval_loop_job()
+
     mainloop()
 
 

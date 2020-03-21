@@ -9,10 +9,10 @@ class MockHcePressureSensor(object):
         pass
 
     def read_pressure(self):
-        value = sin(self.sample_x)
+        value = sin(self.sample_x) * 10
         if value < 0:
             value = 0
 
         self.sample_x += 1
 
-        return value
+        return value + 3

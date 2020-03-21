@@ -8,13 +8,13 @@ class MockSfm3200(object):
         pass
 
     def read_flow_slm(self, retries=2):
-        value = sin(self.sample_x)
+        value = sin(self.sample_x) * 10
         if value < 0:
             value = 0
 
         self.sample_x += 1
 
-        return value
+        return value + 3
 
     def soft_reset(self):
         pass
