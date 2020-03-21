@@ -28,7 +28,7 @@ class Sfm3200:
             self._pig = pigpio.pi()
         except pigpio.error as e:
             log.error("Could not init pigpio lib. Did you run 'sudo pigpiod'?")
-            raise SFM3200DriverInitError("pigpio library init error") from e
+            raise SFM3200DriverInitError("pigpio library init error")
 
         if self._pig == None:
             log.error("Could not init pigpio lib. Did you run 'sudo pigpiod'?")
@@ -39,7 +39,7 @@ class Sfm3200:
         except pigpio.error as e:
             log.error("Could not open i2c connection to flow sensor."
                       "Is it connected?")
-            raise FlowSensorNotFoundError("i2c connection open failed") from e
+            raise FlowSensorNotFoundError("i2c connection open failed")
 
         self._start_measure()
         sleep(0.1)
@@ -59,7 +59,8 @@ class Sfm3200:
         try:
             self._pig.i2c_write_device(self._dev, self.START_MEASURE_CMD)
         except pigpio.error as e:
-            log.error("Could not write start_measure cmd to flow sensor.")
+            log.error("Could not write start_measure cmd to flow sensor. "
+                      "Is the flow sensor connected?.")
             raise FlowSensorWriteError("i2c write failed")
 
         log.info("Started flow sensor measurement")
@@ -71,7 +72,7 @@ class Sfm3200:
             log.error("Could not write soft reset cmd to flow sensor.")
             raise FlowSensorWriteError("i2c write failed")
 
-    def read_pressure_slm(self, retries=2):
+    def read_flow_slm(self, retries=2):
         read_size, data = self._pig.i2c_read_device(self._dev, 3)
         if read_size >= 2:
             raw_value = data[0] << 8 | data[1]
@@ -106,7 +107,7 @@ class Sfm3200:
                             "Retrying read after a short delay")
 
             sleep(0.1)
-            flow = self.read_pressure_slm(retries=retries - 1)
+            flow = self.read_flow_slm(retries=retries - 1)
             log.info("Flow Sensor successfully read data, after failed attempt")
             return flow
 
