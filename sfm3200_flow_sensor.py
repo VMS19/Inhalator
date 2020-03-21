@@ -13,7 +13,7 @@ from errors import SFM3200DriverInitError, FlowSensorNotFoundError, \
 
 log = logging.getLogger(__name__)
 
-class Sfm3200:
+class Sfm3200(object):
     """Driver class for SFM3200 Flow sensor."""
     CRC_POLYNOMIAL = 0x131
     I2C_BUS = 1
