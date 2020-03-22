@@ -251,7 +251,16 @@ class Graphics(object):
         pressure_axis.set_ylabel('Pressure [cmH20]')
         pressure_axis.set_xlabel('sec')
         self.pressure_graph, = pressure_axis.plot(self.store.x_axis,
-                                             self.store.pressure_display_values)
+                                             self.store.pressure_display_values,
+                                                  linewidth=4)
+        self.pressure_max_threshold_graph, = \
+            pressure_axis.plot(self.store.x_axis,
+                               [self.store.pressure_max_threshold] *
+                               len(self.store.x_axis), linestyle=":")
+        self.pressure_min_threshold_graph, = \
+            pressure_axis.plot(self.store.x_axis,
+                               [self.store.pressure_min_threshold] *
+                               len(self.store.x_axis), linestyle=":")
         pressure_canvas = FigureCanvasTkAgg(self.pressure_figure,
                                             master=left_pressure_frame)
         pressure_canvas.draw()
