@@ -52,7 +52,6 @@ def update_flow_graph():
     flow_figure.canvas.flush_events()
 
 
-
 def change_air_pressure_threshold(raise_value=True, min_threshold=True, prompt=True):
     if min_threshold:
         if raise_value:
@@ -179,8 +178,6 @@ def render_gui():
     flow_axis.set_ylabel('Flow [L/min]')
     flow_axis.set_xlabel('sec')
     flow_graph, = flow_axis.plot(store.x_axis, store.flow_display_values)
-  #  store.flow_display_values = [0] * 40
-  #  update_flow_graph()
     flow_canvas = FigureCanvasTkAgg(flow_figure, master=left_flow_frame)
     flow_canvas.draw()
     flow_canvas.get_tk_widget().pack(side='top', fill='both',
@@ -275,8 +272,7 @@ def main():
     store.flow_display_values = [0] * 40
     update_flow_graph()
 
-    for _ in range(320):
-        sampler.sampling_iteration()
+    sampler.start()
 
     mainloop()
 

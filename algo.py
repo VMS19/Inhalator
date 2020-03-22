@@ -5,8 +5,9 @@ from data_store import DataStore
 
 log = logging.getLogger(__name__)
 
+
 class Sampler(threading.Thread):
-    SAMPLING_INTERVAL = 100  # ms
+    SAMPLING_INTERVAL = 0.02  # sec
     MS_IN_MIN = 60 * 1000
 
     def __init__(self, data_store, flow_sensor, pressure_sensor,
@@ -40,7 +41,6 @@ class Sampler(threading.Thread):
     def _handle_intake_finished(self, flow, pressure):
         "We are not giving patient air anymore."
 
-
         if self._currently_breathed_volume < self._data_store.flow_min_threshold and \
                 self._has_crossed_first_cycle:
             self._alert_cb("Breathing Volume ({}ltr) went under minimum threshold ({}ltr)".format(self._currently_breathed_volume, self._data_store.flow_min_threshold))
@@ -51,7 +51,7 @@ class Sampler(threading.Thread):
         while True:
             self.sampling_iteration()
 
-            time.sleep(self.SAMPLING_INTERVAL / 1000)
+            time.sleep(self.SAMPLING_INTERVAL)
 
     def sampling_iteration(self):
         flow_value = self._flow_sensor.read_flow_slm()

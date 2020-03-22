@@ -1,3 +1,4 @@
+from queue import Queue
 import numpy as np
 
 
@@ -14,6 +15,7 @@ class DataStore(object):
         self.flow_display_values = np.arange(0, 40, 1)
         self.pressure_display_values = np.arange(0, 40, 1)
         self.x_axis = np.arange(0, 40, 1)
+        self.alerts = Queue()
 
     def update_flow_values(self, new_value):
         if len(self.flow_display_values) == len(self.x_axis):
