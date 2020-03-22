@@ -9,7 +9,7 @@ if platform.python_version() < '3':
     from Tkinter import *
 
 else:
-    import messagebox
+    from tkinter import messagebox
     import tkinter
     tk = tkinter
     from tkinter import *
