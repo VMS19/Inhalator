@@ -11,7 +11,7 @@ class Sampler(threading.Thread):
 
     def __init__(self, data_store, flow_sensor, pressure_sensor,
                  update_flow_cb, update_pressure_cb, alert_cb):
-        super().__init__()
+        super(Sampler, self).__init__()
         self.daemon = True
         self._data_store = data_store  # type: DataStore
         self._flow_sensor = flow_sensor

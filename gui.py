@@ -1,11 +1,14 @@
-import tkinter
+import Tkinter
 
-tk = tkinter
-from tkinter import *
-from tkinter import messagebox
+tk = Tkinter
+from Tkinter import *
+# from Tkinter import messagebox # Python 3
+import tkMessageBox
+messagebox = tkMessageBox
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
+import time
 import logging
 from logging.handlers import RotatingFileHandler
 from functools import partial
@@ -167,11 +170,11 @@ def render_gui():
     flow_axis.set_ylabel('Flow [L/min]')
     flow_axis.set_xlabel('sec')
     flow_graph, = flow_axis.plot(store.x_axis, store.flow_display_values)
-    store.flow_display_values = [0] * 40
-    update_flow_graph()
+  #  store.flow_display_values = [0] * 40
+  #  update_flow_graph()
     flow_canvas = FigureCanvasTkAgg(flow_figure, master=left_flow_frame)
     flow_canvas.draw()
-    flow_canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH,
+    flow_canvas.get_tk_widget().pack(side='top', fill='both',
                                      expand=1)
     #  ---------------------- Pressure -------------------------
     pressure_frame = LabelFrame(master=root, text="Air Pressure", bg='blue')
@@ -218,12 +221,10 @@ def render_gui():
     pressure_axis.set_xlabel('sec')
     pressure_graph, = pressure_axis.plot(store.x_axis,
                                          store.pressure_display_values)
-    store.pressure_display_values = [0] * 40
-    update_pressure_graph()
     pressure_canvas = FigureCanvasTkAgg(pressure_figure,
                                         master=left_pressure_frame)
     pressure_canvas.draw()
-    pressure_canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH,
+    pressure_canvas.get_tk_widget().pack(side='top', fill='both',
                                          expand=1)
 
 
@@ -255,6 +256,16 @@ def main():
     sampler = Sampler(store, flow_sensor, pressure_sensor,
                       update_flow_graph, update_pressure_graph, alert)
     render_gui()
+# Wait for GUI to render
+    time.sleep(5)
+
+# Calibrate the graphs y-values
+
+    store.pressure_display_values = [0] * 40
+    update_pressure_graph()
+    store.flow_display_values = [0] * 40
+    update_flow_graph()
+
     for _ in range(320):
         sampler.sampling_iteration()
 
