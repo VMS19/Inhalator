@@ -1,4 +1,5 @@
 import platform
+import alerts
 
 # Tkinter stuff
 if platform.python_version() < '3':
@@ -34,6 +35,12 @@ store = DataStore()
 flow_graph = None
 pressure_graph = None
 
+error_dict = {
+    alerts.alerts.PRESSURE_LOW : ("Pressure ({}mbar) dropped below healthy lungs pressure ({}mbar)", store.pressure_min_threshold),
+    alerts.alerts.PRESSURE_HIGH : ("Pressure ({}mbar) exceeded healthy lungs pressure ({}mbar)", store.pressure_max_threshold),
+    alerts.alerts.BREATHING_VOLUME_LOW : ("Breathing Volume ({}ltr) went under minimum threshold ({}ltr)", store.flow_min_threshold),
+    alerts.alerts.BREATHING_VOLUME_HIGH : ("Breathing Volume ({}ltr) exceeded maximum threshold ({}ltr)", store.flow_max_threshold)
+}
 
 def exitProgram(signal, frame):
     print("Exit Button pressed")
@@ -57,8 +64,9 @@ def update_alert():
     if store.alerts.empty():
         return
 
-    first_alert = store.alerts.get()
-    alert(first_alert)
+    cur_alert = store.alerts.get()
+    alert_format = error_dict[cur_alert[0]]
+    alert(alert_format[0].format(cur_alert[1], alert_format[1]))
 
 
 def change_air_pressure_threshold(raise_value=True, min_threshold=True, prompt=True):
@@ -128,7 +136,7 @@ def prompt_for_confirmation(is_pressure, going_to_increase, is_min, value):
 
 def alert(msg):
     # TODO: Play sounds as well and display flashing icon or whatever
-    # tkinter.messagebox.askokcancel(title="Allah Yistor", message=msg)
+    tkinter.messagebox.askokcancel(title="Allah Yistor", message=msg)
     SoundDevice.beep()
     pass
 
@@ -290,7 +298,7 @@ def main():
 
     while True:
         gui_update()
-        time.sleep(0.02)
+        # time.sleep(0.02)
 
     # mainloop()
 
