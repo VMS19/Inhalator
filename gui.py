@@ -1,10 +1,19 @@
-import Tkinter
+import platform
 
-tk = Tkinter
-from Tkinter import *
-# from Tkinter import messagebox # Python 3
-import tkMessageBox
-messagebox = tkMessageBox
+# Tkinter stuff
+if platform.python_version() < '3':
+    import tkMessageBox
+    messagebox = tkMessageBox
+    import Tkinter
+    tk = Tkinter
+    from Tkinter import *
+
+else:
+    import messagebox
+    import tkinter
+    tk = tkinter
+    from tkinter import *
+
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
@@ -233,10 +242,10 @@ def configure_logging():
     logger.setLevel(logging.DEBUG)
     # create file handler which logs even debug messages
     fh = RotatingFileHandler('inhalator.log', maxBytes=1024 * 100, backupCount=3)
-    fh.setLevel(logging.DEBUG)
+    fh.setLevel(logging.ERROR)
     # create console handler with a higher log level
     ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
+    ch.setLevel(logging.ERROR)
     # create formatter and add it to the handlers
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
