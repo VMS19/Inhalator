@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 class HcePressureSensor(object):
     SPI_BUS = 0x0
     SPI_DEV = 0x0
-    SPI_CLK_SPEED_KHZ = 2500000  # 100-640khz
+    SPI_CLK_SPEED_KHZ = 250000  # 100-640khz
     SPI_MODE = 0x00  # Default CPOL-0 CPHA-0
     PERIPHERAL_MINIMAL_DELAY = 500  # 0.5 milli-sec = 500 micro-sec
     XFER_SPEED_HZ = 0  # Default to max supported speed
