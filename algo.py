@@ -10,14 +10,11 @@ class Sampler(threading.Thread):
     SAMPLING_INTERVAL = 0.02  # sec
     MS_IN_MIN = 60 * 1000
 
-    def __init__(self, data_store, flow_sensor, pressure_sensor,
-                 update_flow_cb, update_pressure_cb, alert_cb):
+    def __init__(self, data_store, flow_sensor, pressure_sensor, alert_cb):
         super(Sampler, self).__init__()
         self.daemon = True
         self._data_store = data_store  # type: DataStore
         self._flow_sensor = flow_sensor
-        self._update_flow_cb = update_flow_cb
-        self._update_pressure_cb = update_pressure_cb
         self._alert_cb = alert_cb
         self._pressure_sensor = pressure_sensor
 
@@ -32,7 +29,7 @@ class Sampler(threading.Thread):
         self._currently_breathed_volume += (flow * sampling_interval_in_minutes)
 
         if self._currently_breathed_volume > self._data_store.flow_max_threshold:
-            self._alert_cb("Breathing Volume ({}ltr) exceeded maximum threshold ({}ltr)".format(self._currently_breathed_volume, self._data_store.flow_max_threshold))
+            self.alert("Breathing Volume ({}ltr) exceeded maximum threshold ({}ltr)".format(self._currently_breathed_volume, self._data_store.flow_max_threshold))
 
         if pressure <= self._data_store.NO_BREATHING_THRESHOLD:
             logging.info("Pressure low enough | _is_during_intake=False")
@@ -43,7 +40,7 @@ class Sampler(threading.Thread):
 
         if self._currently_breathed_volume < self._data_store.flow_min_threshold and \
                 self._has_crossed_first_cycle:
-            self._alert_cb("Breathing Volume ({}ltr) went under minimum threshold ({}ltr)".format(self._currently_breathed_volume, self._data_store.flow_min_threshold))
+            self.alert("Breathing Volume ({}ltr) went under minimum threshold ({}ltr)".format(self._currently_breathed_volume, self._data_store.flow_min_threshold))
 
         self._currently_breathed_volume = 0
 
@@ -53,19 +50,20 @@ class Sampler(threading.Thread):
 
             time.sleep(self.SAMPLING_INTERVAL)
 
+    def alert(self, msg):
+        self._data_store.alerts.put(msg)
+
     def sampling_iteration(self):
+        # Read from sensors
         flow_value = self._flow_sensor.read_flow_slm()
         pressure_value = self._pressure_sensor.read_pressure()
-        self._data_store.update_flow_values(flow_value)
         self._data_store.update_pressure_values(pressure_value)
-        self._update_flow_cb()
-        self._update_pressure_cb()
         if pressure_value > self._data_store.pressure_max_threshold:
             # We are above healthy lungs pressure
-            self._alert_cb("Pressure ({}mbar) exceeded healthy lungs pressure ({}mbar)".format(pressure_value, self._data_store.pressure_max_threshold))
+            self.alert("Pressure ({}mbar) exceeded healthy lungs pressure ({}mbar)".format(pressure_value, self._data_store.pressure_max_threshold))
         if pressure_value < self._data_store.pressure_min_threshold:
             # We are below healthy lungs pressure
-            self._alert_cb("Pressure ({}mbar) dropped below healthy lungs pressure ({}mbar)".format(pressure_value, self._data_store.pressure_min_threshold))
+            self.alert("Pressure ({}mbar) dropped below healthy lungs pressure ({}mbar)".format(pressure_value, self._data_store.pressure_min_threshold))
 
         log.debug("Breathed: %s" % self._currently_breathed_volume)
         log.debug("Flow: %s" % flow_value)
@@ -85,3 +83,6 @@ class Sampler(threading.Thread):
         else:
             self._handle_intake_finished(flow=flow_value,
                                          pressure=pressure_value)
+        # The 500 Magic number is just something we multiply in to make it visible on the graph
+        # Of course within real integration we would find the correct values todo
+        self._data_store.update_flow_values(self._currently_breathed_volume * 500)

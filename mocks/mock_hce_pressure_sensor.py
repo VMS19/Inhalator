@@ -15,6 +15,6 @@ class MockHcePressureSensor(object):
 
         self.sample_x += self.sample_interval
 
-        # if self.sample_x >= 10:
-        #     return 500
+        if 3 <= self.sample_x <= 4:
+            return 500
         return value + 3

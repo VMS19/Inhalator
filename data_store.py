@@ -12,10 +12,10 @@ class DataStore(object):
         self.pressure_max_threshold = 15  # mbar
         self.flow_min_threshold = 0.3 # Liter
         self.flow_max_threshold = 15
-        self.flow_display_values = np.arange(0, 40, 1)
+        self.flow_display_values = np.arange(0, 40, 1) * 0
         self.pressure_display_values = np.arange(0, 40, 1)
         self.x_axis = np.arange(0, 40, 1)
-        self.alerts = Queue()
+        self.alerts = Queue(maxsize=10)
 
     def update_flow_values(self, new_value):
         if len(self.flow_display_values) == len(self.x_axis):

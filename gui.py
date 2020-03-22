@@ -47,9 +47,18 @@ def update_pressure_graph():
 
 
 def update_flow_graph():
+    print("Updating flow with value: {}".format(store.flow_display_values[-1]))
     flow_graph.set_ydata(store.flow_display_values)
     flow_figure.canvas.draw()
     flow_figure.canvas.flush_events()
+
+
+def update_alert():
+    if store.alerts.empty():
+        return
+
+    first_alert = store.alerts.get()
+    alert(first_alert)
 
 
 def change_air_pressure_threshold(raise_value=True, min_threshold=True, prompt=True):
@@ -119,7 +128,7 @@ def prompt_for_confirmation(is_pressure, going_to_increase, is_min, value):
 
 def alert(msg):
     # TODO: Play sounds as well and display flashing icon or whatever
-    tkinter.messagebox.askokcancel(title="Allah Yistor", message=msg)
+    # tkinter.messagebox.askokcancel(title="Allah Yistor", message=msg)
     SoundDevice.beep()
     pass
 
@@ -234,15 +243,21 @@ def render_gui():
                                          expand=1)
 
 
+def gui_update():
+    update_flow_graph()
+    update_pressure_graph()
+    update_alert()
+
+
 def configure_logging():
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     # create file handler which logs even debug messages
     fh = RotatingFileHandler('inhalator.log', maxBytes=1024 * 100, backupCount=3)
-    fh.setLevel(logging.ERROR)
+    fh.setLevel(logging.DEBUG)
     # create console handler with a higher log level
     ch = logging.StreamHandler()
-    ch.setLevel(logging.ERROR)
+    ch.setLevel(logging.DEBUG)
     # create formatter and add it to the handlers
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -259,11 +274,10 @@ def main():
     root.geometry('800x480')
     flow_sensor = MockSfm3200()
     pressure_sensor = MockHcePressureSensor()
-    sampler = Sampler(store, flow_sensor, pressure_sensor,
-                      update_flow_graph, update_pressure_graph, alert)
+    sampler = Sampler(store, flow_sensor, pressure_sensor, alert)
     render_gui()
 # Wait for GUI to render
-    time.sleep(5)
+#     time.sleep(5)
 
 # Calibrate the graphs y-values
 
@@ -274,7 +288,11 @@ def main():
 
     sampler.start()
 
-    mainloop()
+    while True:
+        gui_update()
+        time.sleep(0.02)
+
+    # mainloop()
 
 
 if __name__ == '__main__':
