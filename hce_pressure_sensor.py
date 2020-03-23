@@ -15,12 +15,12 @@ class HcePressureSensor(object):
     XFER_SPEED_HZ = 0  # Default to max supported speed
     MOSI_DATA = 0xFF  # HIGH values are needed, otherwise undefined behaviour
     SPI_READ_CMD = [MOSI_DATA] * 3
-    MAX_PRESSURE = 0x01  # operating pressure? page 2
+    MAX_PRESSURE = 0x7D0  # operating pressure? page 2
     MIN_PRESSURE = 0x00
-    MAX_OUT_PRESSURE = 0x01  # Output? page 3
-    MIN_OUT_PRESSURE = 0x00
-    SENSITIVITY = (MAX_OUT_PRESSURE - MIN_OUT_PRESSURE) /\
-        (MAX_PRESSURE - MIN_PRESSURE)
+    MAX_OUT_PRESSURE = 0x5FFF  # Output? page 3
+    MIN_OUT_PRESSURE = 0x0AAA
+    SENSITIVITY = float(MAX_OUT_PRESSURE - MIN_OUT_PRESSURE) /\
+        float(MAX_PRESSURE - MIN_PRESSURE)
 
     def __init__(self):
         self._spi = spidev.SpiDev()
