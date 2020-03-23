@@ -250,9 +250,9 @@ class GUI(object):
 
 
         # Calibrate the graphs y-values
-        self.store.pressure_display_values = [0] * 40
+        self.store.pressure_display_values = [0] * self.store.samples_in_graph_amount
         self.update_pressure_graph()
-        self.store.flow_display_values = [0] * 40
+        self.store.flow_display_values = [0] * self.store.samples_in_graph_amount
         self.update_flow_graph()
 
         self.update_thresholds()

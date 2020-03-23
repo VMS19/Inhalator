@@ -47,9 +47,11 @@ class DataStore(object):
         self.threshold_step_size = config["threshold"]["step_size"]
         self.breathing_threshold = config["threshold"]["breathing"]
 
-        self.flow_display_values = [0] * 40
-        self.pressure_display_values = [0] * 40
-        self.x_axis = range(0, 40)
+        self.samples_in_graph_amount = config["samples_in_graph_amount"]
+
+        self.flow_display_values = [0] * self.samples_in_graph_amount
+        self.pressure_display_values = [0] * self.samples_in_graph_amount
+        self.x_axis = range(0, self.samples_in_graph_amount)
 
         self.alerts = Queue(maxsize=10)
 
@@ -73,7 +75,8 @@ class DataStore(object):
                 "step_size": self.threshold_step_size,
                 "breathing": self.breathing_threshold,
                 },
-            "log_enabled": True
+            "log_enabled": True,
+            "samples_in_graph_amount": self.samples_in_graph_amount
         }
 
         with open(self.CONFIG_FILE, "w") as f:
