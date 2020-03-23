@@ -8,10 +8,10 @@ class DataStore(object):
     BREATHING_THRESHOLD = 3.5  # mbar
 
     def __init__(self):
-        self.pressure_min_threshold = 1  # mbar
-        self.pressure_max_threshold = 15  # mbar
-        self.flow_min_threshold = 0.3 # Liter
-        self.flow_max_threshold = 15
+        self.pressure_min_threshold = [1]  # mbar
+        self.pressure_max_threshold = [15]  # mbar
+        self.flow_min_threshold = [0.3] # Liter
+        self.flow_max_threshold = [15]
         self.flow_display_values = np.arange(0, 40, 1) * 0
         self.pressure_display_values = np.arange(0, 40, 1)
         self.x_axis = np.arange(0, 40, 1)
