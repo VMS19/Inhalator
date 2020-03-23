@@ -65,6 +65,8 @@ class ThresholdPrompt(object):
         self.down_button.pack()
         self.save_button.pack()
         self.cancel_button.pack()
+        self.up_button.place(relx=0, rely=0.05, relwidth=1, relheight=0.15)
+        self.down_button.place(relx=0, rely=0.25, relwidth=1, relheight=0.15)
         self.save_button.place(relx=0, rely=0.65, relwidth=1, relheight=0.15)
         self.cancel_button.place(relx=0, rely=0.85, relwidth=1, relheight=0.15)
 
