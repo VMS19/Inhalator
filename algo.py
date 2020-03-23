@@ -1,6 +1,7 @@
 import time
 import logging
 import threading
+import RPi.GPIO as GPIO
 
 import alerts
 
@@ -10,6 +11,7 @@ log = logging.getLogger(__name__)
 class Sampler(threading.Thread):
     SAMPLING_INTERVAL = 0.02  # sec
     MS_IN_MIN = 60 * 1000
+    WD_GPIO = 18
 
     def __init__(self, data_store, flow_sensor, pressure_sensor, alert_cb):
         super(Sampler, self).__init__()
@@ -23,6 +25,14 @@ class Sampler(threading.Thread):
         self._currently_breathed_volume = 0
         self._is_during_intake = False
         self._has_crossed_first_cycle = False
+
+        # Set WD GPIO
+        GPIO.setup(WD_GPIO, GPIO.out)
+
+    def _arm_wd(self):
+        GPIO.output(WD_GPIO, GPIO.HIGH)
+        time.sleep(0.05)
+        GPIO.output(WD_GPIO, GPIO.LOW)
 
     def _handle_intake(self, flow, pressure):
         """We are giving patient air."""
@@ -49,6 +59,9 @@ class Sampler(threading.Thread):
     def run(self):
         while True:
             self.sampling_iteration()
+            if self._data_store.arm_wd:
+                _arm_wd()
+                self._data_store.arm_wd = False
 
             time.sleep(self.SAMPLING_INTERVAL)
 
