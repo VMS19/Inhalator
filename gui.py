@@ -1,4 +1,5 @@
 import platform
+import alerts
 
 # Tkinter stuff
 if platform.python_version() < '3':
@@ -26,6 +27,7 @@ from graphics.threshold_prompt import Threshold, ThresholdPrompt
 MIN_TRHLD_COLOR = "green"
 MAX_TRHLD_COLOR = "red"
 
+
 class GUI(object):
     """GUI class for Inhalator"""
     def __init__(self, data_store):
@@ -47,6 +49,9 @@ class GUI(object):
         self.flow_max = Threshold(self.store.flow_max_threshold, "Air flow max")
         self.pressure_min = Threshold(self.store.pressure_min_threshold, "Air pressure min")
         self.pressure_max = Threshold(self.store.pressure_max_threshold, "Air pressure max")
+
+        self.pressure_min_threshold_change_button = None
+        self.pressure_max_threshold_change_button = None
 
     def exitProgram(self, sig, _):
         print("Exit Button pressed")
@@ -238,5 +243,3 @@ class GUI(object):
         self.update_alert()
         self.root.update()
         self.root.update_idletasks()
-
-

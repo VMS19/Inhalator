@@ -34,3 +34,9 @@ class DataStore(object):
         else:
             self.pressure_display_values = np.append(self.pressure_display_values,
                                                      new_value)
+
+    def set_alert(self, alert):
+        self.alerts.put(alert)
+
+    def get_alert(self):
+        return self.alerts.get()
