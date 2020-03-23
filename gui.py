@@ -31,7 +31,7 @@ MAX_TRHLD_COLOR = "red"
 
 class GUI(object):
     """GUI class for Inhalator"""
-    TEXT_SIZE = 25
+    TEXT_SIZE = 10
 
     def __init__(self, data_store):
         self.store = data_store
@@ -138,7 +138,6 @@ class GUI(object):
 
     def alert(self, msg):
         # TODO: display flashing icon or whatever
-        tkinter.messagebox.askokcancel(title="Allah Yistor", message=msg)
         SoundDevice.beep()
 
     def render(self):
