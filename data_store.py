@@ -15,6 +15,7 @@ class DataStore(object):
         self.pressure_display_values = range(0, 40)
         self.x_axis = range(0, 40)
         self.alerts = Queue(maxsize=10)
+        self.arm_wd = False
 
     def update_flow_values(self, new_value):
         if len(self.flow_display_values) == len(self.x_axis):

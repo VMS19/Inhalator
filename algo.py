@@ -1,7 +1,11 @@
 import time
 import logging
 import threading
-import RPi.GPIO as GPIO
+import platform
+
+OS_LINUX = "Linux" in platform.platform()
+if not OS_LINUX:
+    import RPi.GPIO as GPIO
 
 import alerts
 
@@ -26,13 +30,18 @@ class Sampler(threading.Thread):
         self._is_during_intake = False
         self._has_crossed_first_cycle = False
 
-        # Set WD GPIO
-        GPIO.setup(WD_GPIO, GPIO.out)
+        if not OS_LINUX:
+            # Set WD GPIO
+            GPIO.setup(WD_GPIO, GPIO.out)
 
-    def _arm_wd(self):
-        GPIO.output(WD_GPIO, GPIO.HIGH)
-        time.sleep(0.05)
-        GPIO.output(WD_GPIO, GPIO.LOW)
+    if OS_LINUX:
+        def _arm_wd(self):
+            pass
+    else:
+        def _arm_wd(self):
+                GPIO.output(WD_GPIO, GPIO.HIGH)
+                time.sleep(0.05)
+                GPIO.output(WD_GPIO, GPIO.LOW)
 
     def _handle_intake(self, flow, pressure):
         """We are giving patient air."""
@@ -60,7 +69,7 @@ class Sampler(threading.Thread):
         while True:
             self.sampling_iteration()
             if self._data_store.arm_wd:
-                _arm_wd()
+                self._arm_wd()
                 self._data_store.arm_wd = False
 
             time.sleep(self.SAMPLING_INTERVAL)

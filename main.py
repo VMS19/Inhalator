@@ -42,7 +42,7 @@ def main():
 
     while True:
         gui.gui_update()
-        self._data_store.arm_wd = True
+        store.arm_wd = True
         # sleep(0.02)
     #
     # mainloop()
