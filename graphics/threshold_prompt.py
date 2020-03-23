@@ -15,23 +15,12 @@ else:
     from tkinter import *
 
 
-class Threshold(object):
-    def __init__(self, value, name):
-        self.value = value
-        self.name = name
-        self.label = None
-
-    def update_label(self):
-        if self.label is not None:
-            self.label.config(text="{}={}".format(self.name, self.value[0]))
-
-
 class ThresholdPrompt(object):
     def __init__(self, root, store, threshold, exit_handler):
         self.root = root
         self.store = store
         self.threshold = threshold
-        self.original_threshold_value = threshold.value[0]
+        self.original_threshold_value = threshold.value
         self.exit_handler = exit_handler
         self.frame = Frame(self.root, bg="yellow")
         self.label = Label(master=self.frame)
@@ -47,15 +36,14 @@ class ThresholdPrompt(object):
                                     command=self.cancel, height="4", width="6")
 
     def update_label(self):
-        self.label.config(text="{}={}".format(self.threshold.name,
-                                              self.threshold.value[0]))
+        self.label.config(text="{!r}".format(self.threshold))
 
     def increase(self):
-        self.threshold.value[0] += self.store.THRESHOLD_STEP_SIZE
+        self.threshold.value += self.store.threshold_step_size
         self.update_label()
 
     def decrease(self):
-        self.threshold.value[0] -= self.store.THRESHOLD_STEP_SIZE
+        self.threshold.value -= self.store.threshold_step_size
         self.update_label()
 
     def show(self):
@@ -69,7 +57,7 @@ class ThresholdPrompt(object):
         self.cancel_button.place(relx=0, rely=0.85, relwidth=1, relheight=0.15)
 
     def save(self):
-        self.threshold.update_label()
+        self.store.save_to_file()  # Save new value in config.json file
         self.exit()
 
     def exit(self):
@@ -78,5 +66,5 @@ class ThresholdPrompt(object):
         self.exit_handler()
 
     def cancel(self):
-        self.threshold.value[0] = self.original_threshold_value
+        self.threshold.value = self.original_threshold_value
         self.exit()

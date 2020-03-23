@@ -1,4 +1,3 @@
 pigpio
 matplotlib
-numpy
 spidev
