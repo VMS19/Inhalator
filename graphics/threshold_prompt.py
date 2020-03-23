@@ -22,7 +22,8 @@ class Threshold(object):
         self.label = None
 
     def update_label(self):
-        self.label.config(text="{}={}".format(self.name, self.value[0]))
+        if self.label is not None:
+            self.label.config(text="{}={}".format(self.name, self.value[0]))
 
 
 class ThresholdPrompt(object):
@@ -66,8 +67,6 @@ class ThresholdPrompt(object):
         self.cancel_button.pack()
         self.save_button.place(relx=0, rely=0.65, relwidth=1, relheight=0.15)
         self.cancel_button.place(relx=0, rely=0.85, relwidth=1, relheight=0.15)
-
-
 
     def save(self):
         self.threshold.update_label()
