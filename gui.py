@@ -53,6 +53,13 @@ class GUI(object):
         self.pressure_min_threshold_change_button = None
         self.pressure_max_threshold_change_button = None
 
+        self.error_dict = {
+            alerts.alerts.PRESSURE_LOW : ("Pressure ({}mbar) dropped below healthy lungs pressure ({}mbar)", self.store.pressure_min_threshold),
+            alerts.alerts.PRESSURE_HIGH : ("Pressure ({}mbar) exceeded healthy lungs pressure ({}mbar)", self.store.pressure_max_threshold),
+            alerts.alerts.BREATHING_VOLUME_LOW : ("Breathing Volume ({}ltr) went under minimum threshold ({}ltr)", self.store.flow_min_threshold),
+            alerts.alerts.BREATHING_VOLUME_HIGH : ("Breathing Volume ({}ltr) exceeded maximum threshold ({}ltr)", self.store.flow_max_threshold)
+        }
+
     def exitProgram(self, sig, _):
         print("Exit Button pressed")
         self.root.quit()
@@ -83,8 +90,9 @@ class GUI(object):
         if self.store.alerts.empty():
             return
 
-        first_alert = self.store.alerts.get()
-        self.alert(first_alert)
+        cur_alert = self.store.alerts.get()
+        alert_format = self.error_dict[cur_alert[0]]
+        self.alert(alert_format[0].format(cur_alert[1], alert_format[1]))
 
     def change_threshold(self, threshold):
         prompt = ThresholdPrompt(self.root, self.store, threshold,
