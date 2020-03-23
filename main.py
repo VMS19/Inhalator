@@ -5,7 +5,7 @@ from time import sleep
 from mocks.mock_hce_pressure_sensor import MockHcePressureSensor
 from mocks.mock_sfm3200_flow_sensor import MockSfm3200
 from data_store import DataStore
-from gui import Graphics
+from gui import GUI, mainloop
 from algo import Sampler
 
 
@@ -31,19 +31,19 @@ def configure_logging():
 def main():
     configure_logging()
     store = DataStore()
-    graphics = Graphics(store)
+    gui = GUI(store)
     flow_sensor = MockSfm3200()
     pressure_sensor = MockHcePressureSensor()
-    sampler = Sampler(store, flow_sensor, pressure_sensor, graphics.alert)
-    graphics.render_gui()
+    sampler = Sampler(store, flow_sensor, pressure_sensor, gui.alert)
+    gui.render()
     # Wait for GUI to render
     #     time.sleep(5)
     sampler.start()
 
     while True:
-        graphics.gui_update()
-        sleep(0.02)
-
+        gui.gui_update()
+        # sleep(0.02)
+    #
     # mainloop()
 
 

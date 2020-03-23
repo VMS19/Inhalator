@@ -20,10 +20,14 @@ from matplotlib.figure import Figure
 from functools import partial
 
 from sound import SoundDevice
+from graphics.threshold_prompt import Threshold, ThresholdPrompt
 
 
-class Graphics(object):
-    """Graphics class for Inhalator"""
+MIN_TRHLD_COLOR = "green"
+MAX_TRHLD_COLOR = "red"
+
+class GUI(object):
+    """GUI class for Inhalator"""
     def __init__(self, data_store):
         self.store = data_store
         self.root = Tk()
@@ -34,10 +38,15 @@ class Graphics(object):
 
         self.flow_figure = None
         self.pressure_figure = None
-        self.flow_min_threshold_label = None
-        self.flow_max_threshold_label = None
-        self.pressure_min_threshold_label = None
-        self.pressure_max_threshold_label = None
+        self.pressure_min_threshold_graph = None
+        self.pressure_max_threshold_graph = None
+        self.flow_min_threshold_graph = None
+        self.flow_max_threshold_graph = None
+
+        self.flow_min = Threshold(self.store.flow_min_threshold, "Air flow min")
+        self.flow_max = Threshold(self.store.flow_max_threshold, "Air flow max")
+        self.pressure_min = Threshold(self.store.pressure_min_threshold, "Air pressure min")
+        self.pressure_max = Threshold(self.store.pressure_max_threshold, "Air pressure max")
 
     def exitProgram(self, sig, _):
         print("Exit Button pressed")
@@ -48,11 +57,22 @@ class Graphics(object):
         self.pressure_figure.canvas.draw()
         self.pressure_figure.canvas.flush_events()
 
+        # Update threshold lines
+        self.pressure_min_threshold_graph.set_ydata([self.store.pressure_min_threshold] *
+        len(self.store.x_axis))
+        self.pressure_max_threshold_graph.set_ydata([self.store.pressure_max_threshold] *
+                                                    len(self.store.x_axis))
+
     def update_flow_graph(self):
-        print("Updating flow with value: {}".format(self.store.flow_display_values[-1]))
         self.flow_graph.set_ydata(self.store.flow_display_values)
         self.flow_figure.canvas.draw()
         self.flow_figure.canvas.flush_events()
+
+        # Update threshold lines
+        self.flow_min_threshold_graph.set_ydata([self.store.flow_min_threshold] *
+                                                    len(self.store.x_axis))
+        self.flow_max_threshold_graph.set_ydata([self.store.flow_max_threshold] *
+                                                    len(self.store.x_axis))
 
     def update_alert(self):
         if self.store.alerts.empty():
@@ -61,83 +81,30 @@ class Graphics(object):
         first_alert = self.store.alerts.get()
         self.alert(first_alert)
 
-    def change_air_pressure_threshold(self, raise_value=True, min_threshold=True, prompt=True):
-        if min_threshold:
-            if raise_value:
-                new_value = self.store.pressure_min_threshold + self.store.THRESHOLD_STEP_SIZE
-            else:
-                new_value = self.store.pressure_min_threshold - self.store.THRESHOLD_STEP_SIZE
+    def change_threshold(self, threshold):
+        prompt = ThresholdPrompt(self.root, self.store, threshold,
+                                 self.on_change_threshold_prompt_exit)
+        self.flow_max_threshold_change_button.configure(state="disabled")
+        self.flow_min_threshold_change_button.configure(state="disabled")
+        self.pressure_max_threshold_change_button.configure(state="disabled")
+        self.pressure_min_threshold_change_button.configure(state="disabled")
+        prompt.show()
 
-        else:
-            if raise_value:
-                new_value = self.store.pressure_max_threshold + self.store.THRESHOLD_STEP_SIZE
-
-            else:
-                new_value = self.store.pressure_max_threshold - self.store.THRESHOLD_STEP_SIZE
-
-        if prompt and not self.prompt_for_confirmation(
-                is_pressure=True,
-                going_to_increase=raise_value,
-                is_min=min_threshold,
-                value=new_value):
-            return
-
-        if min_threshold:
-            self.store.pressure_min_threshold = new_value
-            self.pressure_min_threshold_label.config(
-                text="Min: {}bar".format(new_value))
-
-        else:
-            self.store.pressure_max_threshold = new_value
-            self.pressure_max_threshold_label.config(
-                text="Max: {}bar".format(new_value))
-
-    def change_air_flow_threshold(self, raise_value=True, min_threshold=True, prompt=True):
-        if min_threshold:
-            if raise_value:
-                new_value = self.store.flow_min_threshold + self.store.THRESHOLD_STEP_SIZE
-            else:
-                new_value = self.store.flow_min_threshold - self.store.THRESHOLD_STEP_SIZE
-
-        else:
-            if raise_value:
-                new_value = self.store.flow_max_threshold + self.store.THRESHOLD_STEP_SIZE
-
-            else:
-                new_value = self.store.flow_max_threshold - self.store.THRESHOLD_STEP_SIZE
-
-        if prompt and not self.prompt_for_confirmation(
-                is_pressure=False,
-                going_to_increase=raise_value,
-                is_min=min_threshold,
-                value=new_value):
-            return
-
-        if min_threshold:
-            self.store.flow_min_threshold = new_value
-            self.flow_min_threshold_label.config(
-                text="Min: {}Liter".format(new_value))
-
-        else:
-            self.store.flow_max_threshold = new_value
-            self.flow_max_threshold_label.config(
-                text="Max: {}Liter".format(new_value))
-
-    def prompt_for_confirmation(self, is_pressure, going_to_increase, is_min, value):
-        action = "raise" if going_to_increase else "lower"
-        affected = "air pressure" if is_pressure else "air flow"
-        threshold_type = "minimum" if is_min else "maximum"
-        message = "You asked to %s the %s's %s threshold to %s, are you sure?" % (
-            action, affected, threshold_type, value)
-        return messagebox.askyesno(u"ARE YOU SURE?", message)
+    def on_change_threshold_prompt_exit(self):
+        self.flow_max_threshold_change_button.configure(state="normal")
+        self.flow_min_threshold_change_button.configure(state="normal")
+        self.pressure_max_threshold_change_button.configure(state="normal")
+        self.pressure_min_threshold_change_button.configure(state="normal")
 
     def alert(self, msg):
-        # TODO: Play sounds as well and display flashing icon or whatever
-        # tkinter.messagebox.askokcancel(title="Allah Yistor", message=msg)
+        # TODO: display flashing icon or whatever
+        tkinter.messagebox.askokcancel(title="Allah Yistor", message=msg)
         SoundDevice.beep()
-        pass
 
-    def render_gui(self):
+    def render(self):
+        #  ---------------------- Root -------------------------
+        self.root.attributes("-fullscreen", True)
+
         #  ---------------------- Flow -------------------------
         flow_frame = LabelFrame(master=self.root, text="Air Flow", bg='red')
         flow_frame.pack(fill='both', expand=True, side="top")
@@ -152,51 +119,35 @@ class Graphics(object):
         flow_min_threshold_frame = Frame(right_flow_frame, bg='darkblue')
         flow_min_threshold_frame.pack(fill='both', side="bottom", expand=True)
         # Labels
-        self.flow_min_threshold_label = Label(flow_min_threshold_frame,
-                    text="Min: {}Liter".format(self.store.flow_min_threshold))
-        self.flow_min_threshold_label.pack(fill="both", expand=True)
-        self.flow_max_threshold_label = Label(flow_max_threshold_frame,
-                                              text="Max: {}Liter".format(self.store.flow_max_threshold))
-        self.flow_max_threshold_label.pack(fill="both", expand=True)
+        self.flow_min.label = Label(flow_min_threshold_frame, fg=MIN_TRHLD_COLOR)
+        self.flow_min.label.pack(fill="both", expand=True)
+        self.flow_min.update_label()
+        self.flow_max.label = Label(flow_max_threshold_frame, fg=MAX_TRHLD_COLOR)
+        self.flow_max.label.pack(fill="both", expand=True)
+        self.flow_max.update_label()
         # Buttons
-        flow_increase_min_threshold_button = Button(flow_min_threshold_frame,
-                                                    text="+ Min Flow Threshold",
-                                                    command=partial(
-                                                        self.change_air_flow_threshold,
-                                                        raise_value=True,
-                                                        min_threshold=True),
-                                                    height=2, width=3)
-        flow_increase_min_threshold_button.pack(fill="both", expand=True)
-        flow_decrease_min_threshold_button = Button(flow_min_threshold_frame,
-                                                    text="- Min Flow Threshold",
-                                                    command=partial(
-                                                        self.change_air_flow_threshold,
-                                                        raise_value=False,
-                                                        min_threshold=True),
-                                                    height=2, width=3)
-        flow_decrease_min_threshold_button.pack(fill="both", expand=True)
-        flow_increase_max_threshold_button = Button(flow_max_threshold_frame,
-                                                    text="+ Max Flow Threshold",
-                                                    command=partial(
-                                                        self.change_air_flow_threshold,
-                                                        raise_value=True,
-                                                        min_threshold=False),
-                                                    height=2, width=3)
-        flow_increase_max_threshold_button.pack(fill="both", expand=True)
-        flow_decrease_max_threshold_button = Button(flow_max_threshold_frame,
-                                                    text="- Max Flow Threshold",
-                                                    command=partial(
-                                                        self.change_air_flow_threshold,
-                                                        raise_value=False,
-                                                        min_threshold=False),
-                                                    height=2, width=3)
-        flow_decrease_max_threshold_button.pack(fill="both", expand=True)
+        self.flow_min_threshold_change_button = Button(flow_min_threshold_frame,
+                                                       text="Change",
+                                                       command=partial(
+                                                           self.change_threshold,
+                                                           self.flow_min),
+                                                       height=2, width=3)
+        self.flow_min_threshold_change_button.pack(fill="both", expand=True)
+        self.flow_max_threshold_change_button = Button(flow_max_threshold_frame,
+                                                       text="Change",
+                                                       command=partial(
+                                                           self.change_threshold,
+                                                           self.flow_max),
+                                                       height=2, width=3)
+        self.flow_max_threshold_change_button.pack(fill="both", expand=True)
         # Graph
         self.flow_figure = Figure(figsize=(5, 2), dpi=100)
-        flow_axis = self.flow_figure.add_subplot(111, label="flow")
-        flow_axis.set_ylabel('Flow [L/min]')
-        flow_axis.set_xlabel('sec')
-        self.flow_graph, = flow_axis.plot(self.store.x_axis, self.store.flow_display_values)
+        self.flow_axis = self.flow_figure.add_subplot(111, label="flow")
+        self.flow_axis.set_ylabel('Flow [L/min]')
+        self.flow_axis.set_xlabel('sec')
+        self.flow_graph, = self.flow_axis.plot(self.store.x_axis,
+                                               self.store.flow_display_values,
+                                               linewidth=4)
         flow_canvas = FigureCanvasTkAgg(self.flow_figure, master=left_flow_frame)
         flow_canvas.draw()
         flow_canvas.get_tk_widget().pack(side='top', fill='both',
@@ -214,58 +165,66 @@ class Graphics(object):
         pressure_max_threshold_frame.pack(fill='both', side="top", expand=True)
         pressure_min_threshold_frame = Frame(right_pressure_frame, bg='pink')
         pressure_min_threshold_frame.pack(fill='both', side="bottom", expand=True)
-        self.pressure_min_threshold_label = Label(pressure_min_threshold_frame,
-                                              text="Min: {}bar".format(self.store.pressure_min_threshold))
-        self.pressure_min_threshold_label.pack(fill="both", expand=True)
-        self.pressure_max_threshold_label = Label(pressure_max_threshold_frame,
-                                              text="Max: {}bar".format(self.store.pressure_max_threshold))
-        self.pressure_max_threshold_label.pack(fill="both", expand=True)
+        self.pressure_min.label = Label(pressure_min_threshold_frame,
+                                        fg=MIN_TRHLD_COLOR)
+        self.pressure_min.label.pack(fill="both", expand=True)
+        self.pressure_min.update_label()
+        self.pressure_max.label = Label(pressure_max_threshold_frame,
+                                        fg=MAX_TRHLD_COLOR)
+        self.pressure_max.label.pack(fill="both", expand=True)
+        self.pressure_max.update_label()
         # Buttons
-        pressure_increase_min_threshold_button = Button(
-            pressure_min_threshold_frame, text="+ Min Pressure Threshold",
-            command=partial(self.change_air_pressure_threshold, raise_value=True,
-                            min_threshold=True),
-            height=2, width=6)
-        pressure_increase_min_threshold_button.pack(fill="both", expand=True)
-        pressure_decrease_min_threshold_button = Button(
-            pressure_min_threshold_frame, text="- Min Pressure Threshold",
-            command=partial(self.change_air_pressure_threshold, raise_value=False,
-                            min_threshold=True),
-            height=2, width=6)
-        pressure_decrease_min_threshold_button.pack(fill="both", expand=True)
-        pressure_increase_max_threshold_button = Button(
-            pressure_max_threshold_frame, text="+ Max Pressure Threshold",
-            command=partial(self.change_air_pressure_threshold, raise_value=True,
-                            min_threshold=False),
-            height=2, width=6)
-        pressure_increase_max_threshold_button.pack(fill="both", expand=True)
-        pressure_decrease_max_threshold_button = Button(
-            pressure_max_threshold_frame, text="- Max Pressure Threshold",
-            command=partial(self.change_air_pressure_threshold, raise_value=False,
-                            min_threshold=False),
-            height=2, width=6)
-        pressure_decrease_max_threshold_button.pack(fill="both", expand=True)
+        self.pressure_min_threshold_change_button = Button(pressure_min_threshold_frame,
+                                                           text="Change",
+                                                           command=partial(
+                                                               self.change_threshold,
+                                                               self.pressure_min),
+                                                           height=2, width=3)
+        self.pressure_min_threshold_change_button.pack(fill="both", expand=True)
+        self.pressure_max_threshold_change_button = Button(pressure_max_threshold_frame,
+                                                           text="Change",
+                                                           command=partial(
+                                                               self.change_threshold,
+                                                               self.pressure_max),
+                                                           height=2, width=3)
+        self.pressure_max_threshold_change_button.pack(fill="both", expand=True)
         # Pressure Graph
         self.pressure_figure = Figure(figsize=(5, 2), dpi=100)
-        pressure_axis = self.pressure_figure.add_subplot(111, label="pressure")
-        pressure_axis.set_ylabel('Pressure [cmH20]')
-        pressure_axis.set_xlabel('sec')
-        self.pressure_graph, = pressure_axis.plot(self.store.x_axis,
+        self.pressure_axis = self.pressure_figure.add_subplot(111, label="pressure")
+        self.pressure_axis.set_ylabel('Pressure [cmH20]')
+        self.pressure_axis.set_xlabel('sec')
+        self.pressure_graph, = self.pressure_axis.plot(self.store.x_axis,
                                              self.store.pressure_display_values,
                                                   linewidth=4)
-        self.pressure_max_threshold_graph, = \
-            pressure_axis.plot(self.store.x_axis,
-                               [self.store.pressure_max_threshold] *
-                               len(self.store.x_axis), linestyle=":")
-        self.pressure_min_threshold_graph, = \
-            pressure_axis.plot(self.store.x_axis,
-                               [self.store.pressure_min_threshold] *
-                               len(self.store.x_axis), linestyle=":")
+
         pressure_canvas = FigureCanvasTkAgg(self.pressure_figure,
                                             master=left_pressure_frame)
         pressure_canvas.draw()
         pressure_canvas.get_tk_widget().pack(side='top', fill='both',
                                              expand=1)
+
+        # Treshold line graphs
+        self.pressure_max_threshold_graph, = \
+            self.pressure_axis.plot(self.store.x_axis,
+                                    [self.store.pressure_max_threshold] *
+                                    len(self.store.x_axis),
+                                    color=MAX_TRHLD_COLOR, linestyle=":")
+        self.pressure_min_threshold_graph, = \
+            self.pressure_axis.plot(self.store.x_axis,
+                                    [self.store.pressure_min_threshold] *
+                                    len(self.store.x_axis),
+                                    color=MIN_TRHLD_COLOR, linestyle=":")
+        self.flow_max_threshold_graph, = \
+            self.flow_axis.plot(self.store.x_axis,
+                                [self.store.flow_max_threshold] *
+                                len(self.store.x_axis),
+                                color=MAX_TRHLD_COLOR, linestyle=":")
+        self.flow_min_threshold_graph, = \
+            self.flow_axis.plot(self.store.x_axis,
+                                [self.store.flow_min_threshold] *
+                                len(self.store.x_axis),
+                                color=MIN_TRHLD_COLOR, linestyle=":")
+
 
         # Calibrate the graphs y-values
         self.store.pressure_display_values = [0] * 40
@@ -279,3 +238,5 @@ class Graphics(object):
         self.update_alert()
         self.root.update()
         self.root.update_idletasks()
+
+
