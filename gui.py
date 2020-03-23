@@ -30,6 +30,8 @@ MAX_TRHLD_COLOR = "red"
 
 class GUI(object):
     """GUI class for Inhalator"""
+    TEXT_SIZE = 25
+
     def __init__(self, data_store):
         self.store = data_store
         self.root = Tk()
@@ -49,7 +51,6 @@ class GUI(object):
         self.flow_max = Threshold(self.store.flow_max_threshold, "Air flow max")
         self.pressure_min = Threshold(self.store.pressure_min_threshold, "Air pressure min")
         self.pressure_max = Threshold(self.store.pressure_max_threshold, "Air pressure max")
-
         self.pressure_min_threshold_change_button = None
         self.pressure_max_threshold_change_button = None
 
@@ -132,10 +133,12 @@ class GUI(object):
         flow_min_threshold_frame = Frame(right_flow_frame, bg='darkblue')
         flow_min_threshold_frame.pack(fill='both', side="bottom", expand=True)
         # Labels
-        self.flow_min.label = Label(flow_min_threshold_frame, fg=MIN_TRHLD_COLOR)
+        self.flow_min.label = Label(flow_min_threshold_frame, fg=MIN_TRHLD_COLOR,
+                                    font=("Courier", self.TEXT_SIZE))
         self.flow_min.label.pack(fill="both", expand=True)
         self.flow_min.update_label()
-        self.flow_max.label = Label(flow_max_threshold_frame, fg=MAX_TRHLD_COLOR)
+        self.flow_max.label = Label(flow_max_threshold_frame, fg=MAX_TRHLD_COLOR,
+                                    font=("Courier", self.TEXT_SIZE))
         self.flow_max.label.pack(fill="both", expand=True)
         self.flow_max.update_label()
         # Buttons
@@ -179,11 +182,11 @@ class GUI(object):
         pressure_min_threshold_frame = Frame(right_pressure_frame, bg='pink')
         pressure_min_threshold_frame.pack(fill='both', side="bottom", expand=True)
         self.pressure_min.label = Label(pressure_min_threshold_frame,
-                                        fg=MIN_TRHLD_COLOR)
+                                        fg=MIN_TRHLD_COLOR, font=("Courier", self.TEXT_SIZE))
         self.pressure_min.label.pack(fill="both", expand=True)
         self.pressure_min.update_label()
         self.pressure_max.label = Label(pressure_max_threshold_frame,
-                                        fg=MAX_TRHLD_COLOR)
+                                        fg=MAX_TRHLD_COLOR, font=("Courier", self.TEXT_SIZE))
         self.pressure_max.label.pack(fill="both", expand=True)
         self.pressure_max.update_label()
         # Buttons
