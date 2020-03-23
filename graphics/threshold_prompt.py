@@ -23,7 +23,7 @@ class Threshold(object):
 
     def update_label(self):
         if self.label is not None:
-            self.label.config(text="{}={}".format(self.name, self.value[0]))
+            self.label.config(text="{}={}".format(self.name, self.value))
 
 
 class ThresholdPrompt(object):

@@ -1,0 +1,16 @@
+{
+	"log_enable" : false,
+
+	"threshold" : {
+		"pressure" : {
+			"min" : 1,
+			"max" : 15		
+		},
+		"flow" : {
+			"min" : 0.3,
+			"max" : 15		
+		},
+		"step_size" : 0.5,
+		"breathing" : 3.5
+	}
+}

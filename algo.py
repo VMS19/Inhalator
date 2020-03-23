@@ -30,17 +30,17 @@ class Sampler(threading.Thread):
         self._currently_breathed_volume += \
             (flow * sampling_interval_in_minutes)
 
-        if self._currently_breathed_volume > self._data_store.flow_max_threshold[0]:
+        if self._currently_breathed_volume > self._data_store.flow_max_threshold:
             self._data_store.set_alert((alerts.alerts.BREATHING_VOLUME_HIGH,
                                         self._currently_breathed_volume))
 
-        if pressure <= self._data_store.NO_BREATHING_THRESHOLD:
+        if pressure <= self._data_store.BREATHING_THRESHOLD:
             self._has_crossed_first_cycle = True
 
     def _handle_intake_finished(self, flow, pressure):
         """We are not giving patient air anymore."""
 
-        if self._currently_breathed_volume < self._data_store.flow_min_threshold[0] and \
+        if self._currently_breathed_volume < self._data_store.flow_min_threshold and \
                 self._has_crossed_first_cycle:
             self._data_store.set_alert((alerts.alerts.BREATHING_VOLUME_LOW, self._currently_breathed_volume))
 
@@ -58,10 +58,10 @@ class Sampler(threading.Thread):
         flow_value = self._flow_sensor.read_flow_slm()
         pressure_value = self._pressure_sensor.read_pressure()
         self._data_store.update_pressure_values(pressure_value)
-        if pressure_value > self._data_store.pressure_max_threshold[0]:
+        if pressure_value > self._data_store.pressure_max_threshold:
             # Above healthy lungs pressure
             alert_no = alerts.alerts.PRESSURE_HIGH
-        if pressure_value < self._data_store.pressure_min_threshold[0]:
+        if pressure_value < self._data_store.pressure_min_threshold:
             # Below healthy lungs pressure
             alert_no = alerts.alerts.PRESSURE_LOW
 
@@ -72,7 +72,7 @@ class Sampler(threading.Thread):
         log.debug("Flow: %s" % flow_value)
         log.debug("Pressure: %s" % pressure_value)
 
-        if pressure_value <= self._data_store.NO_BREATHING_THRESHOLD:
+        if pressure_value <= self._data_store.BREATHING_THRESHOLD:
             logging.debug("-----------is_during_intake=False----------")
             self._is_during_intake = False
 
