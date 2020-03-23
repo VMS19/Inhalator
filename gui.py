@@ -172,6 +172,10 @@ class GUI(object):
         self.flow_graph, = self.flow_axis.plot(self.store.x_axis,
                                                self.store.flow_display_values,
                                                linewidth=4)
+
+        # Scale y values
+        self.flow_graph.axes.set_ylim(self.store.FLOW_MIN_Y, self.store.FLOW_MAX_Y)
+
         flow_canvas = FigureCanvasTkAgg(self.flow_figure, master=left_flow_frame)
         flow_canvas.draw()
         flow_canvas.get_tk_widget().pack(side='top', fill='both',
@@ -219,6 +223,10 @@ class GUI(object):
         self.pressure_graph, = self.pressure_axis.plot(self.store.x_axis,
                                              self.store.pressure_display_values,
                                                   linewidth=4)
+
+        # Scale y values
+        self.pressure_graph.axes.set_ylim(self.store.PRESSURE_MIN_Y,
+                                            self.store.PRESSURE_MAX_Y)
 
         pressure_canvas = FigureCanvasTkAgg(self.pressure_figure,
                                             master=left_pressure_frame)

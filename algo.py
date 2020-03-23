@@ -86,4 +86,4 @@ class Sampler(threading.Thread):
         else:
             self._handle_intake_finished(flow=flow_value,
                                          pressure=pressure_value)
-        self._data_store.update_flow_values(self._currently_breathed_volume * 10000)
+        self._data_store.update_flow_values(self._currently_breathed_volume)

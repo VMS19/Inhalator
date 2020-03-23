@@ -30,6 +30,8 @@ class AirFlowThreshold(Threshold):
 
 class DataStore(object):
     CONFIG_FILE = os.path.join(THIS_DIRECTORY, "config.json")
+    FLOW_MIN_Y, FLOW_MAX_Y = (0, 0.0005)
+    PRESSURE_MIN_Y, PRESSURE_MAX_Y = (0, 30)
 
     def __init__(self):
         with open(self.CONFIG_FILE) as f:
