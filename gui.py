@@ -40,6 +40,7 @@ class GUI(object):
 
         self.flow_figure = None
         self.pressure_figure = None
+        self.graph_bg = None
         self.pressure_min_threshold_graph = None
         self.pressure_max_threshold_graph = None
         self.flow_min_threshold_graph = None
@@ -65,15 +66,20 @@ class GUI(object):
         self.root.quit()
 
     def update_pressure_graph(self):
-        self.pressure_graph.set_ydata(self.store.pressure_display_values)
-        self.pressure_figure.canvas.draw()
-        self.pressure_figure.canvas.flush_events()
 
+        self.pressure_figure.canvas.restore_region(self.graph_bg)
+
+        self.pressure_graph.set_ydata(self.store.pressure_display_values)
         # Update threshold lines
-        self.pressure_min_threshold_graph.set_ydata([self.store.pressure_min_threshold] *
-        len(self.store.x_axis))
-        self.pressure_max_threshold_graph.set_ydata([self.store.pressure_max_threshold] *
-                                                    len(self.store.x_axis))
+        # self.pressure_min_threshold_graph.set_ydata([self.store.pressure_min_threshold] *
+        #                                             len(self.store.x_axis))
+        # self.pressure_max_threshold_graph.set_ydata([self.store.pressure_max_threshold] *
+        #                                             len(self.store.x_axis))
+
+        self.pressure_axis.draw_artist(self.pressure_graph)
+        self.pressure_figure.canvas.blit(self.pressure_axis.bbox)
+        # self.pressure_figure.canvas.flush_events()
+
 
     def update_flow_graph(self):
         self.flow_graph.set_ydata(self.store.flow_display_values)
@@ -206,9 +212,6 @@ class GUI(object):
         self.pressure_axis = self.pressure_figure.add_subplot(111, label="pressure")
         self.pressure_axis.set_ylabel('Pressure [cmH20]')
         self.pressure_axis.set_xlabel('sec')
-        self.pressure_graph, = self.pressure_axis.plot(self.store.x_axis,
-                                             self.store.pressure_display_values,
-                                                  linewidth=4)
 
         pressure_canvas = FigureCanvasTkAgg(self.pressure_figure,
                                             master=left_pressure_frame)
@@ -216,12 +219,15 @@ class GUI(object):
         pressure_canvas.get_tk_widget().pack(side='top', fill='both',
                                              expand=1)
 
+        self.pressure_graph, = self.pressure_axis.plot(
+            self.store.x_axis, self.store.pressure_display_values, linewidth=4, animated=True)
+
         # Treshold line graphs
         self.pressure_max_threshold_graph, = \
             self.pressure_axis.plot(self.store.x_axis,
                                     [self.store.pressure_max_threshold] *
                                     len(self.store.x_axis),
-                                    color=MAX_TRHLD_COLOR, linestyle=":")
+                                    color=MAX_TRHLD_COLOR, linestyle=":", animated=True)
         self.pressure_min_threshold_graph, = \
             self.pressure_axis.plot(self.store.x_axis,
                                     [self.store.pressure_min_threshold] *
@@ -239,11 +245,19 @@ class GUI(object):
                                 color=MIN_TRHLD_COLOR, linestyle=":")
 
 
+        blank_figure = Figure(figsize=(10, 4), dpi=100)
+        blank_axis = blank_figure.add_subplot(111, label="")
+        blank_canvas = FigureCanvasTkAgg(blank_figure, master=self.root)
+        blank_canvas.draw()
+        self.graph_bg = \
+            blank_figure.canvas.copy_from_bbox(blank_axis.bbox)
         # Calibrate the graphs y-values
         self.store.pressure_display_values = [0] * 40
         self.update_pressure_graph()
         self.store.flow_display_values = [0] * 40
         self.update_flow_graph()
+
+
 
     def gui_update(self):
         self.update_flow_graph()
