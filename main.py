@@ -9,7 +9,7 @@ from gui import GUI, mainloop
 from algo import Sampler
 
 
-def configure_logging():
+def configure_logging(store):
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     # create file handler which logs even debug messages
@@ -26,11 +26,12 @@ def configure_logging():
     # add the handlers to the logger
     logger.addHandler(fh)
     logger.addHandler(ch)
+    logger.disabled = not store.log_enabled
 
 
 def main():
-    configure_logging()
     store = DataStore()
+    configure_logging(store)
     gui = GUI(store)
     flow_sensor = MockSfm3200()
     pressure_sensor = MockHcePressureSensor()

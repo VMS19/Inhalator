@@ -20,6 +20,7 @@ class DataStore(object):
         self.pressure_max_threshold = config["threshold"]["pressure"]["max"]  # mbar
         self.flow_min_threshold = config["threshold"]["flow"]["min"]  # Liter
         self.flow_max_threshold = config["threshold"]["flow"]["max"]
+        self.log_enabled = config["log_enabled"]
         self.flow_display_values = np.arange(0, 40, 1) * 0
         self.pressure_display_values = np.arange(0, 40, 1)
         self.x_axis = np.arange(0, 40, 1)

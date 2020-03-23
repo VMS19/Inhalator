@@ -68,9 +68,9 @@ class Sampler(threading.Thread):
         if alert_no != alerts.alerts.OK:
             self._data_store.set_alert((alert_no, pressure_value))
 
-        log.debug("Breathed: %s" % self._currently_breathed_volume)
-        log.debug("Flow: %s" % flow_value)
-        log.debug("Pressure: %s" % pressure_value)
+        logging.debug("Breathed: %s" % self._currently_breathed_volume)
+        logging.debug("Flow: %s" % flow_value)
+        logging.debug("Pressure: %s" % pressure_value)
 
         if pressure_value <= self._data_store.BREATHING_THRESHOLD:
             logging.debug("-----------is_during_intake=False----------")

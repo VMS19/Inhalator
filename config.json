@@ -1,6 +1,5 @@
 {
-	"log_enable" : false,
-
+	"log_enabled" : true,
 	"threshold" : {
 		"pressure" : {
 			"min" : 1,
