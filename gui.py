@@ -89,6 +89,8 @@ class GUI(object):
                                                     len(self.store.x_axis))
 
         self.pressure_axis.draw_artist(self.pressure_graph)
+        self.pressure_axis.draw_artist(self.pressure_min_threshold_graph)
+        self.pressure_axis.draw_artist(self.pressure_max_threshold_graph)
         self.pressure_figure.canvas.blit(self.pressure_axis.bbox)
         self.pressure_figure.canvas.flush_events()
 
@@ -99,6 +101,8 @@ class GUI(object):
                                                    xy=(0, 0))
         self.flow_graph.set_ydata(self.store.flow_display_values)
         self.flow_axis.draw_artist(self.flow_graph)
+        self.flow_axis.draw_artist(self.flow_min_threshold_graph)
+        self.flow_axis.draw_artist(self.flow_max_threshold_graph)
         self.flow_figure.canvas.blit(self.flow_axis.bbox)
         self.flow_figure.canvas.flush_events()
 
