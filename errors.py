@@ -8,12 +8,11 @@ class InhalatorError(BaseException):
 class PiGPIOInitError(InhalatorError):
     pass
 
-
 class I2CDeviceNotFoundError(InhalatorError):
     pass
 
 
-class FlowSensorReadError(InhalatorError):
+class I2CReadError(InhalatorError):
     pass
 
 
