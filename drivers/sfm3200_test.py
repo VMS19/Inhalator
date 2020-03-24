@@ -1,5 +1,6 @@
-from sfm3200_flow_sensor import Sfm3200
 import logging
+
+from sfm3200_flow_sensor import Sfm3200
 
 
 def main():

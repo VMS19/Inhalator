@@ -1,6 +1,6 @@
-from hce_pressure_sensor import HcePressureSensor
 import logging
 
+from hce_pressure_sensor import HcePressureSensor
 
 def main():
     logging.basicConfig(level=logging.DEBUG)

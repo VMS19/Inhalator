@@ -20,11 +20,11 @@ class Threshold(object):
 
 
 class PressureThreshold(Threshold):
-    UNIT = "bar"
+    UNIT = "cmH2O"
 
 
 class AirFlowThreshold(Threshold):
-    UNIT = "ltr"
+    UNIT = "lpm"
 
 
 
