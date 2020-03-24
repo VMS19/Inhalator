@@ -59,10 +59,10 @@ class GUI(object):
         self.pressure_max_threshold_change_button = None
 
         self.error_dict = {
-            alerts.alerts.PRESSURE_LOW : ("Pressure ({}mbar) dropped below healthy lungs pressure ({}mbar)", self.store.pressure_min_threshold),
-            alerts.alerts.PRESSURE_HIGH : ("Pressure ({}mbar) exceeded healthy lungs pressure ({}mbar)", self.store.pressure_max_threshold),
-            alerts.alerts.BREATHING_VOLUME_LOW : ("Breathing Volume ({}ltr) went under minimum threshold ({}ltr)", self.store.flow_min_threshold),
-            alerts.alerts.BREATHING_VOLUME_HIGH : ("Breathing Volume ({}ltr) exceeded maximum threshold ({}ltr)", self.store.flow_max_threshold)
+            alerts.alerts.PRESSURE_LOW : ("LOW PIP", self.store.pressure_min_threshold),
+            alerts.alerts.PRESSURE_HIGH : ("HIGH PIP", self.store.pressure_max_threshold),
+            alerts.alerts.BREATHING_VOLUME_LOW : ("LOW Ve", self.store.flow_min_threshold),
+            alerts.alerts.BREATHING_VOLUME_HIGH : ("HIGH Ve", self.store.flow_max_threshold)
         }
 
     def exitProgram(self, sig, _):
@@ -138,16 +138,27 @@ class GUI(object):
 
     def alert(self, msg):
         # TODO: display flashing icon or whatever
-        tkinter.messagebox.askokcancel(title="Allah Yistor", message=msg)
+        self.alert_label.config(text=msg, bg="red")
+
         SoundDevice.beep()
 
     def render(self):
         #  ---------------------- Root -------------------------
         self.root.attributes("-fullscreen", True)
 
+        #  ---------------------- Alerts -------------------------
+        self.top_bar_frame = LabelFrame(master=self.root, text="", bg='white')
+        self.top_bar_frame.pack(fill='both', pady=2, expand=True, side="top")
+        self.alerts_frame = LabelFrame(master=self.top_bar_frame, text="Alerts")
+        self.alerts_frame.pack(ipadx=100, pady=2, fill='y', expand=False, side="right")
+        self.alert_label = Label(self.alerts_frame, fg="white", bg="green",
+                                 font=("Courier", self.TEXT_SIZE))
+        self.alert_label.pack(side="right", fill="both", expand=True)
+
         #  ---------------------- Flow -------------------------
         flow_frame = LabelFrame(master=self.root, text="Air Flow", bg='red')
         flow_frame.pack(fill='both', expand=True, side="top")
+
         # Left-Right panes
         left_flow_frame = LabelFrame(master=flow_frame, bg='green')
         left_flow_frame.pack(fill='both', side="left", expand=True)
