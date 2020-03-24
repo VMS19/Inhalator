@@ -9,6 +9,7 @@ else:
 
 from graphics.alert_bar import IndicatorAlertBar
 from graphics.graphs import AirFlowGraph, AirPressureGraph, BlankGraph
+from graphics.graph_summaries import AirOutputSummary, BPMSummary, PressurePeakSummary
 
 class MasterFrame(object):
     def __init__(self, root, store):
@@ -60,15 +61,26 @@ class LeftPane(object):
                            height=self.height,
                            width=self.width)
 
+        self.air_output_summary = AirOutputSummary(self, store)
+        self.bpm_summary = BPMSummary(self, store)
+        self.pressure_peak_summary = PressurePeakSummary(self, store)
+
     @property
     def element(self):
         return self.frame
 
+    @property
+    def summaries(self):
+        return (self.air_output_summary, self.bpm_summary, self.pressure_peak_summary)
+
     def render(self):
-        self.frame.grid(row=1, column=0, sticky="W")
+        self.frame.grid(row=1, column=0)
+        for summary in self.summaries:
+            summary.render()
 
     def update(self):
-        pass
+        for summary in self.summaries:
+            summary.update()
 
 
 class CenterPane(object):
