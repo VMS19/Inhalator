@@ -8,8 +8,8 @@ import pigpio
 from time import sleep
 import logging
 
-from errors import SFM3200DriverInitError, FlowSensorNotFoundError, \
-                FlowSensorReadError, FlowSensorWriteError, FlowSensorCRCError
+from errors import PiGPIOInitError, I2CDeviceNotFoundError, \
+                I2CReadError, I2CWriteError, FlowSensorCRCError
 
 log = logging.getLogger(__name__)
 
@@ -29,18 +29,18 @@ class Sfm3200(object):
             self._pig = pigpio.pi()
         except pigpio.error as e:
             log.error("Could not init pigpio lib. Did you run 'sudo pigpiod'?")
-            raise SFM3200DriverInitError("pigpio library init error")
+            raise PiGPIOInitError("pigpio library init error")
 
         if self._pig == None:
             log.error("Could not init pigpio lib. Did you run 'sudo pigpiod'?")
-            raise SFM3200DriverInitError("pigpio library init error")
+            raise PiGPIOInitError("pigpio library init error")
 
         try:
             self._dev = self._pig.i2c_open(self.I2C_BUS, self.I2C_ADDRESS)
         except pigpio.error as e:
             log.error("Could not open i2c connection to flow sensor."
                       "Is it connected?")
-            raise FlowSensorNotFoundError("i2c connection open failed")
+            raise I2CDeviceNotFoundError("i2c connection open failed")
 
         self._start_measure()
         sleep(0.1)
@@ -62,7 +62,7 @@ class Sfm3200(object):
         except pigpio.error as e:
             log.error("Could not write start_measure cmd to flow sensor. "
                       "Is the flow sensor connected?.")
-            raise FlowSensorWriteError("i2c write failed")
+            raise I2CWriteError("i2c write failed")
 
         log.info("Started flow sensor measurement")
 
@@ -71,7 +71,7 @@ class Sfm3200(object):
             self._pig.i2c_write_device(self._dev, self.SOFT_RST_CMD)
         except pigpio.error as e:
             log.error("Could not write soft reset cmd to flow sensor.")
-            raise FlowSensorWriteError("i2c write failed")
+            raise I2CWriteError("i2c write failed")
 
     def read_flow_slm(self, retries=2):
         read_size, data = self._pig.i2c_read_device(self._dev, 3)
@@ -89,13 +89,13 @@ class Sfm3200(object):
             else:
                 log.error("Too much data recieved, "
                           "got {} expected 3. data: {}".format(len(data), data))
-                raise FlowSensorReadError("Too much data read, invalid state")
+                raise I2CReadError("Too much data read, invalid state")
 
         elif read_size == 0:
             # Measurement not ready
             if not retries:
                 log.error("Flow sensor's measure data consistently not ready")
-                raise FlowSensorReadError("Flow sensor measurement unavailable.")
+                raise I2CReadError("Flow sensor measurement unavailable.")
 
             elif retries == 1:
                 log.warning("Flow sensor read returns NA."
@@ -115,7 +115,7 @@ class Sfm3200(object):
         elif read_size == pigpio.PI_raw_valueI2C_READ_FAILED:
             log.error("Could not read data from flow sensor."
                       "Is it connected?")
-            raise FlowSensorReadError("i2c read failed")
+            raise I2CReadError("i2c read failed")
 
         # Normalize flow to slm units
         flow = float(raw_value - self.OFFSET_FLOW) / self.SCALE_FACTOR_FLOW
