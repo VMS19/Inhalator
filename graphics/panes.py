@@ -7,7 +7,7 @@ if platform.python_version() < '3':
 else:
     from tkinter import *
 
-from graphics.alerts import IndicatorAlertBar
+from graphics.alert_bar import IndicatorAlertBar
 from graphics.graphs import AirFlowGraph, AirPressureGraph, BlankGraph
 
 class MasterFrame(object):
@@ -152,7 +152,7 @@ class TopPane(object):
                            height=self.height,
                            width=self.width)
 
-        self.alerts_bar = IndicatorAlertBar(self)
+        self.alerts_bar = IndicatorAlertBar(self, store=self.store)
 
     @property
     def element(self):

@@ -9,18 +9,14 @@ if platform.python_version() < '3':
 else:
     from tkinter import *
 
-from alerts import alerts
+import alerts
 
 class IndicatorAlertBar(object):
     error_dict = {
-        alerts.alerts.PRESSURE_LOW: (
-        "Pressure ({}mbar) dropped below healthy lungs pressure ({}mbar)", self.store.pressure_min_threshold),
-        alerts.alerts.PRESSURE_HIGH: (
-        "Pressure ({}mbar) exceeded healthy lungs pressure ({}mbar)", self.store.pressure_max_threshold),
-        alerts.alerts.BREATHING_VOLUME_LOW: (
-        "Breathing Volume ({}ltr) went under minimum threshold ({}ltr)", self.store.flow_min_threshold),
-        alerts.alerts.BREATHING_VOLUME_HIGH: (
-        "Breathing Volume ({}ltr) exceeded maximum threshold ({}ltr)", self.store.flow_max_threshold)
+        alerts.alerts.PRESSURE_LOW: "PRESSURE LOW",
+        alerts.alerts.PRESSURE_HIGH: "PERSSURE HIGH",
+        alerts.alerts.BREATHING_VOLUME_LOW: "BREATHING VOLUME LOW",
+        alerts.alerts.BREATHING_VOLUME_HIGH: "BREATHING VOLUME HIGH"
     }
 
     def __init__(self, parent, store):
@@ -32,7 +28,9 @@ class IndicatorAlertBar(object):
         self.width = self.parent.width
 
         self.bar = Frame(self.root, bg='green', height=self.height, width=self.width)
-        self.current_alert = alerts.OK
+        self.message_label = Label(master=self.bar, font=("Courrier", 40),
+                                   text="OK", bg='green', fg='black')
+        self.current_alert = alerts.alerts.OK
 
     @property
     def element(self):
@@ -40,17 +38,23 @@ class IndicatorAlertBar(object):
 
     def render(self):
         self.bar.place(relx=0, rely=0)
+        self.message_label.place(anchor="nw")
 
     def update(self):
         if self.store.alerts.empty():
             return
 
         cur_alert = self.store.alerts.get()
-        alert_format = self.error_dict[cur_alert[0]]
-        self.alert(alert_format[0].format(cur_alert[1], alert_format[1]))
+        if cur_alert == alerts.alerts.OK:
+            self.set_no_alert()
+
+        else:
+            self.set_alert(self.error_dict[cur_alert])
 
     def set_no_alert(self):
-        pass
+        self.bar.config(bg="green", text="OK")
+        self.message_label.config(bg="green", fg="black")
 
-    def set_alert(self, alert):
-        pass
+    def set_alert(self, message):
+        self.bar.config(bg="red", text=message)
+        self.message_label.config(bg="red", fg="black")
