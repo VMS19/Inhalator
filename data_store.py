@@ -33,6 +33,8 @@ class DataStore(object):
     FLOW_MIN_Y, FLOW_MAX_Y = (0, 0.0005)
     PRESSURE_MIN_Y, PRESSURE_MAX_Y = (0, 30)
 
+    STORE_INSTANCE = None
+
     def __init__(self):
         with open(self.CONFIG_FILE) as f:
             config = json.load(f)

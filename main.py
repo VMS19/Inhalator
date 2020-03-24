@@ -39,10 +39,16 @@ def main():
     gui.render()
     # Wait for GUI to render
     #     time.sleep(5)
-    sampler.start()
+    # sampler.start()
 
-    while True:
+    for i in range(1000):
+        sampler.sampling_iteration()
         gui.gui_update()
+
+    mainloop()
+
+    # while True:
+    #     gui.gui_update()
         # sleep(0.02)
     #
     # mainloop()
