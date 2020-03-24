@@ -10,7 +10,6 @@ import logging
 
 from errors import PiGPIOInitError, I2CDeviceNotFoundError, \
                 I2CReadError, I2CWriteError, FlowSensorCRCError
-
 log = logging.getLogger(__name__)
 
 
@@ -82,15 +81,13 @@ class Sfm3200(object):
                 expected_crc = data[2]
                 crc_calc = self._crc8(data[:2])
                 if not crc_calc == expected_crc:
-                    log.error("CRC mismatch while reading data"
-                              "from flow sensor.{} - expected {}".
-                              format(crc_calc, expected_crc))
+                    log.error("CRC mismatch while reading data from flow sensor."
+                              "{} - expected {}".format(crc_calc, expected_crc))
                     raise FlowSensorCRCError("CRC mismatch")
 
             else:
                 log.error("Too much data recieved, "
-                          "got {} expected 3. data: {}".
-                          format(len(data), data))
+                          "got {} expected 3. data: {}".format(len(data), data))
                 raise I2CReadError("Too much data read, invalid state")
 
         elif read_size == 0:
@@ -111,8 +108,7 @@ class Sfm3200(object):
 
             sleep(0.1)
             flow = self.read_flow_slm(retries=retries - 1)
-            log.info("Flow Sensor successfully read data,"
-                     "after failed attempt")
+            log.info("Flow Sensor successfully read data, after failed attempt")
             return flow
 
         elif read_size == pigpio.PI_raw_valueI2C_READ_FAILED:

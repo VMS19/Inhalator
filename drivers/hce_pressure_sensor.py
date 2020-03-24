@@ -21,6 +21,7 @@ class HcePressureSensor(object):
     MIN_OUT_PRESSURE = 0x0AAA
     SENSITIVITY = float(MAX_OUT_PRESSURE - MIN_OUT_PRESSURE) /\
         float(MAX_PRESSURE - MIN_PRESSURE)
+
     M_BAR_CMH20_RATIO = 1.019716
     ZERO_OFFSET_CALIBRATION_CMH20 = 1012
 
@@ -53,6 +54,7 @@ class HcePressureSensor(object):
         return ((pressure_value_m_bar * self.M_BAR_CMH20_RATIO) -
                 self.ZERO_OFFSET_CALIBRATION_CMH20)
 
+
     def _calculate_pressure(self, pressure_reading):
         return (((pressure_reading - self.MIN_OUT_PRESSURE) /
                 self.SENSITIVITY) + self.MIN_PRESSURE)
@@ -64,9 +66,8 @@ class HcePressureSensor(object):
                     self.PERIPHERAL_MINIMAL_DELAY)
         except IOError as e:
             log.error("Failed to read pressure sensor. check if peripheral is initialized correctly")
-            raise HCEIOError("pressure read error") 
+            raise HCEIOError("pressure read error")
 
         pressure_reading = (pressure_raw[1] << 8) | (pressure_raw[2])
         pressure_parsed = self._calculate_pressure(pressure_reading)
-
         return self._calibrate_pressure(pressure_parsed)

@@ -1,57 +1,41 @@
-from queue import Queue
 import os
 import json
 import logging
+
+from data.thresholds import AirFlowThreshold, PressureThreshold
+from data.alerts import AlertsQueue
 
 THIS_DIRECTORY = os.path.dirname(__file__)
 
 log = logging.getLogger(__name__)
 
 
-class Threshold(object):
-    UNIT = NotImplemented
-
-    def __init__(self, name, value):
-        self.name = name
-        self.value = value
-
-    def __repr__(self):
-        return "{}=\n{}({})".format(self.name, self.value, self.UNIT)
-
-
-class PressureThreshold(Threshold):
-    UNIT = "cmH2O"
-
-
-class AirFlowThreshold(Threshold):
-    UNIT = "lpm"
-
-
 class DataStore(object):
-    CONFIG_FILE = os.path.join(THIS_DIRECTORY, "config.json")
+    CONFIG_FILE = os.path.abspath(os.path.join(THIS_DIRECTORY, "..", "config.json"))
     FLOW_MIN_Y, FLOW_MAX_Y = (0, 80)
     PRESSURE_MIN_Y, PRESSURE_MAX_Y = (0, 40)
     SYSTEM_SAMPLE_INTERVAL = 22 #KHZ
+
     MS_TO_SEC = 1000
 
     def __init__(self):
         with open(self.CONFIG_FILE) as f:
             config = json.load(f)
 
-        self.pressure_min_threshold = PressureThreshold(name="Pressure L",
+        self.pressure_min_threshold = PressureThreshold(name="Pressure Min",
                                                 value=config["threshold"]["pressure"]["min"])  # mbar
-        self.pressure_max_threshold = PressureThreshold(name="Pressure H",
+        self.pressure_max_threshold = PressureThreshold(name="Pressure Max",
                                                 value=config["threshold"]["pressure"]["max"])  # mbar
-        self.flow_min_threshold = AirFlowThreshold(name="Flow L",
+        self.flow_min_threshold = AirFlowThreshold(name="Flow Min",
                                             value=config["threshold"]["flow"]["min"])  # Liter
-        self.flow_max_threshold = AirFlowThreshold(name="Flow H",
+        self.flow_max_threshold = AirFlowThreshold(name="Flow Max",
                                             value=config["threshold"]["flow"]["max"])
 
         self.threshold_step_size = config["threshold"]["step_size"]
         self.breathing_threshold = config["threshold"]["breathing"]
 
         self.graph_seconds = config["graph_seconds"]
-        self.samples_in_graph_amount =\
+        self.samples_in_graph_amount = \
             int((self.graph_seconds * self.MS_TO_SEC) /
                 self.SYSTEM_SAMPLE_INTERVAL)
 
@@ -59,9 +43,11 @@ class DataStore(object):
         self.pressure_display_values = [0] * self.samples_in_graph_amount
         self.x_axis = range(0, self.samples_in_graph_amount)
 
-        self.alerts = Queue(maxsize=10)
+        self.volume = 0
 
         self.log_enabled = config["log_enabled"]
+
+        self.alerts_queue = AlertsQueue()
 
     def __del__(self):
         self.save_to_file()
@@ -82,7 +68,8 @@ class DataStore(object):
                 "breathing": self.breathing_threshold,
                 },
             "log_enabled": True,
-            "samples_in_graph_amount": self.samples_in_graph_amount
+            "samples_in_graph_amount": self.samples_in_graph_amount,
+            "graph_seconds": self.graph_seconds,
         }
 
         with open(self.CONFIG_FILE, "w") as f:
@@ -98,13 +85,5 @@ class DataStore(object):
             self.pressure_display_values.pop(0)
         self.pressure_display_values.append(new_value)
 
-    def set_alert(self, alert):
-        self.alerts.put(alert)
-
-    def get_alert(self):
-        return self.alerts.get()
-
-    def clear_alerts(self):
-        # Note that emptying a queue is not thread-safe hence the mutex lock
-        with self.alerts.mutex:
-            self.alerts.queue.clear()
+    def update_volume_value(self, new_value):
+        self.volume = new_value

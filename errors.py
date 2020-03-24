@@ -13,21 +13,22 @@ class I2CDeviceNotFoundError(InhalatorError):
     pass
 
 
-class I2CReadError(InhalatorError):
+class FlowSensorReadError(InhalatorError):
     pass
 
 
 class I2CWriteError(InhalatorError):
     pass
 
-
 class FlowSensorCRCError(InhalatorError):
     pass
-
 
 class HCEDriverInitError(InhalatorError):
     pass
 
-
 class HCEIOError(InhalatorError):
     pass
+
+class I2CReadError(InhalatorError):
+    pass
+

@@ -1,11 +1,12 @@
 import logging
 from logging.handlers import RotatingFileHandler
+from time import sleep
 
-from algo import Sampler
-from data_store import DataStore
 from drivers.mocks.mock_hce_pressure_sensor import MockHcePressureSensor
 from drivers.mocks.mock_sfm3200_flow_sensor import MockSfm3200
+from data.data_store import DataStore
 from gui import GUI
+from algo import Sampler
 from sound import SoundDevice
 
 
@@ -33,20 +34,21 @@ def main():
     store = DataStore()
     configure_logging(store)
     sound_device = SoundDevice()
-    gui = GUI(store, sound_device)
+    store.alerts_queue.subscribe(sound_device, sound_device.on_alert)
+
+    gui = GUI(store)
     flow_sensor = MockSfm3200()
     pressure_sensor = MockHcePressureSensor()
-    sampler = Sampler(store, flow_sensor, pressure_sensor, gui.alert)
+    sampler = Sampler(store, flow_sensor, pressure_sensor)
     gui.render()
     # Wait for GUI to render
     #     time.sleep(5)
     sampler.start()
 
+
     while True:
         gui.gui_update()
-        # sleep(0.02)
-    #
-    # mainloop()
+        sleep(0.02)
 
 
 if __name__ == '__main__':
