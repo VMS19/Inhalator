@@ -5,26 +5,29 @@ class InhalatorError(BaseException):
     pass
 
 
-class SFM3200DriverInitError(InhalatorError):
+class PiGPIOInitError(InhalatorError):
     pass
 
 
-class FlowSensorNotFoundError(InhalatorError):
+class I2CDeviceNotFoundError(InhalatorError):
     pass
 
 
-class FlowSensorReadError(InhalatorError):
+class I2CReadError(InhalatorError):
     pass
 
 
-class FlowSensorWriteError(InhalatorError):
+class I2CWriteError(InhalatorError):
     pass
+
 
 class FlowSensorCRCError(InhalatorError):
     pass
 
+
 class HCEDriverInitError(InhalatorError):
     pass
+
 
 class HCEIOError(InhalatorError):
     pass
