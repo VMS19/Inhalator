@@ -195,6 +195,12 @@ class GUI(object):
         self.flow_axis = self.flow_figure.add_subplot(111, label="flow")
         self.flow_axis.set_ylabel('Flow [L/min]')
         self.flow_axis.set_xlabel('sec')
+
+        self.flow_axis.set_xticks(range(0, (self.store.samples_in_graph_amount + 1),
+            int(self.store.samples_in_graph_amount / self.store.graph_seconds)))
+        labels = range(0, int(self.store.graph_seconds + 1))
+        self.flow_axis.set_xticklabels(labels)
+
         self.flow_graph, = self.flow_axis.plot(self.store.x_axis,
                                                self.store.flow_display_values,
                                                linewidth=4, animated=True)
@@ -246,6 +252,10 @@ class GUI(object):
         self.pressure_axis.set_ylabel('Pressure [cmH20]')
         self.pressure_axis.set_xlabel('sec')
 
+        self.pressure_axis.set_xticks(range(0, (self.store.samples_in_graph_amount + 1),
+            int(self.store.samples_in_graph_amount / self.store.graph_seconds)))
+        labels = range(0, int(self.store.graph_seconds + 1))
+        self.pressure_axis.set_xticklabels(labels)
 
         pressure_canvas = FigureCanvasTkAgg(self.pressure_figure,
                                             master=left_pressure_frame)
