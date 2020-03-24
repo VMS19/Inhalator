@@ -1,5 +1,3 @@
-from alerts import alerts
-
 # Tkinter stuff
 import platform
 

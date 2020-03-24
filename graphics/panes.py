@@ -13,6 +13,9 @@ from graphics.graph_summaries import AirOutputSummary, BPMSummary, PressurePeakS
 from graphics.threshold_button import (BPMThresholdButton, O2ThresholdButton,
                                        PeakFlowThresholdButton, PEEPThresholdButton,
                                        VolumeThresholdButton)
+from graphics.right_menu_options import (MuteAlertsButton,
+                                         ClearAlertsButton,
+                                         LockThresholdsButton)
 
 class MasterFrame(object):
     def __init__(self, root, store):
@@ -140,15 +143,26 @@ class RightPane(object):
         self.frame = Frame(master=self.root, bg="white",
                            height=self.height, width=self.width)
 
+        self.mute_alerts_btn = MuteAlertsButton(parent=self, store=self.store)
+        self.clear_alerts_btn = ClearAlertsButton(parent=self, store=self.store)
+        self.lock_thresholds_btn = LockThresholdsButton(parent=self, store=self.store)
+
+    @property
+    def buttons(self):
+        return (self.mute_alerts_btn, self.clear_alerts_btn, self.lock_thresholds_btn)
+
     @property
     def element(self):
         return self.frame
 
     def render(self):
         self.frame.grid(row=1, column=2)
+        for button in self.buttons:
+            button.render()
 
     def update(self):
-        pass
+        for button in self.buttons:
+            button.update()
 
 
 class TopPane(object):
