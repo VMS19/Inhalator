@@ -31,7 +31,7 @@ class Sfm3200(object):
             log.error("Could not init pigpio lib. Did you run 'sudo pigpiod'?")
             raise PiGPIOInitError("pigpio library init error")
 
-        if self._pig == None:
+        if self._pig is None:
             log.error("Could not init pigpio lib. Did you run 'sudo pigpiod'?")
             raise PiGPIOInitError("pigpio library init error")
 
@@ -49,7 +49,7 @@ class Sfm3200(object):
         if read_size == pigpio.PI_I2C_READ_FAILED:
             log.error("Could not read first data from flow sensor."
                       "Is it connected?")
-            raise FlowSensorNotFoundError("i2c read failed")
+            raise I2CDeviceNotFoundError("i2c read failed")
 
         log.debug("Flow sensor: Successfully read dummy values: {}"
                   .format(dummy))
@@ -82,13 +82,15 @@ class Sfm3200(object):
                 expected_crc = data[2]
                 crc_calc = self._crc8(data[:2])
                 if not crc_calc == expected_crc:
-                    log.error("CRC mismatch while reading data from flow sensor."
-                              "{} - expected {}".format(crc_calc, expected_crc))
+                    log.error("CRC mismatch while reading data"
+                              "from flow sensor.{} - expected {}".
+                              format(crc_calc, expected_crc))
                     raise FlowSensorCRCError("CRC mismatch")
 
             else:
                 log.error("Too much data recieved, "
-                          "got {} expected 3. data: {}".format(len(data), data))
+                          "got {} expected 3. data: {}".
+                          format(len(data), data))
                 raise I2CReadError("Too much data read, invalid state")
 
         elif read_size == 0:
@@ -109,7 +111,8 @@ class Sfm3200(object):
 
             sleep(0.1)
             flow = self.read_flow_slm(retries=retries - 1)
-            log.info("Flow Sensor successfully read data, after failed attempt")
+            log.info("Flow Sensor successfully read data,"
+                     "after failed attempt")
             return flow
 
         elif read_size == pigpio.PI_raw_valueI2C_READ_FAILED:

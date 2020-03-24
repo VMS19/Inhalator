@@ -1,7 +1,7 @@
 import pigpio
-from time import sleep
 import logging
 
+from errors import PiGPIOInitError, I2CDeviceNotFoundError, I2CReadError
 
 log = logging.getLogger(__name__)
 
@@ -11,7 +11,7 @@ class AbpPressureSensor(object):
     I2C_BUS = 2
     I2C_ADDRESS = 0x28
     MEASURE_BYTE_COUNT = 0x2
-	MAX_RANGE_PRESSURE = 0x7D0  # 1 psi
+    MAX_RANGE_PRESSURE = 0x1  # 1 psi
     MIN_RANGE_PRESSURE = 0x00  # 0 psi
     MAX_OUT_PRESSURE = 0x3FFF
     MIN_OUT_PRESSURE = 0x0
@@ -25,7 +25,7 @@ class AbpPressureSensor(object):
             log.error("Could not init pigpio lib. Did you run 'sudo pigpiod'?")
             raise PiGPIOInitError("pigpio library init error")
 
-        if self._pig == None:
+        if self._pig is None:
             log.error("Could not init pigpio lib. Did you run 'sudo pigpiod'?")
             raise PiGPIOInitError("pigpio library init error")
 
@@ -39,8 +39,8 @@ class AbpPressureSensor(object):
         log.info("ABP pressure sensor initialized")
 
     def _calculate_pressure(self, pressure_reading):
-    return (((pressure_reading - self.MIN_OUT_PRESSURE) * self.SENSITIVITY) +
-    	self.MIN_PRESSURE)
+        return (((pressure_reading - self.MIN_OUT_PRESSURE) *
+                self.SENSITIVITY) + self.MIN_PRESSURE)
 
     def read_pressure(self):
         try:

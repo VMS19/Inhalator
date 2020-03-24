@@ -51,7 +51,7 @@ class HcePressureSensor(object):
 
     def _calibrate_pressure(self, pressure_value_m_bar):
         return ((pressure_value_m_bar * self.M_BAR_CMH20_RATIO) -
-                ZERO_OFFSET_CALIBRATION_CMH20)
+                self.ZERO_OFFSET_CALIBRATION_CMH20)
 
     def _calculate_pressure(self, pressure_reading):
         return (((pressure_reading - self.MIN_OUT_PRESSURE) /
