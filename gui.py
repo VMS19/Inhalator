@@ -156,7 +156,7 @@ class GUI(object):
 
         #  ---------------------- Flow -------------------------
         flow_frame = LabelFrame(master=self.root, text="Air Flow", bg='red')
-        flow_frame.pack(fill='both', expand=True, side="top")
+        flow_frame.pack(fill='both', expand=True, side="bottom")
 
         # Left-Right panes
         left_flow_frame = LabelFrame(master=flow_frame, bg='green')
@@ -213,7 +213,7 @@ class GUI(object):
                                          expand=1)
         #  ---------------------- Pressure -------------------------
         pressure_frame = LabelFrame(master=self.root, text="Air Pressure", bg='blue')
-        pressure_frame.pack(fill='both', expand=True, side=BOTTOM)
+        pressure_frame.pack(fill='both', expand=True, side="top")
         # Left-Right panes
         left_pressure_frame = LabelFrame(master=pressure_frame, bg='maroon')
         left_pressure_frame.pack(fill='both', side="left", expand=True)
