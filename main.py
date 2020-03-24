@@ -6,6 +6,7 @@ from data_store import DataStore
 from drivers.mocks.mock_hce_pressure_sensor import MockHcePressureSensor
 from drivers.mocks.mock_sfm3200_flow_sensor import MockSfm3200
 from gui import GUI
+from sound import SoundDevice
 
 
 def configure_logging(store):
@@ -31,7 +32,8 @@ def configure_logging(store):
 def main():
     store = DataStore()
     configure_logging(store)
-    gui = GUI(store)
+    sound_device = SoundDevice()
+    gui = GUI(store, sound_device)
     flow_sensor = MockSfm3200()
     pressure_sensor = MockHcePressureSensor()
     sampler = Sampler(store, flow_sensor, pressure_sensor, gui.alert)

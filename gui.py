@@ -20,7 +20,6 @@ from matplotlib.figure import Figure
 
 from functools import partial
 
-from sound import SoundDevice
 from graphics.threshold_prompt import ThresholdPrompt
 from data_store import Threshold
 
@@ -33,8 +32,9 @@ class GUI(object):
     """GUI class for Inhalator"""
     TEXT_SIZE = 10
 
-    def __init__(self, data_store):
+    def __init__(self, data_store, sound_device):
         self.store = data_store
+        self.sound_device = sound_device
         self.root = Tk()
         self.flow_graph = None
         self.pressure_graph = None
@@ -139,7 +139,7 @@ class GUI(object):
     def alert(self, msg):
         # TODO: display flashing icon or whatever
         self.alert_label.config(text=msg, bg="red")
-        SoundDevice.beep()
+        self.sound_device.beep()
 
     def render(self):
         #  ---------------------- Root -------------------------

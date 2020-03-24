@@ -1,14 +1,27 @@
-import os
+from os import path
+from subprocess import Popen
+import logging
+
+log = logging.getLogger(__name__)
 
 THIS_FILE = __file__
-THIS_DIRECTORY = os.path.dirname(THIS_FILE)
-RESOURCES_DIRECTORY = os.path.join(THIS_DIRECTORY, "resources")
+THIS_DIRECTORY = path.dirname(THIS_FILE)
+RESOURCES_DIRECTORY = path.join(THIS_DIRECTORY, "resources")
 
 
 class SoundDevice:
-    BEEP_FILE_PATH = os.path.join(RESOURCES_DIRECTORY, "beep-3.wav")
+    BEEP_FILE_PATH = path.join(RESOURCES_DIRECTORY, "beep-3.wav")
+    PLAY_CMD = "aplay -q -N {}"
 
-    @staticmethod
-    def beep():
+    def __init__(self):
+        pass
+
+    def play(self, wav_path):
+        Popen(self.PLAY_CMD.format(wav_path), shell=True)
+        # Todo: find way to monitor return code of the process. log on failure
+        # if ret_code != 0:
+        #     log.error("Could not play beep file. apaly returned %d", ret_code)
+
+    def beep(self):
         """Beeps asynchronously."""
-        os.system("aplay -q %s" % SoundDevice.BEEP_FILE_PATH)
+        self.play(self.BEEP_FILE_PATH)
