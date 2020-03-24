@@ -16,7 +16,7 @@ class Threshold(object):
         self.value = value
 
     def __repr__(self):
-        return "{}=\n{}{}".format(self.name, self.value, self.UNIT)
+        return "{}=\n{}({})".format(self.name, self.value, self.UNIT)
 
 
 class PressureThreshold(Threshold):
@@ -31,7 +31,7 @@ class DataStore(object):
     CONFIG_FILE = os.path.join(THIS_DIRECTORY, "config.json")
     FLOW_MIN_Y, FLOW_MAX_Y = (0, 80)
     PRESSURE_MIN_Y, PRESSURE_MAX_Y = (0, 40)
-    SYSTEM_SAMPLE_INTERVAL = 22
+    SYSTEM_SAMPLE_INTERVAL = 22 #KHZ
     MS_TO_SEC = 1000
 
     def __init__(self):
