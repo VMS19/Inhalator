@@ -16,7 +16,7 @@ class Threshold(object):
         self.value = value
 
     def __repr__(self):
-        return "{} = {}{}".format(self.name, self.value, self.UNIT)
+        return "{}=\n{}{}".format(self.name, self.value, self.UNIT)
 
 
 class PressureThreshold(Threshold):
@@ -37,13 +37,13 @@ class DataStore(object):
         with open(self.CONFIG_FILE) as f:
             config = json.load(f)
 
-        self.pressure_min_threshold = PressureThreshold(name="Pressure MIN",
+        self.pressure_min_threshold = PressureThreshold(name="Pressure L",
                                                 value=config["threshold"]["pressure"]["min"])  # mbar
-        self.pressure_max_threshold = PressureThreshold(name="Pressure MAX",
+        self.pressure_max_threshold = PressureThreshold(name="Pressure H",
                                                 value=config["threshold"]["pressure"]["max"])  # mbar
-        self.flow_min_threshold = AirFlowThreshold(name="Flow MIN",
+        self.flow_min_threshold = AirFlowThreshold(name="Flow L",
                                             value=config["threshold"]["flow"]["min"])  # Liter
-        self.flow_max_threshold = AirFlowThreshold(name="Flow MAX",
+        self.flow_max_threshold = AirFlowThreshold(name="Flow H",
                                             value=config["threshold"]["flow"]["max"])
 
         self.threshold_step_size = config["threshold"]["step_size"]
@@ -99,3 +99,8 @@ class DataStore(object):
 
     def get_alert(self):
         return self.alerts.get()
+
+    def clear_alerts(self):
+        # Note that emptying a queue is not thread-safe hence the mutex lock
+        with self.alerts.mutex:
+            self.alerts.queue.clear()
