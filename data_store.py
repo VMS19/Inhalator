@@ -99,3 +99,8 @@ class DataStore(object):
 
     def get_alert(self):
         return self.alerts.get()
+
+    def clear_alerts(self):
+        # Note that emptying a queue is not thread-safe hence the mutex lock
+        with self.alerts.mutex:
+            self.alerts.queue.clear()
