@@ -32,16 +32,17 @@ class Sampler(threading.Thread):
 
         if not OS_LINUX:
             # Set WD GPIO
-            GPIO.setup(WD_GPIO, GPIO.out)
+            GPIO.setmode(GPIO.BCM)
+            GPIO.setup(self.WD_GPIO, GPIO.OUT)
 
     if OS_LINUX:
         def _arm_wd(self):
             pass
     else:
         def _arm_wd(self):
-                GPIO.output(WD_GPIO, GPIO.HIGH)
+                GPIO.output(self.WD_GPIO, GPIO.HIGH)
                 time.sleep(0.05)
-                GPIO.output(WD_GPIO, GPIO.LOW)
+                GPIO.output(self.WD_GPIO, GPIO.LOW)
 
     def _handle_intake(self, flow, pressure):
         """We are giving patient air."""
