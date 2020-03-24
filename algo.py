@@ -10,6 +10,7 @@ log = logging.getLogger(__name__)
 class Sampler(threading.Thread):
     SAMPLING_INTERVAL = 0.02  # sec
     MS_IN_MIN = 60 * 1000
+    M_BAR_CMH20_RATIO = 1.019
 
     def __init__(self, data_store, flow_sensor, pressure_sensor, alert_cb):
         super(Sampler, self).__init__()
@@ -30,7 +31,8 @@ class Sampler(threading.Thread):
         self._currently_breathed_volume += \
             (flow * sampling_interval_in_minutes)
 
-        if self._currently_breathed_volume > self._data_store.flow_max_threshold.value:
+        if self._currently_breathed_volume > \
+                self._data_store.flow_max_threshold.value:
             self._data_store.set_alert((alerts.alerts.BREATHING_VOLUME_HIGH,
                                         self._currently_breathed_volume))
 
@@ -40,9 +42,11 @@ class Sampler(threading.Thread):
     def _handle_intake_finished(self, flow, pressure):
         """We are not giving patient air anymore."""
 
-        if self._currently_breathed_volume < self._data_store.flow_min_threshold.value and \
+        if self._currently_breathed_volume < \
+                self._data_store.flow_min_threshold.value and \
                 self._has_crossed_first_cycle:
-            self._data_store.set_alert((alerts.alerts.BREATHING_VOLUME_LOW, self._currently_breathed_volume))
+            self._data_store.set_alert((alerts.alerts.BREATHING_VOLUME_LOW,
+                                        self._currently_breathed_volume))
 
         self._currently_breathed_volume = 0
 
@@ -52,12 +56,17 @@ class Sampler(threading.Thread):
 
             time.sleep(self.SAMPLING_INTERVAL)
 
+    def calibrate_pressure(self, pressure_value_m_bar):
+        return ((pressure_value_m_bar * self.M_BAR_CMH20_RATIO) -
+                self._data_store.pressure_zero_offset)
+
     def sampling_iteration(self):
         # Read from sensors
         alert_no = alerts.alerts.OK
         flow_value = self._flow_sensor.read_flow_slm()
         pressure_value = self._pressure_sensor.read_pressure()
-        self._data_store.update_pressure_values(pressure_value)
+        self._data_store.update_pressure_values(
+            self.calibrate_pressure(pressure_value))
         if pressure_value > self._data_store.pressure_max_threshold.value:
             # Above healthy lungs pressure
             alert_no = alerts.alerts.PRESSURE_HIGH

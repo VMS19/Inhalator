@@ -41,6 +41,7 @@ class DataStore(object):
                                                 value=config["threshold"]["pressure"]["min"])  # mbar
         self.pressure_max_threshold = PressureThreshold(name="Pressure MAX",
                                                 value=config["threshold"]["pressure"]["max"])  # mbar
+        self.pressure_zero_offset = config["threshold"]["pressure"]["zero_offset"]
         self.flow_min_threshold = AirFlowThreshold(name="Flow MIN",
                                             value=config["threshold"]["flow"]["min"])  # Liter
         self.flow_max_threshold = AirFlowThreshold(name="Flow MAX",

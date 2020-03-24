@@ -60,6 +60,6 @@ class HcePressureSensor(object):
             log.error("Failed to read pressure sensor. check if peripheral is initialized correctly")
             raise HCEIOError("pressure read error") 
 
-        pressure_reading = (pressure_raw[1] << 16) | (pressure_raw[2])
+        pressure_reading = (pressure_raw[1] << 8) | (pressure_raw[2])
         pressure_parsed = self._calculate_pressure(pressure_reading)
         return pressure_parsed
