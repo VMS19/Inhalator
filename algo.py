@@ -30,7 +30,8 @@ class Sampler(threading.Thread):
         self._currently_breathed_volume += \
             (flow * sampling_interval_in_minutes)
 
-        if self._currently_breathed_volume > self._data_store.flow_max_threshold.value:
+        if self._currently_breathed_volume > \
+                self._data_store.flow_max_threshold.value:
             self._data_store.set_alert((alerts.alerts.BREATHING_VOLUME_HIGH,
                                         self._currently_breathed_volume))
 
@@ -40,9 +41,11 @@ class Sampler(threading.Thread):
     def _handle_intake_finished(self, flow, pressure):
         """We are not giving patient air anymore."""
 
-        if self._currently_breathed_volume < self._data_store.flow_min_threshold.value and \
+        if self._currently_breathed_volume < \
+                self._data_store.flow_min_threshold.value and \
                 self._has_crossed_first_cycle:
-            self._data_store.set_alert((alerts.alerts.BREATHING_VOLUME_LOW, self._currently_breathed_volume))
+            self._data_store.set_alert((alerts.alerts.BREATHING_VOLUME_LOW,
+                                        self._currently_breathed_volume))
 
         self._currently_breathed_volume = 0
 
