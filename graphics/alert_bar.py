@@ -7,19 +7,21 @@ if platform.python_version() < '3':
 else:
     from tkinter import *
 
-import alerts
+from data import alerts
+from data.data_store import AlertsQueue, DataStore
+
 
 class IndicatorAlertBar(object):
     error_dict = {
-        alerts.alerts.PRESSURE_LOW: "PRESSURE LOW",
-        alerts.alerts.PRESSURE_HIGH: "PERSSURE HIGH",
-        alerts.alerts.BREATHING_VOLUME_LOW: "BREATHING VOLUME LOW",
-        alerts.alerts.BREATHING_VOLUME_HIGH: "BREATHING VOLUME HIGH"
+        alerts.AlertCodes.PRESSURE_LOW: "PRESSURE LOW",
+        alerts.AlertCodes.PRESSURE_HIGH: "PERSSURE HIGH",
+        alerts.AlertCodes.BREATHING_VOLUME_LOW: "BREATHING VOLUME LOW",
+        alerts.AlertCodes.BREATHING_VOLUME_HIGH: "BREATHING VOLUME HIGH"
     }
 
     def __init__(self, parent, store):
         self.parent = parent
-        self.store = store
+        self.store = store  # type: DataStore
         self.root = parent.element
 
         self.height = self.parent.height
@@ -28,7 +30,6 @@ class IndicatorAlertBar(object):
         self.bar = Frame(self.root, bg='green', height=self.height, width=self.width)
         self.message_label = Label(master=self.bar, font=("Courrier", 40),
                                    text="OK", bg='green', fg='black')
-        self.current_alert = alerts.alerts.OK
 
     @property
     def element(self):
@@ -39,15 +40,12 @@ class IndicatorAlertBar(object):
         self.message_label.place(anchor="nw")
 
     def update(self):
-        if self.store.alerts.empty():
-            return
-
-        cur_alert = self.store.alerts.get()
-        if cur_alert == alerts.alerts.OK:
+        last_alert_code = self.store.alerts_queue.last_alert.code
+        if last_alert_code == alerts.AlertCodes.OK:
             self.set_no_alert()
 
         else:
-            self.set_alert(self.error_dict[cur_alert[0]])
+            self.set_alert(self.error_dict[last_alert_code])
 
     def set_no_alert(self):
         self.bar.config(bg="green")

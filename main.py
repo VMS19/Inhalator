@@ -4,8 +4,8 @@ from time import sleep
 
 from mocks.mock_hce_pressure_sensor import MockHcePressureSensor
 from mocks.mock_sfm3200_flow_sensor import MockSfm3200
-from data_store import DataStore
-from gui import GUI, mainloop
+from data.data_store import DataStore
+from gui import GUI
 from algo import Sampler
 
 

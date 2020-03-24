@@ -1,43 +1,17 @@
-from queue import Queue
 import os
 import json
 import logging
+
+from data.thresholds import AirFlowThreshold, PressureThreshold
+from data.alerts import AlertsQueue
 
 THIS_DIRECTORY = os.path.dirname(__file__)
 
 log = logging.getLogger(__name__)
 
 
-class Threshold(object):
-    UNIT = NotImplemented
-
-    def __init__(self, name, value):
-        self.name = name
-        self.value = value
-
-    def __setattr__(self, key, value):
-        # We want to limit the precision of thresholds to 3 after the dot
-        if key == "value":
-            self.__dict__["value"] = float("{:.3f}".format(value))
-
-        else:
-            self.__dict__[key] = value
-
-    def __repr__(self):
-        return "{}={:.2f}{}".format(self.name, self.value, self.UNIT)
-
-
-class PressureThreshold(Threshold):
-    UNIT = "bar"
-
-
-class AirFlowThreshold(Threshold):
-    UNIT = "ltr"
-
-
-
 class DataStore(object):
-    CONFIG_FILE = os.path.join(THIS_DIRECTORY, "config.json")
+    CONFIG_FILE = os.path.abspath(os.path.join(THIS_DIRECTORY, "..", "config.json"))
     FLOW_MIN_Y, FLOW_MAX_Y = (0, 0.0005)
     PRESSURE_MIN_Y, PRESSURE_MAX_Y = (0, 30)
 
@@ -65,9 +39,9 @@ class DataStore(object):
         self.pressure_display_values = [0] * self.samples_in_graph_amount
         self.x_axis = range(0, self.samples_in_graph_amount)
 
-        self.alerts = Queue(maxsize=10)
-
         self.log_enabled = config["log_enabled"]
+
+        self.alerts_queue = AlertsQueue()
 
     def __del__(self):
         self.save_to_file()
@@ -103,14 +77,3 @@ class DataStore(object):
         if len(self.pressure_display_values) == len(self.x_axis):
             self.pressure_display_values.pop(0)
         self.pressure_display_values.append(new_value)
-
-    def set_alert(self, alert):
-        self.alerts.put(alert)
-
-    def get_alert(self):
-        return self.alerts.get()
-
-    def clear_alerts(self):
-        # Note that emptying a queue is not thread-safe hence the mutex lock
-        with self.alerts.mutex:
-            self.alerts.queue.clear()

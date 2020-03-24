@@ -16,7 +16,7 @@ class ClearAlertsButton(object):
         self.button = Button(master=self.root, command=self.on_click, text="CLEAR ALERTS")
 
     def on_click(self):
-        self.store.clear_alerts()
+        self.store.alerts_queue.clear_alerts()
 
     def render(self):
         self.button.place(relx=0, rely=0.1, relwidth=0.8, relheight=0.2)
