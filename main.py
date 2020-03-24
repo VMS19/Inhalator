@@ -35,22 +35,17 @@ def main():
     gui = GUI(store)
     flow_sensor = MockSfm3200()
     pressure_sensor = MockHcePressureSensor()
-    sampler = Sampler(store, flow_sensor, pressure_sensor, gui.alert)
+    sampler = Sampler(store, flow_sensor, pressure_sensor)
     gui.render()
     # Wait for GUI to render
     #     time.sleep(5)
-    # sampler.start()
+    sampler.start()
 
-    for i in range(1000):
-        sampler.sampling_iteration()
+
+    while True:
         gui.gui_update()
+        sleep(0.02)
 
-    mainloop()
-
-    # while True:
-    #     gui.gui_update()
-        # sleep(0.02)
-    #
     # mainloop()
 
 

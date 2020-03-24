@@ -2,16 +2,9 @@ import platform
 
 # Tkinter stuff
 if platform.python_version() < '3':
-    import tkMessageBox
-    messagebox = tkMessageBox
-    import Tkinter
-    tk = Tkinter
     from Tkinter import *
 
 else:
-    from tkinter import messagebox
-    import tkinter
-    tk = tkinter
     from tkinter import *
 
 

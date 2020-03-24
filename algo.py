@@ -11,12 +11,11 @@ class Sampler(threading.Thread):
     SAMPLING_INTERVAL = 0.02  # sec
     MS_IN_MIN = 60 * 1000
 
-    def __init__(self, data_store, flow_sensor, pressure_sensor, alert_cb):
+    def __init__(self, data_store, flow_sensor, pressure_sensor):
         super(Sampler, self).__init__()
         self.daemon = True
         self._data_store = data_store  # type: DataStore
         self._flow_sensor = flow_sensor
-        self._alert_cb = alert_cb
         self._pressure_sensor = pressure_sensor
 
         # State

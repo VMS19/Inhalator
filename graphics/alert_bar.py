@@ -49,12 +49,12 @@ class IndicatorAlertBar(object):
             self.set_no_alert()
 
         else:
-            self.set_alert(self.error_dict[cur_alert])
+            self.set_alert(self.error_dict[cur_alert[0]])
 
     def set_no_alert(self):
-        self.bar.config(bg="green", text="OK")
-        self.message_label.config(bg="green", fg="black")
+        self.bar.config(bg="green")
+        self.message_label.config(bg="green", fg="black", text="OK")
 
     def set_alert(self, message):
-        self.bar.config(bg="red", text=message)
-        self.message_label.config(bg="red", fg="black")
+        self.bar.config(bg="red")
+        self.message_label.config(bg="red", fg="black", text=message)
