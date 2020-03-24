@@ -21,7 +21,7 @@ class AlertsQueue(object):
     def __init__(self):
         self.queue = Queue(maxsize=self.MAXIMUM_ALERTS_AMOUNT)
         self.last_alert = Alert(AlertCodes.OK)
-        self.subscribers = {}
+        self._subscribers = {}
 
     def __len__(self):
         return self.queue.qsize()
@@ -53,11 +53,11 @@ class AlertsQueue(object):
         self.publish()
 
     def subscribe(self, object, callback):
-        self.subscribers[object] = callback
+        self._subscribers[object] = callback
 
     def unsubscribe(self, object):
-        del self.subscribers[object]
+        del self._subscribers[object]
 
     def publish(self):
-        for callback in self.subscribers.values():
+        for callback in self._subscribers.values():
             callback(self.last_alert)

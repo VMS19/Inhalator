@@ -2,6 +2,8 @@ import os
 import logging
 from subprocess import Popen
 
+from data.alerts import AlertCodes
+
 THIS_FILE = __file__
 THIS_DIRECTORY = os.path.dirname(THIS_FILE)
 RESOURCES_DIRECTORY = os.path.join(THIS_DIRECTORY, "resources")
@@ -24,4 +26,5 @@ class SoundDevice(object):
         self.play(self.BEEP_FILE_PATH)
 
     def on_alert(self, alert):
-        self.beep()
+        if alert != AlertCodes.OK:
+            self.beep()
