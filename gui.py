@@ -203,7 +203,7 @@ class GUI(object):
 
         self.flow_graph, = self.flow_axis.plot(self.store.x_axis,
                                                self.store.flow_display_values,
-                                               linewidth=4, animated=True)
+                                               linewidth=2, animated=True)
         # Scale y values
         self.flow_graph.axes.set_ylim(self.store.FLOW_MIN_Y, self.store.FLOW_MAX_Y)
 
@@ -264,7 +264,7 @@ class GUI(object):
                                              expand=1)
 
         self.pressure_graph, = self.pressure_axis.plot(
-            self.store.x_axis, self.store.pressure_display_values, linewidth=4, animated=True)
+            self.store.x_axis, self.store.pressure_display_values, linewidth=2, animated=True)
 
         # Scale y values
         self.pressure_graph.axes.set_ylim(self.store.PRESSURE_MIN_Y,
