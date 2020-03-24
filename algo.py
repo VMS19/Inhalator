@@ -10,7 +10,6 @@ log = logging.getLogger(__name__)
 class Sampler(threading.Thread):
     SAMPLING_INTERVAL = 0.02  # sec
     MS_IN_MIN = 60 * 1000
-    M_BAR_CMH20_RATIO = 1.019
 
     def __init__(self, data_store, flow_sensor, pressure_sensor, alert_cb):
         super(Sampler, self).__init__()
@@ -56,17 +55,12 @@ class Sampler(threading.Thread):
 
             time.sleep(self.SAMPLING_INTERVAL)
 
-    def calibrate_pressure(self, pressure_value_m_bar):
-        return ((pressure_value_m_bar * self.M_BAR_CMH20_RATIO) -
-                self._data_store.pressure_zero_offset)
-
     def sampling_iteration(self):
         # Read from sensors
         alert_no = alerts.alerts.OK
         flow_value = self._flow_sensor.read_flow_slm()
         pressure_value = self._pressure_sensor.read_pressure()
-        self._data_store.update_pressure_values(
-            self.calibrate_pressure(pressure_value))
+        self._data_store.update_pressure_values(pressure_value)
         if pressure_value > self._data_store.pressure_max_threshold.value:
             # Above healthy lungs pressure
             alert_no = alerts.alerts.PRESSURE_HIGH

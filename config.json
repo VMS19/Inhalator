@@ -1,1 +1,1 @@
-{"threshold": {"pressure": {"min": 1, "max": 15.5, "zero_offset": 1012}, "flow": {"min": 0.3, "max": 26.5}, "step_size": 0.5, "breathing": 3.5}, "log_enabled": true, "samples_in_graph_amount": 500}
+{"threshold": {"pressure": {"min": 1, "max": 15.5}, "flow": {"min": 0.3, "max": 26.5}, "step_size": 0.5, "breathing": 3.5}, "log_enabled": true, "samples_in_graph_amount": 500}
