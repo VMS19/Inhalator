@@ -10,6 +10,9 @@ else:
 from graphics.alert_bar import IndicatorAlertBar
 from graphics.graphs import AirFlowGraph, AirPressureGraph, BlankGraph
 from graphics.graph_summaries import AirOutputSummary, BPMSummary, PressurePeakSummary
+from graphics.threshold_button import (BPMThresholdButton, O2ThresholdButton,
+                                       PeakFlowThresholdButton, PEEPThresholdButton,
+                                       VolumeThresholdButton)
 
 class MasterFrame(object):
     def __init__(self, root, store):
@@ -57,7 +60,7 @@ class LeftPane(object):
         self.height = self.screen_height * 0.65
         self.width = self.screen_width * 0.2
 
-        self.frame = Frame(master=self.root, bg="red",
+        self.frame = Frame(master=self.root, bg="white",
                            height=self.height,
                            width=self.width)
 
@@ -93,9 +96,9 @@ class CenterPane(object):
         self.screen_width = self.root.winfo_screenwidth()
 
         self.height = self.screen_height * 0.65
-        self.width = self.screen_width * 0.6
+        self.width = self.screen_width * 0.7
 
-        self.frame = Frame(master=self.root, bg="yellow",
+        self.frame = Frame(master=self.root, bg="white",
                            height=self.height, width=self.width)
 
         self.blank_graph = BlankGraph(self.frame)
@@ -132,9 +135,9 @@ class RightPane(object):
         self.screen_width = self.root.winfo_screenwidth()
 
         self.height = self.screen_height * 0.65
-        self.width = self.screen_width * 0.2
+        self.width = self.screen_width * 0.1
 
-        self.frame = Frame(master=self.root, bg="blue",
+        self.frame = Frame(master=self.root, bg="white",
                            height=self.height, width=self.width)
 
     @property
@@ -160,7 +163,7 @@ class TopPane(object):
         self.height = self.screen_height * 0.15
         self.width = self.screen_width
 
-        self.frame = Frame(master=self.root, bg="orange",
+        self.frame = Frame(master=self.root, bg="white",
                            height=self.height,
                            width=self.width)
 
@@ -193,10 +196,19 @@ class BottomPane(object):
         self.width = self.screen_width
 
         self.frame = Frame(master=self.root,
-                           bg="maroon",
+                           bg="white",
                            height=self.height,
                            width=self.width)
 
+        self.o2_threshold_btn = O2ThresholdButton(self, self.store)
+        self.volume_threshold_btn = VolumeThresholdButton(self, self.store)
+        self.peep_threshold_btn = PEEPThresholdButton(self, self.store)
+        self.peak_flow_threshold_btn = PeakFlowThresholdButton(self, self.store)
+        self.bpm_threshold_btn = BPMThresholdButton(self, self.store)
+
+    @property
+    def buttons(self):
+        return (self.volume_threshold_btn, self.peep_threshold_btn)
     @property
     def element(self):
         return self.frame
@@ -204,6 +216,9 @@ class BottomPane(object):
     def render(self):
         self.frame.grid(row=2, columnspan=3)
 
-    def update(self):
-        pass
+        for button in self.buttons:
+            button.render()
 
+    def update(self):
+        for button in self.buttons:
+            button.update()

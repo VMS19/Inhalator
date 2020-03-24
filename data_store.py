@@ -16,7 +16,7 @@ class Threshold(object):
         self.value = value
 
     def __repr__(self):
-        return "{}=\n{}{}".format(self.name, self.value, self.UNIT)
+        return "{}={}{}".format(self.name, self.value, self.UNIT)
 
 
 class PressureThreshold(Threshold):
@@ -39,13 +39,13 @@ class DataStore(object):
         with open(self.CONFIG_FILE) as f:
             config = json.load(f)
 
-        self.pressure_min_threshold = PressureThreshold(name="Pressure L",
+        self.pressure_min_threshold = PressureThreshold(name="Pressure Max",
                                                 value=config["threshold"]["pressure"]["min"])  # mbar
-        self.pressure_max_threshold = PressureThreshold(name="Pressure H",
+        self.pressure_max_threshold = PressureThreshold(name="Pressure Mins",
                                                 value=config["threshold"]["pressure"]["max"])  # mbar
-        self.flow_min_threshold = AirFlowThreshold(name="Flow L",
+        self.flow_min_threshold = AirFlowThreshold(name="Flow Max",
                                             value=config["threshold"]["flow"]["min"])  # Liter
-        self.flow_max_threshold = AirFlowThreshold(name="Flow H",
+        self.flow_max_threshold = AirFlowThreshold(name="Flow Min",
                                             value=config["threshold"]["flow"]["max"])
 
         self.threshold_step_size = config["threshold"]["step_size"]
