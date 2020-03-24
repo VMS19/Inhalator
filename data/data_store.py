@@ -12,10 +12,13 @@ log = logging.getLogger(__name__)
 
 class DataStore(object):
     CONFIG_FILE = os.path.abspath(os.path.join(THIS_DIRECTORY, "..", "config.json"))
-    FLOW_MIN_Y, FLOW_MAX_Y = (0, 0.0005)
-    PRESSURE_MIN_Y, PRESSURE_MAX_Y = (0, 30)
+    FLOW_MIN_Y, FLOW_MAX_Y = (0, 80)
+    PRESSURE_MIN_Y, PRESSURE_MAX_Y = (0, 40)
 
     STORE_INSTANCE = None
+
+    SYSTEM_SAMPLE_INTERVAL = 22
+    MS_TO_SEC = 1000
 
     def __init__(self):
         with open(self.CONFIG_FILE) as f:
@@ -33,11 +36,16 @@ class DataStore(object):
         self.threshold_step_size = config["threshold"]["step_size"]
         self.breathing_threshold = config["threshold"]["breathing"]
 
-        self.samples_in_graph_amount = config["samples_in_graph_amount"]
+        self.graph_seconds = config["graph_seconds"]
+        self.samples_in_graph_amount = \
+            int((self.graph_seconds * self.MS_TO_SEC) /
+                self.SYSTEM_SAMPLE_INTERVAL)
 
         self.flow_display_values = [0] * self.samples_in_graph_amount
         self.pressure_display_values = [0] * self.samples_in_graph_amount
         self.x_axis = range(0, self.samples_in_graph_amount)
+
+        self.volume = 0
 
         self.log_enabled = config["log_enabled"]
 
@@ -62,7 +70,8 @@ class DataStore(object):
                 "breathing": self.breathing_threshold,
                 },
             "log_enabled": True,
-            "samples_in_graph_amount": self.samples_in_graph_amount
+            "samples_in_graph_amount": self.samples_in_graph_amount,
+            "graph_seconds": self.graph_seconds,
         }
 
         with open(self.CONFIG_FILE, "w") as f:
@@ -77,3 +86,6 @@ class DataStore(object):
         if len(self.pressure_display_values) == len(self.x_axis):
             self.pressure_display_values.pop(0)
         self.pressure_display_values.append(new_value)
+
+    def update_volume_value(self, new_value):
+        self.volume = new_value

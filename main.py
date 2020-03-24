@@ -2,11 +2,12 @@ import logging
 from logging.handlers import RotatingFileHandler
 from time import sleep
 
-from mocks.mock_hce_pressure_sensor import MockHcePressureSensor
-from mocks.mock_sfm3200_flow_sensor import MockSfm3200
+from drivers.mocks.mock_hce_pressure_sensor import MockHcePressureSensor
+from drivers.mocks.mock_sfm3200_flow_sensor import MockSfm3200
 from data.data_store import DataStore
 from gui import GUI
 from algo import Sampler
+from sound import SoundDevice
 
 
 def configure_logging(store):
@@ -32,6 +33,7 @@ def configure_logging(store):
 def main():
     store = DataStore()
     configure_logging(store)
+    sound_device = SoundDevice()
     gui = GUI(store)
     flow_sensor = MockSfm3200()
     pressure_sensor = MockHcePressureSensor()

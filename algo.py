@@ -10,6 +10,7 @@ log = logging.getLogger(__name__)
 class Sampler(threading.Thread):
     SAMPLING_INTERVAL = 0.02  # sec
     MS_IN_MIN = 60 * 1000
+    M_BAR_CMH20_RATIO = 1.019
 
     def __init__(self, data_store, flow_sensor, pressure_sensor):
         super(Sampler, self).__init__()
@@ -91,7 +92,9 @@ class Sampler(threading.Thread):
             self._handle_intake_finished(flow=flow_value,
                                          pressure=pressure_value)
 
-        self._data_store.update_flow_values(self._currently_breathed_volume)
+        self._data_store.update_flow_values(flow_value)
+        # TODO: Multiplied by 100000 just so it looks good on graph, delete this
+        self._data_store.update_volume_value(self._currently_breathed_volume * 100000)
 
         alert = Alert(self.breathing_alert | self.pressure_alert)
         if alert != AlertCodes.OK and self._data_store.alerts_queue.last_alert != alert:

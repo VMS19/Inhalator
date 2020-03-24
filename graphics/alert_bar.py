@@ -13,10 +13,10 @@ from data.data_store import AlertsQueue, DataStore
 
 class IndicatorAlertBar(object):
     error_dict = {
-        alerts.AlertCodes.PRESSURE_LOW: "PRESSURE LOW",
-        alerts.AlertCodes.PRESSURE_HIGH: "PERSSURE HIGH",
-        alerts.AlertCodes.BREATHING_VOLUME_LOW: "BREATHING VOLUME LOW",
-        alerts.AlertCodes.BREATHING_VOLUME_HIGH: "BREATHING VOLUME HIGH"
+        alerts.AlertCodes.PRESSURE_LOW: "LOW PIP",
+        alerts.AlertCodes.PRESSURE_HIGH: "HIGH PIP",
+        alerts.AlertCodes.BREATHING_VOLUME_LOW: "LOW Ve",
+        alerts.AlertCodes.BREATHING_VOLUME_HIGH: "HIGH Ve"
     }
 
     def __init__(self, parent, store):

@@ -13,7 +13,7 @@ class ClearAlertsButton(object):
         self.root = parent.element
         self.store = store
 
-        self.button = Button(master=self.root, command=self.on_click, text="CLEAR ALERTS")
+        self.button = Button(master=self.root, command=self.on_click, text="CLEAR\nALERTS")
 
     def on_click(self):
         self.store.alerts_queue.clear_alerts()
@@ -30,7 +30,7 @@ class MuteAlertsButton(object):
         self.root = parent.element
         self.store = store
 
-        self.button = Button(master=self.root, command=self.on_click, text="MUTE ALERTS")
+        self.button = Button(master=self.root, command=self.on_click, text="MUTE\nALERTS")
 
     def on_click(self):
         print("Not Implemented Yet")
