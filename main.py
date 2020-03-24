@@ -34,6 +34,8 @@ def main():
     store = DataStore()
     configure_logging(store)
     sound_device = SoundDevice()
+    store.alerts_queue.subscribe(sound_device, sound_device.on_alert)
+
     gui = GUI(store)
     flow_sensor = MockSfm3200()
     pressure_sensor = MockHcePressureSensor()
@@ -47,8 +49,6 @@ def main():
     while True:
         gui.gui_update()
         sleep(0.02)
-
-    # mainloop()
 
 
 if __name__ == '__main__':

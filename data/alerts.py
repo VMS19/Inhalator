@@ -21,6 +21,7 @@ class AlertsQueue(object):
     def __init__(self):
         self.queue = Queue(maxsize=self.MAXIMUM_ALERTS_AMOUNT)
         self.last_alert = Alert(AlertCodes.OK)
+        self.subscribers = {}
 
     def __len__(self):
         return self.queue.qsize()
@@ -32,6 +33,7 @@ class AlertsQueue(object):
         # with self.queue.mutex:
         self.last_alert = alert
 
+        self.publish()
         self.queue.put(alert)
 
     def dequeue_alert(self):
@@ -39,6 +41,7 @@ class AlertsQueue(object):
         # with self.queue.mutex:
         self.last_alert = self.queue.queue[0]
 
+        self.publish()
         return alert
 
     def clear_alerts(self):
@@ -47,3 +50,14 @@ class AlertsQueue(object):
         self.queue.queue.clear()
 
         self.last_alert = Alert(AlertCodes.OK)
+        self.publish()
+
+    def subscribe(self, object, callback):
+        self.subscribers[object] = callback
+
+    def unsubscribe(self, object):
+        del self.subscribers[object]
+
+    def publish(self):
+        for callback in self.subscribers.values():
+            callback(self.last_alert)
