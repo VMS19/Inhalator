@@ -93,8 +93,7 @@ class Sampler(threading.Thread):
 
         self._data_store.set_flow_value(flow_value)
 
-        # TODO: Multiplied by 100000 just so it looks good on graph, delete this
-        self._data_store.update_volume_value(self._currently_breathed_volume * 100000)
+        self._data_store.update_volume_value(self._currently_breathed_volume)
 
         alert = Alert(self.breathing_alert | self.pressure_alert)
         if alert != AlertCodes.OK and self._data_store.alerts_queue.last_alert != alert:
