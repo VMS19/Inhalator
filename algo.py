@@ -19,11 +19,11 @@ class Sampler(threading.Thread):
         self._pressure_sensor = pressure_sensor
 
         # State
-        self._currently_breathed_volume = 0
+        self._current_intake_volume = 0
         self._intake_max_flow = 0
         self._intake_max_pressure = 0
         self._has_crossed_first_cycle = False
-        self._intake_complete = False
+        self._is_during_intake = False
 
         # Alerts related
         self.breathing_alert = AlertCodes.OK
@@ -32,36 +32,33 @@ class Sampler(threading.Thread):
     def _handle_intake(self, flow, pressure):
         """We are giving patient air."""
         sampling_interval_in_minutes = self.SAMPLING_INTERVAL / self.MS_IN_MIN
-        self._currently_breathed_volume += \
+        self._current_intake_volume += \
             (flow * sampling_interval_in_minutes)
 
-        if self._currently_breathed_volume >\
+        if self._current_intake_volume >\
            self._data_store.flow_max_threshold.value:
             self.breathing_alert = AlertCodes.BREATHING_VOLUME_HIGH
 
         if pressure <= self._data_store.breathing_threshold:
             self._has_crossed_first_cycle = True
 
-        if self._intake_max_pressure < pressure:
-            self._intake_max_pressure = pressure
-
-        if self._intake_max_flow < flow:
-            self._intake_max_flow = flow
+        self._intake_max_pressure = max(pressure, self._intake_max_pressure)
+        self._intake_max_flow = max(flow, self._intake_max_flow)
 
     def _handle_intake_finished(self, flow, pressure):
         """We are not giving patient air anymore."""
 
-        if self._currently_breathed_volume <\
+        if self._current_intake_volume <\
            self._data_store.flow_min_threshold.value and \
                 self._has_crossed_first_cycle:
 
             self.breathing_alert = AlertCodes.BREATHING_VOLUME_LOW
 
         self._data_store.set_intake_peaks(self._intake_max_pressure, self._intake_max_pressure,
-                                self._currently_breathed_volume * 100000)
+                                self._current_intake_volume * 100000)
 
         # reset values of last intake
-        self._currently_breathed_volume = 0
+        self._current_intake_volume = 0
         self._intake_max_flow = 0
         self._intake_max_pressure = 0
 
@@ -88,7 +85,7 @@ class Sampler(threading.Thread):
             # Below healthy lungs pressure
             self.pressure_alert = AlertCodes.PRESSURE_LOW
 
-        logging.debug("Breathed: %s" % self._currently_breathed_volume)
+        logging.debug("Breathed: %s" % self._current_intake_volume)
         logging.debug("Flow: %s" % flow_value)
         logging.debug("Pressure: %s" % pressure_value)
 
