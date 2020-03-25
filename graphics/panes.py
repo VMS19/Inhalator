@@ -107,7 +107,6 @@ class CenterPane(object):
         self.blank_graph = BlankGraph(self.frame)
         self.flow_graph = AirFlowGraph(self, self.store, blank=self.blank_graph)
         self.pressure_graph = AirPressureGraph(self, self.store, blank=self.blank_graph)
-
         self.wd = WdDriver()  
 
     def PopQueueToList(self, q, lst):
