@@ -21,3 +21,12 @@ You should configure this program to run as a service on your Debian/Ubuntu/Rasp
 ```shell script
 rasp_init/install-as-service.sh
 ```
+Then you can control the program using
+```shell_script
+sudo service inhalator start
+```
+
+and stop it by 
+```shell_script
+sudo service inhalator stop
+```
