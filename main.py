@@ -1,3 +1,4 @@
+import argparse
 import logging
 from logging.handlers import RotatingFileHandler
 from time import sleep
@@ -10,9 +11,9 @@ from algo import Sampler
 from sound import SoundDevice
 
 
-def configure_logging(store):
+def configure_logging(level, store):
     logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(level)
     # create file handler which logs even debug messages
     fh = RotatingFileHandler('inhalator.log', maxBytes=1024 * 100, backupCount=3)
     fh.setLevel(logging.INFO)
@@ -30,9 +31,18 @@ def configure_logging(store):
     logger.disabled = not store.log_enabled
 
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--verbose", "-v", action="count", default=0)
+    args = parser.parse_args()
+    args.verbose = max(0, logging.WARNING - (10 * args.verbose))
+    return args
+
+
 def main():
     store = DataStore.load_from_config()
-    configure_logging(store)
+    args = parse_args()
+    configure_logging(args.verbose, store)
     sound_device = SoundDevice()
     store.alerts_queue.subscribe(sound_device, sound_device.on_alert)
 
