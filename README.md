@@ -15,6 +15,8 @@ Make sure you are running `Python 3.6+`, then simply run it using
 python3 main.py
 ```
 
+## Inhalator as a SystemD Service
+
 You should configure this program to run as a service on your Debian/Ubuntu/Raspbian machine:
 
 (Make sure NOT to run this as root, it will prompt you for your root password whenever it's needed)
