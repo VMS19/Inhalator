@@ -48,12 +48,11 @@ class AirPressureGraph(object):
         labels = range(0, int(self.store.graph_seconds + 1))
         self.pressure_axis.set_xticklabels(labels)
 
-
-
         self.pressure_canvas = FigureCanvasTkAgg(self.pressure_figure, master=self.root)
 
+        self.pressure_display_values = [0] * self.store.samples_in_graph_amount 
         self.pressure_graph, = self.pressure_axis.plot(
-            self.store.x_axis, self.store.pressure_display_values, linewidth=2, animated=True)
+            self.store.x_axis, self.pressure_display_values, linewidth=2, animated=True)
 
         # Scale y values
         self.pressure_graph.axes.set_ylim(self.store.PRESSURE_MIN_Y,
@@ -83,7 +82,7 @@ class AirPressureGraph(object):
                                                        bbox=self.blank.graph_bbox,
                                                        xy=(0, 0))
 
-        self.pressure_graph.set_ydata(self.store.pressure_display_values)
+        self.pressure_graph.set_ydata(self.pressure_display_values)
         # Update threshold lines
         self.pressure_min_threshold_graph.set_ydata([self.store.pressure_min_threshold.value] *
                                                     len(self.store.x_axis))
@@ -122,8 +121,9 @@ class AirFlowGraph(object):
         labels = range(0, int(self.store.graph_seconds + 1))
         self.flow_axis.set_xticklabels(labels)
 
+        self.flow_display_values = [0] * self.store.samples_in_graph_amount
         self.flow_graph, = self.flow_axis.plot(self.store.x_axis,
-                                               self.store.flow_display_values,
+                                               self.flow_display_values,
                                                linewidth=2, animated=True)
 
         self.flow_canvas = FigureCanvasTkAgg(self.flow_figure, master=self.root)
@@ -153,7 +153,8 @@ class AirFlowGraph(object):
         self.flow_figure.canvas.restore_region(self.blank.graph_bg,
                                                bbox=self.blank.graph_bbox,
                                                xy=(0, 0))
-        self.flow_graph.set_ydata(self.store.flow_display_values)
+
+        self.flow_graph.set_ydata(self.flow_display_values)
         self.flow_axis.draw_artist(self.flow_graph)
         self.flow_axis.draw_artist(self.flow_min_threshold_graph)
         self.flow_axis.draw_artist(self.flow_max_threshold_graph)

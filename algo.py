@@ -10,7 +10,6 @@ log = logging.getLogger(__name__)
 class Sampler(threading.Thread):
     SAMPLING_INTERVAL = 0.02  # sec
     MS_IN_MIN = 60 * 1000
-    M_BAR_CMH20_RATIO = 1.019
 
     def __init__(self, data_store, flow_sensor, pressure_sensor):
         super(Sampler, self).__init__()
@@ -53,7 +52,6 @@ class Sampler(threading.Thread):
     def run(self):
         while True:
             self.sampling_iteration()
-
             time.sleep(self.SAMPLING_INTERVAL)
 
     def sampling_iteration(self):
@@ -65,7 +63,8 @@ class Sampler(threading.Thread):
         flow_value = self._flow_sensor.read_flow_slm()
         pressure_value = self._pressure_sensor.read_pressure()
 
-        self._data_store.update_pressure_values(pressure_value)
+        self._data_store.set_pressure_value(pressure_value)
+
         if pressure_value > self._data_store.pressure_max_threshold.value:
             # Above healthy lungs pressure
             self.pressure_alert = AlertCodes.PRESSURE_HIGH
@@ -91,7 +90,9 @@ class Sampler(threading.Thread):
         else:
             self._handle_intake_finished(flow=flow_value,
                                          pressure=pressure_value)
-        self._data_store.update_flow_values(flow_value)
+
+        self._data_store.set_flow_value(flow_value)
+
         # TODO: Multiplied by 100000 just so it looks good on graph, delete this
         self._data_store.update_volume_value(self._currently_breathed_volume * 100000)
 

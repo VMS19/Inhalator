@@ -14,3 +14,21 @@ Make sure you are running `Python 3.6+`, then simply run it using
 ```shell script
 python3 main.py
 ```
+
+## Inhalator as a SystemD Service
+
+You should configure this program to run as a service on your Debian/Ubuntu/Raspbian machine:
+
+(Make sure NOT to run this as root, it will prompt you for your root password whenever it's needed)
+```shell script
+rasp_init/install-as-service.sh
+```
+Then you can control the program using
+```shell_script
+sudo service inhalator start
+```
+
+and stop it by 
+```shell_script
+sudo service inhalator stop
+```

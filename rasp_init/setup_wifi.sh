@@ -9,3 +9,6 @@ sudo wpa_cli reconfigure
 #enable ssh
 sudo systemctl enable ssh
 sudo systemctl start ssh
+
+sudo raspi-config nonint do_i2c %d
+sudo raspi-config nonint do_spi %d
