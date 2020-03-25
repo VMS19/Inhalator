@@ -14,3 +14,10 @@ Make sure you are running `Python 3.6+`, then simply run it using
 ```shell script
 python3 main.py
 ```
+
+You should configure this program to run as a service on your Debian/Ubuntu/Raspbian machine:
+
+(Make sure NOT to run this as root, it will prompt you for your root password whenever it's needed)
+```shell script
+rasp_init/install-as-service.sh
+```
