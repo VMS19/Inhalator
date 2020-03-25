@@ -2,14 +2,15 @@ import logging
 from logging.handlers import RotatingFileHandler
 from time import sleep
 
-from mocks.mock_hce_pressure_sensor import MockHcePressureSensor
-from mocks.mock_sfm3200_flow_sensor import MockSfm3200
-from data_store import DataStore
-from gui import GUI, mainloop
+from drivers.mocks.mock_hce_pressure_sensor import MockHcePressureSensor
+from drivers.mocks.mock_sfm3200_flow_sensor import MockSfm3200
+from data.data_store import DataStore
+from gui import GUI
 from algo import Sampler
+from sound import SoundDevice
 
 
-def configure_logging():
+def configure_logging(store):
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     # create file handler which logs even debug messages
@@ -26,26 +27,28 @@ def configure_logging():
     # add the handlers to the logger
     logger.addHandler(fh)
     logger.addHandler(ch)
+    logger.disabled = not store.log_enabled
 
 
 def main():
-    configure_logging()
     store = DataStore()
+    configure_logging(store)
+    sound_device = SoundDevice()
+    store.alerts_queue.subscribe(sound_device, sound_device.on_alert)
+
     gui = GUI(store)
     flow_sensor = MockSfm3200()
     pressure_sensor = MockHcePressureSensor()
-    sampler = Sampler(store, flow_sensor, pressure_sensor, gui.alert)
+    sampler = Sampler(store, flow_sensor, pressure_sensor)
     gui.render()
     # Wait for GUI to render
     #     time.sleep(5)
     sampler.start()
 
+
     while True:
         gui.gui_update()
-        store.arm_wd = True
-        # sleep(0.02)
-    #
-    # mainloop()
+        sleep(0.02)
 
 
 if __name__ == '__main__':

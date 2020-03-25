@@ -1,4 +1,4 @@
-from hce_pressure_sensor import HcePressureSensor
+from drivers.hce_pressure_sensor import HcePressureSensor
 import logging
 
 

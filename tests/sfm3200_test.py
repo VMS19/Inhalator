@@ -1,4 +1,4 @@
-from sfm3200_flow_sensor import Sfm3200
+from drivers.sfm3200_flow_sensor import Sfm3200
 import logging
 
 
