@@ -1,0 +1,488 @@
+2020-03-24 13:24:44,330 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:44,534 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:44,536 - root - DEBUG - Flow: 12.63558185417193
+2020-03-24 13:24:44,537 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:44,537 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:44,722 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:44,727 - root - DEBUG - Flow: 12.854497299884603
+2020-03-24 13:24:44,728 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:44,728 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:44,916 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:44,918 - root - DEBUG - Flow: 12.974949866040545
+2020-03-24 13:24:44,919 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:44,919 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:45,135 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:45,138 - root - DEBUG - Flow: 12.99573603041505
+2020-03-24 13:24:45,139 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:45,139 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:45,377 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:45,379 - root - DEBUG - Flow: 12.916648104524686
+2020-03-24 13:24:45,386 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:45,387 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:45,569 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:45,571 - root - DEBUG - Flow: 12.73847630878195
+2020-03-24 13:24:45,571 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:45,572 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:45,760 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:45,761 - root - DEBUG - Flow: 12.463000876874142
+2020-03-24 13:24:45,762 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:45,762 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:45,979 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:45,982 - root - DEBUG - Flow: 12.092974268256814
+2020-03-24 13:24:45,983 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:45,984 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:46,211 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:46,220 - root - DEBUG - Flow: 11.632093666488736
+2020-03-24 13:24:46,221 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:46,222 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:46,462 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:46,465 - root - DEBUG - Flow: 11.0849640381959
+2020-03-24 13:24:46,466 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:46,467 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:46,723 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:46,725 - root - DEBUG - Flow: 10.457052121767198
+2020-03-24 13:24:46,725 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:46,725 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:46,913 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:46,923 - root - DEBUG - Flow: 9.754631805511503
+2020-03-24 13:24:46,923 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:46,924 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:47,105 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:47,107 - root - DEBUG - Flow: 8.984721441039557
+2020-03-24 13:24:47,108 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:47,108 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:47,297 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:47,299 - root - DEBUG - Flow: 8.155013718214633
+2020-03-24 13:24:47,299 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:47,300 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:47,539 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:47,540 - root - DEBUG - Flow: 7.273798802338289
+2020-03-24 13:24:47,541 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:47,541 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:47,733 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:47,734 - root - DEBUG - Flow: 6.349881501559038
+2020-03-24 13:24:47,735 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:47,735 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:47,920 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:47,925 - root - DEBUG - Flow: 5.392493292139811
+2020-03-24 13:24:47,926 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:47,927 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:48,115 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:48,117 - root - DEBUG - Flow: 4.411200080598659
+2020-03-24 13:24:48,117 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:48,118 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:48,334 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:48,337 - root - DEBUG - Flow: 3.4158066243328915
+2020-03-24 13:24:48,338 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:48,339 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:48,525 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:48,530 - root - DEBUG - Flow: 3
+2020-03-24 13:24:48,531 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:48,532 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:48,720 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:48,721 - root - DEBUG - Flow: 3
+2020-03-24 13:24:48,722 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:48,723 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:48,907 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:48,912 - root - DEBUG - Flow: 3
+2020-03-24 13:24:48,913 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:48,914 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:49,129 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:49,133 - root - DEBUG - Flow: 3
+2020-03-24 13:24:49,134 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:49,135 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:49,363 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:49,373 - root - DEBUG - Flow: 3
+2020-03-24 13:24:49,374 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:49,375 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:49,609 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:49,612 - root - DEBUG - Flow: 3
+2020-03-24 13:24:49,613 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:49,614 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:49,842 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:49,851 - root - DEBUG - Flow: 3
+2020-03-24 13:24:49,852 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:49,853 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:50,061 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:50,063 - root - DEBUG - Flow: 3
+2020-03-24 13:24:50,063 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:50,064 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:50,265 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:50,267 - root - DEBUG - Flow: 3
+2020-03-24 13:24:50,267 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:50,268 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:50,459 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:50,461 - root - DEBUG - Flow: 3
+2020-03-24 13:24:50,465 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:50,466 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:50,680 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:50,683 - root - DEBUG - Flow: 3
+2020-03-24 13:24:50,684 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:50,685 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:50,874 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:50,879 - root - DEBUG - Flow: 3
+2020-03-24 13:24:50,880 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:50,881 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:51,069 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:51,070 - root - DEBUG - Flow: 3
+2020-03-24 13:24:51,071 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:51,072 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:51,259 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:51,261 - root - DEBUG - Flow: 3
+2020-03-24 13:24:51,262 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:51,263 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:51,480 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:51,483 - root - DEBUG - Flow: 3
+2020-03-24 13:24:51,484 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:51,485 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:51,719 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:51,722 - root - DEBUG - Flow: 3
+2020-03-24 13:24:51,723 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:51,724 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:51,958 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:51,961 - root - DEBUG - Flow: 3
+2020-03-24 13:24:51,962 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:51,963 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:52,197 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:52,200 - root - DEBUG - Flow: 3
+2020-03-24 13:24:52,201 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:52,202 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:52,403 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:52,408 - root - DEBUG - Flow: 3
+2020-03-24 13:24:52,409 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:52,410 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:52,597 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:52,600 - root - DEBUG - Flow: 3
+2020-03-24 13:24:52,600 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:52,601 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:52,789 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:52,790 - root - DEBUG - Flow: 3
+2020-03-24 13:24:52,791 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:52,791 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:53,002 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:53,011 - root - DEBUG - Flow: 3
+2020-03-24 13:24:53,012 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:53,013 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:53,218 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:53,220 - root - DEBUG - Flow: 3
+2020-03-24 13:24:53,220 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:53,221 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:53,409 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:53,410 - root - DEBUG - Flow: 3
+2020-03-24 13:24:53,411 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:53,411 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:53,600 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:53,602 - root - DEBUG - Flow: 3
+2020-03-24 13:24:53,602 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:53,603 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:53,820 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:53,823 - root - DEBUG - Flow: 3
+2020-03-24 13:24:53,824 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:53,825 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:54,029 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:54,031 - root - DEBUG - Flow: 3
+2020-03-24 13:24:54,031 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:54,032 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:54,220 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:54,222 - root - DEBUG - Flow: 3
+2020-03-24 13:24:54,222 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:54,223 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:54,411 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:54,413 - root - DEBUG - Flow: 3
+2020-03-24 13:24:54,413 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:54,414 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:54,630 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:54,634 - root - DEBUG - Flow: 3
+2020-03-24 13:24:54,635 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:54,635 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:54,742 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:54,746 - root - DEBUG - Flow: 3
+2020-03-24 13:24:54,746 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:54,747 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:54,914 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:54,916 - root - DEBUG - Flow: 3.168139004843435
+2020-03-24 13:24:54,917 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:54,917 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:55,058 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:55,060 - root - DEBUG - Flow: 4.165492048504866
+2020-03-24 13:24:55,060 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:55,060 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:55,236 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:55,238 - root - DEBUG - Flow: 5.151199880878085
+2020-03-24 13:24:55,239 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:55,239 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:24:55,429 - root - DEBUG - Breathed: 0
+2020-03-24 13:24:55,431 - root - DEBUG - Flow: 6.115413635133711
+2020-03-24 13:24:55,431 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:24:55,432 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:04,305 - hce_pressure_sensor - INFO - HCE pressure sensor initialized
+2020-03-24 13:27:04,442 - matplotlib.axes._base - DEBUG - update_title_pos
+2020-03-24 13:27:04,507 - matplotlib.font_manager - DEBUG - findfont: Matching :family=sans-serif:style=normal:variant=normal:weight=normal:stretch=normal:size=10.0 to DejaVu Sans ('/usr/share/matplotlib/mpl-data/fonts/ttf/DejaVuSans.ttf') with score of 0.050000.
+2020-03-24 13:27:04,747 - matplotlib.axes._base - DEBUG - update_title_pos
+2020-03-24 13:27:04,882 - matplotlib.axes._base - DEBUG - update_title_pos
+2020-03-24 13:27:04,971 - matplotlib.axes._base - DEBUG - update_title_pos
+2020-03-24 13:27:05,053 - matplotlib.axes._base - DEBUG - update_title_pos
+2020-03-24 13:27:05,174 - matplotlib.axes._base - DEBUG - update_title_pos
+2020-03-24 13:27:05,388 - matplotlib.axes._base - DEBUG - update_title_pos
+2020-03-24 13:27:05,556 - matplotlib.axes._base - DEBUG - update_title_pos
+2020-03-24 13:27:05,632 - matplotlib.axes._base - DEBUG - update_title_pos
+2020-03-24 13:27:05,701 - matplotlib.axes._base - DEBUG - update_title_pos
+2020-03-24 13:27:05,811 - matplotlib.axes._base - DEBUG - update_title_pos
+2020-03-24 13:27:05,917 - matplotlib.axes._base - DEBUG - update_title_pos
+2020-03-24 13:27:06,013 - matplotlib.axes._base - DEBUG - update_title_pos
+2020-03-24 13:27:06,140 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:06,142 - root - DEBUG - Flow: 3.0
+2020-03-24 13:27:06,145 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:06,145 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:06,166 - matplotlib.axes._base - DEBUG - update_title_pos
+2020-03-24 13:27:06,265 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:06,272 - root - DEBUG - Flow: 3.9983341664682817
+2020-03-24 13:27:06,272 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:06,274 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:06,280 - matplotlib.axes._base - DEBUG - update_title_pos
+2020-03-24 13:27:06,317 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:06,373 - root - DEBUG - Flow: 4.986693307950612
+2020-03-24 13:27:06,379 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:06,380 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:06,383 - matplotlib.axes._base - DEBUG - update_title_pos
+2020-03-24 13:27:06,414 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:06,424 - root - DEBUG - Flow: 5.955202066613396
+2020-03-24 13:27:06,460 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:06,467 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:06,471 - matplotlib.axes._base - DEBUG - update_title_pos
+2020-03-24 13:27:06,489 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:06,515 - root - DEBUG - Flow: 6.894183423086505
+2020-03-24 13:27:06,544 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:06,551 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:06,574 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:06,575 - root - DEBUG - Flow: 7.79425538604203
+2020-03-24 13:27:06,576 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:06,581 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:06,603 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:06,604 - root - DEBUG - Flow: 8.646424733950354
+2020-03-24 13:27:06,604 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:06,604 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:06,626 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:06,626 - root - DEBUG - Flow: 9.44217687237691
+2020-03-24 13:27:06,626 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:06,626 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:06,648 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:06,648 - root - DEBUG - Flow: 10.173560908995228
+2020-03-24 13:27:06,648 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:06,649 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:06,670 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:06,670 - root - DEBUG - Flow: 10.833269096274833
+2020-03-24 13:27:06,670 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:06,671 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:06,692 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:06,692 - root - DEBUG - Flow: 11.414709848078964
+2020-03-24 13:27:06,693 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:06,693 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:06,771 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:06,773 - root - DEBUG - Flow: 11.912073600614352
+2020-03-24 13:27:06,773 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:06,774 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:06,974 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:06,977 - root - DEBUG - Flow: 12.320390859672262
+2020-03-24 13:27:06,978 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:06,979 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:07,211 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:07,214 - root - DEBUG - Flow: 12.63558185417193
+2020-03-24 13:27:07,215 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:07,216 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:07,455 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:07,458 - root - DEBUG - Flow: 12.854497299884603
+2020-03-24 13:27:07,459 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:07,460 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:07,699 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:07,702 - root - DEBUG - Flow: 12.974949866040545
+2020-03-24 13:27:07,703 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:07,703 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:07,942 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:07,946 - root - DEBUG - Flow: 12.99573603041505
+2020-03-24 13:27:07,947 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:07,948 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:08,152 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:08,154 - root - DEBUG - Flow: 12.916648104524686
+2020-03-24 13:27:08,155 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:08,155 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:08,343 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:08,348 - root - DEBUG - Flow: 12.73847630878195
+2020-03-24 13:27:08,348 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:08,348 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:08,536 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:08,541 - root - DEBUG - Flow: 12.463000876874142
+2020-03-24 13:27:08,541 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:08,542 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:08,761 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:08,765 - root - DEBUG - Flow: 12.092974268256814
+2020-03-24 13:27:08,766 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:08,767 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:08,971 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:08,977 - root - DEBUG - Flow: 11.632093666488736
+2020-03-24 13:27:08,977 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:08,978 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:09,165 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:09,167 - root - DEBUG - Flow: 11.0849640381959
+2020-03-24 13:27:09,167 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:09,168 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:09,359 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:09,361 - root - DEBUG - Flow: 10.457052121767198
+2020-03-24 13:27:09,361 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:09,361 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:09,581 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:09,585 - root - DEBUG - Flow: 9.754631805511503
+2020-03-24 13:27:09,586 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:09,587 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:09,790 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:09,792 - root - DEBUG - Flow: 8.984721441039557
+2020-03-24 13:27:09,793 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:09,794 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:09,981 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:09,983 - root - DEBUG - Flow: 8.155013718214633
+2020-03-24 13:27:09,984 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:09,984 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:10,173 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:10,175 - root - DEBUG - Flow: 7.273798802338289
+2020-03-24 13:27:10,175 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:10,176 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:10,393 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:10,396 - root - DEBUG - Flow: 6.349881501559038
+2020-03-24 13:27:10,397 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:10,398 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:10,593 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:10,595 - root - DEBUG - Flow: 5.392493292139811
+2020-03-24 13:27:10,595 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:10,596 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:10,784 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:10,786 - root - DEBUG - Flow: 4.411200080598659
+2020-03-24 13:27:10,787 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:10,787 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:10,975 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:10,977 - root - DEBUG - Flow: 3.4158066243328915
+2020-03-24 13:27:10,978 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:10,978 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:11,198 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:11,201 - root - DEBUG - Flow: 3
+2020-03-24 13:27:11,202 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:11,203 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:11,404 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:11,405 - root - DEBUG - Flow: 3
+2020-03-24 13:27:11,406 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:11,406 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:11,595 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:11,597 - root - DEBUG - Flow: 3
+2020-03-24 13:27:11,597 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:11,598 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:11,786 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:11,788 - root - DEBUG - Flow: 3
+2020-03-24 13:27:11,789 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:11,789 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:12,006 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:12,010 - root - DEBUG - Flow: 3
+2020-03-24 13:27:12,011 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:12,012 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:12,213 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:12,215 - root - DEBUG - Flow: 3
+2020-03-24 13:27:12,215 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:12,216 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:12,404 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:12,406 - root - DEBUG - Flow: 3
+2020-03-24 13:27:12,406 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:12,407 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:12,595 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:12,597 - root - DEBUG - Flow: 3
+2020-03-24 13:27:12,597 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:12,598 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:12,820 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:12,824 - root - DEBUG - Flow: 3
+2020-03-24 13:27:12,825 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:12,826 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:13,058 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:13,059 - root - DEBUG - Flow: 3
+2020-03-24 13:27:13,060 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:13,060 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:13,249 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:13,251 - root - DEBUG - Flow: 3
+2020-03-24 13:27:13,251 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:13,252 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:13,440 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:13,442 - root - DEBUG - Flow: 3
+2020-03-24 13:27:13,443 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:13,443 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:13,661 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:13,664 - root - DEBUG - Flow: 3
+2020-03-24 13:27:13,665 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:13,666 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:13,901 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:13,905 - root - DEBUG - Flow: 3
+2020-03-24 13:27:13,906 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:13,906 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:14,135 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:14,149 - root - DEBUG - Flow: 3
+2020-03-24 13:27:14,151 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:14,152 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:14,351 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:14,353 - root - DEBUG - Flow: 3
+2020-03-24 13:27:14,353 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:14,354 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:14,542 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:14,544 - root - DEBUG - Flow: 3
+2020-03-24 13:27:14,545 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:14,545 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:14,734 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:14,736 - root - DEBUG - Flow: 3
+2020-03-24 13:27:14,736 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:14,737 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:14,957 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:14,960 - root - DEBUG - Flow: 3
+2020-03-24 13:27:14,961 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:14,962 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:15,167 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:15,169 - root - DEBUG - Flow: 3
+2020-03-24 13:27:15,169 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:15,170 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:15,358 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:15,360 - root - DEBUG - Flow: 3
+2020-03-24 13:27:15,361 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:15,361 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:15,549 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:15,551 - root - DEBUG - Flow: 3
+2020-03-24 13:27:15,552 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:15,552 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:15,772 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:15,776 - root - DEBUG - Flow: 3
+2020-03-24 13:27:15,777 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:15,778 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:15,979 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:15,981 - root - DEBUG - Flow: 3
+2020-03-24 13:27:15,982 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:15,982 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:16,170 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:16,172 - root - DEBUG - Flow: 3
+2020-03-24 13:27:16,173 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:16,174 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:16,362 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:16,364 - root - DEBUG - Flow: 3
+2020-03-24 13:27:16,364 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:16,365 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:16,582 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:16,586 - root - DEBUG - Flow: 3
+2020-03-24 13:27:16,587 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:16,587 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:16,788 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:16,790 - root - DEBUG - Flow: 3
+2020-03-24 13:27:16,790 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:16,791 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:16,975 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:16,980 - root - DEBUG - Flow: 3
+2020-03-24 13:27:16,981 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:16,982 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:17,170 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:17,172 - root - DEBUG - Flow: 3
+2020-03-24 13:27:17,173 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:17,173 - root - DEBUG - -----------is_during_intake=False----------
+2020-03-24 13:27:17,231 - root - DEBUG - Breathed: 0
+2020-03-24 13:27:17,232 - root - DEBUG - Flow: 3
+2020-03-24 13:27:17,232 - root - DEBUG - Pressure: -1266.6916914625772
+2020-03-24 13:27:17,232 - root - DEBUG - -----------is_during_intake=False----------
