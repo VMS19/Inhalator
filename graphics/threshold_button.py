@@ -17,7 +17,7 @@ class ThresholdButton(object):
         self.root = parent.element
 
         self.button = Button(self.root, text="<PLACEHOLDER>", command=self.on_click)
-        self.label = Label(self.root, text="<PLACEHOLDER>")
+        self.label = Label(self.root, text="<PLACEHOLDER>", bg="white"  )
         self.button.config(font=("Tahoma", 22))
 
     def button_text(self):
@@ -46,7 +46,7 @@ class BPMThresholdButton(ThresholdButton):
 
 class VolumeThresholdButton(ThresholdButton):
     def button_text(self):
-        return "MIN={}\nMAX={}".format(self.store.flow_min_threshold.value,
+        return "L={}\nH={}".format(self.store.flow_min_threshold.value,
                                        self.store.flow_max_threshold.value)
 
     def on_click(self):
@@ -74,7 +74,7 @@ class PeakFlowThresholdButton(ThresholdButton):
 class PEEPThresholdButton(ThresholdButton):
 
     def button_text(self):
-        return "MIN={}\nMAX={}".format(self.store.pressure_min_threshold.value,
+        return "L={}\nH={}".format(self.store.pressure_min_threshold.value,
                                        self.store.pressure_max_threshold.value)
 
     def label_text(self):

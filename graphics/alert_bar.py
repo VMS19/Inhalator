@@ -37,7 +37,7 @@ class IndicatorAlertBar(object):
 
     def render(self):
         self.bar.place(relx=0, rely=0)
-        self.message_label.place(anchor="nw")
+        self.message_label.place(anchor="nw", relx=0.03, rely=0.2)
 
     def update(self):
         last_alert_code = self.store.alerts_queue.last_alert.code
