@@ -11,11 +11,11 @@ class Sampler(threading.Thread):
     SAMPLING_INTERVAL = 0.02  # sec
     MS_IN_MIN = 60 * 1000
 
-    def __init__(self, data_store, flow_sensor, pressure_sensor):
+    def __init__(self, data_store, vti_sensor, pressure_sensor):
         super(Sampler, self).__init__()
         self.daemon = True
         self._data_store = data_store  # type: DataStore
-        self._flow_sensor = flow_sensor
+        self._vti_sensor = vti_sensor
         self._pressure_sensor = pressure_sensor
 
         # State
@@ -27,22 +27,22 @@ class Sampler(threading.Thread):
         self.breathing_alert = AlertCodes.OK
         self.pressure_alert = AlertCodes.OK
 
-    def _handle_intake(self, flow, pressure):
+    def _handle_intake(self, vti, pressure):
         """We are giving patient air."""
         sampling_interval_in_minutes = self.SAMPLING_INTERVAL / self.MS_IN_MIN
         self._currently_breathed_volume += \
-            (flow * sampling_interval_in_minutes)
+            (vti * sampling_interval_in_minutes)
 
-        if self._currently_breathed_volume > self._data_store.flow_max_threshold.value:
+        if self._currently_breathed_volume > self._data_store.mvi_threshold.max:  # TODO: Add 'off' support
             self.breathing_alert = AlertCodes.BREATHING_VOLUME_HIGH
 
         if pressure <= self._data_store.breathing_threshold:
             self._has_crossed_first_cycle = True
 
-    def _handle_intake_finished(self, flow, pressure):
+    def _handle_intake_finished(self, vti, pressure):
         """We are not giving patient air anymore."""
 
-        if self._currently_breathed_volume < self._data_store.flow_min_threshold.value and \
+        if self._currently_breathed_volume < self._data_store.mvi_threshold.min and \
                 self._has_crossed_first_cycle:
 
             self.breathing_alert = AlertCodes.BREATHING_VOLUME_LOW
@@ -60,20 +60,20 @@ class Sampler(threading.Thread):
         self.pressure_alert = AlertCodes.OK
 
         # Read from sensors
-        flow_value = self._flow_sensor.read_flow_slm()
+        vti_value = self._vti_sensor.read_flow_slm()
         pressure_value = self._pressure_sensor.read_pressure()
 
         self._data_store.set_pressure_value(pressure_value)
 
-        if pressure_value > self._data_store.pressure_max_threshold.value:
+        if pressure_value > self._data_store.pressure_threshold.max:
             # Above healthy lungs pressure
             self.pressure_alert = AlertCodes.PRESSURE_HIGH
-        if pressure_value < self._data_store.pressure_min_threshold.value:
+        if pressure_value < self._data_store.pressure_threshold.min:
             # Below healthy lungs pressure
             self.pressure_alert = AlertCodes.PRESSURE_LOW
 
         logging.debug("Breathed: %s" % self._currently_breathed_volume)
-        logging.debug("Flow: %s" % flow_value)
+        logging.debug("Flow: %s" % vti_value)
         logging.debug("Pressure: %s" % pressure_value)
 
         if pressure_value <= self._data_store.breathing_threshold:
@@ -85,16 +85,15 @@ class Sampler(threading.Thread):
             self._is_during_intake = True
 
         if self._is_during_intake:
-            self._handle_intake(flow=flow_value, pressure=pressure_value)
+            self._handle_intake(vti=vti_value, pressure=pressure_value)
 
         else:
-            self._handle_intake_finished(flow=flow_value,
+            self._handle_intake_finished(vti=vti_value,
                                          pressure=pressure_value)
 
-        self._data_store.set_flow_value(flow_value)
+        self._data_store.set_vti_value(vti_value)
 
-        # TODO: Multiplied by 100000 just so it looks good on graph, delete this
-        self._data_store.update_volume_value(self._currently_breathed_volume * 100000)
+        self._data_store.set_mvi_value(self._currently_breathed_volume)
 
         alert = Alert(self.breathing_alert | self.pressure_alert)
         if alert != AlertCodes.OK and self._data_store.alerts_queue.last_alert != alert:

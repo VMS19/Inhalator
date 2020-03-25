@@ -15,8 +15,8 @@ class IndicatorAlertBar(object):
     error_dict = {
         alerts.AlertCodes.PRESSURE_LOW: "LOW PIP",
         alerts.AlertCodes.PRESSURE_HIGH: "HIGH PIP",
-        alerts.AlertCodes.BREATHING_VOLUME_LOW: "LOW Ve",
-        alerts.AlertCodes.BREATHING_VOLUME_HIGH: "HIGH Ve"
+        alerts.AlertCodes.BREATHING_VOLUME_LOW: "LOW MVI",
+        alerts.AlertCodes.BREATHING_VOLUME_HIGH: "HIGH MVI"
     }
 
     def __init__(self, parent, store):

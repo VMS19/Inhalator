@@ -31,15 +31,15 @@ def configure_logging(store):
 
 
 def main():
-    store = DataStore()
+    store = DataStore.load_from_config()
     configure_logging(store)
     sound_device = SoundDevice()
     store.alerts_queue.subscribe(sound_device, sound_device.on_alert)
 
     gui = GUI(store)
-    flow_sensor = MockSfm3200()
+    vti_sensor = MockSfm3200()
     pressure_sensor = MockHcePressureSensor()
-    sampler = Sampler(store, flow_sensor, pressure_sensor)
+    sampler = Sampler(store, vti_sensor, pressure_sensor)
     gui.render()
     # Wait for GUI to render
     #     time.sleep(5)

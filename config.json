@@ -1,1 +1,27 @@
-{"threshold": {"pressure": {"min": -0.5, "max": 14.5}, "flow": {"min": 0.3, "max": 26.5}, "step_size": 0.5, "breathing": 3.5}, "log_enabled": true, "samples_in_graph_amount": 545, "graph_seconds": 12.0}
+{
+  "threshold": {
+    "vti": {
+      "min": -0.5,
+      "max": 14.5,
+      "step": 0.5
+    },
+    "mvi": {
+      "min": 0.3,
+      "max": 26.5,
+      "step": 0.5
+    },
+    "pressure": {
+      "min": 0.3,
+      "max": 26.5,
+      "step": 0.5
+    },
+    "bpm": {
+      "min": 0.3,
+      "max": 26.5,
+      "step": 0.5
+    },
+    "breathing_threshold": 3.5
+  },
+  "log_enabled": true,
+  "graph_seconds": 12.0
+}
