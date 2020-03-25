@@ -36,6 +36,10 @@ class Sfm3200(object):
 
         try:
             self._dev = self._pig.i2c_open(self.I2C_BUS, self.I2C_ADDRESS)
+        except AttributeError as e:
+            log.error("Could not init pigpio lib. Did you run 'sudo pigpiod'?")
+            raise PiGPIOInitError("pigpio library init error")
+
         except pigpio.error as e:
             log.error("Could not open i2c connection to flow sensor."
                       "Is it connected?")
