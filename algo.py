@@ -93,16 +93,16 @@ class Sampler(threading.Thread):
         logging.debug("Pressure: %s" % pressure_value)
 
         if pressure_value <= self._data_store.breathing_threshold and\
-           self._intake_complete:
+           self._is_during_intake:
             logging.debug("-----------is_during_intake=False----------")
             self._handle_intake_finished(flow=flow_value,
                                          pressure=pressure_value)
-            self._intake_complete = False
+            self._is_during_intake = False
 
         if pressure_value > self._data_store.breathing_threshold:
             logging.debug("-----------is_during_intake=True-----------")
             self._handle_intake(flow=flow_value, pressure=pressure_value)
-            self._intake_complete = True
+            self._is_during_intake = True
 
         self._data_store.set_flow_value(flow_value)
 
