@@ -23,10 +23,10 @@ class I2CWriteError(InhalatorError):
 class FlowSensorCRCError(InhalatorError):
     pass
 
-class HCEDriverInitError(InhalatorError):
+class SPIDriverInitError(InhalatorError):
     pass
 
-class HCEIOError(InhalatorError):
+class SPIIOError(InhalatorError):
     pass
 
 class I2CReadError(InhalatorError):

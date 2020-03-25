@@ -1,7 +1,7 @@
 import spidev
 import logging
 
-from errors import HCEDriverInitError, HCEIOError
+from errors import SPIDriverInitError, SPIIOError
 
 log = logging.getLogger(__name__)
 
@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 class Ads7844A2D(object):
     SPI_BUS = 0x0
     SPI_DEV = 0x1
-    SPI_CLK_SPEED_KHZ = 250000  # 100-640khz
+    SPI_CLK_SPEED_KHZ = 100000  # 0-200khz
     SPI_MODE = 0x00  # Default CPOL-0 CPHA-0
     PERIPHERAL_MINIMAL_DELAY = 500  # 0.5 milli-sec = 500 micro-sec
     XFER_SPEED_HZ = 0  # Default to max supported speed
@@ -61,8 +61,8 @@ class Ads7844A2D(object):
                                         self.XFER_SPEED_HZ,
                                         self.PERIPHERAL_MINIMAL_DELAY)
         except IOError as e:
-            log.error("Failed to read a2d."
+            log.error("Failed to read ads7844."
                       "check if peripheral is initialized correctly")
-            raise HCEIOError("a2d read error")
+            raise SPIIOError("a2d spi read error")
 
         return self._calibrate_a2d(sample_raw)
