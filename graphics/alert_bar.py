@@ -1,5 +1,6 @@
 # Tkinter stuff
 import platform
+import time
 
 if platform.python_version() < '3':
     from Tkinter import *
@@ -30,6 +31,11 @@ class IndicatorAlertBar(object):
         self.bar = Frame(self.root, bg='green', height=self.height, width=self.width)
         self.message_label = Label(master=self.bar, font=("Courrier", 40),
                                    text="OK", bg='green', fg='black')
+        self.fps_label = Label(
+            master=self.bar, font=("Arial", 20),
+            text="FPS: 0", bg='green', fg='black')
+        self.fps_label.place(anchor="ne", relx=0.95, rely=0.3)
+        self.last_update = time.time()
 
     @property
     def element(self):
@@ -46,6 +52,11 @@ class IndicatorAlertBar(object):
 
         else:
             self.set_alert(self.error_dict[last_alert_code])
+
+        current = time.time()
+        diff = current - self.last_update
+        self.fps_label.config(text="FPS: {}".format(int(1 / diff)))
+        self.last_update = current
 
     def set_no_alert(self):
         self.bar.config(bg="green")
