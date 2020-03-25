@@ -10,7 +10,7 @@ if platform.python_version() < '3':
 else:
     from tkinter import *
 
-from data.thresholds import (VolumeThreshold, PresThreshold,
+from data.thresholds import (VolumeThreshold, PressureThreshold,
                              RespiratoryRateThreshold, FlowThreshold)
 
 from graphics.imagebutton import ImageButton

@@ -4,7 +4,7 @@ import logging
 from threading import Lock
 from queue import Queue
 
-from data.thresholds import (RespiratoryRateThreshold, PresThreshold,
+from data.thresholds import (RespiratoryRateThreshold, PressureThreshold,
                              VolumeThreshold, FlowThreshold)
 from data.alerts import AlertsQueue
 
@@ -57,9 +57,9 @@ class DataStore(object):
             volume = VolumeThreshold(min=config["threshold"]["volume"]["min"],
                                max=config["threshold"]["volume"]["max"],
                                step=config["threshold"]["volume"]["step"])
-            pressure = PresThreshold(min=config["threshold"]["pressure"]["min"],
-                                     max=config["threshold"]["pressure"]["max"],
-                                     step=config["threshold"]["pressure"]["step"])
+            pressure = PressureThreshold(min=config["threshold"]["pressure"]["min"],
+                                         max=config["threshold"]["pressure"]["max"],
+                                         step=config["threshold"]["pressure"]["step"])
             resp_rate = RespiratoryRateThreshold(min=config["threshold"]["bpm"]["min"],
                                                  max=config["threshold"]["bpm"]["max"],
                                                  step=config["threshold"]["bpm"]["step"])
@@ -78,7 +78,7 @@ class DataStore(object):
             log.exception("Could not read log file, using default values", e)
             return cls(flow_threshold=FlowThreshold(),
                        volume_threshold=VolumeThreshold(),
-                       pressure_threshold=PresThreshold(),
+                       pressure_threshold=PressureThreshold(),
                        resp_rate_threshold=RespiratoryRateThreshold(),
                        graph_seconds=12,
                        breathing_threshold=3.5)

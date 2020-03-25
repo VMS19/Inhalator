@@ -1,4 +1,4 @@
-class NewThreshold(object):  # TODO: Rename
+class Threshold(object):
     NAME = NotImplemented
     UNIT = NotImplemented
     MINIMAL_VALUE = 0
@@ -60,20 +60,20 @@ class NewThreshold(object):  # TODO: Rename
 
 
 
-class FlowThreshold(NewThreshold):
+class FlowThreshold(Threshold):
     NAME = "Flow"
     UNIT = "mL"
 
 
-class VolumeThreshold(NewThreshold):
+class VolumeThreshold(Threshold):
     NAME = "Volume"
     UNIT = "L/min"
 
 
-class PresThreshold(NewThreshold):  # TODO: Rename to pressure
+class PressureThreshold(Threshold):
     NAME = "Pressure"
     UNIT = "cmH2O"
 
-class RespiratoryRateThreshold(NewThreshold):
+class RespiratoryRateThreshold(Threshold):
     NAME = "Resp. rate"
     UNIT = "per min"

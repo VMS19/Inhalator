@@ -60,7 +60,7 @@ class PressurePeakSummary(GraphSummary):
 
 class VolumeSummary(GraphSummary):
     def value(self):
-        return "{:.2f}".format(self.store.volume)
+        return "{:.5f}".format(self.store.volume)
 
     def name(self):
         return "Volume"
