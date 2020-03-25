@@ -10,9 +10,7 @@ else:
 from graphics.alert_bar import IndicatorAlertBar
 from graphics.graphs import AirFlowGraph, AirPressureGraph, BlankGraph
 from graphics.graph_summaries import AirOutputSummary, BPMSummary, PressurePeakSummary
-from graphics.threshold_button import (BPMThresholdButton, O2ThresholdButton,
-                                       PeakFlowThresholdButton, PEEPThresholdButton,
-                                       VolumeThresholdButton)
+from graphics.configure_alerts_button import OpenConfigureAlertsScreenButton
 from graphics.right_menu_options import (MuteAlertsButton,
                                          ClearAlertsButton,
                                          LockThresholdsButton)
@@ -234,25 +232,15 @@ class BottomPane(object):
                            height=self.height,
                            width=self.width)
 
-        self.o2_threshold_btn = O2ThresholdButton(self, self.store)
-        self.volume_threshold_btn = VolumeThresholdButton(self, self.store)
-        self.peep_threshold_btn = PEEPThresholdButton(self, self.store)
-        self.peak_flow_threshold_btn = PeakFlowThresholdButton(self, self.store)
-        self.bpm_threshold_btn = BPMThresholdButton(self, self.store)
+        self.configure_alerts_btn = OpenConfigureAlertsScreenButton(self, self.store)
 
-    @property
-    def buttons(self):
-        return (self.volume_threshold_btn, self.peep_threshold_btn)
     @property
     def element(self):
         return self.frame
 
     def render(self):
         self.frame.grid(row=2, columnspan=3)
-
-        for button in self.buttons:
-            button.render()
+        self.configure_alerts_btn.render()
 
     def update(self):
-        for button in self.buttons:
-            button.update()
+        pass
