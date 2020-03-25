@@ -8,8 +8,8 @@ else:
     from tkinter import *
 
 from graphics.alert_bar import IndicatorAlertBar
-from graphics.graphs import VtiGraph, AirPressureGraph, BlankGraph
-from graphics.graph_summaries import MViSummary, BPMSummary, PressurePeakSummary
+from graphics.graphs import FlowGraph, AirPressureGraph, BlankGraph
+from graphics.graph_summaries import VolumeSummary, BPMSummary, PressurePeakSummary
 from graphics.configure_alerts_button import OpenConfigureAlertsScreenButton
 from graphics.right_menu_options import (MuteAlertsButton,
                                          ClearAlertsButton,
@@ -66,7 +66,7 @@ class LeftPane(object):
                            height=self.height,
                            width=self.width)
 
-        self.mvi_summary = MViSummary(self, store)
+        self.volume_summary = VolumeSummary(self, store)
         self.bpm_summary = BPMSummary(self, store)
         self.pressure_peak_summary = PressurePeakSummary(self, store)
 
@@ -76,7 +76,7 @@ class LeftPane(object):
 
     @property
     def summaries(self):
-        return (self.mvi_summary, self.bpm_summary, self.pressure_peak_summary)
+        return (self.volume_summary, self.bpm_summary, self.pressure_peak_summary)
 
     def render(self):
         self.frame.grid(row=1, column=0)
@@ -103,7 +103,7 @@ class CenterPane(object):
         self.frame = Frame(master=self.root, bg="white",
                            height=self.height, width=self.width)
         self.blank_graph = BlankGraph(self.frame)
-        self.vti_graph = VtiGraph(self, self.store, blank=self.blank_graph)
+        self.flow_graph = FlowGraph(self, self.store, blank=self.blank_graph)
         self.pressure_graph = AirPressureGraph(self, self.store, blank=self.blank_graph)
         self.wd = WdDriver()  
 
@@ -121,7 +121,7 @@ class CenterPane(object):
 
     @property
     def graphs(self):
-        return [self.vti_graph, self.pressure_graph]
+        return [self.flow_graph, self.pressure_graph]
 
     def render(self):
         self.frame.grid(row=1, column=1)
@@ -134,9 +134,9 @@ class CenterPane(object):
 
         had_pressure_change = self.pop_queue_to_list(self.store.pressure_measurements,
             self.pressure_graph.pressure_display_values)
-        had_vti_change = self.pop_queue_to_list(self.store.vti_measurements,
-            self.vti_graph.vti_display_values)
-        arm_wd = had_vti_change & had_pressure_change
+        had_flow_change = self.pop_queue_to_list(self.store.flow_measurements,
+            self.flow_graph.flow_display_values)
+        arm_wd = had_flow_change & had_pressure_change
 
         # arm wd only if both queues had values
         if arm_wd:

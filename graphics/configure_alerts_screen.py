@@ -10,8 +10,8 @@ if platform.python_version() < '3':
 else:
     from tkinter import *
 
-from data.thresholds import (MViThreshold, PresThreshold,
-                             RespiratoryRateThreshold, VtiThreshold)
+from data.thresholds import (VolumeThreshold, PresThreshold,
+                             RespiratoryRateThreshold, FlowThreshold)
 
 from graphics.imagebutton import ImageButton
 
@@ -110,7 +110,7 @@ class VTISection(Section):
 
     @property
     def threshold(self):
-        return self.store.vti_threshold
+        return self.store.flow_threshold
 
 class MVISection(Section):
     INDEX = 1
@@ -118,7 +118,7 @@ class MVISection(Section):
 
     @property
     def threshold(self):
-        return self.store.mvi_threshold
+        return self.store.volume_threshold
 
 class PressureSection(Section):
     INDEX = 2
@@ -205,8 +205,8 @@ class ConfigureAlarmsScreen(object):
         self.configure_alerts_screen = Frame(master=self.root, bg="purple")
 
         # Sections
-        self.vti_section = VTISection(self, self.configure_alerts_screen, self.store)
-        self.mvi_section = MVISection(self, self.configure_alerts_screen, self.store)
+        self.flow_section = VTISection(self, self.configure_alerts_screen, self.store)
+        self.volume_section = MVISection(self, self.configure_alerts_screen, self.store)
         self.pressure_section = PressureSection(self, self.configure_alerts_screen,
                                                 self.store)
         self.resp_rate_section = RespRateSection(self, self.configure_alerts_screen,
@@ -271,12 +271,12 @@ class ConfigureAlarmsScreen(object):
 
     @cached_property
     def threshold_sections(self):
-        return (self.vti_section, self.mvi_section,
+        return (self.flow_section, self.volume_section,
                 self.pressure_section, self.resp_rate_section)
 
     @cached_property
     def sections(self):
-        return (self.vti_section, self.mvi_section,
+        return (self.flow_section, self.volume_section,
                 self.up_or_down_section, self.pressure_section,
                 self.resp_rate_section, self.confirm_cancel_section)
 

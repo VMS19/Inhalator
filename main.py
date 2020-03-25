@@ -37,9 +37,9 @@ def main():
     store.alerts_queue.subscribe(sound_device, sound_device.on_alert)
 
     gui = GUI(store)
-    vti_sensor = MockSfm3200()
+    flow_sensor = MockSfm3200()
     pressure_sensor = MockHcePressureSensor()
-    sampler = Sampler(store, vti_sensor, pressure_sensor)
+    sampler = Sampler(store, flow_sensor, pressure_sensor)
     gui.render()
     # Wait for GUI to render
     #     time.sleep(5)

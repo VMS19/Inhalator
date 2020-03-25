@@ -5,7 +5,7 @@ from threading import Lock
 from queue import Queue
 
 from data.thresholds import (RespiratoryRateThreshold, PresThreshold,
-                             MViThreshold, VtiThreshold)
+                             VolumeThreshold, FlowThreshold)
 from data.alerts import AlertsQueue
 
 THIS_DIRECTORY = os.path.dirname(__file__)
@@ -19,11 +19,11 @@ class DataStore(object):
 
     MS_TO_SEC = 1000
 
-    def __init__(self, vti_threshold, mvi_threshold,
+    def __init__(self, flow_threshold, volume_threshold,
                  pressure_threshold, resp_rate_threshold,
                  graph_seconds, breathing_threshold, log_enabled=True):
-        self.vti_threshold = vti_threshold
-        self.mvi_threshold = mvi_threshold
+        self.flow_threshold = flow_threshold
+        self.volume_threshold = volume_threshold
         self.pressure_threshold = pressure_threshold
         self.resp_rate_threshold = resp_rate_threshold
         self.graph_seconds = graph_seconds
@@ -34,8 +34,8 @@ class DataStore(object):
             int((self.graph_seconds * self.MS_TO_SEC) /
                 self.SYSTEM_SAMPLE_INTERVAL)
 
-        self.mvi = 0
-        self.vti_measurements = Queue(maxsize=40)
+        self.volume = 0
+        self.flow_measurements = Queue(maxsize=40)
         self.pressure_measurements = Queue(maxsize=40)
         self.x_axis = range(0, self.samples_in_graph_amount)
 
@@ -51,12 +51,12 @@ class DataStore(object):
             with open(cls.CONFIG_FILE) as f:
                 config = json.load(f)
 
-            vti = VtiThreshold(min=config["threshold"]["vti"]["min"],
-                               max=config["threshold"]["vti"]["max"],
-                               step=config["threshold"]["vti"]["step"])
-            mvi = MViThreshold(min=config["threshold"]["mvi"]["min"],
-                               max=config["threshold"]["mvi"]["max"],
-                               step=config["threshold"]["mvi"]["step"])
+            flow = FlowThreshold(min=config["threshold"]["flow"]["min"],
+                               max=config["threshold"]["flow"]["max"],
+                               step=config["threshold"]["flow"]["step"])
+            volume = VolumeThreshold(min=config["threshold"]["volume"]["min"],
+                               max=config["threshold"]["volume"]["max"],
+                               step=config["threshold"]["volume"]["step"])
             pressure = PresThreshold(min=config["threshold"]["pressure"]["min"],
                                      max=config["threshold"]["pressure"]["max"],
                                      step=config["threshold"]["pressure"]["step"])
@@ -67,8 +67,8 @@ class DataStore(object):
             graph_seconds = config["graph_seconds"]
             breathing_threshold = config["threshold"]["breathing_threshold"]
 
-            return cls(vti_threshold=vti,
-                       mvi_threshold=mvi,
+            return cls(flow_threshold=flow,
+                       volume_threshold=volume,
                        pressure_threshold=pressure,
                        resp_rate_threshold=resp_rate,
                        graph_seconds=graph_seconds,
@@ -76,8 +76,8 @@ class DataStore(object):
 
         except Exception as e:
             log.exception("Could not read log file, using default values", e)
-            return cls(vti_threshold=VtiThreshold(),
-                       mvi_threshold=MViThreshold(),
+            return cls(flow_threshold=FlowThreshold(),
+                       volume_threshold=VolumeThreshold(),
                        pressure_threshold=PresThreshold(),
                        resp_rate_threshold=RespiratoryRateThreshold(),
                        graph_seconds=12,
@@ -87,15 +87,15 @@ class DataStore(object):
         log.info("Saving threshold values to database")
         config = {
             "threshold": {
-                "vti": {
-                    "min": self.vti_threshold.min,
-                    "max": self.vti_threshold.max,
-                    "step": self.vti_threshold.step
+                "flow": {
+                    "min": self.flow_threshold.min,
+                    "max": self.flow_threshold.max,
+                    "step": self.flow_threshold.step
                 },
-                "mvi": {
-                    "min": self.mvi_threshold.min,
-                    "max": self.mvi_threshold.max,
-                    "step": self.mvi_threshold.step
+                "volume": {
+                    "min": self.volume_threshold.min,
+                    "max": self.volume_threshold.max,
+                    "step": self.volume_threshold.step
                 },
                 "pressure": {
                     "min": self.pressure_threshold.min,
@@ -117,12 +117,12 @@ class DataStore(object):
             json.dump(config, config_file, indent=4)
 
 
-    def set_vti_value(self, new_value):
+    def set_flow_value(self, new_value):
         with self.lock:
             # pop last item if queue is full
-            if self.vti_measurements.full():
-                self.vti_measurements.get()
-            self.vti_measurements.put(new_value)
+            if self.flow_measurements.full():
+                self.flow_measurements.get()
+            self.flow_measurements.put(new_value)
 
     def set_pressure_value(self, new_value):
         with self.lock:
@@ -131,13 +131,13 @@ class DataStore(object):
                 self.pressure_measurements.get()
             self.pressure_measurements.put(new_value)
 
-    def get_vti_value(self, new_value):
+    def get_flow_value(self, new_value):
         with self.lock:
-            self.vti_measurements.get(new_value)
+            self.flow_measurements.get(new_value)
 
     def get_pressure_value(self, new_value):
         with self.lock:
             self.pressure_measurements.get(new_value)
 
-    def set_mvi_value(self, new_value):
-        self.mvi = new_value
+    def set_volume_value(self, new_value):
+        self.volume = new_value

@@ -58,19 +58,19 @@ class PressurePeakSummary(GraphSummary):
         super(PressurePeakSummary, self).render()
 
 
-class MViSummary(GraphSummary):
+class VolumeSummary(GraphSummary):
     def value(self):
-        return "{:.2f}".format(self.store.mvi)
+        return "{:.2f}".format(self.store.volume)
 
     def name(self):
-        return "MVi"
+        return "Volume"
 
     def units(self):
         return "ml"
 
     def render(self):
         self.frame.place(relx=0, rely=0.35, relheight=0.3, relwidth=1)
-        super(MViSummary, self).render()
+        super(VolumeSummary, self).render()
 
 
 class BPMSummary(GraphSummary):

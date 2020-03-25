@@ -60,13 +60,13 @@ class NewThreshold(object):  # TODO: Rename
 
 
 
-class VtiThreshold(NewThreshold):
-    NAME = "Vti"
+class FlowThreshold(NewThreshold):
+    NAME = "Flow"
     UNIT = "mL"
 
 
-class MViThreshold(NewThreshold):
-    NAME = "MVi"
+class VolumeThreshold(NewThreshold):
+    NAME = "Volume"
     UNIT = "L/min"
 
 
