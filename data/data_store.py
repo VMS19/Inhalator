@@ -80,19 +80,25 @@ class DataStore(object):
         with open(self.CONFIG_FILE, "w") as f:
             json.dump(config, f)
 
-    def push_flow_value(self, new_value):
+    def get_flow_value(self, new_value):
         with self.lock:
+            # pop last item if queue is full
+            if self.flow_measurements.full():
+                self.flow_measurements.get()
             self.flow_measurements.put(new_value)
 
-    def push_pressure_value(self, new_value):
+    def set_pressure_value(self, new_value):
         with self.lock:
+            # pop last item if queue is full
+            if self.pressure_measurements.full():
+                self.pressure_measurements.get()
             self.pressure_measurements.put(new_value)
 
-    def pop_flow_value(self, new_value):
+    def get_flow_value(self, new_value):
         with self.lock:
             self.flow_measurements.get(new_value)
 
-    def pop_pressure_value(self, new_value):
+    def get_pressure_value(self, new_value):
         with self.lock:
             self.pressure_measurements.get(new_value)
 

@@ -109,7 +109,8 @@ class CenterPane(object):
         self.pressure_graph = AirPressureGraph(self, self.store, blank=self.blank_graph)
         self.wd = WdDriver()  
 
-    def PopQueueToList(self, q, lst):
+    def pop_queue_to_list(self, q, lst):
+        # pops all queue values into list, returns if items appended to queue
         had_values = not q.empty()
         while not q.empty():
             lst.pop(0)
@@ -133,10 +134,11 @@ class CenterPane(object):
     def update(self):
         # Get measurments from peripherals
 
-        arm_wd = self.PopQueueToList(self.store.pressure_measurements,
+        had_flow_change = self.pop_queue_to_list(self.store.pressure_measurements,
             self.pressure_graph.pressure_display_values)
-        arm_wd &= self.PopQueueToList(self.store.flow_measurements,
+        had_pressure_change = self.pop_queue_to_list(self.store.flow_measurements,
             self.flow_graph.flow_display_values)
+        arm_wd = had_flow_change & had_pressure_change
 
         # arm wd only if both queues had values
         if arm_wd:
