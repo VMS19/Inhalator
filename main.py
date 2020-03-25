@@ -36,7 +36,6 @@ def parse_args():
     parser.add_argument("--verbose", "-v", action="count", default=0)
     args = parser.parse_args()
     args.verbose = max(0, logging.WARNING - (10 * args.verbose))
-    print("Computed level is {}".format(args.verbose))
     return args
 
 
