@@ -20,8 +20,10 @@ class Sampler(threading.Thread):
 
         # State
         self._currently_breathed_volume = 0
-        self._is_during_intake = False
+        self._intake_max_flow = 0
+        self._intake_max_pressure = 0
         self._has_crossed_first_cycle = False
+        self._intake_complete = False
 
         # Alerts related
         self.breathing_alert = AlertCodes.OK
@@ -33,21 +35,35 @@ class Sampler(threading.Thread):
         self._currently_breathed_volume += \
             (flow * sampling_interval_in_minutes)
 
-        if self._currently_breathed_volume > self._data_store.flow_max_threshold.value:
+        if self._currently_breathed_volume >\
+           self._data_store.flow_max_threshold.value:
             self.breathing_alert = AlertCodes.BREATHING_VOLUME_HIGH
 
         if pressure <= self._data_store.breathing_threshold:
             self._has_crossed_first_cycle = True
 
+        if self._intake_max_pressure < pressure:
+            self._intake_max_pressure = pressure
+
+        if self._intake_max_flow < flow:
+            self._intake_max_flow = flow
+
     def _handle_intake_finished(self, flow, pressure):
         """We are not giving patient air anymore."""
 
-        if self._currently_breathed_volume < self._data_store.flow_min_threshold.value and \
+        if self._currently_breathed_volume <\
+           self._data_store.flow_min_threshold.value and \
                 self._has_crossed_first_cycle:
 
             self.breathing_alert = AlertCodes.BREATHING_VOLUME_LOW
 
+        self._data_store.set_intake_peaks(self._intake_max_pressure, self._intake_max_pressure,
+                                self._currently_breathed_volume * 100000)
+
+        # reset values of last intake
         self._currently_breathed_volume = 0
+        self._intake_max_flow = 0
+        self._intake_max_pressure = 0
 
     def run(self):
         while True:
@@ -76,26 +92,21 @@ class Sampler(threading.Thread):
         logging.debug("Flow: %s" % flow_value)
         logging.debug("Pressure: %s" % pressure_value)
 
-        if pressure_value <= self._data_store.breathing_threshold:
+        if pressure_value <= self._data_store.breathing_threshold and\
+           self._intake_complete:
             logging.debug("-----------is_during_intake=False----------")
-            self._is_during_intake = False
+            self._handle_intake_finished(flow=flow_value,
+                                         pressure=pressure_value)
+            self._intake_complete = False
 
         if pressure_value > self._data_store.breathing_threshold:
             logging.debug("-----------is_during_intake=True-----------")
-            self._is_during_intake = True
-
-        if self._is_during_intake:
             self._handle_intake(flow=flow_value, pressure=pressure_value)
-
-        else:
-            self._handle_intake_finished(flow=flow_value,
-                                         pressure=pressure_value)
+            self._intake_complete = True
 
         self._data_store.set_flow_value(flow_value)
 
-        # TODO: Multiplied by 100000 just so it looks good on graph, delete this
-        self._data_store.update_volume_value(self._currently_breathed_volume * 100000)
-
         alert = Alert(self.breathing_alert | self.pressure_alert)
-        if alert != AlertCodes.OK and self._data_store.alerts_queue.last_alert != alert:
-            self._data_store.alerts_queue.enqueue_alert(alert)
+        if alert != AlertCodes.OK and\
+           self._data_store.alerts_queue.last_alert != alert:
+                self._data_store.alerts_queue.enqueue_alert(alert)

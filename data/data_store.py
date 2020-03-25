@@ -47,6 +47,8 @@ class DataStore(object):
         self.x_axis = range(0, self.samples_in_graph_amount)
 
         self.volume = 0
+        self.intake_peak_flow = 0
+        self.intake_peak_pressure = 0
 
         self.log_enabled = config["log_enabled"]
 
@@ -102,5 +104,7 @@ class DataStore(object):
         with self.lock:
             self.pressure_measurements.get(new_value)
 
-    def update_volume_value(self, new_value):
-        self.volume = new_value
+    def set_intake_peaks(self, flow, pressure, volume):
+        self.intake_peak_flow = flow
+        self.intake_peak_pressure = pressure
+        self.volume = volume
