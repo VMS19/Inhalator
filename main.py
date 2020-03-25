@@ -3,6 +3,7 @@ from logging.handlers import RotatingFileHandler
 
 from algo import Sampler
 from data_store import DataStore
+from drivers.hce_pressure_sensor import HcePressureSensor
 from drivers.mocks.mock_hce_pressure_sensor import MockHcePressureSensor
 from drivers.mocks.mock_sfm3200_flow_sensor import MockSfm3200
 from gui import GUI
@@ -35,7 +36,7 @@ def main():
     sound_device = SoundDevice()
     gui = GUI(store, sound_device)
     flow_sensor = MockSfm3200()
-    pressure_sensor = MockHcePressureSensor()
+    pressure_sensor = HcePressureSensor()
     sampler = Sampler(store, flow_sensor, pressure_sensor, gui.alert)
     gui.render()
     # Wait for GUI to render
