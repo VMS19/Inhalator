@@ -10,6 +10,7 @@ log = logging.getLogger(__name__)
 class Sampler(threading.Thread):
     SAMPLING_INTERVAL = 0.02  # sec
     MS_IN_MIN = 60 * 1000
+    VOLUME_CALIBRATION_MULTIPLYER = 100000
 
     def __init__(self, data_store, flow_sensor, pressure_sensor):
         super(Sampler, self).__init__()
@@ -54,8 +55,10 @@ class Sampler(threading.Thread):
 
             self.breathing_alert = AlertCodes.BREATHING_VOLUME_LOW
 
-        self._data_store.set_intake_peaks(self._intake_max_pressure, self._intake_max_pressure,
-                                self._current_intake_volume * 100000)
+        self._data_store.set_intake_peaks(self._intake_max_pressure,
+                                          self._intake_max_pressure,
+                                          self._current_intake_volume *
+                                          self.VOLUME_CALIBRATION_MULTIPLYER)
 
         # reset values of last intake
         self._current_intake_volume = 0
