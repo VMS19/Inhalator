@@ -80,7 +80,7 @@ class DataStore(object):
         with open(self.CONFIG_FILE, "w") as f:
             json.dump(config, f)
 
-    def get_flow_value(self, new_value):
+    def set_flow_value(self, new_value):
         with self.lock:
             # pop last item if queue is full
             if self.flow_measurements.full():
