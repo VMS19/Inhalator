@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+from threading import Lock
 
 from data.thresholds import AirFlowThreshold, PressureThreshold
 from data.alerts import AlertsQueue
@@ -49,6 +50,8 @@ class DataStore(object):
 
         self.alerts_queue = AlertsQueue()
 
+        self.lock = Lock()
+
     def __del__(self):
         self.save_to_file()
 
@@ -76,14 +79,14 @@ class DataStore(object):
             json.dump(config, f)
 
     def update_flow_values(self, new_value):
-        if len(self.flow_display_values) == len(self.x_axis):
+        with self.lock:
             self.flow_display_values.pop(0)
-        self.flow_display_values.append(new_value)
+            self.flow_display_values.append(new_value)
 
     def update_pressure_values(self, new_value):
-        if len(self.pressure_display_values) == len(self.x_axis):
+        with self.lock:
             self.pressure_display_values.pop(0)
-        self.pressure_display_values.append(new_value)
+            self.pressure_display_values.append(new_value)
 
     def update_volume_value(self, new_value):
         self.volume = new_value
