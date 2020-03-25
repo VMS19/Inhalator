@@ -1,0 +1,31 @@
+2020-03-24 18:10:13 DEBUG    Breathed: 0
+2020-03-24 18:10:13 DEBUG    Flow: 3
+2020-03-24 18:10:13 DEBUG    Pressure: 2.3478452735180326
+2020-03-24 18:10:13 DEBUG    -----------is_during_intake=False----------
+Traceback (most recent call last):
+2020-03-24 18:10:13 DEBUG    Breathed: 0
+  File "main.py", line 54, in <module>
+2020-03-24 18:10:13 DEBUG    Flow: 3
+2020-03-24 18:10:13 DEBUG    Pressure: 3.0947189745938886
+2020-03-24 18:10:13 DEBUG    -----------is_during_intake=False----------
+    main()
+  File "main.py", line 47, in main
+    gui.gui_update()
+  File "/home/pi/Inhalator/gui.py", line 313, in gui_update
+    self.update_pressure_graph()
+  File "/home/pi/Inhalator/gui.py", line 91, in update_pressure_graph
+    self.pressure_axis.draw_artist(self.pressure_graph)
+  File "/usr/lib/python3/dist-packages/matplotlib/axes/_base.py", line 2643, in draw_artist
+    a.draw(self._cachedRenderer)
+  File "/usr/lib/python3/dist-packages/matplotlib/artist.py", line 50, in draw_wrapper
+    return draw(artist, renderer, *args, **kwargs)
+  File "/usr/lib/python3/dist-packages/matplotlib/lines.py", line 728, in draw
+    self.recache()
+  File "/usr/lib/python3/dist-packages/matplotlib/lines.py", line 649, in recache
+    self._xy = np.column_stack(np.broadcast_arrays(x, y)).astype(float)
+  File "/usr/lib/python3/dist-packages/numpy/lib/stride_tricks.py", line 259, in broadcast_arrays
+    shape = _broadcast_shape(*args)
+  File "/usr/lib/python3/dist-packages/numpy/lib/stride_tricks.py", line 193, in _broadcast_shape
+    b = np.broadcast(*args[:32])
+ValueError: shape mismatch: objects cannot be broadcast to a single shape
+
