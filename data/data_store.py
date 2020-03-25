@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 class DataStore(object):
     CONFIG_FILE = os.path.abspath(os.path.join(THIS_DIRECTORY, "..", "config.json"))
     FLOW_MIN_Y, FLOW_MAX_Y = (0, 80)
-    PRESSURE_MIN_Y, PRESSURE_MAX_Y = (0, 40)
+    PRESSURE_MIN_Y, PRESSURE_MAX_Y = (0, 50)
     SYSTEM_SAMPLE_INTERVAL = 22 #KHZ
 
     MS_TO_SEC = 1000
