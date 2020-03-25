@@ -17,13 +17,14 @@ from graphics.right_menu_options import (MuteAlertsButton,
                                          ClearAlertsButton,
                                          LockThresholdsButton)
 
+from drivers.wd_driver import WdDriver
+
 class MasterFrame(object):
     def __init__(self, root, store):
         self.root = root
         self.store = store
 
         self.master_frame = Frame(master=self.root, bg="black")
-
         self.left_pane = LeftPane(self, store=store)
         self.right_pane = RightPane(self, store=store)
         self.center_pane = CenterPane(self, store=store)
@@ -103,11 +104,18 @@ class CenterPane(object):
 
         self.frame = Frame(master=self.root, bg="white",
                            height=self.height, width=self.width)
-
         self.blank_graph = BlankGraph(self.frame)
         self.flow_graph = AirFlowGraph(self, self.store, blank=self.blank_graph)
         self.pressure_graph = AirPressureGraph(self, self.store, blank=self.blank_graph)
 
+        self.wd = WdDriver()  
+
+    def PopQueueToList(self, q, lst):
+        had_values = not q.empty()
+        while not q.empty():
+            lst.pop(0)
+            lst.append(q.get())
+        return had_values
 
     @property
     def element(self):
@@ -124,6 +132,17 @@ class CenterPane(object):
             graph.render()
 
     def update(self):
+        # Get measurments from peripherals
+
+        arm_wd = self.PopQueueToList(self.store.pressure_measurements,
+            self.pressure_graph.pressure_display_values)
+        arm_wd &= self.PopQueueToList(self.store.flow_measurements,
+            self.flow_graph.flow_display_values)
+
+        # arm wd only if both queues had values
+        if arm_wd:
+            self.wd.arm_wd()
+
         for graph in self.graphs:
             graph.update()
 

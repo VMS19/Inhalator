@@ -50,6 +50,5 @@ def main():
         gui.gui_update()
         sleep(0.02)
 
-
 if __name__ == '__main__':
     main()
