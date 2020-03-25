@@ -2,6 +2,7 @@ import os
 import json
 import logging
 from threading import Lock
+from queue import Queue
 
 from data.thresholds import AirFlowThreshold, PressureThreshold
 from data.alerts import AlertsQueue
@@ -40,8 +41,9 @@ class DataStore(object):
             int((self.graph_seconds * self.MS_TO_SEC) /
                 self.SYSTEM_SAMPLE_INTERVAL)
 
-        self.flow_display_values = [0] * self.samples_in_graph_amount
-        self.pressure_display_values = [0] * self.samples_in_graph_amount
+        self.flow_measurements = Queue(maxsize=40)
+        self.pressure_measurements = Queue(maxsize=40)
+
         self.x_axis = range(0, self.samples_in_graph_amount)
 
         self.volume = 0
@@ -78,15 +80,27 @@ class DataStore(object):
         with open(self.CONFIG_FILE, "w") as f:
             json.dump(config, f)
 
-    def update_flow_values(self, new_value):
+    def set_flow_value(self, new_value):
         with self.lock:
-            self.flow_display_values.pop(0)
-            self.flow_display_values.append(new_value)
+            # pop last item if queue is full
+            if self.flow_measurements.full():
+                self.flow_measurements.get()
+            self.flow_measurements.put(new_value)
 
-    def update_pressure_values(self, new_value):
+    def set_pressure_value(self, new_value):
         with self.lock:
-            self.pressure_display_values.pop(0)
-            self.pressure_display_values.append(new_value)
+            # pop last item if queue is full
+            if self.pressure_measurements.full():
+                self.pressure_measurements.get()
+            self.pressure_measurements.put(new_value)
+
+    def get_flow_value(self, new_value):
+        with self.lock:
+            self.flow_measurements.get(new_value)
+
+    def get_pressure_value(self, new_value):
+        with self.lock:
+            self.pressure_measurements.get(new_value)
 
     def update_volume_value(self, new_value):
         self.volume = new_value
