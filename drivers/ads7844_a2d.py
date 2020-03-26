@@ -51,7 +51,8 @@ class Ads7844A2D(object):
     def _calibrate_a2d(self, pressure_value_m_bar):
         pass
 
-    def sample_a2d(self, channel, input_mode, power_down_mode):
+    def sample_a2d(self, channel, input_mode=MODE_SGL,
+                   power_down_mode=PD_DISABLED):
         try:
             start_byte = self.DEFAULT_CTRL_BYTE |
             (channel << self.CHANNEL_SELECT_SHIFT) |
