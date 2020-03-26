@@ -25,6 +25,7 @@ class Sampler(threading.Thread):
         self._intake_max_pressure = 0
         self._has_crossed_first_cycle = False
         self._is_during_intake = False
+        self._last_intake_time = 0
 
         # Alerts related
         self.breathing_alert = AlertCodes.OK
@@ -106,6 +107,13 @@ class Sampler(threading.Thread):
         if pressure_value > self._data_store.breathing_threshold:
             logging.debug("-----------is_during_intake=True-----------")
             self._handle_intake(flow=flow_value, pressure=pressure_value)
+
+            if not self._is_during_intake:
+                curr_time = time.time()
+                self._data_store.bpm = 1.0 / (
+                curr_time - self._last_intake_time) * 60
+                self._last_intake_time = curr_time
+
             self._is_during_intake = True
 
         self._data_store.set_flow_value(flow_value)
