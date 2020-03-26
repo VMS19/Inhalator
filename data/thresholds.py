@@ -53,5 +53,5 @@ class PressureThreshold(Threshold):
     UNIT = "cmH2O"
 
 class RespiratoryRateThreshold(Threshold):
-    NAME = "Resp. rate"
+    NAME = "Resp.\nrate"
     UNIT = "per min"
