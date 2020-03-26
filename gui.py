@@ -14,13 +14,13 @@ class GUI(object):
     """GUI class for Inhalator"""
     TEXT_SIZE = 10
 
-    def __init__(self, data_store):
+    def __init__(self, data_store, watchdog):
         self.store = data_store
         self.root = Tk()
         self.root.title("Inhalator")
         self.root.geometry('800x480')
         self.root.attributes("-fullscreen", True)
-        self.master_frame = MasterFrame(self.root, store=self.store)
+        self.master_frame = MasterFrame(self.root, watchdog, store=self.store)
 
     def exitProgram(self, sig, _):
         self.root.quit()
