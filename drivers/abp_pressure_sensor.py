@@ -8,7 +8,7 @@ log = logging.getLogger(__name__)
 
 class AbpPressureSensor(object):
     """Driver class for ABPMAND001PG2A3 Flow sensor."""
-    I2C_BUS = 2
+    I2C_BUS = 1
     I2C_ADDRESS = 0x28
     MEASURE_BYTE_COUNT = 0x2
     MAX_RANGE_PRESSURE = 0x1  # 1 psi
@@ -40,12 +40,13 @@ class AbpPressureSensor(object):
 
     def _calculate_pressure(self, pressure_reading):
         return (((pressure_reading - self.MIN_OUT_PRESSURE) *
-                self.SENSITIVITY) + self.MIN_PRESSURE)
+                self.SENSITIVITY) + self.MIN_RANGE_PRESSURE)
 
     def read(self):
         try:
-            read_size, data = self._pig.i2c_read_device(self._dev, self.MEASURE_BYTE_COUNT)
-            return (self._calculate_pressure(data))
+            read_size, pressure_raw = self._pig.i2c_read_device(self._dev, self.MEASURE_BYTE_COUNT)
+            pressure_reading = ((pressure_raw[1] & 0x3F) << 8) | (pressure_raw[2])
+            return (self._calculate_pressure(pressure_reading))
         except pigpio.error as e:
             log.error("Could not read from pressure sensor. "
                       "Is the pressure sensor connected?.")
