@@ -14,7 +14,7 @@ class AbpPressureSensor(object):
     MAX_RANGE_PRESSURE = 0x1  # 1 psi
     MIN_RANGE_PRESSURE = 0x00  # 0 psi
     MAX_OUT_PRESSURE = 0x3FFF
-    MIN_OUT_PRESSURE = 0x0
+    MIN_OUT_PRESSURE = 0x666
     SENSITIVITY = float(MAX_RANGE_PRESSURE - MIN_RANGE_PRESSURE) /\
         float(MAX_OUT_PRESSURE - MIN_OUT_PRESSURE)
 
@@ -45,7 +45,7 @@ class AbpPressureSensor(object):
     def read(self):
         try:
             read_size, pressure_raw = self._pig.i2c_read_device(self._dev, self.MEASURE_BYTE_COUNT)
-            pressure_reading = ((pressure_raw[1] & 0x3F) << 8) | (pressure_raw[2])
+            pressure_reading = ((pressure_raw[0] & 0x3F) << 8) | (pressure_raw[1])
             return (self._calculate_pressure(pressure_reading))
         except pigpio.error as e:
             log.error("Could not read from pressure sensor. "
