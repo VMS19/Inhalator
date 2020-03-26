@@ -12,7 +12,7 @@ class Sampler(threading.Thread):
     MS_IN_MIN = 60 * 1000
     OXYGEN_A2D_SAMPLE_CHANNELS = [0,1]
 
-    def __init__(self, data_store, flow_sensor, pressure_sensor):
+    def __init__(self, data_store, flow_sensor, pressure_sensor, oxygex_a2d):
         super(Sampler, self).__init__()
         self.daemon = True
         self._data_store = data_store  # type: DataStore
@@ -66,7 +66,7 @@ class Sampler(threading.Thread):
         pressure_value = self._pressure_sensor.read_pressure()
         oxygen_value = _oxygen_a2d.sample_a2d_channels(self.OXYGEN_A2D_SAMPLE_CHANNELS)
 
-        print(oxygen_value)
+        print("oxygen", oxygen_value)
 
         self._data_store.set_pressure_value(pressure_value)
 

@@ -4,7 +4,7 @@ from time import sleep
 
 from drivers.mocks.mock_hce_pressure_sensor import MockHcePressureSensor
 from drivers.mocks.mock_sfm3200_flow_sensor import MockSfm3200
-from drivers.ads7844a2d import Ads7844A2D
+from drivers.ads7844_a2d import Ads7844A2D
 from data.data_store import DataStore
 from gui import GUI
 from algo import Sampler
