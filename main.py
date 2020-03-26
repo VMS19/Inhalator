@@ -72,7 +72,7 @@ def main():
     log = configure_logging(args.verbose, store)
 
     # Initialize all drivers, or mocks if in simulation mode
-    if args.simulate or os.uname()[1] is not 'raspberrypi':
+    if args.simulate or os.uname()[1] != 'raspberrypi':
         log.info("Running in simulation mode! simulating: "
                  "flow, pressure sensors, and watchdog")
         drivers = DriverFactory(simulation_mode=True)
