@@ -1,4 +1,4 @@
-class Threshold(object):
+class Threshold(object):  # TODO: Add option to turn off
     NAME = NotImplemented
     UNIT = NotImplemented
     MINIMAL_VALUE = 0
@@ -25,38 +25,16 @@ class Threshold(object):
         self.max = threshold.max
 
     def increase_min(self):
-        if self.min == self.OFF:
-            self.min = self.MINIMAL_VALUE
-
-        else:
-            self.min += self.step
+        self.min += self.step
 
     def increase_max(self):
-        if self.max == self.OFF:
-            self.max = self.MINIMAL_VALUE
-
-        else:
-            self.max += self.step
+        self.max += self.step
 
     def decrease_min(self):
-        if self.min == self.OFF:
-            return
-
-        if self.min == self.MINIMAL_VALUE:
-            self.min = self.OFF
-
-        else:
-            self.min -= self.step
+        self.min -= self.step
 
     def decrease_max(self):
-        if self.max == self.OFF:
-            return
-
-        if self.max == self.MINIMAL_VALUE:
-            self.max = self.OFF
-
-        else:
-            self.max -= self.step
+        self.max -= self.step
 
 
 
