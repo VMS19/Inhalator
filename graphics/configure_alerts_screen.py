@@ -19,6 +19,7 @@ THIS_FILE = __file__
 THIS_DIRECTORY = os.path.dirname(THIS_FILE)
 RESOURCES_DIRECTORY = os.path.join(os.path.dirname(THIS_DIRECTORY), "resources")
 
+
 class ThresholdButton(Button):
     def __init__(self, parent=NotImplemented, is_min=True, **kw):
         self.parent = parent
@@ -67,13 +68,15 @@ class Section(object):
         self.original_threshold = self.threshold.copy()
 
         self.frame = Frame(self.root, borderwidth=2, bg=self.BG)
-        self.name_label = Label(master=self.frame)
+        self.name_label = Label(master=self.frame, font=("Courrier", 24))
         self.unit_label = Label(master=self.frame)
-        self.max_button = ThresholdButton(master=self.frame, parent=self, is_min=False)
+        self.max_button = ThresholdButton(master=self.frame, parent=self, is_min=False,
+                                          font=("Courrier", 20))
         self.minmax_divider = Label(master=self.frame, text="---",
                                     anchor="center", bg="#2196F3",
                                     foreground="blue")
-        self.min_button = ThresholdButton(master=self.frame, parent=self, is_min=True)
+        self.min_button = ThresholdButton(master=self.frame, parent=self, is_min=True,
+                                          font=("Courrier", 20))
 
         self.max_button.subscribe(self.parent, self.parent.on_threshold_button_click)
         self.min_button.subscribe(self.parent, self.parent.on_threshold_button_click)
@@ -100,8 +103,8 @@ class Section(object):
 
         self.name_label.configure(text=self.threshold.NAME)
         self.unit_label.configure(text=self.threshold.UNIT)
-        self.max_button.configure(text=self.threshold.max)
-        self.min_button.configure(text=self.threshold.min)
+        self.max_button.configure(text="MAX\n{}".format(self.threshold.max))
+        self.min_button.configure(text="MIN\n{}".format(self.threshold.min))
 
 
 class VTISection(Section):
