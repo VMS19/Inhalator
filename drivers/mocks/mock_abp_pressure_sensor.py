@@ -9,7 +9,7 @@ class MockAbpPressureSensor(object):
         pass
 
     def read_pressure(self):
-        value = sin(self.sample_x) * 10
+        value = sin(self.sample_x) * 0.25
         if value < 0:
             value = 0
 
@@ -17,5 +17,5 @@ class MockAbpPressureSensor(object):
 
         # if 3.1 <= self.sample_x <= 3.3:
         #     return 200
-        return value + 3
+        return value
 
