@@ -69,7 +69,6 @@ def main():
     store = DataStore.load_from_config()
     signal.signal(signal.SIGTERM, handle_sigterm)
     args = parse_args()
-    store = DataStore()
     log = configure_logging(args.verbose, store)
 
     # Initialize all drivers, or mocks if in simulation mode
