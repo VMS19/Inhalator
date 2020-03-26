@@ -89,8 +89,8 @@ class Section(object):
         self.threshold.load_from(self.original_threshold)
 
     def update(self):
-        self.max_button.configure(text=self.threshold.max)
-        self.min_button.configure(text=self.threshold.min)
+        self.max_button.configure(text="MAX\n{}".format(self.threshold.max))
+        self.min_button.configure(text="MIN\n{}".format(self.threshold.min))
 
     def render(self):
         self.frame.place(relx=(0.2) * self.INDEX,
