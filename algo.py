@@ -78,6 +78,7 @@ class Sampler(threading.Thread):
         # Read from sensors
         flow_value = self._flow_sensor.read_flow_slm() * self.ML_IN_LITER
         pressure_value = self._pressure_sensor.read_pressure()
+        print("pressure ", pressure_value)
 
         self._data_store.set_pressure_value(pressure_value)
 

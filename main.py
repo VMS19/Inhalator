@@ -5,7 +5,7 @@ import signal
 from logging.handlers import RotatingFileHandler
 from time import sleep
 
-from drivers.mocks.mock_hce_pressure_sensor import MockHcePressureSensor
+from drivers.abp_pressure_sensor import AbpPressureSensor
 from drivers.mocks.mock_sfm3200_flow_sensor import MockSfm3200
 from data.data_store import DataStore
 from gui import Application
@@ -57,7 +57,7 @@ def main():
 
     app = Application(store)
     flow_sensor = MockSfm3200()
-    pressure_sensor = MockHcePressureSensor()
+    pressure_sensor = AbpPressureSensor()
     sampler = Sampler(store, flow_sensor, pressure_sensor)
     app.render()
     sampler.start()

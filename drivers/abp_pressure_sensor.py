@@ -44,7 +44,8 @@ class AbpPressureSensor(object):
 
     def read_pressure(self):
         try:
-            self._pig.i2c_read_device(self._dev, self.MEASURE_BYTE_COUNT)
+            read_size, data = self._pig.i2c_read_device(self._dev, self.MEASURE_BYTE_COUNT)
+            return (self._calculate_pressure(data))
         except pigpio.error as e:
             log.error("Could not read from pressure sensor. "
                       "Is the pressure sensor connected?.")
