@@ -15,7 +15,7 @@ class GraphSummary(object):
         self.parent = parent
         self.store = store
         self.root = parent.element
-        self.frame = Frame(master=self.root, bg="white")
+        self.frame = Frame(master=self.root)
         self.value_label = Label(master=self.frame, text="HELLO",
                                  font=("Roboto", 30),
                                  bg=Theme.active().SURFACE,
