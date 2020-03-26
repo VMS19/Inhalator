@@ -45,7 +45,7 @@ class FlowThreshold(Threshold):
 
 class VolumeThreshold(Threshold):
     NAME = "Volume"
-    UNIT = "L/min"
+    UNIT = "mL/min"
 
 
 class PressureThreshold(Threshold):

@@ -39,6 +39,9 @@ class DataStore(object):
         self.pressure_measurements = Queue(maxsize=40)
         self.x_axis = range(0, self.samples_in_graph_amount)
 
+        self.intake_peak_flow = 0
+        self.intake_peak_pressure = 0
+
         self.alerts_queue = AlertsQueue()
         self.lock = Lock()
 
@@ -66,13 +69,15 @@ class DataStore(object):
 
             graph_seconds = config["graph_seconds"]
             breathing_threshold = config["threshold"]["breathing_threshold"]
+            log_enabled = config["log_enabled"]
 
             return cls(flow_threshold=flow,
                        volume_threshold=volume,
                        pressure_threshold=pressure,
                        resp_rate_threshold=resp_rate,
                        graph_seconds=graph_seconds,
-                       breathing_threshold=breathing_threshold)
+                       breathing_threshold=breathing_threshold,
+                       log_enabled=log_enabled)
 
         except Exception as e:
             log.exception("Could not read log file, using default values", e)
@@ -139,5 +144,7 @@ class DataStore(object):
         with self.lock:
             self.pressure_measurements.get(new_value)
 
-    def set_volume_value(self, new_value):
-        self.volume = new_value
+    def set_intake_peaks(self, flow, pressure, volume):
+        self.intake_peak_flow = flow
+        self.intake_peak_pressure = pressure
+        self.volume = volume

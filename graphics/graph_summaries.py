@@ -45,7 +45,7 @@ class GraphSummary(object):
 
 class PressurePeakSummary(GraphSummary):
     def value(self):
-        return "{:.2f}".format(self.parent.parent.center_pane.pressure_graph.pressure_display_values[-1])
+        return "{:.2f}".format(self.store.intake_peak_pressure)
 
     def name(self):
         return "pPeak"
