@@ -16,17 +16,16 @@ from graphics.right_menu_options import (MuteAlertsButton,
                                          LockThresholdsButton)
 from graphics.themes import Theme
 
-from drivers.wd_driver import WdDriver
 
 class MasterFrame(object):
-    def __init__(self, root, store):
+    def __init__(self, root, watchdog, store):
         self.root = root
         self.store = store
 
         self.master_frame = Frame(master=self.root, bg="black")
         self.left_pane = LeftPane(self, store=store)
         self.right_pane = RightPane(self, store=store)
-        self.center_pane = CenterPane(self, store=store)
+        self.center_pane = CenterPane(self, watchdog, store=store)
         self.top_pane = TopPane(self, store=store)
         self.bottom_pane = BottomPane(self, store=store)
 
@@ -90,8 +89,9 @@ class LeftPane(object):
 
 
 class CenterPane(object):
-    def __init__(self, parent, store):
+    def __init__(self, parent, watchdog, store):
         self.parent = parent
+        self.watchdog = watchdog
         self.store = store
 
         self.root = parent.element
@@ -106,7 +106,6 @@ class CenterPane(object):
         self.blank_graph = BlankGraph(self.frame)
         self.flow_graph = FlowGraph(self, self.store, blank=self.blank_graph)
         self.pressure_graph = AirPressureGraph(self, self.store, blank=self.blank_graph)
-        self.wd = WdDriver()  
 
     def pop_queue_to_list(self, q, lst):
         # pops all queue values into list, returns if items appended to queue
@@ -137,15 +136,14 @@ class CenterPane(object):
             self.pressure_graph.pressure_display_values)
         had_flow_change = self.pop_queue_to_list(self.store.flow_measurements,
             self.flow_graph.flow_display_values)
-        arm_wd = had_flow_change & had_pressure_change
-
-        # arm wd only if both queues had values
-        if arm_wd:
-            self.wd.arm_wd()
 
         for graph in self.graphs:
             graph.update()
 
+        #Todo: Move outside of gui thread. arm_wd causes 50ms sleep!
+        # arm wd only if both queues had sampling values
+        if had_flow_change and had_pressure_change:
+            self.watchdog.arm_wd()
 
 class RightPane(object):
     def __init__(self, parent, store):
