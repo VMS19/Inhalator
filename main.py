@@ -6,6 +6,7 @@ import signal
 from logging.handlers import RotatingFileHandler
 from time import sleep
 
+from drivers.driver_factory import DriverFactory
 from data.data_store import DataStore
 from gui import Application
 from algo import Sampler
@@ -36,7 +37,7 @@ def configure_logging(level, store):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--verbose", "-v", action="count", default=0)
-    parser.add_argument("--simulate", "-s", action='store_false')
+    parser.add_argument("--simulate", "-s", action='store_true')
     args = parser.parse_args()
     args.verbose = max(0, logging.WARNING - (10 * args.verbose))
     return args
@@ -58,20 +59,14 @@ def main():
     if args.simulate or os.uname()[1] is not 'raspberrypi':
         log.info("Running in simulation mode! simulating: "
                  "flow, pressure sensors, and watchdog")
-        from drivers.mocks.mock_hce_pressure_sensor import MockHcePressureSensor
-        from drivers.mocks.mock_sfm3200_flow_sensor import MockSfm3200
-        from drivers.mocks.mock_wd_driver import MockWdDriver
-        flow_sensor = MockSfm3200()
-        pressure_sensor = MockHcePressureSensor()
-        watchdog = MockWdDriver()
+        drivers = DriverFactory(simulation_mode=True)
 
     else:
-        from drivers.hce_pressure_sensor import HcePressureSensor
-        from drivers.sfm3200_flow_sensor import Sfm3200
-        from drivers.wd_driver import WdDriver
-        flow_sensor = Sfm3200()
-        pressure_sensor = HcePressureSensor()
-        watchdog = WdDriver()
+        drivers = DriverFactory(simulation_mode=False)
+
+    pressure_sensor = drivers.get_driver("pressure")
+    flow_sensor = drivers.get_driver("flow")
+    watchdog = drivers.get_driver("wd")
 
     sound_device = SoundDevice()
     store.alerts_queue.subscribe(sound_device, sound_device.on_alert)
