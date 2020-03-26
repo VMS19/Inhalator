@@ -25,13 +25,13 @@ class DriverFactory(object):
 
     @classmethod
     def get_mock_pressure_driver(cls):
-        from drivers.mocks.mock_hce_pressure_sensor import MockHcePressureSensor
-        return MockHcePressureSensor()
+        from drivers.mocks.mock_pressure_sensor import MockPressureSensor
+        return MockPressureSensor()
 
     @classmethod
     def get_mock_flow_driver(cls):
-        from drivers.mocks.mock_sfm3200_flow_sensor import MockSfm3200
-        return MockSfm3200()
+        from drivers.mocks.mock_air_flow_sensor import MockAirFlowSensor
+        return MockAirFlowSensor()
 
     @classmethod
     def get_mock_wd_driver(cls):

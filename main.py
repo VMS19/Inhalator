@@ -13,6 +13,7 @@ from gui import Application
 from algo import Sampler
 from sound import SoundDevice
 
+
 class BroadcastHandler(logging.handlers.DatagramHandler):
     '''
     A handler for the python logging system which is able to broadcast packets.
@@ -23,6 +24,7 @@ class BroadcastHandler(logging.handlers.DatagramHandler):
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         return sock
+
 
 def configure_logging(level, store):
     logger = logging.getLogger()
