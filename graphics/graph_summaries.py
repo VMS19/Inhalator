@@ -83,7 +83,7 @@ class VolumeSummary(GraphSummary):
 
 class BPMSummary(GraphSummary):
     def value(self):
-        return 7
+        return "{:.0f}".format(self.store.bpm)
 
     def name(self):
         return "bpm"
