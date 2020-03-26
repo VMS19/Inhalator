@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 class Sampler(threading.Thread):
     SAMPLING_INTERVAL = 0.02  # sec
     MS_IN_MIN = 60 * 1000
-    OXYGEN_A2D_SAMPLE_CHANNELS = [0,1]
+    OXYGEN_A2D_SAMPLE_CHANNELS = [0]
 
     def __init__(self, data_store, flow_sensor, pressure_sensor, oxygex_a2d):
         super(Sampler, self).__init__()
