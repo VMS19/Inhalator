@@ -90,7 +90,6 @@ def main():
     store.alerts_queue.subscribe(sound_device, sound_device.on_alert)
 
     app = Application(store, watchdog)
-
     sampler = Sampler(store, flow_sensor, pressure_sensor)
     app.render()
     sampler.start()
