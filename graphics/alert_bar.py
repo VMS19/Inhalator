@@ -1,6 +1,8 @@
 # Tkinter stuff
 import platform
 
+from graphics.themes import Theme
+
 if platform.python_version() < '3':
     from Tkinter import *
 
@@ -27,9 +29,13 @@ class IndicatorAlertBar(object):
         self.height = self.parent.height
         self.width = self.parent.width
 
-        self.bar = Frame(self.root, bg='green', height=self.height, width=self.width)
-        self.message_label = Label(master=self.bar, font=("Courier", 40),
-                                   text="OK", bg='green', fg='black')
+        self.bar = Frame(self.root, bg=Theme.active().BACKGROUND,
+                         height=self.height, width=self.width)
+        self.message_label = Label(master=self.bar,
+                                   font=("Roboto", 40),
+                                   text="OK",
+                                   bg=Theme.active().BACKGROUND,
+                                   fg=Theme.active().TXT_ON_BG)
 
     @property
     def element(self):
@@ -48,9 +54,12 @@ class IndicatorAlertBar(object):
             self.set_alert(self.error_dict[last_alert_code])
 
     def set_no_alert(self):
-        self.bar.config(bg="green")
-        self.message_label.config(bg="green", fg="black", text="OK")
+        self.bar.config(bg=Theme.active().BACKGROUND)
+        self.message_label.config(bg=Theme.active().BACKGROUND,
+                                  fg=Theme.active().TXT_ON_BG,
+                                  text="OK")
 
     def set_alert(self, message):
-        self.bar.config(bg="red")
-        self.message_label.config(bg="red", fg="black", text=message)
+        self.bar.config(bg=Theme.active().ERROR)
+        self.message_label.config(bg=Theme.active().ERROR,
+                                  fg=Theme.active().TXT_ON_ERROR, text=message)
