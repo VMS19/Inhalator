@@ -19,6 +19,15 @@ class Theme(object):
     TXT_ON_OK = NotImplemented
     TXT_ON_ERROR = NotImplemented
 
+    ALERT_BAR_OK = NotImplemented
+    ALERT_BAR_OK_TXT = NotImplemented
+
+    RIGHT_SIDE_BUTTON_BG = NotImplemented
+    RIGHT_SIDE_BUTTON_FG = NotImplemented
+    RIGHT_SIDE_BUTTON_BG_ACTIVE = NotImplemented
+    RIGHT_SIDE_BUTTON_FG_ACTIVE = NotImplemented
+
+
     @classmethod
     def active(cls):
         # This is an abstract Java Factory reduced to a static
@@ -64,3 +73,11 @@ class DarkTheme(Theme):
     TXT_ON_BG = "#ffffff"
     TXT_ON_OK = "#000000"
     TXT_ON_ERROR = "#ffffff"
+
+    ALERT_BAR_OK = "#33691E"
+    ALERT_BAR_OK_TXT = "#ffffff"
+
+    RIGHT_SIDE_BUTTON_BG = "#3c3149"
+    RIGHT_SIDE_BUTTON_FG = "#d7b1f9"
+    RIGHT_SIDE_BUTTON_BG_ACTIVE = "#d7b1f9"
+    RIGHT_SIDE_BUTTON_FG_ACTIVE = "#d7b1f9"

@@ -29,13 +29,13 @@ class IndicatorAlertBar(object):
         self.height = self.parent.height
         self.width = self.parent.width
 
-        self.bar = Frame(self.root, bg=Theme.active().BACKGROUND,
+        self.bar = Frame(self.root, bg=Theme.active().ALERT_BAR_OK,
                          height=self.height, width=self.width)
         self.message_label = Label(master=self.bar,
                                    font=("Roboto", 40),
                                    text="OK",
-                                   bg=Theme.active().BACKGROUND,
-                                   fg=Theme.active().TXT_ON_BG)
+                                   bg=Theme.active().ALERT_BAR_OK,
+                                   fg=Theme.active().ALERT_BAR_OK_TXT,)
 
     @property
     def element(self):
@@ -54,9 +54,9 @@ class IndicatorAlertBar(object):
             self.set_alert(self.error_dict[last_alert_code])
 
     def set_no_alert(self):
-        self.bar.config(bg=Theme.active().BACKGROUND)
-        self.message_label.config(bg=Theme.active().BACKGROUND,
-                                  fg=Theme.active().TXT_ON_BG,
+        self.bar.config(bg=Theme.active().ALERT_BAR_OK)
+        self.message_label.config(bg=Theme.active().ALERT_BAR_OK,
+                                  fg=Theme.active().ALERT_BAR_OK_TXT,
                                   text="OK")
 
     def set_alert(self, message):
