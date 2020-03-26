@@ -1,3 +1,4 @@
+import os
 import argparse
 import logging
 import signal
@@ -6,8 +7,7 @@ import socket
 from logging.handlers import RotatingFileHandler
 from time import sleep
 
-from drivers.mocks.mock_hce_pressure_sensor import MockHcePressureSensor
-from drivers.mocks.mock_sfm3200_flow_sensor import MockSfm3200
+from drivers.driver_factory import DriverFactory
 from data.data_store import DataStore
 from gui import Application
 from algo import Sampler
@@ -47,11 +47,13 @@ def configure_logging(level, store):
     logger.addHandler(ch)
     logger.addHandler(sh)
     logger.disabled = not store.log_enabled
+    return logger
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--verbose", "-v", action="count", default=0)
+    parser.add_argument("--simulate", "-s", action='store_true')
     args = parser.parse_args()
     args.verbose = max(0, logging.WARNING - (10 * args.verbose))
     return args
@@ -67,13 +69,26 @@ def main():
     store = DataStore.load_from_config()
     signal.signal(signal.SIGTERM, handle_sigterm)
     args = parse_args()
-    configure_logging(args.verbose, store)
+    log = configure_logging(args.verbose, store)
+
+    # Initialize all drivers, or mocks if in simulation mode
+    if args.simulate or os.uname()[1] != 'raspberrypi':
+        log.info("Running in simulation mode! simulating: "
+                 "flow, pressure sensors, and watchdog")
+        drivers = DriverFactory(simulation_mode=True)
+
+    else:
+        drivers = DriverFactory(simulation_mode=False)
+
+    pressure_sensor = drivers.get_driver("pressure")
+    flow_sensor = drivers.get_driver("flow")
+    watchdog = drivers.get_driver("wd")
+
     sound_device = SoundDevice()
     store.alerts_queue.subscribe(sound_device, sound_device.on_alert)
 
-    app = Application(store)
-    flow_sensor = MockSfm3200()
-    pressure_sensor = MockHcePressureSensor()
+    app = Application(store, watchdog)
+
     sampler = Sampler(store, flow_sensor, pressure_sensor)
     app.render()
     sampler.start()
