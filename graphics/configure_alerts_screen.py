@@ -14,6 +14,7 @@ from data.thresholds import (VolumeThreshold, PressureThreshold,
                              RespiratoryRateThreshold, FlowThreshold)
 
 from graphics.imagebutton import ImageButton
+from graphics.themes import Theme
 
 THIS_FILE = __file__
 THIS_DIRECTORY = os.path.dirname(THIS_FILE)
@@ -25,7 +26,11 @@ class ThresholdButton(Button):
         self.parent = parent
         self.is_min = is_min
         super(ThresholdButton, self).__init__(**kw)
-        self.configure(bg="#2196F3", activebackground="#42A5F5", command=self.publish)
+        self.configure(bg="#3c3149", fg="#d7b1f9",
+                       activebackground="#433850",
+                       activeforeground="#e3e1e5",
+                       borderwidth=0, relief="flat",
+                       command=self.publish)
         self.subscribers = {}
 
     def toggle(self):
@@ -37,13 +42,19 @@ class ThresholdButton(Button):
 
     @property
     def selected(self):
-        return self["bg"] == "#FF9800"
+        return self["bg"] == "#52475d"
 
     def select(self):
-        self.configure(bg="#FF9800", activebackground="#FFA726")
+        self.configure(bg="#52475d",
+                       fg="#f7f6f7",
+                       activeforeground="#f7f6f7",
+                       borderwidth=2,
+                       activebackground="#52475d")
 
     def deselect(self):
-        self.configure(bg="#2196F3", activebackground="#42A5F5")
+        self.configure(bg="#3c3149", fg="#d7b1f9",
+                       activebackground="#433850",
+                       activeforeground="#e3e1e5",)
 
     def subscribe(self, object, callback):
         self.subscribers[object] = callback
@@ -67,16 +78,23 @@ class Section(object):
 
         self.original_threshold = self.threshold.copy()
 
-        self.frame = Frame(self.root, borderwidth=2, bg=self.BG)
-        self.name_label = Label(master=self.frame, font=("Courrier", 24))
-        self.unit_label = Label(master=self.frame)
+        self.frame = Frame(self.root, bg="red")
+        self.name_label = Label(master=self.frame, font=("Roboto", 24),
+                                bg=Theme.active().SURFACE,
+                                fg=Theme.active().TXT_ON_SURFACE)
+        self.unit_label = Label(master=self.frame, font=("Roboto", 12),
+                                bg=Theme.active().SURFACE,
+                                fg=Theme.active().TXT_ON_SURFACE)
         self.max_button = ThresholdButton(master=self.frame, parent=self, is_min=False,
-                                          font=("Courrier", 20))
-        self.minmax_divider = Label(master=self.frame, text="---",
-                                    anchor="center", bg="#2196F3",
-                                    foreground="blue")
-        self.min_button = ThresholdButton(master=self.frame, parent=self, is_min=True,
-                                          font=("Courrier", 20))
+                                          font=("Roboto", 20))
+        self.minmax_divider = Label(master=self.frame,
+                                    anchor="center",
+                                    bg=Theme.active().SURFACE,
+                                    borderwidth=1)
+        self.min_button = ThresholdButton(master=self.frame,
+                                          parent=self,
+                                          is_min=True,
+                                          font=("Roboto", 20))
 
         self.max_button.subscribe(self.parent, self.parent.on_threshold_button_click)
         self.min_button.subscribe(self.parent, self.parent.on_threshold_button_click)
@@ -98,7 +116,7 @@ class Section(object):
         self.name_label.place(relx=0, rely=0, relwidth=1, relheight=0.17)
         self.unit_label.place(relx=0, rely=0.17, relwidth=1, relheight=0.08)
         self.max_button.place(relx=0, rely=0.25, relwidth=1, relheight=0.25)
-        self.minmax_divider.place(relx=0, rely=0.5, relwidth=1, relheight=0.25)
+        self.minmax_divider.place(relx=0, rely=0.499, relwidth=1, relheight=0.26)
         self.min_button.place(relx=0, rely=0.75, relwidth=1, relheight=0.25)
 
         self.name_label.configure(text=self.threshold.NAME)
@@ -109,7 +127,6 @@ class Section(object):
 
 class VTISection(Section):
     INDEX = 0
-    BG = "indigo"
 
     @property
     def threshold(self):
@@ -117,7 +134,6 @@ class VTISection(Section):
 
 class MVISection(Section):
     INDEX = 1
-    BG = "green"
 
     @property
     def threshold(self):
@@ -125,7 +141,6 @@ class MVISection(Section):
 
 class PressureSection(Section):
     INDEX = 2
-    BG = "orange"
 
     @property
     def threshold(self):
@@ -133,7 +148,6 @@ class PressureSection(Section):
 
 class RespRateSection(Section):
     INDEX = 3
-    BG = "cyan"
 
     @property
     def threshold(self):
@@ -141,23 +155,27 @@ class RespRateSection(Section):
 
 
 class UpOrDownSection(object):
-    DOWN_IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY, "baseline_less_black_18dp.png")
-    UP_IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY, "baseline_more_black_18dp.png")
+    DOWN_IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY, "baseline_less_white_36dp.png")
+    UP_IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY, "baseline_more_white_36dp.png")
 
     def __init__(self, parent, root, store):
         self.parent = parent
         self.root = root
         self.store = store
 
-        self.frame = Frame(master=root, bg="gold")
+        self.frame = Frame(master=root, bd=0, bg="red",)
         self.up_button = ImageButton(master=self.frame,
                                      image_path=self.UP_IMAGE_PATH,
                                      compound="center",
+                                     bg=Theme.active().SURFACE,
+                                     activebackground="#514959",
                                      command=self.parent.on_up_button_click)
 
         self.down_button = ImageButton(master=self.frame,
                                        image_path=self.DOWN_IMAGE_PATH,
                                        compound="center",
+                                       bg=Theme.active().SURFACE,
+                                       activebackground="#514959",
                                        command=self.parent.on_down_button_click)
 
     def render(self):
@@ -167,27 +185,27 @@ class UpOrDownSection(object):
 
 
 class ConfirmCancelSection(object):
-    CONFIRM_IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY, "baseline_done_black_18dp.png")
-    CANCEL_IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY, "baseline_cancel_black_18dp.png")
+    CONFIRM_IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY, "baseline_done_black_36dp.png")
+    CANCEL_IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY, "baseline_cancel_black_36dp.png")
 
     def __init__(self, parent, root, store):
         self.parent = parent
         self.root = root
         self.store = store
 
-        self.frame = Frame(root, bg="gray")
+        self.frame = Frame(root)
         self.confirm_button = ImageButton(master=self.frame,
                                           image_path=self.CONFIRM_IMAGE_PATH,
                                           compound="center",
-                                          bg="#4CAF50",
-                                          activebackground="#66BB6A",
+                                          bg=Theme.active().OK,
+                                          activebackground=Theme.active().OK_ACTIVE,
                                           command = self.parent.confirm)
 
         self.cancel_button = ImageButton(master=self.frame,
                                          image_path=self.CANCEL_IMAGE_PATH,
                                          compound="center",
-                                         bg="#F44336",
-                                         activebackground="#EF5350",
+                                         bg="#b00020",
+                                         activebackground="#cf6679",
                                          command=self.parent.cancel)
 
     def render(self):
@@ -205,7 +223,7 @@ class ConfigureAlarmsScreen(object):
         self.selected_threshold = None
         self.is_min = None
 
-        self.configure_alerts_screen = Frame(master=self.root, bg="purple")
+        self.configure_alerts_screen = Frame(master=self.root)
 
         # Sections
         self.flow_section = VTISection(self, self.configure_alerts_screen, self.store)
