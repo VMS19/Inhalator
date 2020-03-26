@@ -80,34 +80,35 @@ class Sampler(threading.Thread):
 
         # Read from sensors
         flow_value = self._flow_sensor.read() * self.ML_IN_LITER
-        pressure_value = self._pressure_sensor.read() * self.PSI_TO_MILLIBAR
+        pressure_mbar = self._pressure_sensor.read() * self.PSI_TO_MILLIBAR
+        flow_value = self._flow_sensor.read_flow_slm() * self.ML_IN_LITER
 
-        self._data_store.set_pressure_value(pressure_value)
+        self._data_store.set_pressure_value(pressure_mbar)
 
         if self._data_store.pressure_threshold.max != "off" and \
-                pressure_value > self._data_store.pressure_threshold.max:
+                pressure_mbar > self._data_store.pressure_threshold.max:
             # Above healthy lungs pressure
             self.pressure_alert = AlertCodes.PRESSURE_HIGH
 
         if self._data_store.pressure_threshold.max != "off" and \
-                pressure_value < self._data_store.pressure_threshold.min:
+                pressure_mbar < self._data_store.pressure_threshold.min:
             # Below healthy lungs pressure
             self.pressure_alert = AlertCodes.PRESSURE_LOW
 
         logging.debug("Breathed: %s" % self._current_intake_volume)
         logging.debug("Flow: %s" % flow_value)
-        logging.debug("Pressure: %s" % pressure_value)
+        logging.debug("Pressure: %s" % pressure_mbar)
 
-        if pressure_value <= self._data_store.breathing_threshold and\
+        if pressure_mbar <= self._data_store.breathing_threshold and\
            self._is_during_intake:
             logging.debug("-----------is_during_intake=False----------")
             self._handle_intake_finished(flow=flow_value,
-                                         pressure=pressure_value)
+                                         pressure=pressure_mbar)
             self._is_during_intake = False
 
-        if pressure_value > self._data_store.breathing_threshold:
+        if pressure_mbar > self._data_store.breathing_threshold:
             logging.debug("-----------is_during_intake=True-----------")
-            self._handle_intake(flow=flow_value, pressure=pressure_value)
+            self._handle_intake(flow=flow_value, pressure=pressure_mbar)
 
             if not self._is_during_intake:
                 # Beginning of intake
