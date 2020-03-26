@@ -1,3 +1,4 @@
 pigpio
 matplotlib
 spidev
+cached_property
