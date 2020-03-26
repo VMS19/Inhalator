@@ -10,9 +10,6 @@ class MockPressureSensor(object):
         pass
 
     def read_pressure(self):
-        value = sin(self.sample_x) * 15
-        if value < 0:
-            value = 0
-
+        value = max(0, sin(self.sample_x) * 15)
         self.sample_x += self.sample_interval
         return value + self.PEEP
