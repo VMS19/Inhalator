@@ -26,6 +26,7 @@ class Sampler(threading.Thread):
         self._has_crossed_first_cycle = False
         self._is_during_intake = False
         self._last_intake_time = 0
+        self._last_sample_time = 0
 
         # Alerts related
         self.breathing_alert = AlertCodes.OK
@@ -33,9 +34,11 @@ class Sampler(threading.Thread):
 
     def _handle_intake(self, flow, pressure):
         """We are giving patient air."""
-        sampling_interval_in_minutes = self.SAMPLING_INTERVAL / self.MS_IN_MIN
+        curr_time = time.time()
+        dx_minutes = (curr_time - self._last_sample_time) / 60.0
         self._current_intake_volume += \
-            (flow * self.ML_IN_LITER * sampling_interval_in_minutes)
+            (flow * dx_minutes)
+        self._last_intake_time = curr_time
         logging.debug("Current Intake volume: %s" % self._current_intake_volume)
 
         if self._data_store.volume_threshold.max != 'off' and \
