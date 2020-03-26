@@ -19,9 +19,10 @@ class ClearAlertsButton(object):
                              command=self.on_click,
                              font=("Roboto", 10),
                              relief="flat",
-                             bg="#3c3149", fg="#d7b1f9",
-                             activebackground="#433850",
-                             activeforeground="#e3e1e5",
+                             bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
+                             fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
+                             activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
+                             activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,
                              text="Clear")
 
     def on_click(self):
@@ -44,9 +45,10 @@ class MuteAlertsButton(object):
                              font=("Roboto", 10),
                              text="Mute",
                              relief="flat",
-                             bg="#3c3149", fg="#d7b1f9",
-                             activebackground="#433850",
-                             activeforeground="#e3e1e5",)
+                             bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
+                             fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
+                             activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
+                             activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,)
 
     def on_click(self):
         print("Not Implemented Yet")
@@ -67,9 +69,10 @@ class LockThresholdsButton(object):
                              command=self.on_click,
                              text="Lock",relief="flat",
                              font=("Roboto", 10),
-                             bg="#3c3149", fg="#d7b1f9",
-                             activebackground="#433850",
-                             activeforeground="#e3e1e5",)
+                             bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
+                             fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
+                             activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
+                             activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,)
 
     def on_click(self):
         print("Not Implemented Yet")
