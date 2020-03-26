@@ -1,20 +1,18 @@
 from math import sin
 
 
-class MockHcePressureSensor(object):
-    sample_interval = 0.1
+class MockPressureSensor(object):
+    sample_interval = 0.03
+    PEEP = 3  # baseline pressure
 
     def __init__(self):
         self.sample_x = 0
         pass
 
     def read_pressure(self):
-        value = sin(self.sample_x) * 10
+        value = sin(self.sample_x) * 15
         if value < 0:
             value = 0
 
         self.sample_x += self.sample_interval
-
-        # if 3.1 <= self.sample_x <= 3.3:
-        #     return 200
-        return value + 3
+        return value + self.PEEP
