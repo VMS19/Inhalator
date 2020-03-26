@@ -51,13 +51,13 @@ class Ads7844A2D(object):
     def _calibrate_a2d(self, pressure_value_m_bar):
         pass
 
-    def sample_a2d(self, channel, input_mode=MODE_SGL,
-                   power_down_mode=PD_DISABLED):
+    def _sample_a2d(self, channel, input_mode=MODE_SGL,
+                    power_down_mode=PD_DISABLED):
         try:
-            start_byte = self.DEFAULT_CTRL_BYTE |
-            (channel << self.CHANNEL_SELECT_SHIFT) |
-            (input_mode << self.INPUT_MODE_SHIFT)
-            (power_down_mode << self.PD_SHIFT)
+            start_byte = self.DEFAULT_CTRL_BYTE |\
+                (channel << self.CHANNEL_SELECT_SHIFT) |\
+                (input_mode << self.INPUT_MODE_SHIFT) |\
+                (power_down_mode << self.PD_SHIFT)
             sample_raw = self._spi.xfer(start_byte,
                                         self.XFER_SPEED_HZ,
                                         self.PERIPHERAL_MINIMAL_DELAY)
@@ -67,3 +67,8 @@ class Ads7844A2D(object):
             raise SPIIOError("a2d spi read error")
 
         return self._calibrate_a2d(sample_raw)
+
+    def sample_a2d_channels(self, channels, input_mode=MODE_SGL,
+                            power_down_mode=PD_DISABLED):
+        for channel in channels:
+            self._sample_a2d(channel, input_mode, power_down_mode)

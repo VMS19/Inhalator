@@ -10,6 +10,7 @@ log = logging.getLogger(__name__)
 class Sampler(threading.Thread):
     SAMPLING_INTERVAL = 0.02  # sec
     MS_IN_MIN = 60 * 1000
+    OXYGEN_A2D_SAMPLE_CHANNELS = [0,1]
 
     def __init__(self, data_store, flow_sensor, pressure_sensor):
         super(Sampler, self).__init__()
@@ -17,6 +18,7 @@ class Sampler(threading.Thread):
         self._data_store = data_store  # type: DataStore
         self._flow_sensor = flow_sensor
         self._pressure_sensor = pressure_sensor
+        self._oxygen_a2d = oxygex_a2d
 
         # State
         self._currently_breathed_volume = 0
@@ -62,6 +64,9 @@ class Sampler(threading.Thread):
         # Read from sensors
         flow_value = self._flow_sensor.read_flow_slm()
         pressure_value = self._pressure_sensor.read_pressure()
+        oxygen_value = _oxygen_a2d.sample_a2d_channels(self.OXYGEN_A2D_SAMPLE_CHANNELS)
+
+        print(oxygen_value)
 
         self._data_store.set_pressure_value(pressure_value)
 
