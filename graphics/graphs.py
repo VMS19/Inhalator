@@ -112,7 +112,7 @@ class AirFlowGraph(object):
 
         self.flow_figure = Figure(figsize=(5, 2), dpi=100)
         self.flow_axis = self.flow_figure.add_subplot(111, label="flow")
-        self.flow_axis.set_ylabel('Flow [L/min]')
+        self.flow_axis.set_ylabel('Flow [ml/min]')
         self.flow_axis.set_xlabel('sec')
 
         # Calibrate x-axis
