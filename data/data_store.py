@@ -16,12 +16,13 @@ log = logging.getLogger(__name__)
 class DataStore(object):
     CONFIG_FILE = os.path.abspath(os.path.join(THIS_DIRECTORY, "..", "config.json"))
     SYSTEM_SAMPLE_INTERVAL = 22 #KHZ
-
+    DEFAULT_I2C_BUS = 2
     MS_TO_SEC = 1000
 
     def __init__(self, flow_threshold, volume_threshold,
                  pressure_threshold, resp_rate_threshold,
-                 graph_seconds, breathing_threshold, log_enabled=True,debug_port=7777):
+                 graph_seconds, breathing_threshold, log_enabled=True,
+                 debug_port=7777, i2c_bus=DEFAULT_I2C_BUS):
         self.flow_threshold = flow_threshold
         self.volume_threshold = volume_threshold
         self.pressure_threshold = pressure_threshold
@@ -30,6 +31,7 @@ class DataStore(object):
         self.breathing_threshold = breathing_threshold
         self.log_enabled = log_enabled
         self.debug_port = debug_port
+        self.i2c_bus = i2c_bus
 
         self.samples_in_graph_amount = \
             int((self.graph_seconds * self.MS_TO_SEC) /
@@ -73,6 +75,7 @@ class DataStore(object):
             breathing_threshold = config["threshold"]["breathing_threshold"]
             log_enabled = config["log_enabled"]
             debug_port = config["debug_port"]
+            i2c_bus = config["i2c_bus"]
 
             return cls(flow_threshold=flow,
                        volume_threshold=volume,
@@ -81,7 +84,8 @@ class DataStore(object):
                        graph_seconds=graph_seconds,
                        breathing_threshold=breathing_threshold,
                        log_enabled=log_enabled,
-                       debug_port=debug_port)
+                       debug_port=debug_port,
+                       i2c_bus=i2c_bus)
 
         except Exception as e:
             log.exception("Could not read log file, using default values", e)
@@ -119,6 +123,7 @@ class DataStore(object):
                 "breathing_threshold": self.breathing_threshold
             },
             "log_enabled": self.log_enabled,
+            "i2c_bus": self.i2c_bus,
             "graph_seconds": self.graph_seconds
         }
 
