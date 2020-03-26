@@ -109,6 +109,8 @@ class Sampler(threading.Thread):
             self._handle_intake(flow=flow_value, pressure=pressure_value)
 
             if not self._is_during_intake:
+                # Beginning of intake
+                # Calculate breaths per minute:
                 curr_time = time.time()
                 self._data_store.bpm = 1.0 / (
                 curr_time - self._last_intake_time) * 60
