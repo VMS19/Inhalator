@@ -32,7 +32,7 @@ class OpenConfigureAlertsScreenButton(object):
         screen.show()
 
     def render(self):
-        self.button.place(relwidth=0.55, relheight=0.4, rely=0.1, relx=0.2835)
+        self.button.place(relwidth=0.55, relheight=0.35, rely=0.1, relx=0.2835)
 
     def update(self):
         pass
