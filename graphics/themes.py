@@ -3,15 +3,20 @@ class Theme(object):
 
     BACKGROUND = NotImplemented
     SURFACE = NotImplemented
+    ERROR = NotImplemented
+    ERROR_ACTIVE = NotImplemented
 
-    TXT_ON_BG = NotImplemented
-    TXT_ON_SURFACE = NotImplemented
-    TXT_ON_PRIMARY = NotImplemented
-    TXT_ON_SECONDARY = NotImplemented
+    BUTTON = NotImplemented
+    BUTTON_TEXT = NotImplemented
+    BUTTON_ACTIVE = NotImplemented
+    BUTTON_ACTIVE_TEXT = NotImplemented
 
     OK = NotImplemented
+    OK_ACTIVE = NotImplemented
+
+    TXT_ON_SURFACE = NotImplemented
+    TXT_ON_BG = NotImplemented
     TXT_ON_OK = NotImplemented
-    ERROR = NotImplemented
     TXT_ON_ERROR = NotImplemented
 
     @classmethod
@@ -45,6 +50,12 @@ class DarkTheme(Theme):
     BACKGROUND = "#191919"
     SURFACE = "#232323"
     ERROR = "#b00020"
+    ERROR_ACTIVE = "#cf6679"
+
+    BUTTON = "#52475d"
+    BUTTON_TEXT = "#f7f6f7"
+    BUTTON_ACTIVE = "#52475d"
+    BUTTON_ACTIVE_TEXT = "#f7f6f7"
 
     OK = "#4CAF50"
     OK_ACTIVE = "#66BB6A"
@@ -53,5 +64,3 @@ class DarkTheme(Theme):
     TXT_ON_BG = "#ffffff"
     TXT_ON_OK = "#000000"
     TXT_ON_ERROR = "#ffffff"
-
-    PRIMARY_VARIANT = "#3700B3"

@@ -45,7 +45,7 @@ class ThresholdButton(Button):
         return self["bg"] == "#52475d"
 
     def select(self):
-        self.configure(bg="#52475d",
+        self.configure(bg=Theme.active().BUTTON,
                        fg="#f7f6f7",
                        activeforeground="#f7f6f7",
                        borderwidth=2,
@@ -204,8 +204,8 @@ class ConfirmCancelSection(object):
         self.cancel_button = ImageButton(master=self.frame,
                                          image_path=self.CANCEL_IMAGE_PATH,
                                          compound="center",
-                                         bg="#b00020",
-                                         activebackground="#cf6679",
+                                         bg=Theme.active().ERROR,
+                                         activebackground=Theme.active().ERROR_ACTIVE,
                                          command=self.parent.cancel)
 
     def render(self):
