@@ -17,7 +17,7 @@ class ClearAlertsButton(object):
 
         self.button = Button(master=self.root,
                              command=self.on_click,
-                             font=("Roboto", 20),
+                             font=("Roboto", 10),
                              relief="flat",
                              bg="#3c3149", fg="#d7b1f9",
                              activebackground="#433850",
@@ -41,7 +41,7 @@ class MuteAlertsButton(object):
 
         self.button = Button(master=self.root,
                              command=self.on_click,
-                             font=("Roboto", 20),
+                             font=("Roboto", 10),
                              text="Mute",
                              relief="flat",
                              bg="#3c3149", fg="#d7b1f9",
@@ -66,7 +66,7 @@ class LockThresholdsButton(object):
         self.button = Button(master=self.root,
                              command=self.on_click,
                              text="Lock",relief="flat",
-                             font=("Roboto", 20),
+                             font=("Roboto", 10),
                              bg="#3c3149", fg="#d7b1f9",
                              activebackground="#433850",
                              activeforeground="#e3e1e5",)
