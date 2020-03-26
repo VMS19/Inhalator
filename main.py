@@ -49,6 +49,7 @@ def handle_sigterm(signum, frame):
 
 
 def main():
+    store = DataStore.load_from_config()
     signal.signal(signal.SIGTERM, handle_sigterm)
     args = parse_args()
     store = DataStore()
