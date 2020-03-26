@@ -21,7 +21,7 @@ class DataStore(object):
 
     def __init__(self, flow_threshold, volume_threshold,
                  pressure_threshold, resp_rate_threshold,
-                 graph_seconds, breathing_threshold, log_enabled=True):
+                 graph_seconds, breathing_threshold, log_enabled=True,debug_port=7777):
         self.flow_threshold = flow_threshold
         self.volume_threshold = volume_threshold
         self.pressure_threshold = pressure_threshold
@@ -29,6 +29,7 @@ class DataStore(object):
         self.graph_seconds = graph_seconds
         self.breathing_threshold = breathing_threshold
         self.log_enabled = log_enabled
+        self.debug_port = debug_port
 
         self.samples_in_graph_amount = \
             int((self.graph_seconds * self.MS_TO_SEC) /
@@ -70,6 +71,7 @@ class DataStore(object):
             graph_seconds = config["graph_seconds"]
             breathing_threshold = config["threshold"]["breathing_threshold"]
             log_enabled = config["log_enabled"]
+            debug_port = config["debug_port"]
 
             return cls(flow_threshold=flow,
                        volume_threshold=volume,
@@ -77,7 +79,8 @@ class DataStore(object):
                        resp_rate_threshold=resp_rate,
                        graph_seconds=graph_seconds,
                        breathing_threshold=breathing_threshold,
-                       log_enabled=log_enabled)
+                       log_enabled=log_enabled,
+                       debug_port=debug_port)
 
         except Exception as e:
             log.exception("Could not read log file, using default values", e)

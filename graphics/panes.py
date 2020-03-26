@@ -14,6 +14,7 @@ from graphics.configure_alerts_button import OpenConfigureAlertsScreenButton
 from graphics.right_menu_options import (MuteAlertsButton,
                                          ClearAlertsButton,
                                          LockThresholdsButton)
+from graphics.themes import Theme
 
 
 class MasterFrame(object):
@@ -61,7 +62,7 @@ class LeftPane(object):
         self.height = self.screen_height * 0.65
         self.width = self.screen_width * 0.2
 
-        self.frame = Frame(master=self.root, bg="white",
+        self.frame = Frame(master=self.root, bg=Theme.active().SURFACE,
                            height=self.height,
                            width=self.width)
 
@@ -100,7 +101,7 @@ class CenterPane(object):
         self.height = self.screen_height * 0.65
         self.width = self.screen_width * 0.7
 
-        self.frame = Frame(master=self.root, bg="white",
+        self.frame = Frame(master=self.root, bg=Theme.active().SURFACE,
                            height=self.height, width=self.width)
         self.blank_graph = BlankGraph(self.frame)
         self.flow_graph = FlowGraph(self, self.store, blank=self.blank_graph)
@@ -156,7 +157,7 @@ class RightPane(object):
         self.height = self.screen_height * 0.65
         self.width = self.screen_width * 0.1
 
-        self.frame = Frame(master=self.root, bg="white",
+        self.frame = Frame(master=self.root, bg=Theme.active().SURFACE,
                            height=self.height, width=self.width)
 
         self.mute_alerts_btn = MuteAlertsButton(parent=self, store=self.store)
@@ -193,7 +194,7 @@ class TopPane(object):
         self.height = self.screen_height * 0.15
         self.width = self.screen_width
 
-        self.frame = Frame(master=self.root, bg="white",
+        self.frame = Frame(master=self.root, bg=Theme.active().SURFACE,
                            height=self.height,
                            width=self.width)
 
@@ -226,7 +227,7 @@ class BottomPane(object):
         self.width = self.screen_width
 
         self.frame = Frame(master=self.root,
-                           bg="white",
+                           bg=Theme.active().SURFACE,
                            height=self.height,
                            width=self.width)
 

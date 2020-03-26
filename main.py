@@ -2,6 +2,7 @@ import os
 import argparse
 import logging
 import signal
+import socket
 
 from logging.handlers import RotatingFileHandler
 from time import sleep
@@ -12,6 +13,16 @@ from gui import Application
 from algo import Sampler
 from sound import SoundDevice
 
+class BroadcastHandler(logging.handlers.DatagramHandler):
+    '''
+    A handler for the python logging system which is able to broadcast packets.
+    '''
+
+    def makeSocket(self):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        return sock
 
 def configure_logging(level, store):
     logger = logging.getLogger()
@@ -22,14 +33,19 @@ def configure_logging(level, store):
     # create console handler with a higher log level
     ch = logging.StreamHandler()
     ch.setLevel(level)
+    # create socket handler to broadcast logs
+    sh = BroadcastHandler('255.255.255.255', store.debug_port)
+    sh.setLevel(level)
     # create formatter and add it to the handlers
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     fh.setFormatter(formatter)
     ch.setFormatter(formatter)
+    sh.setFormatter(formatter)
     # add the handlers to the logger
     logger.addHandler(fh)
     logger.addHandler(ch)
+    logger.addHandler(sh)
     logger.disabled = not store.log_enabled
     return logger
 
