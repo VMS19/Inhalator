@@ -80,8 +80,7 @@ class Sampler(threading.Thread):
 
         # Read from sensors
         flow_value = self._flow_sensor.read() * self.ML_IN_LITER
-        pressure_value = self._pressure_sensor.read()
-        pressure_value *= self.PSI_TO_MILLIBAR
+        pressure_value = self._pressure_sensor.read() * self.PSI_TO_MILLIBAR
 
         self._data_store.set_pressure_value(pressure_value)
 
