@@ -48,9 +48,9 @@ def handle_sigterm(signum, frame):
 
 
 def main():
+    store = DataStore.load_from_config()
     signal.signal(signal.SIGTERM, handle_sigterm)
     args = parse_args()
-    store = DataStore()
     configure_logging(args.verbose, store)
     sound_device = SoundDevice()
     store.alerts_queue.subscribe(sound_device, sound_device.on_alert)
