@@ -8,7 +8,7 @@ class MockSfm3200(object):
         pass
 
     def read_flow_slm(self, retries=2):
-        value = sin(self.sample_x) * 0.05
+        value = sin(self.sample_x) * 20
         if value < 0:
             value = 0
 

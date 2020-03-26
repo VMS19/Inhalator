@@ -34,7 +34,7 @@ class Sampler(threading.Thread):
         """We are giving patient air."""
         sampling_interval_in_minutes = self.SAMPLING_INTERVAL / self.MS_IN_MIN
         self._current_intake_volume += \
-            (flow * sampling_interval_in_minutes)
+            (flow * self.ML_IN_LITER * sampling_interval_in_minutes)
         logging.debug("Current Intake volume: %s" % self._current_intake_volume)
 
         if self._data_store.volume_threshold.max != 'off' and \
@@ -77,7 +77,7 @@ class Sampler(threading.Thread):
         self.pressure_alert = AlertCodes.OK
 
         # Read from sensors
-        flow_value = self._flow_sensor.read_flow_slm() * self.ML_IN_LITER
+        flow_value = self._flow_sensor.read_flow_slm()
         pressure_value = self._pressure_sensor.read_pressure()
 
         self._data_store.set_pressure_value(pressure_value)
