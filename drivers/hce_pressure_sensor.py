@@ -50,8 +50,8 @@ class HcePressureSensor(object):
 
         log.info("HCE pressure sensor initialized")
 
-    def _calibrate_pressure(self, pressure_value_m_bar):
-        return ((pressure_value_m_bar * self.M_BAR_CMH20_RATIO) -
+    def _calibrate_pressure(self, pressure_value_mbar):
+        return ((pressure_value_mbar * self.M_BAR_CMH20_RATIO) -
                 self.ZERO_OFFSET_CALIBRATION_CMH20)
 
 
