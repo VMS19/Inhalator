@@ -3,27 +3,38 @@ import platform
 
 if platform.python_version() < '3':
     from Tkinter import *
-
 else:
     from tkinter import *
 
 from graphics.panes import MasterFrame
 
 
-class GUI(object):
-    """GUI class for Inhalator"""
+class Application(object):
+    """The Inhalator application"""
     TEXT_SIZE = 10
 
+    __instance = None  # shared instance
+
+    def __new__(cls, *args, **kwargs):
+        if cls.__instance is None:
+            cls.__instance = object.__new__(cls)
+        return cls.__instance
+
+    @classmethod
+    def instance(cls):
+        return cls.__instance
+
     def __init__(self, data_store):
-        self.store = data_store
+        self.should_run = True
         self.root = Tk()
         self.root.title("Inhalator")
         self.root.geometry('800x480')
         self.root.attributes("-fullscreen", True)
-        self.master_frame = MasterFrame(self.root, store=self.store)
+        self.master_frame = MasterFrame(self.root, store=data_store)
 
-    def exitProgram(self, sig, _):
+    def exit(self):
         self.root.quit()
+        self.should_run = False
 
     def render(self):
         self.master_frame.render()

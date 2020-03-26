@@ -13,10 +13,10 @@ from data.data_store import AlertsQueue, DataStore
 
 class IndicatorAlertBar(object):
     error_dict = {
-        alerts.AlertCodes.PRESSURE_LOW: "LOW PIP",
-        alerts.AlertCodes.PRESSURE_HIGH: "HIGH PIP",
-        alerts.AlertCodes.BREATHING_VOLUME_LOW: "LOW MVI",
-        alerts.AlertCodes.BREATHING_VOLUME_HIGH: "HIGH MVI"
+        alerts.AlertCodes.PRESSURE_LOW: "Low Pressure",
+        alerts.AlertCodes.PRESSURE_HIGH: "High Pressure",
+        alerts.AlertCodes.BREATHING_VOLUME_LOW: "Low Volume",
+        alerts.AlertCodes.BREATHING_VOLUME_HIGH: "High Volume"
     }
 
     def __init__(self, parent, store):
@@ -28,7 +28,7 @@ class IndicatorAlertBar(object):
         self.width = self.parent.width
 
         self.bar = Frame(self.root, bg='green', height=self.height, width=self.width)
-        self.message_label = Label(master=self.bar, font=("Courrier", 40),
+        self.message_label = Label(master=self.bar, font=("Courier", 40),
                                    text="OK", bg='green', fg='black')
 
     @property
