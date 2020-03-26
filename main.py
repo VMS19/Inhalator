@@ -1,11 +1,13 @@
 import os
 import argparse
 import logging
+import signal
+
 from logging.handlers import RotatingFileHandler
 from time import sleep
 
 from data.data_store import DataStore
-from gui import GUI
+from gui import Application
 from algo import Sampler
 from sound import SoundDevice
 
@@ -15,10 +17,10 @@ def configure_logging(level, store):
     logger.setLevel(level)
     # create file handler which logs even debug messages
     fh = RotatingFileHandler('inhalator.log', maxBytes=1024 * 100, backupCount=3)
-    fh.setLevel(logging.ERROR)
+    fh.setLevel(logging.DEBUG)
     # create console handler with a higher log level
     ch = logging.StreamHandler()
-    ch.setLevel(logging.ERROR)
+    ch.setLevel(level)
     # create formatter and add it to the handlers
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -40,7 +42,14 @@ def parse_args():
     return args
 
 
+def handle_sigterm(signum, frame):
+    log = logging.getLogger()
+    log.warning("Received SIGTERM. Exiting")
+    Application.instance().exit()
+
+
 def main():
+    signal.signal(signal.SIGTERM, handle_sigterm)
     args = parse_args()
     store = DataStore()
     log = configure_logging(args.verbose, store)
@@ -67,18 +76,20 @@ def main():
     sound_device = SoundDevice()
     store.alerts_queue.subscribe(sound_device, sound_device.on_alert)
 
-    gui = GUI(store, watchdog)
+    app = Application(store, watchdog)
 
     sampler = Sampler(store, flow_sensor, pressure_sensor)
-    gui.render()
-    # Wait for GUI to render
-    #     time.sleep(5)
+    app.render()
     sampler.start()
 
+    while app.should_run:
+        try:
+            app.gui_update()
+            sleep(0.02)
+        except KeyboardInterrupt:
+            app.exit()
+            break
 
-    while True:
-        gui.gui_update()
-        sleep(0.02)
 
 if __name__ == '__main__':
     main()
