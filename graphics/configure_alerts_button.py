@@ -16,7 +16,15 @@ class OpenConfigureAlertsScreenButton(object):
         self.store = store
         self.root = parent.element
 
-        self.button = Button(master=self.root, text="Configure Alerts", command=self.on_click)
+        self.button = Button(master=self.root,
+                             text="Configure Alerts",
+                             command=self.on_click,
+                             font=("Roboto", 25),
+                             relief="flat",
+                             bg="#3c3149", fg="#d7b1f9",
+                             activebackground="#433850",
+                             activeforeground="#e3e1e5",
+                             )
 
     def on_click(self):
         master_frame = self.parent.parent.element
@@ -24,7 +32,7 @@ class OpenConfigureAlertsScreenButton(object):
         screen.show()
 
     def render(self):
-        self.button.place(relwidth=0.5, relheight=0.8, rely=0.1, relx=0.25)
+        self.button.place(relwidth=0.55, relheight=0.8, rely=0.1, relx=0.2835)
 
     def update(self):
         pass

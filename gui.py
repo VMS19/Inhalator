@@ -7,7 +7,7 @@ else:
     from tkinter import *
 
 from graphics.panes import MasterFrame
-
+from graphics.themes import Theme, DarkTheme
 
 class Application(object):
     """The Inhalator application"""
@@ -27,6 +27,7 @@ class Application(object):
     def __init__(self, data_store):
         self.should_run = True
         self.root = Tk()
+        self.theme = Theme.toggle_theme()  # Set to dark mode, TODO: Make this configurable
         self.root.title("Inhalator")
         self.root.geometry('800x480')
         self.root.attributes("-fullscreen", True)
