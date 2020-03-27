@@ -101,6 +101,7 @@ class Sampler(threading.Thread):
         self._inhale_max_flow = max(flow_slm, self._inhale_max_flow)
 
     def _inhale_finished(self):
+        self.log.debug("Inhale finished. Exhale starts")
         ts = time.time()
         self._config.bpm = 1.0 / (ts - self._last_inhale_ts) * 60
         self._last_inhale_ts = ts
