@@ -1,16 +1,15 @@
-from math import sin
+import itertools
+
+from drivers.mocks import pig
 
 
 class MockAirFlowSensor(object):
-    sample_interval = 0.03
 
     def __init__(self):
-        self.sample_x = 0
-        pass
+        self.values = itertools.cycle(pig.file_sampling_generator('flow'))
 
     def read_flow_slm(self, retries=2):
-        value = max(0, sin(self.sample_x) * 20)
-        self.sample_x += self.sample_interval
+        value = next(self.values)
         return value
 
     def soft_reset(self):

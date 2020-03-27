@@ -1,15 +1,13 @@
-from math import sin
+import itertools
+
+from drivers.mocks import pig
 
 
 class MockPressureSensor(object):
-    sample_interval = 0.03
-    PEEP = 3  # baseline pressure
 
     def __init__(self):
-        self.sample_x = 0
-        pass
+        self.values = itertools.cycle(pig.file_sampling_generator('pressure'))
 
     def read_pressure(self):
-        value = max(0, sin(self.sample_x) * 15)
-        self.sample_x += self.sample_interval
-        return value + self.PEEP
+        value = next(self.values)
+        return value
