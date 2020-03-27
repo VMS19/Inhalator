@@ -3,7 +3,6 @@ import argparse
 import logging
 import signal
 import socket
-
 from logging.handlers import RotatingFileHandler
 from time import sleep
 
@@ -18,6 +17,14 @@ class BroadcastHandler(logging.handlers.DatagramHandler):
     '''
     A handler for the python logging system which is able to broadcast packets.
     '''
+
+    def send(self, s):
+        try:
+            super().send(s)
+
+        except OSError as e:
+            if e.errno != 101:  # Network is unreachable
+                raise e
 
     def makeSocket(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
