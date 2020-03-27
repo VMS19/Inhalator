@@ -18,8 +18,8 @@ class IndicatorAlertBar(object):
     error_dict = {
         alerts.AlertCodes.PRESSURE_LOW: "Low Pressure",
         alerts.AlertCodes.PRESSURE_HIGH: "High Pressure",
-        alerts.AlertCodes.BREATHING_VOLUME_LOW: "Low Volume",
-        alerts.AlertCodes.BREATHING_VOLUME_HIGH: "High Volume"
+        alerts.AlertCodes.VOLUME_LOW: "Low Volume",
+        alerts.AlertCodes.VOLUME_HIGH: "High Volume"
     }
 
     def __init__(self, parent, events, drivers):
