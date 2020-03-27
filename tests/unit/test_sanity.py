@@ -29,7 +29,7 @@ def test_sampler_inserts_pressure_measurement_to_store(store):
     flow_sensor = MockAirFlowSensor()
     pressure_sensor = MockPressureSensor()
     sampler = Sampler(store, flow_sensor, pressure_sensor)
-    assert store.pressure_measurements.qsize() == 1
+    assert store.pressure_measurements.qsize() == 0
     sampler.sampling_iteration()
     assert store.pressure_measurements.qsize() == 1
     sampler.sampling_iteration()
