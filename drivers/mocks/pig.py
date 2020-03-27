@@ -1,6 +1,8 @@
+import os
 import re
 
-LOG_FILE = './pig_data'
+THIS_FILE = __file__
+LOG_FILE = os.path.join(os.path.dirname(THIS_FILE), './pig_data')
 
 SENSORS_TO_TEMPLATE = {
     'pressure': 'Pressure: (.*)',
