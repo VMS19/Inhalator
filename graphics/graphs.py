@@ -4,12 +4,13 @@ from matplotlib.figure import Figure
 # Tkinter stuff
 import platform
 
+from graphics.themes import Theme
+
 if platform.python_version() < '3':
     from Tkinter import *
 
 else:
     from tkinter import *
-
 
 MIN_TRHLD_COLOR = "green"
 MAX_TRHLD_COLOR = "red"
@@ -28,7 +29,7 @@ class BlankGraph(object):
 
 
 class AirPressureGraph(object):
-    MIN_Y, MAX_Y =  (0, 50)
+    MIN_Y, MAX_Y = (0, 50)
 
     def __init__(self, parent, store, blank):
         self.parent = parent
@@ -39,20 +40,23 @@ class AirPressureGraph(object):
         self.height = self.parent.height * 0.5
         self.width = self.parent.width
 
-        self.pressure_figure = Figure(figsize=(5, 2), dpi=100)
+        self.pressure_figure = Figure(figsize=(5, 2), dpi=100,
+                                      facecolor=Theme.active().SURFACE)
         self.pressure_axis = self.pressure_figure.add_subplot(111, label="pressure")
         self.pressure_axis.set_ylabel('Pressure [cmH20]')
         self.pressure_axis.set_xlabel('sec')
+        self.pressure_axis.set_title("Air Pressure")
 
         # Calibrate x-axis
         self.pressure_axis.set_xticks(range(0, (self.store.samples_in_graph_amount + 1),
-            int(self.store.samples_in_graph_amount / self.store.graph_seconds)))
+                                            int(self.store.samples_in_graph_amount / self.store.graph_seconds)))
         labels = range(0, int(self.store.graph_seconds + 1))
         self.pressure_axis.set_xticklabels(labels)
 
-        self.pressure_canvas = FigureCanvasTkAgg(self.pressure_figure, master=self.root)
+        self.pressure_canvas = FigureCanvasTkAgg(self.pressure_figure,
+                                                 master=self.root)
 
-        self.pressure_display_values = [0] * self.store.samples_in_graph_amount 
+        self.pressure_display_values = [0] * self.store.samples_in_graph_amount
         self.pressure_graph, = self.pressure_axis.plot(
             self.store.x_axis, self.pressure_display_values, linewidth=2, animated=True)
 
@@ -80,8 +84,8 @@ class AirPressureGraph(object):
 
     def update(self):
         self.pressure_figure.canvas.restore_region(self.blank.graph_bg,
-                                                       bbox=self.blank.graph_bbox,
-                                                       xy=(0, 0))
+                                                   bbox=self.blank.graph_bbox,
+                                                   xy=(0, 0))
 
         self.pressure_graph.set_ydata(self.pressure_display_values)
         # Update threshold lines
@@ -113,21 +117,23 @@ class FlowGraph(object):
         self.height = self.parent.height * 0.5
         self.width = self.parent.width
 
-        self.flow_figure = Figure(figsize=(5, 2), dpi=100)
+        self.flow_figure = Figure(figsize=(5, 2),
+                                  dpi=100, facecolor=Theme.active().SURFACE)
         self.flow_axis = self.flow_figure.add_subplot(111, label="flow")
         self.flow_axis.set_ylabel('Flow [mL/min]')
         self.flow_axis.set_xlabel('sec')
+        self.flow_axis.set_title("Air Flow")
 
         # Calibrate x-axis
         self.flow_axis.set_xticks(range(0, (self.store.samples_in_graph_amount + 1),
-                                       int(self.store.samples_in_graph_amount / self.store.graph_seconds)))
+                                        int(self.store.samples_in_graph_amount / self.store.graph_seconds)))
         labels = range(0, int(self.store.graph_seconds + 1))
         self.flow_axis.set_xticklabels(labels)
 
         self.flow_display_values = [0] * self.store.samples_in_graph_amount
         self.flow_graph, = self.flow_axis.plot(self.store.x_axis,
-                                             self.flow_display_values,
-                                             linewidth=2, animated=True)
+                                               self.flow_display_values,
+                                               linewidth=2, animated=True)
 
         self.flow_canvas = FigureCanvasTkAgg(self.flow_figure, master=self.root)
 
@@ -136,26 +142,26 @@ class FlowGraph(object):
 
         self.flow_max_threshold_graph, = \
             self.flow_axis.plot(self.store.x_axis,
-                               [self.store.flow_threshold.max] *
-                               len(self.store.x_axis),
-                               color=MAX_TRHLD_COLOR, linestyle=":", animated=True)
+                                [self.store.flow_threshold.max] *
+                                len(self.store.x_axis),
+                                color=MAX_TRHLD_COLOR, linestyle=":", animated=True)
 
         self.flow_min_threshold_graph, = \
             self.flow_axis.plot(self.store.x_axis,
-                               [self.store.flow_threshold.min] *
-                               len(self.store.x_axis),
-                               color=MIN_TRHLD_COLOR, linestyle=":", animated=True)
+                                [self.store.flow_threshold.min] *
+                                len(self.store.x_axis),
+                                color=MIN_TRHLD_COLOR, linestyle=":", animated=True)
 
     def render(self):
         self.flow_canvas.draw()
         self.flow_canvas.get_tk_widget().place(relx=0, rely=0.5,
-                                              height=self.height,
-                                              width=self.width)
+                                               height=self.height,
+                                               width=self.width)
 
     def update(self):
         self.flow_figure.canvas.restore_region(self.blank.graph_bg,
-                                              bbox=self.blank.graph_bbox,
-                                              xy=(0, 0))
+                                               bbox=self.blank.graph_bbox,
+                                               xy=(0, 0))
 
         self.flow_graph.set_ydata(self.flow_display_values)
         self.flow_axis.draw_artist(self.flow_graph)
@@ -166,9 +172,9 @@ class FlowGraph(object):
 
         # Update threshold lines
         self.flow_min_threshold_graph.set_ydata([self.store.flow_threshold.min] *
-                                               len(self.store.x_axis))
+                                                len(self.store.x_axis))
         self.flow_max_threshold_graph.set_ydata([self.store.flow_threshold.max] *
-                                               len(self.store.x_axis))
+                                                len(self.store.x_axis))
 
     @property
     def element(self):

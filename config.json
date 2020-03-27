@@ -23,6 +23,6 @@
     "breathing_threshold": 3.5
   },
   "log_enabled": true,
-  "i2c_bus": 1,
-  "graph_seconds": 12.0
+  "graph_seconds": 12.0,
+  "debug_port": 7777
 }

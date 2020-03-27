@@ -1,6 +1,8 @@
 # Tkinter stuff
 import platform
 
+from graphics.themes import Theme
+
 if platform.python_version() < '3':
     from Tkinter import *
 
@@ -15,11 +17,17 @@ class GraphSummary(object):
         self.root = parent.element
         self.frame = Frame(master=self.root, bg="white")
         self.value_label = Label(master=self.frame, text="HELLO",
-                                 font=("Tahoma", 30), bg="white")
+                                 font=("Roboto", 30),
+                                 bg=Theme.active().SURFACE,
+                                 fg=Theme.active().TXT_ON_SURFACE)
         self.units_label = Label(master=self.frame, text="HELLO",
-                                 font=("Tahoma", 8), bg="white")
+                                 font=("Roboto", 8),
+                                 bg=Theme.active().SURFACE,
+                                 fg=Theme.active().TXT_ON_SURFACE)
         self.name_label = Label(master=self.frame, text="HELLO",
-                                font=("Tahoma", 30), bg="white")
+                                font=("Roboto", 30),
+                                 bg=Theme.active().SURFACE,
+                                 fg=Theme.active().TXT_ON_SURFACE)
 
     def units(self):
         pass
@@ -35,9 +43,9 @@ class GraphSummary(object):
         self.value_label.configure(text=self.value())
         self.name_label.configure(text=self.name())
 
-        self.value_label.place(relx=0, relwidth=1, relheight=0.45, rely=0.09)
-        self.units_label.place(relx=0, relwidth=1, relheight=0.08, rely=0.56)
-        self.name_label.place(relx=0, relwidth=1, relheight=0.25, rely=0.75)
+        self.value_label.place(relx=0, relwidth=1, relheight=0.45, rely=0)
+        self.units_label.place(relx=0, relwidth=1, relheight=0.08, rely=0.45)
+        self.name_label.place(relx=0, relwidth=1, relheight=0.47, rely=0.53)
 
     def update(self):
         self.value_label.configure(text=self.value())
@@ -54,7 +62,7 @@ class PressurePeakSummary(GraphSummary):
         return "cmH2O"
 
     def render(self):
-        self.frame.place(relx=0, rely=0.025, relheight=0.3, relwidth=1)
+        self.frame.place(relx=0, rely=0, relheight=(1/3), relwidth=1)
         super(PressurePeakSummary, self).render()
 
 
@@ -69,7 +77,7 @@ class VolumeSummary(GraphSummary):
         return "ml"
 
     def render(self):
-        self.frame.place(relx=0, rely=0.35, relheight=0.3, relwidth=1)
+        self.frame.place(relx=0, rely=(1/3), relheight=(1/3), relwidth=1)
         super(VolumeSummary, self).render()
 
 
@@ -84,5 +92,5 @@ class BPMSummary(GraphSummary):
         return "Rate"
 
     def render(self):
-        self.frame.place(relx=0, rely=0.675, relheight=0.3, relwidth=1)
+        self.frame.place(relx=0, rely=(2/3), relheight=(1/3), relwidth=1)
         super(BPMSummary, self).render()

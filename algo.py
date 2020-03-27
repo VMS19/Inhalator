@@ -36,6 +36,7 @@ class Sampler(threading.Thread):
         sampling_interval_in_minutes = self.SAMPLING_INTERVAL / self.MS_IN_MIN
         self._current_intake_volume += \
             (flow * sampling_interval_in_minutes)
+        logging.debug("Current Intake volume: %s" % self._current_intake_volume)
 
         if self._data_store.volume_threshold.max != 'off' and \
                 self._current_intake_volume >\
