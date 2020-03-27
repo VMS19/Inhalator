@@ -15,9 +15,9 @@ class GraphSummary(object):
         self.parent = parent
         self.store = store
         self.root = parent.element
-        self.frame = Frame(master=self.root, bg="white")
+        self.frame = Frame(master=self.root)
         self.value_label = Label(master=self.frame, text="HELLO",
-                                 font=("Roboto", 30),
+                                 font=("Roboto", 18),
                                  bg=Theme.active().SURFACE,
                                  fg=Theme.active().TXT_ON_SURFACE)
         self.units_label = Label(master=self.frame, text="HELLO",
@@ -25,7 +25,7 @@ class GraphSummary(object):
                                  bg=Theme.active().SURFACE,
                                  fg=Theme.active().TXT_ON_SURFACE)
         self.name_label = Label(master=self.frame, text="HELLO",
-                                font=("Roboto", 30),
+                                font=("Roboto", 15),
                                  bg=Theme.active().SURFACE,
                                  fg=Theme.active().TXT_ON_SURFACE)
 
@@ -53,7 +53,7 @@ class GraphSummary(object):
 
 class PressurePeakSummary(GraphSummary):
     def value(self):
-        return "{:.2f}".format(self.store.intake_peak_pressure)
+        return "{:.0f}".format(self.store.intake_peak_pressure)
 
     def name(self):
         return "pPeak"
@@ -68,7 +68,7 @@ class PressurePeakSummary(GraphSummary):
 
 class VolumeSummary(GraphSummary):
     def value(self):
-        return "{:.5f}".format(self.store.volume)
+        return "{:.0f}".format(self.store.volume)
 
     def name(self):
         return "Volume"
@@ -83,7 +83,7 @@ class VolumeSummary(GraphSummary):
 
 class BPMSummary(GraphSummary):
     def value(self):
-        return 7
+        return "{:.0f}".format(self.store.bpm)
 
     def name(self):
         return "bpm"

@@ -42,6 +42,7 @@ class DataStore(object):
 
         self.intake_peak_flow = 0
         self.intake_peak_pressure = 0
+        self.bpm = 0
 
         self.alerts_queue = AlertsQueue()
         self.lock = Lock()

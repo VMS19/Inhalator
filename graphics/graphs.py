@@ -120,7 +120,7 @@ class FlowGraph(object):
         self.flow_figure = Figure(figsize=(5, 2),
                                   dpi=100, facecolor=Theme.active().SURFACE)
         self.flow_axis = self.flow_figure.add_subplot(111, label="flow")
-        self.flow_axis.set_ylabel('Flow [mL/min]')
+        self.flow_axis.set_ylabel('Flow [L/min]')
         self.flow_axis.set_xlabel('sec')
         self.flow_axis.set_title("Air Flow")
 
