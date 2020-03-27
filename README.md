@@ -1,4 +1,5 @@
 # Breathing Air
+[![Build Status](https://travis-ci.org/Reznic/Inhalator.svg?branch=master)](https://travis-ci.org/Reznic/Inhalator)
 
 Turning stupid BiPAP into full-scale inhalators. 
 
@@ -31,4 +32,10 @@ sudo service inhalator start
 and stop it by 
 ```shell_script
 sudo service inhalator stop
+```
+
+## Running tests
+You can run your tests using
+```shell_script
+pytest --ignore "tests/unit/drivers"
 ```
