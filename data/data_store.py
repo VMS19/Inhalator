@@ -112,9 +112,9 @@ class DataStore(object):
                     "step": self.pressure_threshold.step
                 },
                 "bpm": {
-                    "min": self.breathing_threshold.min,
-                    "max": self.breathing_threshold.max,
-                    "step": self.breathing_threshold.step
+                    "min": self.volume_threshold.min,
+                    "max": self.volume_threshold.max,
+                    "step": self.volume_threshold.step
                 },
                 "breathing_threshold": self.breathing_threshold
             },
