@@ -9,7 +9,7 @@ from time import sleep
 
 from drivers.driver_factory import DriverFactory
 from data.data_store import DataStore
-from gui import Application
+from application import Application
 from algo import Sampler
 from sound import SoundDevice
 
