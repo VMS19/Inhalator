@@ -50,6 +50,52 @@ class VentilationState(Enum):
     PEEP = 2
 
 
+class RateMeter(object):
+
+    def __init__(self, time_span_seconds):
+        """
+        :param time_span_seconds: How long (seconds) the sliding window of the
+            running average should be
+        """
+        if time_span_seconds <= 0:
+            raise ValueError("Time span must be non-zero and positive")
+        self.time_span_seconds = time_span_seconds
+        self.samples = deque()
+
+    def reset(self):
+        self.samples.clear()
+
+    def beat(self, timestamp=None):
+        now = time.time()
+        if timestamp is None:
+            timestamp = now
+        self.samples.append(timestamp)
+        # Discard beats older than `self.time_span_seconds`
+        while self.samples[0] < (now - self.time_span_seconds):
+            self.samples.popleft()
+
+        # Basically the rate is the number of elements left, since the container
+        # represents only the relevant time span.
+        # BUT there is a corner-case at the beginning of the process - what if
+        # we did not yet passed a single time span? The rate then will be
+        # artificially low. For example on the first two beats, even if there
+        # are only 10 seconds between them and the time span is 60 seconds, the
+        # rate will be 2/min, instead of 6/min (1 beats every 10 seconds).
+        # This is why we compute the interval between the oldest and newest beat
+        # in the data, and calculate the rate based on it. After we accumulate
+        # enough data, this interval will be pretty close to the desired span.
+        oldest = self.samples[0]
+        interval = now - oldest
+        # protect against division by zero
+        if interval == 0:
+            # Technically rate is infinity, but 0 will be more descriptive
+            return 0
+
+        # We subtract 1 because we have both 1st and last sentinels.
+        rate = (len(self.samples) - 1) * (self.time_span_seconds / interval)
+        return rate
+
+
 class Sampler(threading.Thread):
     SAMPLING_INTERVAL = 0.02  # sec
     MS_IN_MIN = 60 * 1000
@@ -67,6 +113,7 @@ class Sampler(threading.Thread):
         self.accumulator = VolumeAccumulator()
         # No good reason for 1000 max samples. Sounds enough.
         self.peep_avg_calculator = RunningAvg(max_samples=1000)
+        self.breathes_rate_meter = RateMeter(time_span_seconds=60)
         self.alerts = AlertCodes.OK
 
         # State
@@ -82,14 +129,14 @@ class Sampler(threading.Thread):
         self._inhale_max_pressure = 0
         self._has_crossed_first_cycle = False
         self._is_during_intake = False
-        self._last_inhale_ts = 0
 
     def handle_inhale(self, flow_slm, pressure):
+        ts = time.time()
         if pressure <= self.last_pressure:
             self.log.debug("Inhale volume: %s" % self.accumulator.air_volume_liter)
-            self._inhale_finished()
+            self._inhale_finished(ts)
+            return
 
-        ts = time.time()
         self.accumulator.accumulate(ts, flow_slm)
 
         if (self._config.volume_threshold.max != 'off' and
@@ -103,12 +150,10 @@ class Sampler(threading.Thread):
         self._inhale_max_pressure = max(pressure, self._inhale_max_pressure)
         self._inhale_max_flow = max(flow_slm, self._inhale_max_flow)
 
-    def _inhale_finished(self):
+    def _inhale_finished(self, timestamp):
         self.log.debug("Inhale finished. Exhale starts")
-        ts = time.time()
-        self._config.bpm = 1.0 / (ts - self._last_inhale_ts) * 60
-        self._last_inhale_ts = ts
-        if (self._config.volume_threshold != "off" and
+        self._measurements.bpm = self.breathes_rate_meter.beat(timestamp)
+        if (self._config.volume_threshold.min != "off" and
                 self.accumulator.air_volume_liter <
                 self._config.volume_threshold.min and
                 self._has_crossed_first_cycle):
