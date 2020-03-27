@@ -120,7 +120,10 @@ class Sampler(threading.Thread):
 
         self._data_store.set_flow_value(flow_value)
 
-        alert = Alert(self.breathing_alert | self.pressure_alert)
-        if alert != AlertCodes.OK and\
-           self._data_store.alerts_queue.last_alert != alert:
-                self._data_store.alerts_queue.enqueue_alert(alert)
+        if self.breathing_alert != AlertCodes.OK:
+            alert = Alert(self.breathing_alert)
+            self._data_store.alerts_queue.enqueue_alert(alert)
+
+        if self.pressure_alert != AlertCodes.OK:
+            alert = Alert(self.pressure_alert)
+            self._data_store.alerts_queue.enqueue_alert(alert)

@@ -14,7 +14,7 @@ class Alert(object):
         self.value = additional_info
 
     def __eq__(self, other):
-        return self.code == other
+        return self.code == other.code
 
 class AlertsQueue(object):
     MAXIMUM_ALERTS_AMOUNT = 2
@@ -27,6 +27,10 @@ class AlertsQueue(object):
         return self.queue.qsize()
 
     def enqueue_alert(self, alert):
+        if alert in self.queue.queue:
+            # Currently we do not support duplicate alerts
+            return
+
         if self.queue.qsize() == self.MAXIMUM_ALERTS_AMOUNT:
             self.dequeue_alert()
 
