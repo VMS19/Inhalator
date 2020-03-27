@@ -10,7 +10,7 @@ class DriverFactory(object):
 
     @classmethod
     def get_pressure_driver(cls):
-        from drivers.hce_pressure_sensor import HcePressureSensor
+        from drivers.abp_pressure_sensor import AbpPressureSensor
         return HcePressureSensor()
 
     @classmethod
@@ -25,8 +25,8 @@ class DriverFactory(object):
 
     @classmethod
     def get_mock_pressure_driver(cls):
-        from drivers.mocks.mock_hce_pressure_sensor import MockHcePressureSensor
-        return MockHcePressureSensor()
+        from drivers.mocks.mock_abp_pressure_sensor import MockAbpPressureSensor
+        return MockAbpPressureSensor()
 
     @classmethod
     def get_mock_flow_driver(cls):
