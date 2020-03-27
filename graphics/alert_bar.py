@@ -51,7 +51,7 @@ class IndicatorAlertBar(object):
             self.set_no_alert()
 
         else:
-            self.set_alert(self.error_dict[last_alert_code])
+            self.set_alert(self.error_dict.get(last_alert_code, "Multiple Errors"))
 
     def set_no_alert(self):
         self.bar.config(bg=Theme.active().ALERT_BAR_OK)
