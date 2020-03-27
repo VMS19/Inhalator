@@ -78,8 +78,8 @@ class Sampler(threading.Thread):
         self.pressure_alert = AlertCodes.OK
 
         # Read from sensors
-        flow_value = self._flow_sensor.read_flow_slm()
-        pressure_value = self._pressure_sensor.read_pressure()
+        flow_value = self._flow_sensor.read()
+        pressure_value = self._pressure_sensor.read()
 
         self._data_store.set_pressure_value(pressure_value)
 
