@@ -11,7 +11,7 @@ class Sampler(threading.Thread):
     SAMPLING_INTERVAL = 0.02  # sec
     MS_IN_MIN = 60 * 1000
     ML_IN_LITER = 1000
-    PSI_TO_MILLIBAR = 68.9476
+    PSI_CMH20_RATIO = 70.307
 
     def __init__(self, data_store, flow_sensor, pressure_sensor):
         super(Sampler, self).__init__()
@@ -80,7 +80,7 @@ class Sampler(threading.Thread):
 
         # Read from sensors
         flow_value = self._flow_sensor.read() * self.ML_IN_LITER
-        pressure_mbar = self._pressure_sensor.read() * self.PSI_TO_MILLIBAR
+        pressure_mbar = self._pressure_sensor.read() * self.PSI_CMH20_RATIO
         flow_value = self._flow_sensor.read_flow_slm() * self.ML_IN_LITER
 
         self._data_store.set_pressure_value(pressure_mbar)

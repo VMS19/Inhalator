@@ -16,13 +16,13 @@ log = logging.getLogger(__name__)
 class DataStore(object):
     CONFIG_FILE = os.path.abspath(os.path.join(THIS_DIRECTORY, "..", "config.json"))
     SYSTEM_SAMPLE_INTERVAL = 22 #KHZ
-    DEFAULT_I2C_BUS = 2
+    I2C_BUS = 2
     MS_TO_SEC = 1000
 
     def __init__(self, flow_threshold, volume_threshold,
                  pressure_threshold, resp_rate_threshold,
                  graph_seconds, breathing_threshold, log_enabled=True,
-                 debug_port=7777, i2c_bus=DEFAULT_I2C_BUS):
+                 debug_port=7777, i2c_bus=I2C_BUS):
         self.flow_threshold = flow_threshold
         self.volume_threshold = volume_threshold
         self.pressure_threshold = pressure_threshold
@@ -123,7 +123,6 @@ class DataStore(object):
                 "breathing_threshold": self.breathing_threshold
             },
             "log_enabled": self.log_enabled,
-            "i2c_bus": self.i2c_bus,
             "graph_seconds": self.graph_seconds
         }
 

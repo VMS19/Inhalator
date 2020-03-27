@@ -44,8 +44,12 @@ class AbpPressureSensor(object):
     def read(self):
         try:
             read_size, pressure_raw = self._pig.i2c_read_device(self._dev, self.MEASURE_BYTE_COUNT)
-            pressure_reading = ((pressure_raw[0] & 0x3F) << 8) | (pressure_raw[1])
-            return (self._calculate_pressure(pressure_reading))
+            if read_size >= self.MEASURE_BYTE_COUNT:
+                pressure_reading = ((pressure_raw[0] & 0x3F) << 8) | (pressure_raw[1])
+                return (self._calculate_pressure(pressure_reading))
+            else
+                log.error("Pressure sensor's measure data not ready")
+                raise I2CReadError("Pressure sensor measurement unavailable."):
         except pigpio.error as e:
             log.error("Could not read from pressure sensor. "
                       "Is the pressure sensor connected?.")
