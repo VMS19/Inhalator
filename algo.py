@@ -3,6 +3,7 @@ import logging
 import threading
 from enum import Enum
 from statistics import mean
+from collections import deque
 
 from data.alerts import AlertCodes
 from data.measurements import Measurements
@@ -31,11 +32,12 @@ class VolumeAccumulator(object):
 
 class RunningAvg(object):
 
-    def __init__(self):
-        self.samples = []
+    def __init__(self, max_samples):
+        self.max_samples = max_samples
+        self.samples = deque(maxlen=max_samples)
 
     def reset(self):
-        self.samples = []
+        self.samples.clear()
 
     def process(self, pressure):
         self.samples.append(pressure)
@@ -63,7 +65,8 @@ class Sampler(threading.Thread):
         self._config = Configurations.instance()
         self._events = events
         self.accumulator = VolumeAccumulator()
-        self.peep_avg_calculator = RunningAvg()
+        # No good reason for 1000 max samples. Sounds enough.
+        self.peep_avg_calculator = RunningAvg(max_samples=1000)
         self.alerts = AlertCodes.OK
 
         # State
