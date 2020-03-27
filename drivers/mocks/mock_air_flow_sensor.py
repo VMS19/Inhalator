@@ -1,17 +1,20 @@
-from math import sin
+from itertools import cycle
+
+from drivers.mocks.sinus import sinus, truncate, add_noise
 
 
 class MockAirFlowSensor(object):
-    sample_interval = 0.03
+    SAMPLE_RATE_HZ = 50  # 20ms between reads assumed
+    AMPLITUDE = 20
 
-    def __init__(self):
-        self.sample_x = 0
-        pass
+    def __init__(self, bpm, noise_sigma):
+        samples = sinus(self.SAMPLE_RATE_HZ, self.AMPLITUDE, bpm / 60)
+        samples = truncate(samples, lower_limit=0, upper_limit=self.AMPLITUDE)
+        samples = add_noise(samples, noise_sigma)
+        self.samples = cycle(samples)
 
     def read_flow_slm(self, retries=2):
-        value = max(0, sin(self.sample_x) * 20)
-        self.sample_x += self.sample_interval
-        return value
+        return next(self.samples)
 
     def soft_reset(self):
         pass

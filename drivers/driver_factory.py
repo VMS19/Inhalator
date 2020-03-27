@@ -1,4 +1,7 @@
 class DriverFactory(object):
+    MOCK_BPM = 15  # Breathes per minutes to simulate
+    MOCK_NOISE_SIGMA = 0.5  # Play with it to get desired result
+
     def __init__(self, simulation_mode):
         self.simulation_mode = simulation_mode
 
@@ -26,12 +29,12 @@ class DriverFactory(object):
     @classmethod
     def get_mock_pressure_driver(cls):
         from drivers.mocks.mock_pressure_sensor import MockPressureSensor
-        return MockPressureSensor()
+        return MockPressureSensor(cls.MOCK_BPM, cls.MOCK_NOISE_SIGMA)
 
     @classmethod
     def get_mock_flow_driver(cls):
         from drivers.mocks.mock_air_flow_sensor import MockAirFlowSensor
-        return MockAirFlowSensor()
+        return MockAirFlowSensor(cls.MOCK_BPM, cls.MOCK_NOISE_SIGMA)
 
     @classmethod
     def get_mock_wd_driver(cls):
