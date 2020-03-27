@@ -47,8 +47,8 @@ class DriverFactory(object):
 
     @classmethod
     def get_pressure_driver(cls):
-        from drivers.hce_pressure_sensor import HcePressureSensor
-        return HcePressureSensor()
+        from drivers.abp_pressure_sensor import AbpPressureSensor
+        return AbpPressureSensor()
 
     @classmethod
     def get_flow_driver(cls):
