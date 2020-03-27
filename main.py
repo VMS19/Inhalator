@@ -68,8 +68,7 @@ def main():
     signal.signal(signal.SIGTERM, handle_sigterm)
     args = parse_args()
     configure_logging(args.verbose, store)
-    sound_device = SoundDevice()
-    store.alerts_queue.subscribe(sound_device, sound_device.on_alert)
+    sound_device = SoundDevice(store)
 
     app = Application(store)
     flow_sensor = MockSfm3200()
@@ -84,6 +83,7 @@ def main():
             sleep(0.02)
         except KeyboardInterrupt:
             app.exit()
+            sound_device.stop_ringing()
             break
 
 
