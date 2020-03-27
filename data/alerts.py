@@ -14,7 +14,7 @@ class Alert(object):
         self.value = additional_info
 
     def __eq__(self, other):
-        return self.code == other
+        return self.code == other.code
 
 class AlertsQueue(object):
     MAXIMUM_ALERTS_AMOUNT = 2
