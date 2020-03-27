@@ -1,6 +1,6 @@
 import re
 
-LOG_FILE = '/tmp/inhalator.log'
+LOG_FILE = 'pig_data'
 
 SENSORS_TO_TEMPLATE = {
     'pressure': 'Pressure: (.*)',
