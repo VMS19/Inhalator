@@ -9,6 +9,7 @@ else:
 from graphics.panes import MasterFrame
 from graphics.themes import Theme, DarkTheme
 
+
 class Application(object):
     """The Inhalator application"""
     TEXT_SIZE = 10
