@@ -49,8 +49,8 @@ class Ads7844A2D(object):
 
         log.info("ads7844 driver initialized")
 
-    def _calibrate_a2d(self, pressure_value_m_bar):
-        calibrated_v = 0.9465 * (v_out / self.VOLTAGE_STEP_COUNT)
+    def _calibrate_a2d(self, sample_v):
+        calibrated_v = 0.9465 * (sample_v / self.VOLTAGE_STEP_COUNT)
         return calibrated_v
 
     def _sample_a2d(self, channel, input_mode=MODE_SGL,
