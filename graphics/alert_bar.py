@@ -10,7 +10,6 @@ else:
     from tkinter import *
 
 from data import alerts
-from data.data_store import DataStore
 
 from drivers.driver_factory import DriverFactory
 
@@ -23,12 +22,12 @@ class IndicatorAlertBar(object):
         alerts.AlertCodes.BREATHING_VOLUME_HIGH: "High Volume"
     }
 
-    def __init__(self, parent, store, drivers):
+    def __init__(self, parent, events, drivers):
         self.parent = parent
-        self.store = store  # type: DataStore
         self.root = parent.element
-
+        self.events = events
         self.drivers = drivers
+
         self.height = self.parent.height
         self.width = self.parent.width
 
@@ -51,7 +50,7 @@ class IndicatorAlertBar(object):
         self.message_label.place(anchor="nw", relx=0.03, rely=0.2)
 
     def update(self):
-        last_alert_code = self.store.alerts_queue.last_alert.code
+        last_alert_code = self.events.alerts_queue.last_alert.code
         if last_alert_code == alerts.AlertCodes.OK:
             self.set_no_alert()
 

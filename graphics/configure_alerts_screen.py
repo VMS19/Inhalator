@@ -4,6 +4,8 @@ import platform
 from cached_property import cached_property
 
 # Tkinter stuff
+from data.configurations import Configurations
+
 if platform.python_version() < '3':
     from Tkinter import *
 
@@ -71,10 +73,9 @@ class Section(object):
     INDEX = NotImplemented
     BG = NotImplemented
 
-    def __init__(self, parent, root, store):
+    def __init__(self, parent, root):
         self.parent = parent
         self.root = root
-        self.store = store
 
         self.original_threshold = self.threshold.copy()
 
@@ -98,6 +99,10 @@ class Section(object):
 
         self.max_button.subscribe(self.parent, self.parent.on_threshold_button_click)
         self.min_button.subscribe(self.parent, self.parent.on_threshold_button_click)
+
+    @property
+    def config(self):
+        return Configurations.instance()
 
     @property
     def threshold(self):
@@ -130,38 +135,37 @@ class VTISection(Section):
 
     @property
     def threshold(self):
-        return self.store.flow_threshold
+        return self.config.flow_threshold
 
 class MVISection(Section):
     INDEX = 1
 
     @property
     def threshold(self):
-        return self.store.volume_threshold
+        return self.config.volume_threshold
 
 class PressureSection(Section):
     INDEX = 2
 
     @property
     def threshold(self):
-        return self.store.pressure_threshold
+        return self.config.pressure_threshold
 
 class RespRateSection(Section):
     INDEX = 3
 
     @property
     def threshold(self):
-        return self.store.resp_rate_threshold
+        return self.config.resp_rate_threshold
 
 
 class UpOrDownSection(object):
     DOWN_IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY, "baseline_less_white_36dp.png")
     UP_IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY, "baseline_more_white_36dp.png")
 
-    def __init__(self, parent, root, store):
+    def __init__(self, parent, root):
         self.parent = parent
         self.root = root
-        self.store = store
 
         self.frame = Frame(master=root, bd=0, bg="red",)
         self.up_button = ImageButton(master=self.frame,
@@ -188,10 +192,9 @@ class ConfirmCancelSection(object):
     CONFIRM_IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY, "baseline_done_black_36dp.png")
     CANCEL_IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY, "baseline_cancel_black_36dp.png")
 
-    def __init__(self, parent, root, store):
+    def __init__(self, parent, root):
         self.parent = parent
         self.root = root
-        self.store = store
 
         self.frame = Frame(root)
         self.confirm_button = ImageButton(master=self.frame,
@@ -215,9 +218,8 @@ class ConfirmCancelSection(object):
 
 
 class ConfigureAlarmsScreen(object):
-    def __init__(self, root, store):
+    def __init__(self, root):
         self.root = root
-        self.store = store
 
         # Screen state
         self.selected_threshold = None
@@ -226,15 +228,14 @@ class ConfigureAlarmsScreen(object):
         self.configure_alerts_screen = Frame(master=self.root)
 
         # Sections
-        self.flow_section = VTISection(self, self.configure_alerts_screen, self.store)
-        self.volume_section = MVISection(self, self.configure_alerts_screen, self.store)
-        self.pressure_section = PressureSection(self, self.configure_alerts_screen,
-                                                self.store)
-        self.resp_rate_section = RespRateSection(self, self.configure_alerts_screen,
-                                                 self.store)
+        self.flow_section = VTISection(self, self.configure_alerts_screen)
+        self.volume_section = MVISection(self, self.configure_alerts_screen)
+        self.pressure_section = PressureSection(self, self.configure_alerts_screen)
+        self.resp_rate_section = RespRateSection(self, self.configure_alerts_screen)
 
-        self.up_or_down_section = UpOrDownSection(self, self.configure_alerts_screen, store)
-        self.confirm_cancel_section = ConfirmCancelSection(self, self.configure_alerts_screen, self.store)
+        self.up_or_down_section = UpOrDownSection(self, self.configure_alerts_screen)
+        self.confirm_cancel_section = ConfirmCancelSection(
+            self, self.configure_alerts_screen)
 
     def on_threshold_button_click(self, button):
         is_min = button.is_min

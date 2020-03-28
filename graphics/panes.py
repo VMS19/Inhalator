@@ -18,16 +18,15 @@ from graphics.themes import Theme
 
 
 class MasterFrame(object):
-    def __init__(self, root, watchdog, store, drivers):
+    def __init__(self, root, watchdog, drivers, events, measurements):
         self.root = root
-        self.store = store
 
         self.master_frame = Frame(master=self.root, bg="black")
-        self.left_pane = LeftPane(self, store=store)
-        self.right_pane = RightPane(self, store=store)
-        self.center_pane = CenterPane(self, watchdog, store=store)
-        self.top_pane = TopPane(self, store=store, drivers=drivers)
-        self.bottom_pane = BottomPane(self, store=store)
+        self.left_pane = LeftPane(self, measurements=measurements)
+        self.right_pane = RightPane(self, events=events)
+        self.center_pane = CenterPane(self, watchdog=watchdog, measurements=measurements)
+        self.top_pane = TopPane(self, events=events, drivers=drivers)
+        self.bottom_pane = BottomPane(self)
 
     @property
     def panes(self):
@@ -50,10 +49,9 @@ class MasterFrame(object):
             pane.update()
 
 class LeftPane(object):
-    def __init__(self, parent, store):
+    def __init__(self, parent, measurements):
         self.parent = parent
-        self.store = store
-
+        self.measurements = measurements
         self.root = parent.element
 
         self.screen_height = self.root.winfo_screenheight()
@@ -66,9 +64,9 @@ class LeftPane(object):
                            height=self.height,
                            width=self.width)
 
-        self.volume_summary = VolumeSummary(self, store)
-        self.bpm_summary = BPMSummary(self, store)
-        self.pressure_peak_summary = PressurePeakSummary(self, store)
+        self.volume_summary = VolumeSummary(self, measurements)
+        self.bpm_summary = BPMSummary(self, measurements)
+        self.pressure_peak_summary = PressurePeakSummary(self, measurements)
 
     @property
     def element(self):
@@ -89,10 +87,10 @@ class LeftPane(object):
 
 
 class CenterPane(object):
-    def __init__(self, parent, watchdog, store):
+    def __init__(self, parent, watchdog, measurements):
         self.parent = parent
         self.watchdog = watchdog
-        self.store = store
+        self.measurements = measurements
 
         self.root = parent.element
         self.screen_height = self.root.winfo_screenheight()
@@ -104,8 +102,8 @@ class CenterPane(object):
         self.frame = Frame(master=self.root, bg=Theme.active().SURFACE,
                            height=self.height, width=self.width)
         self.blank_graph = BlankGraph(self.frame)
-        self.flow_graph = FlowGraph(self, self.store, blank=self.blank_graph)
-        self.pressure_graph = AirPressureGraph(self, self.store, blank=self.blank_graph)
+        self.flow_graph = FlowGraph(self, self.measurements, blank=self.blank_graph)
+        self.pressure_graph = AirPressureGraph(self, self.measurements, blank=self.blank_graph)
 
     def pop_queue_to_list(self, q, lst):
         # pops all queue values into list, returns if items appended to queue
@@ -132,9 +130,9 @@ class CenterPane(object):
     def update(self):
         # Get measurments from peripherals
 
-        had_pressure_change = self.pop_queue_to_list(self.store.pressure_measurements,
+        had_pressure_change = self.pop_queue_to_list(self.measurements.pressure_measurements,
             self.pressure_graph.pressure_display_values)
-        had_flow_change = self.pop_queue_to_list(self.store.flow_measurements,
+        had_flow_change = self.pop_queue_to_list(self.measurements.flow_measurements,
             self.flow_graph.flow_display_values)
 
         for graph in self.graphs:
@@ -146,9 +144,9 @@ class CenterPane(object):
             self.watchdog.arm_wd()
 
 class RightPane(object):
-    def __init__(self, parent, store):
+    def __init__(self, parent, events):
         self.parent = parent
-        self.store = store
+        self.events = events
 
         self.root = parent.element
         self.screen_height = self.root.winfo_screenheight()
@@ -160,9 +158,9 @@ class RightPane(object):
         self.frame = Frame(master=self.root, bg=Theme.active().SURFACE,
                            height=self.height, width=self.width)
 
-        self.mute_alerts_btn = MuteAlertsButton(parent=self, store=self.store)
-        self.clear_alerts_btn = ClearAlertsButton(parent=self, store=self.store)
-        self.lock_thresholds_btn = LockThresholdsButton(parent=self, store=self.store)
+        self.mute_alerts_btn = MuteAlertsButton(parent=self, events=self.events)
+        self.clear_alerts_btn = ClearAlertsButton(parent=self, events=self.events)
+        self.lock_thresholds_btn = LockThresholdsButton(parent=self)
 
     @property
     def buttons(self):
@@ -183,9 +181,9 @@ class RightPane(object):
 
 
 class TopPane(object):
-    def __init__(self, parent, store, drivers):
+    def __init__(self, parent, events, drivers):
         self.parent = parent
-        self.store = store
+        self.events = events
 
         self.root = parent.element
         self.screen_height = self.root.winfo_screenheight()
@@ -198,7 +196,7 @@ class TopPane(object):
                            height=self.height,
                            width=self.width)
 
-        self.alerts_bar = IndicatorAlertBar(self, store=self.store, drivers=drivers)
+        self.alerts_bar = IndicatorAlertBar(self, events=events, drivers=drivers)
 
     @property
     def element(self):
@@ -214,9 +212,8 @@ class TopPane(object):
 
 
 class BottomPane(object):
-    def __init__(self, parent, store):
+    def __init__(self, parent):
         self.parent = parent
-        self.store = store
 
         self.root = parent.element
 
@@ -231,7 +228,7 @@ class BottomPane(object):
                            height=self.height,
                            width=self.width)
 
-        self.configure_alerts_btn = OpenConfigureAlertsScreenButton(self, self.store)
+        self.configure_alerts_btn = OpenConfigureAlertsScreenButton(self)
 
     @property
     def element(self):

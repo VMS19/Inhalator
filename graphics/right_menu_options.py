@@ -10,10 +10,10 @@ else:
 from graphics.themes import Theme
 
 class ClearAlertsButton(object):
-    def __init__(self, parent, store):
+    def __init__(self, parent, events):
         self.parent = parent
         self.root = parent.element
-        self.store = store
+        self.events = events
 
         self.button = Button(master=self.root,
                              command=self.on_click,
@@ -26,7 +26,7 @@ class ClearAlertsButton(object):
                              text="Clear")
 
     def on_click(self):
-        self.store.alerts_queue.clear_alerts()
+        self.events.alerts_queue.clear_alerts()
 
     def render(self):
         self.button.place(relx=0, rely=0.1, relwidth=0.8, relheight=0.2)
@@ -35,10 +35,10 @@ class ClearAlertsButton(object):
         pass
 
 class MuteAlertsButton(object):
-    def __init__(self, parent, store):
+    def __init__(self, parent, events):
         self.parent = parent
         self.root = parent.element
-        self.store = store
+        self.events = events
 
         self.button = Button(master=self.root,
                              command=self.on_click,
@@ -60,10 +60,9 @@ class MuteAlertsButton(object):
         pass
 
 class LockThresholdsButton(object):
-    def __init__(self, parent, store):
+    def __init__(self, parent):
         self.parent = parent
         self.root = parent.element
-        self.store = store
 
         self.button = Button(master=self.root,
                              command=self.on_click,

@@ -1,7 +1,7 @@
 import pytest
 
 from algo import Sampler
-from data.data_store import DataStore
+from data.events import DataStore
 from data.thresholds import (FlowThreshold, PressureThreshold,
                              RespiratoryRateThreshold, VolumeThreshold)
 from drivers.mocks.sensor import MockSensor
