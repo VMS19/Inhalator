@@ -26,7 +26,6 @@ class Application(object):
 
     def __init__(self, data_store, watchdog, drivers):
         self.should_run = True
-        self.drivers = drivers
         self.root = Tk()
         self.theme = Theme.toggle_theme()  # Set to dark mode, TODO: Make this configurable
         self.root.protocol("WM_DELETE_WINDOW", self.exit)  # Catches Alt-F4
@@ -37,7 +36,6 @@ class Application(object):
 
     def exit(self):
         self.root.destroy()
-        self.drivers.get_driver("aux").stop()
         self.should_run = False
 
     def render(self):

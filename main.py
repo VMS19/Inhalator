@@ -97,9 +97,10 @@ def main():
             app.gui_update()
             sleep(0.02)
         except KeyboardInterrupt:
-            drivers.get_driver("aux").stop()
-            app.exit()
             break
+
+    app.exit()
+    drivers.get_driver("aux").stop()
 
 
 if __name__ == '__main__':
