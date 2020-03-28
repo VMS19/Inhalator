@@ -95,7 +95,7 @@ class Configurations(object):
             raise ConfigurationFileError("Could not load config file %s"
                                          % config_file) from e
 
-    def save_to_file(self, config_path):
+    def save_to_file(self, config_path=CONFIG_FILE):
         log.info("Saving threshold values to database")
         config = {
             "threshold": {

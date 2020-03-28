@@ -140,7 +140,7 @@ class FlowGraph(object):
         labels = range(0, int(self.config.graph_seconds + 1))
         self.flow_axis.set_xticklabels(labels)
 
-        self.flow_display_values = [0] * self.config.samples_in_graph_amount
+        self.flow_display_values = [0] * self.measurements._amount_of_samples_in_graph
         self.flow_graph, = self.flow_axis.plot(self.measurements.x_axis,
                                                self.flow_display_values,
                                                linewidth=2, animated=True)
