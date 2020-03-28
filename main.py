@@ -3,7 +3,6 @@ import argparse
 import logging
 import signal
 import socket
-
 from logging.handlers import RotatingFileHandler
 from time import sleep
 
@@ -11,13 +10,21 @@ from drivers.driver_factory import DriverFactory
 from data.data_store import DataStore
 from application import Application
 from algo import Sampler
-from sound import SoundDevice
+from drivers.aux_sound import SoundViaAux
 
 
 class BroadcastHandler(logging.handlers.DatagramHandler):
     '''
     A handler for the python logging system which is able to broadcast packets.
     '''
+
+    def send(self, s):
+        try:
+            super().send(s)
+
+        except OSError as e:
+            if e.errno != 101:  # Network is unreachable
+                raise e
 
     def makeSocket(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -56,6 +63,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--verbose", "-v", action="count", default=0)
     parser.add_argument("--simulate", "-s", action='store_true')
+    parser.add_argument("--data", '-d', default='sinus')
     args = parser.parse_args()
     args.verbose = max(0, logging.WARNING - (10 * args.verbose))
     return args
@@ -74,22 +82,19 @@ def main():
     log = configure_logging(args.verbose, store)
 
     # Initialize all drivers, or mocks if in simulation mode
-    if args.simulate or os.uname()[1] != 'raspberrypi':
+    simulation = args.simulate or os.uname()[1] != 'raspberrypi'
+    if simulation:
         log.info("Running in simulation mode! simulating: "
                  "flow, pressure sensors, and watchdog")
-        drivers = DriverFactory(simulation_mode=True)
-
-    else:
-        drivers = DriverFactory(simulation_mode=False)
+    drivers = DriverFactory(
+        simulation_mode=simulation, simulation_data=args.data)
 
     pressure_sensor = drivers.get_driver("pressure")
     flow_sensor = drivers.get_driver("flow")
     watchdog = drivers.get_driver("wd")
 
-    sound_device = SoundDevice()
-    store.alerts_queue.subscribe(sound_device, sound_device.on_alert)
+    app = Application(store, watchdog, drivers)
 
-    app = Application(store, watchdog)
     sampler = Sampler(store, flow_sensor, pressure_sensor)
     app.render()
     sampler.start()
@@ -99,8 +104,10 @@ def main():
             app.gui_update()
             sleep(0.02)
         except KeyboardInterrupt:
-            app.exit()
             break
+
+    app.exit()
+    drivers.get_driver("aux").stop()
 
 
 if __name__ == '__main__':
