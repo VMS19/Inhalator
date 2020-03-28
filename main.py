@@ -10,7 +10,7 @@ from drivers.driver_factory import DriverFactory
 from data.data_store import DataStore
 from application import Application
 from algo import Sampler
-from sound import SoundDevice
+from drivers.aux_sound import SoundViaAux
 
 
 class BroadcastHandler(logging.handlers.DatagramHandler):
@@ -94,10 +94,7 @@ def main():
     flow_sensor = drivers.get_driver("flow")
     watchdog = drivers.get_driver("wd")
 
-    sound_device = SoundDevice()
-    store.alerts_queue.subscribe(sound_device, sound_device.on_alert)
-
-    app = Application(store, watchdog)
+    app = Application(store, watchdog, drivers)
 
     sampler = Sampler(store, flow_sensor, pressure_sensor)
     app.render()
@@ -108,8 +105,10 @@ def main():
             app.gui_update()
             sleep(0.02)
         except KeyboardInterrupt:
-            app.exit()
             break
+
+    app.exit()
+    drivers.get_driver("aux").stop()
 
 
 if __name__ == '__main__':
