@@ -42,7 +42,7 @@ class AbpPressureSensor(object):
         return (((pressure_reading - self.MIN_OUT_PRESSURE) *
                 self.SENSITIVITY) + self.MIN_PRESSURE)
 
-    def read_pressure(self):
+    def read(self):
         try:
             self._pig.i2c_read_device(self._dev, self.MEASURE_BYTE_COUNT)
         except pigpio.error as e:
