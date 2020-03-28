@@ -10,20 +10,23 @@ from drivers.driver_factory import DriverFactory
 
 @pytest.fixture
 def store():
-    store = DataStore(flow_threshold=FlowThreshold(min=0, max=30),
-                      pressure_threshold=PressureThreshold(min=0, max=30),
-                      resp_rate_threshold=RespiratoryRateThreshold(min=0, max=30),
-                      volume_threshold=VolumeThreshold(min=0, max=30),
-                      graph_seconds=12,
-                      breathing_threshold=3.5,
-                      log_enabled=False)
-
-    return store
+    return DataStore(flow_threshold=FlowThreshold(min=0, max=30),
+                     pressure_threshold=PressureThreshold(min=0, max=30),
+                     resp_rate_threshold=RespiratoryRateThreshold(min=0, max=30),
+                     volume_threshold=VolumeThreshold(min=0, max=30),
+                     graph_seconds=12,
+                     breathing_threshold=3.5,
+                     log_enabled=False)
 
 
-def test_sampler_inserts_pressure_measurement_to_store(store):
-    flow_sensor = MockSensor(DriverFactory.generate_mock_air_flow_data())
-    pressure_sensor = MockSensor(DriverFactory.generate_mock_pressure_data())
+@pytest.fixture
+def driver_factory():
+    return DriverFactory(simulation_mode=True, simulation_data="sinus")
+
+
+def test_sampler_inserts_pressure_measurement_to_store(store, driver_factory):
+    flow_sensor = driver_factory.get_driver("flow")
+    pressure_sensor = driver_factory.get_driver("pressure")
     sampler = Sampler(store, flow_sensor, pressure_sensor)
     assert store.pressure_measurements.qsize() == 0
     sampler.sampling_iteration()
@@ -32,9 +35,9 @@ def test_sampler_inserts_pressure_measurement_to_store(store):
     assert store.pressure_measurements.qsize() == 2
 
 
-def test_sampler_alerts_when_pressure_exceeds_maximum(store):
-    flow_sensor = MockSensor(DriverFactory.generate_mock_air_flow_data())
-    pressure_sensor = MockSensor(DriverFactory.generate_mock_pressure_data())
+def test_sampler_alerts_when_pressure_exceeds_maximum(store, driver_factory):
+    flow_sensor = driver_factory.get_driver("flow")
+    pressure_sensor = driver_factory.get_driver("pressure")
     sampler = Sampler(store, flow_sensor, pressure_sensor)
     assert len(store.alerts_queue) == 0
     sampler.sampling_iteration()
@@ -46,9 +49,9 @@ def test_sampler_alerts_when_pressure_exceeds_maximum(store):
     assert len(store.alerts_queue) == 1
 
 
-def test_sampler_alerts_when_pressure_exceeds_minimum(store):
-    flow_sensor = MockSensor(DriverFactory.generate_mock_air_flow_data())
-    pressure_sensor = MockSensor(DriverFactory.generate_mock_pressure_data())
+def test_sampler_alerts_when_pressure_exceeds_minimum(store, driver_factory):
+    flow_sensor = driver_factory.get_driver("flow")
+    pressure_sensor = driver_factory.get_driver("pressure")
     sampler = Sampler(store, flow_sensor, pressure_sensor)
     assert len(store.alerts_queue) == 0
     sampler.sampling_iteration()
@@ -60,9 +63,9 @@ def test_sampler_alerts_when_pressure_exceeds_minimum(store):
     assert len(store.alerts_queue) == 1
 
 
-def test_sampler_alerts_when_flow_exceeds_maximum(store):
-    flow_sensor = MockSensor(DriverFactory.generate_mock_air_flow_data())
-    pressure_sensor = MockSensor(DriverFactory.generate_mock_pressure_data())
+def test_sampler_alerts_when_flow_exceeds_maximum(store, driver_factory):
+    flow_sensor = driver_factory.get_driver("flow")
+    pressure_sensor = driver_factory.get_driver("pressure")
     sampler = Sampler(store, flow_sensor, pressure_sensor)
     assert len(store.alerts_queue) == 0
     sampler.sampling_iteration()
@@ -74,9 +77,9 @@ def test_sampler_alerts_when_flow_exceeds_maximum(store):
     assert len(store.alerts_queue) == 1
 
 
-def test_sampler_alerts_when_flow_exceeds_minimum(store):
-    flow_sensor = MockSensor(DriverFactory.generate_mock_air_flow_data())
-    pressure_sensor = MockSensor(DriverFactory.generate_mock_pressure_data())
+def test_sampler_alerts_when_flow_exceeds_minimum(store, driver_factory):
+    flow_sensor = driver_factory.get_driver("flow")
+    pressure_sensor = driver_factory.get_driver("pressure")
     sampler = Sampler(store, flow_sensor, pressure_sensor)
     assert len(store.alerts_queue) == 0
     sampler.sampling_iteration()
