@@ -81,7 +81,6 @@ class Sampler(threading.Thread):
         # Read from sensors
         flow_value = self._flow_sensor.read() * self.ML_IN_LITER
         pressure_cmh2o = self._pressure_sensor.read() * self.PSI_CMH20_RATIO
-        flow_value = self._flow_sensor.read_flow_slm() * self.ML_IN_LITER
 
         self._data_store.set_pressure_value(pressure_cmh2o)
 
