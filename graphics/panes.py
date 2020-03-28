@@ -18,7 +18,7 @@ from graphics.themes import Theme
 
 
 class MasterFrame(object):
-    def __init__(self, root, watchdog, store):
+    def __init__(self, root, watchdog, store, drivers):
         self.root = root
         self.store = store
 
@@ -26,7 +26,7 @@ class MasterFrame(object):
         self.left_pane = LeftPane(self, store=store)
         self.right_pane = RightPane(self, store=store)
         self.center_pane = CenterPane(self, watchdog, store=store)
-        self.top_pane = TopPane(self, store=store)
+        self.top_pane = TopPane(self, store=store, drivers=drivers)
         self.bottom_pane = BottomPane(self, store=store)
 
     @property
@@ -183,7 +183,7 @@ class RightPane(object):
 
 
 class TopPane(object):
-    def __init__(self, parent, store):
+    def __init__(self, parent, store, drivers):
         self.parent = parent
         self.store = store
 
@@ -198,7 +198,7 @@ class TopPane(object):
                            height=self.height,
                            width=self.width)
 
-        self.alerts_bar = IndicatorAlertBar(self, store=self.store)
+        self.alerts_bar = IndicatorAlertBar(self, store=self.store, drivers=drivers)
 
     @property
     def element(self):

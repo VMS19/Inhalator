@@ -61,6 +61,11 @@ class DriverFactory(object):
         return WdDriver()
 
     @classmethod
+    def get_aux_driver(cls):
+        from drivers.aux_sound import SoundViaAux
+        return SoundViaAux.instance()
+
+    @classmethod
     def get_mock_pressure_driver(cls):
         from drivers.mocks.sensor import MockSensor
         return MockSensor(cls.generate_mock_pressure_data())
@@ -75,11 +80,21 @@ class DriverFactory(object):
         from drivers.mocks.mock_wd_driver import MockWdDriver
         return MockWdDriver()
 
+    @classmethod
+    def get_mock_aux_driver(cls):
+        from unittest.mock import MagicMock
+        return MagicMock()
 
 REAL_DRIVERS_DICT = {"pressure": DriverFactory.get_pressure_driver,
                      "flow": DriverFactory.get_flow_driver,
-                     "wd": DriverFactory.get_wd_driver}
+                     "wd": DriverFactory.get_wd_driver,
+                     "aux": DriverFactory.get_aux_driver}
 
+
+# We don't want to mock sound in development mode, unit-tests call the mock functions
+# explicitly, if we want to support multiple program modes (demo/test/real/develop/etc...)
+# it should be done in a future issue
 MOCK_DRIVERS_DICT = {"pressure": DriverFactory.get_mock_pressure_driver,
                      "flow": DriverFactory.get_mock_flow_driver,
-                     "wd": DriverFactory.get_mock_wd_driver}
+                     "wd": DriverFactory.get_mock_wd_driver,
+                     "aux": DriverFactory.get_aux_driver}
