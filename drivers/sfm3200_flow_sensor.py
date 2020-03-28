@@ -76,7 +76,7 @@ class Sfm3200(object):
             log.error("Could not write soft reset cmd to flow sensor.")
             raise I2CWriteError("i2c write failed")
 
-    def read_flow_slm(self, retries=2):
+    def read(self, retries=2):
         read_size, data = self._pig.i2c_read_device(self._dev, 3)
         if read_size >= 2:
             raw_value = data[0] << 8 | data[1]

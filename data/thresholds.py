@@ -40,12 +40,12 @@ class Threshold(object):  # TODO: Add option to turn off
 
 class FlowThreshold(Threshold):
     NAME = "Flow"
-    UNIT = "mL"
+    UNIT = "L/min"
 
 
 class VolumeThreshold(Threshold):
     NAME = "Volume"
-    UNIT = "mL/min"
+    UNIT = "mL"
 
 
 class PressureThreshold(Threshold):
@@ -53,5 +53,5 @@ class PressureThreshold(Threshold):
     UNIT = "cmH2O"
 
 class RespiratoryRateThreshold(Threshold):
-    NAME = "Resp. rate"
+    NAME = "Resp.\nrate"
     UNIT = "per min"

@@ -79,7 +79,7 @@ class Section(object):
         self.original_threshold = self.threshold.copy()
 
         self.frame = Frame(self.root, bg="red")
-        self.name_label = Label(master=self.frame, font=("Roboto", 24),
+        self.name_label = Label(master=self.frame, font=("Roboto", 15),
                                 bg=Theme.active().SURFACE,
                                 fg=Theme.active().TXT_ON_SURFACE)
         self.unit_label = Label(master=self.frame, font=("Roboto", 12),

@@ -16,6 +16,7 @@ class AbpPressureSensor(object):
     MIN_OUT_PRESSURE = 0x666
     SENSITIVITY = float(MAX_RANGE_PRESSURE - MIN_RANGE_PRESSURE) /\
         float(MAX_OUT_PRESSURE - MIN_OUT_PRESSURE)
+    PSI_CMH2O_RATIO = 70.307
 
     def __init__(self, i2c_bus):
         try:
@@ -38,10 +39,13 @@ class AbpPressureSensor(object):
         log.info("ABP pressure sensor initialized")
 
     def _calculate_pressure(self, pressure_reading):
-        return (((pressure_reading - self.MIN_OUT_PRESSURE) *
+        psi_pressure = (((pressure_reading - self.MIN_OUT_PRESSURE) *
                 self.SENSITIVITY) + self.MIN_RANGE_PRESSURE)
+        cmh2o_pressure = psi_pressure * self.PSI_CMH2O_RATIO
+        return (cmh2o_pressure)
 
-    def read_pressure(self):
+    def read(self):
+        """ Returns pressure as cmh2o """
         try:
             read_size, pressure_raw = self._pig.i2c_read_device(self._dev, self.MEASURE_BYTE_COUNT)
             if read_size >= self.MEASURE_BYTE_COUNT:

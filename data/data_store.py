@@ -42,6 +42,7 @@ class DataStore(object):
 
         self.intake_peak_flow = 0
         self.intake_peak_pressure = 0
+        self.bpm = 0
 
         self.alerts_queue = AlertsQueue()
         self.lock = Lock()
@@ -111,9 +112,9 @@ class DataStore(object):
                     "step": self.pressure_threshold.step
                 },
                 "bpm": {
-                    "min": self.breathing_threshold.min,
-                    "max": self.breathing_threshold.max,
-                    "step": self.breathing_threshold.step
+                    "min": self.volume_threshold.min,
+                    "max": self.volume_threshold.max,
+                    "step": self.volume_threshold.step
                 },
                 "breathing_threshold": self.breathing_threshold
             },
