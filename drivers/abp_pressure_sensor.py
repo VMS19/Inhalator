@@ -2,6 +2,7 @@ import pigpio
 import logging
 
 from errors import PiGPIOInitError, I2CDeviceNotFoundError, I2CReadError
+from .sync import i2c_lock
 
 log = logging.getLogger(__name__)
 
@@ -44,7 +45,9 @@ class AbpPressureSensor(object):
 
     def read_pressure(self):
         try:
-            self._pig.i2c_read_device(self._dev, self.MEASURE_BYTE_COUNT)
+            with i2c_lock:
+                self._pig.i2c_read_device(self._dev, 
+                                          self.MEASURE_BYTE_COUNT)
         except pigpio.error as e:
             log.error("Could not read from pressure sensor. "
                       "Is the pressure sensor connected?.")
