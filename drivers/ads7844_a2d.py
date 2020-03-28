@@ -73,7 +73,7 @@ class Ads7844A2D(object):
 
         return self._calibrate_a2d(sample_reading)
 
-    def sample_a2d_channels(self, channels, input_mode=MODE_SGL,
+    def read(self, channels, input_mode=MODE_SGL,
                             power_down_mode=PD_DISABLED):
         samples = []
         for channel in channels:

@@ -99,7 +99,7 @@ class DriverFactory(object):
 REAL_DRIVERS_DICT = {"pressure": DriverFactory.get_pressure_driver,
                      "flow": DriverFactory.get_flow_driver,
                      "wd": DriverFactory.get_wd_driver,
-                     "oxygen_a2d": get_oxygen_a2d_driver}
+                     "oxygen_a2d": DriverFactory.get_oxygen_a2d_driver}
 
 MOCK_DRIVERS_DICT = {"pressure": DriverFactory.get_mock_pressure_driver,
                      "flow": DriverFactory.get_mock_flow_driver,
