@@ -5,8 +5,9 @@ import logging
 def main():
     logging.basicConfig(level=logging.DEBUG)
     hce = HcePressureSensor()
-    pressure = hce.read_pressure()
-    print pressure
+    pressure = hce.read()
+    print(pressure)
+
 
 if __name__ == "__main__":
     main()
