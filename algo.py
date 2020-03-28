@@ -64,7 +64,8 @@ class Sampler(threading.Thread):
         # Read from sensors
         flow_value = self._flow_sensor.read_flow_slm()
         pressure_value = self._pressure_sensor.read_pressure()
-        oxygen_value = _oxygen_a2d.sample_a2d_channels(self.OXYGEN_A2D_SAMPLE_CHANNELS)
+        oxygen_value = self._oxygen_a2d.sample_a2d_channels(
+            self.OXYGEN_A2D_SAMPLE_CHANNELS)
 
         print("oxygen", oxygen_value)
 
