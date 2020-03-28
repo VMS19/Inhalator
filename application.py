@@ -35,7 +35,7 @@ class Application(object):
         self.master_frame = MasterFrame(self.root, watchdog, store=data_store, drivers=drivers)
 
     def exit(self):
-        self.root.destroy()
+        self.root.quit()
         self.should_run = False
 
     def render(self):
