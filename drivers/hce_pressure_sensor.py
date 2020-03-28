@@ -59,10 +59,10 @@ class HcePressureSensor(object):
         return (((pressure_reading - self.MIN_OUT_PRESSURE) /
                 self.SENSITIVITY) + self.MIN_PRESSURE)
 
-    def read_pressure(self):
+    def read(self):
         try:
-            pressure_raw = self._spi.xfer(self.SPI_READ_CMD, 
-                                          self.XFER_SPEED_HZ, 
+            pressure_raw = self._spi.xfer(self.SPI_READ_CMD,
+                                          self.XFER_SPEED_HZ,
                     self.PERIPHERAL_MINIMAL_DELAY)
         except IOError as e:
             log.error("Failed to read pressure sensor. check if peripheral is initialized correctly")

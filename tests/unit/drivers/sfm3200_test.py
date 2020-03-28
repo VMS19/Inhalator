@@ -5,8 +5,9 @@ import logging
 def main():
     logging.basicConfig(level=logging.DEBUG)
     sfm = Sfm3200()
-    flow = sfm.read_flow_slm()
+    flow = sfm.read()
     print(flow)
+
 
 if __name__ == "__main__":
     main()

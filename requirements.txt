@@ -3,3 +3,4 @@ matplotlib
 spidev
 cached_property
 pytest
+numpy
