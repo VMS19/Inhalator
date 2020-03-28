@@ -3,7 +3,6 @@ import argparse
 import logging
 import signal
 import socket
-
 from logging.handlers import RotatingFileHandler
 from time import sleep
 
@@ -18,6 +17,14 @@ class BroadcastHandler(logging.handlers.DatagramHandler):
     '''
     A handler for the python logging system which is able to broadcast packets.
     '''
+
+    def send(self, s):
+        try:
+            super().send(s)
+
+        except OSError as e:
+            if e.errno != 101:  # Network is unreachable
+                raise e
 
     def makeSocket(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -56,6 +63,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--verbose", "-v", action="count", default=0)
     parser.add_argument("--simulate", "-s", action='store_true')
+    parser.add_argument("--data", '-d', default='sinus')
     args = parser.parse_args()
     args.verbose = max(0, logging.WARNING - (10 * args.verbose))
     return args
@@ -77,7 +85,7 @@ def main():
     if args.simulate or os.uname()[1] != 'raspberrypi':
         log.info("Running in simulation mode! simulating: "
                  "flow, pressure sensors, and watchdog")
-        drivers = DriverFactory(simulation_mode=True)
+        drivers = DriverFactory(simulation_mode=True, simulation_data=args.data)
 
     else:
         drivers = DriverFactory(simulation_mode=False)
