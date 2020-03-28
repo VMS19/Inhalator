@@ -8,26 +8,24 @@ else:
     from tkinter import *
 
 from graphics.alert_bar import IndicatorAlertBar
-from graphics.graphs import AirFlowGraph, AirPressureGraph, BlankGraph
-from graphics.graph_summaries import AirOutputSummary, BPMSummary, PressurePeakSummary
-from graphics.threshold_button import (BPMThresholdButton, O2ThresholdButton,
-                                       PeakFlowThresholdButton, PEEPThresholdButton,
-                                       VolumeThresholdButton)
+from graphics.graphs import FlowGraph, AirPressureGraph, BlankGraph
+from graphics.graph_summaries import VolumeSummary, BPMSummary, PressurePeakSummary
+from graphics.configure_alerts_button import OpenConfigureAlertsScreenButton
 from graphics.right_menu_options import (MuteAlertsButton,
                                          ClearAlertsButton,
                                          LockThresholdsButton)
+from graphics.themes import Theme
 
-from drivers.wd_driver import WdDriver
 
 class MasterFrame(object):
-    def __init__(self, root, store):
+    def __init__(self, root, watchdog, store):
         self.root = root
         self.store = store
 
         self.master_frame = Frame(master=self.root, bg="black")
         self.left_pane = LeftPane(self, store=store)
         self.right_pane = RightPane(self, store=store)
-        self.center_pane = CenterPane(self, store=store)
+        self.center_pane = CenterPane(self, watchdog, store=store)
         self.top_pane = TopPane(self, store=store)
         self.bottom_pane = BottomPane(self, store=store)
 
@@ -64,11 +62,11 @@ class LeftPane(object):
         self.height = self.screen_height * 0.65
         self.width = self.screen_width * 0.2
 
-        self.frame = Frame(master=self.root, bg="white",
+        self.frame = Frame(master=self.root, bg=Theme.active().SURFACE,
                            height=self.height,
                            width=self.width)
 
-        self.air_output_summary = AirOutputSummary(self, store)
+        self.volume_summary = VolumeSummary(self, store)
         self.bpm_summary = BPMSummary(self, store)
         self.pressure_peak_summary = PressurePeakSummary(self, store)
 
@@ -78,7 +76,7 @@ class LeftPane(object):
 
     @property
     def summaries(self):
-        return (self.air_output_summary, self.bpm_summary, self.pressure_peak_summary)
+        return (self.volume_summary, self.bpm_summary, self.pressure_peak_summary)
 
     def render(self):
         self.frame.grid(row=1, column=0)
@@ -91,8 +89,9 @@ class LeftPane(object):
 
 
 class CenterPane(object):
-    def __init__(self, parent, store):
+    def __init__(self, parent, watchdog, store):
         self.parent = parent
+        self.watchdog = watchdog
         self.store = store
 
         self.root = parent.element
@@ -102,12 +101,11 @@ class CenterPane(object):
         self.height = self.screen_height * 0.65
         self.width = self.screen_width * 0.7
 
-        self.frame = Frame(master=self.root, bg="white",
+        self.frame = Frame(master=self.root, bg=Theme.active().SURFACE,
                            height=self.height, width=self.width)
         self.blank_graph = BlankGraph(self.frame)
-        self.flow_graph = AirFlowGraph(self, self.store, blank=self.blank_graph)
+        self.flow_graph = FlowGraph(self, self.store, blank=self.blank_graph)
         self.pressure_graph = AirPressureGraph(self, self.store, blank=self.blank_graph)
-        self.wd = WdDriver()  
 
     def pop_queue_to_list(self, q, lst):
         # pops all queue values into list, returns if items appended to queue
@@ -134,19 +132,18 @@ class CenterPane(object):
     def update(self):
         # Get measurments from peripherals
 
-        had_flow_change = self.pop_queue_to_list(self.store.pressure_measurements,
+        had_pressure_change = self.pop_queue_to_list(self.store.pressure_measurements,
             self.pressure_graph.pressure_display_values)
-        had_pressure_change = self.pop_queue_to_list(self.store.flow_measurements,
+        had_flow_change = self.pop_queue_to_list(self.store.flow_measurements,
             self.flow_graph.flow_display_values)
-        arm_wd = had_flow_change & had_pressure_change
-
-        # arm wd only if both queues had values
-        if arm_wd:
-            self.wd.arm_wd()
 
         for graph in self.graphs:
             graph.update()
 
+        #Todo: Move outside of gui thread. arm_wd causes 50ms sleep!
+        # arm wd only if both queues had sampling values
+        if had_flow_change and had_pressure_change:
+            self.watchdog.arm_wd()
 
 class RightPane(object):
     def __init__(self, parent, store):
@@ -160,7 +157,7 @@ class RightPane(object):
         self.height = self.screen_height * 0.65
         self.width = self.screen_width * 0.1
 
-        self.frame = Frame(master=self.root, bg="white",
+        self.frame = Frame(master=self.root, bg=Theme.active().SURFACE,
                            height=self.height, width=self.width)
 
         self.mute_alerts_btn = MuteAlertsButton(parent=self, store=self.store)
@@ -197,7 +194,7 @@ class TopPane(object):
         self.height = self.screen_height * 0.15
         self.width = self.screen_width
 
-        self.frame = Frame(master=self.root, bg="white",
+        self.frame = Frame(master=self.root, bg=Theme.active().SURFACE,
                            height=self.height,
                            width=self.width)
 
@@ -230,29 +227,19 @@ class BottomPane(object):
         self.width = self.screen_width
 
         self.frame = Frame(master=self.root,
-                           bg="white",
+                           bg=Theme.active().SURFACE,
                            height=self.height,
                            width=self.width)
 
-        self.o2_threshold_btn = O2ThresholdButton(self, self.store)
-        self.volume_threshold_btn = VolumeThresholdButton(self, self.store)
-        self.peep_threshold_btn = PEEPThresholdButton(self, self.store)
-        self.peak_flow_threshold_btn = PeakFlowThresholdButton(self, self.store)
-        self.bpm_threshold_btn = BPMThresholdButton(self, self.store)
+        self.configure_alerts_btn = OpenConfigureAlertsScreenButton(self, self.store)
 
-    @property
-    def buttons(self):
-        return (self.volume_threshold_btn, self.peep_threshold_btn)
     @property
     def element(self):
         return self.frame
 
     def render(self):
         self.frame.grid(row=2, columnspan=3)
-
-        for button in self.buttons:
-            button.render()
+        self.configure_alerts_btn.render()
 
     def update(self):
-        for button in self.buttons:
-            button.update()
+        pass
