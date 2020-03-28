@@ -63,6 +63,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--verbose", "-v", action="count", default=0)
     parser.add_argument("--simulate", "-s", action='store_true')
+    parser.add_argument("--data", '-d', default='sinus')
     args = parser.parse_args()
     args.verbose = max(0, logging.WARNING - (10 * args.verbose))
     return args
@@ -84,7 +85,7 @@ def main():
     if args.simulate or os.uname()[1] != 'raspberrypi':
         log.info("Running in simulation mode! simulating: "
                  "flow, pressure sensors, and watchdog")
-        drivers = DriverFactory(simulation_mode=True)
+        drivers = DriverFactory(simulation_mode=True, simulation_data=args.data)
 
     else:
         drivers = DriverFactory(simulation_mode=False)

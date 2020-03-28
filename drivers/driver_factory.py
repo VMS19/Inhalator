@@ -1,3 +1,5 @@
+import re
+
 from drivers.mocks.sinus import sinus, truncate, add_noise
 
 
@@ -10,8 +12,9 @@ class DriverFactory(object):
     MOCK_PIP = 25  # Peak Intake Pressure
     MOCK_PEEP = 3  # Positive End-Expiratory Pressure
 
-    def __init__(self, simulation_mode):
+    def __init__(self, simulation_mode, simulation_data='sinus'):
         self.simulation_mode = simulation_mode
+        self.simulation_data = simulation_data  # can be either `sinus` or file path
 
     def get_driver(self, driver_name):
         if self.simulation_mode:
@@ -46,6 +49,20 @@ class DriverFactory(object):
         return add_noise(samples, cls.MOCK_NOISE_SIGMA)
 
     @classmethod
+    def generate_data_from_file(cls, sensor, file_path):
+        SENSORS_TO_REGEX = {
+            'pressure': 'Pressure: (.*)',
+            'flow': 'Flow: (.*)',
+            'oxygen': "Breathed: (.*)"
+        }
+
+        with open(file_path, 'r') as log_file:
+            for sample_line in log_file:
+                match = re.search(SENSORS_TO_REGEX[sensor], sample_line)
+                if match is not None:
+                    yield float(match.group(1))
+
+    @classmethod
     def get_pressure_driver(cls):
         from drivers.hce_pressure_sensor import HcePressureSensor
         return HcePressureSensor()
@@ -61,14 +78,26 @@ class DriverFactory(object):
         return WdDriver()
 
     @classmethod
-    def get_mock_pressure_driver(cls):
+    def get_mock_pressure_driver(cls, data_source):
         from drivers.mocks.sensor import MockSensor
-        return MockSensor(cls.generate_mock_pressure_data())
+        if data_source == 'sinus':
+            data = cls.generate_mock_pressure_data()
+
+        else:
+            data = cls.generate_data_from_file('pressure', data_source)
+
+        return MockSensor(data)
 
     @classmethod
-    def get_mock_flow_driver(cls):
+    def get_mock_flow_driver(cls, data_source):
         from drivers.mocks.sensor import MockSensor
-        return MockSensor(cls.generate_mock_air_flow_data())
+        if data_source == 'sinus':
+            data = cls.generate_mock_air_flow_data()
+
+        else:
+            data = cls.generate_data_from_file('flow', data_source)
+
+        return MockSensor(data)
 
     @classmethod
     def get_mock_wd_driver(cls):
