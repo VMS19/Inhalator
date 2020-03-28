@@ -12,6 +12,7 @@ from data.data_store import DataStore
 from application import Application
 from algo import Sampler
 from sound import SoundDevice
+from wd_task import WdTask
 
 
 class BroadcastHandler(logging.handlers.DatagramHandler):
@@ -73,8 +74,10 @@ def main():
     args = parse_args()
     log = configure_logging(args.verbose, store)
 
+    is_simulation = args.simulate or os.uname()[1] != 'raspberrypi'
+
     # Initialize all drivers, or mocks if in simulation mode
-    if args.simulate or os.uname()[1] != 'raspberrypi':
+    if is_simulation:
         log.info("Running in simulation mode! simulating: "
                  "flow, pressure sensors, and watchdog")
         drivers = DriverFactory(simulation_mode=True)
@@ -84,15 +87,19 @@ def main():
 
     pressure_sensor = drivers.get_driver("pressure")
     flow_sensor = drivers.get_driver("flow")
-    watchdog = drivers.get_driver("wd")
 
     sound_device = SoundDevice()
     store.alerts_queue.subscribe(sound_device, sound_device.on_alert)
 
-    app = Application(store, watchdog)
     sampler = Sampler(store, flow_sensor, pressure_sensor)
+    app = Application(store)
     app.render()
     sampler.start()
+
+    # Init watchdog if not in simulation
+    if not is_simulation:
+        watchdog = WdTask(store)
+        watchdog.start()
 
     while app.should_run:
         try:

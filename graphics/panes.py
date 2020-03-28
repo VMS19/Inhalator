@@ -18,14 +18,14 @@ from graphics.themes import Theme
 
 
 class MasterFrame(object):
-    def __init__(self, root, watchdog, store):
+    def __init__(self, root, store):
         self.root = root
         self.store = store
 
         self.master_frame = Frame(master=self.root, bg="black")
         self.left_pane = LeftPane(self, store=store)
         self.right_pane = RightPane(self, store=store)
-        self.center_pane = CenterPane(self, watchdog, store=store)
+        self.center_pane = CenterPane(self, store=store)
         self.top_pane = TopPane(self, store=store)
         self.bottom_pane = BottomPane(self, store=store)
 
@@ -89,9 +89,8 @@ class LeftPane(object):
 
 
 class CenterPane(object):
-    def __init__(self, parent, watchdog, store):
+    def __init__(self, parent, store):
         self.parent = parent
-        self.watchdog = watchdog
         self.store = store
 
         self.root = parent.element
@@ -143,7 +142,7 @@ class CenterPane(object):
         #Todo: Move outside of gui thread. arm_wd causes 50ms sleep!
         # arm wd only if both queues had sampling values
         if had_flow_change and had_pressure_change:
-            self.watchdog.arm_wd()
+            self.store.arm_wd_event.set()
 
 class RightPane(object):
     def __init__(self, parent, store):
