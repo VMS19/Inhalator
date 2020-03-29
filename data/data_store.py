@@ -1,7 +1,7 @@
 import os
 import json
 import logging
-from threading import Lock, Event
+from threading import Lock
 from queue import Queue
 
 from data.thresholds import (RespiratoryRateThreshold, PressureThreshold,
@@ -46,7 +46,6 @@ class DataStore(object):
         self.intake_peak_pressure = 0
         self.bpm = 0
 
-        self.arm_wd_event = Event()
         self.alerts_queue = AlertsQueue()
         self.lock = Lock()
 

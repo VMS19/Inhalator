@@ -24,7 +24,7 @@ class Application(object):
     def instance(cls):
         return cls.__instance
 
-    def __init__(self, data_store):
+    def __init__(self, data_store, arm_wd_event):
         self.should_run = True
         self.root = Tk()
         self.theme = Theme.toggle_theme()  # Set to dark mode, TODO: Make this configurable
@@ -32,7 +32,7 @@ class Application(object):
         self.root.title("Inhalator")
         self.root.geometry('800x480')
         self.root.attributes("-fullscreen", True)
-        self.master_frame = MasterFrame(self.root, store=data_store)
+        self.master_frame = MasterFrame(self.root, store=data_store, arm_wd_event=arm_wd_event)
 
     def exit(self):
         self.root.destroy()

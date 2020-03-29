@@ -6,6 +6,7 @@ import socket
 
 from logging.handlers import RotatingFileHandler
 from time import sleep
+from threading import Event
 
 from drivers.driver_factory import DriverFactory
 from data.data_store import DataStore
@@ -73,6 +74,7 @@ def main():
     signal.signal(signal.SIGTERM, handle_sigterm)
     args = parse_args()
     log = configure_logging(args.verbose, store)
+    arm_wd_event = Event()
 
     is_simulation = args.simulate or os.uname()[1] != 'raspberrypi'
 
@@ -87,19 +89,19 @@ def main():
 
     pressure_sensor = drivers.get_driver("pressure")
     flow_sensor = drivers.get_driver("flow")
+    wd = drivers.get_driver("wd")
 
     sound_device = SoundDevice()
     store.alerts_queue.subscribe(sound_device, sound_device.on_alert)
 
     sampler = Sampler(store, flow_sensor, pressure_sensor)
-    app = Application(store)
+    app = Application(store, arm_wd_event)
     app.render()
     sampler.start()
 
     # Init watchdog if not in simulation
-    if not is_simulation:
-        watchdog = WdTask(store)
-        watchdog.start()
+    watchdog = WdTask(store, wd, arm_wd_event)
+    watchdog.start()
 
     while app.should_run:
         try:
