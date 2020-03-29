@@ -47,7 +47,6 @@ class AirPressureGraph(object):
         self.pressure_axis = self.pressure_figure.add_subplot(111, label="pressure")
         self.pressure_axis.set_ylabel('Pressure [cmH20]')
         self.pressure_axis.set_xlabel('sec')
-        self.pressure_axis.set_title("Air Pressure")
 
         # Calibrate x-axis
         amount_of_xs = self.measurements._amount_of_samples_in_graph
@@ -129,7 +128,6 @@ class FlowGraph(object):
         self.flow_axis = self.flow_figure.add_subplot(111, label="flow")
         self.flow_axis.set_ylabel('Flow [L/min]')
         self.flow_axis.set_xlabel('sec')
-        self.flow_axis.set_title("Air Flow")
 
         # Calibrate x-axis
         amount_of_xs = self.measurements._amount_of_samples_in_graph
