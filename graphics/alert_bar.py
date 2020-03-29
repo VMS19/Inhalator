@@ -54,6 +54,11 @@ class IndicatorAlertBar(object):
         self.message_label.place(anchor="nw", relx=0.03, rely=0.2)
 
     def update(self):
+        # Check mute time limit
+        if (self.events.mute_alerts 
+                and (time.time() - self.events.mute_time) > self.configs.mute_time_limit):
+            self.events.mute_alerts = False
+
         last_alert_code = self.events.alerts_queue.last_alert.code
         if last_alert_code == alerts.AlertCodes.OK:
             self.set_no_alert()
@@ -61,11 +66,6 @@ class IndicatorAlertBar(object):
         else:
             self.set_alert(self.error_dict.get(last_alert_code, "Multiple Errors"))
 
-        # Check mute time limit
-        if (self.events.mute_alerts 
-                and (time.time() - self.events.mute_time) > self.configs.mute_time_limit):
-            self.events.mute_alerts = True
-            self.sound_device.start()
 
     def set_no_alert(self):
         self.bar.config(bg=Theme.active().ALERT_BAR_OK)
