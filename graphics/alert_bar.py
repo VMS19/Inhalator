@@ -50,10 +50,9 @@ class IndicatorAlertBar(object):
         self.message_label.place(anchor="nw", relx=0.03, rely=0.2)
 
     def update(self):
-        last_alert_code = self.events.alerts_queue.last_alert.code
+        last_alert_code = self.events.alerts_queue.last_alert
         if last_alert_code == alerts.AlertCodes.OK:
             self.set_no_alert()
-
         else:
             self.set_alert(self.error_dict.get(last_alert_code, "Multiple Errors"))
 
