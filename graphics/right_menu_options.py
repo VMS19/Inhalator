@@ -1,6 +1,8 @@
 # Tkinter stuff
 import platform
 
+import time
+
 if platform.python_version() < '3':
     from Tkinter import *
 
@@ -8,6 +10,7 @@ else:
     from tkinter import *
 
 from graphics.themes import Theme
+from data.events import Events
 
 class ClearAlertsButton(object):
     def __init__(self, parent, events):
@@ -51,7 +54,8 @@ class MuteAlertsButton(object):
                              activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,)
 
     def on_click(self):
-        print("Not Implemented Yet")
+        Events.mute_alerts = True
+        Events.mute_time = time.time()
 
     def render(self):
         self.button.place(relx=0, rely=0.4, relwidth=0.8, relheight=0.2)
