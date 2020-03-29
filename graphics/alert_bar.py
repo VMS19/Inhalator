@@ -21,8 +21,8 @@ class IndicatorAlertBar(object):
     error_dict = {
         alerts.AlertCodes.PRESSURE_LOW: "Low Pressure",
         alerts.AlertCodes.PRESSURE_HIGH: "High Pressure",
-        alerts.AlertCodes.VOLUME_LOW: "Low Volume",
-        alerts.AlertCodes.VOLUME_HIGH: "High Volume"
+        alerts.AlertCodes.BREATHING_VOLUME_LOW: "Low Volume",
+        alerts.AlertCodes.BREATHING_VOLUME_HIGH: "High Volume"
     }
 
     def __init__(self, parent, events, drivers):
@@ -60,7 +60,7 @@ class IndicatorAlertBar(object):
                     self.configs.mute_time_limit):
             self.events.mute_alerts = False
 
-        last_alert_code = self.events.alerts_queue.last_alert
+        last_alert_code = self.events.alerts_queue.last_alert.code
         if last_alert_code == alerts.AlertCodes.OK:
             self.set_no_alert()
         else:
