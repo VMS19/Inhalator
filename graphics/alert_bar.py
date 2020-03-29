@@ -9,7 +9,7 @@ if platform.python_version() < '3':
 else:
     from tkinter import *
 
-from data import alerts
+from data import alerts, events
 
 from drivers.driver_factory import DriverFactory
 
@@ -68,4 +68,8 @@ class IndicatorAlertBar(object):
         self.bar.config(bg=Theme.active().ERROR)
         self.message_label.config(bg=Theme.active().ERROR,
                                   fg=Theme.active().TXT_ON_ERROR, text=message)
-        self.sound_device.start()
+        if self.events.mute_alerts:
+            self.sound_device.stop()
+
+        else:
+            self.sound_device.start()

@@ -11,7 +11,6 @@ else:
     from tkinter import *
 
 from graphics.themes import Theme
-from data.events import Events
 
 
 class ClearAlertsButton(object):
@@ -57,8 +56,13 @@ class MuteAlertsButton(object):
                              activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,)
 
     def on_click(self):
-        Events.mute_alerts = True
-        Events.mute_time = time.time()
+        self.events.mute_alerts = not self.events.mute_alerts
+        if self.events.mute_alerts:
+            self.events.mute_time = time.time()
+            self.button.configure(text="Unmute")
+
+        else:
+            self.button.configure(text="Mute")
 
     def render(self):
         self.button.place(relx=0, rely=0.27, relwidth=0.8, relheight=0.2)
