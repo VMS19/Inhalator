@@ -86,8 +86,8 @@ class DriverFactory(object):
 
     @staticmethod
     def get_pressure_driver():
-        from drivers.hce_pressure_sensor import HcePressureSensor
-        return HcePressureSensor()
+        from drivers.abp_pressure_sensor import AbpPressureSensor
+        return AbpPressureSensor()
 
     @staticmethod
     def get_flow_driver():
