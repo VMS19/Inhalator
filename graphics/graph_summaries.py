@@ -11,10 +11,11 @@ else:
 
 
 class GraphSummary(object):
-    def __init__(self, parent, store):
+    def __init__(self, parent, measurements):
         self.parent = parent
-        self.store = store
         self.root = parent.element
+        self.measurements = measurements
+
         self.frame = Frame(master=self.root)
         self.value_label = Label(master=self.frame, text="HELLO",
                                  font=("Roboto", 18),
@@ -53,7 +54,7 @@ class GraphSummary(object):
 
 class PressurePeakSummary(GraphSummary):
     def value(self):
-        return "{:.0f}".format(self.store.intake_peak_pressure)
+        return "{:.0f}".format(self.measurements.intake_peak_pressure)
 
     def name(self):
         return "pPeak"
@@ -68,7 +69,7 @@ class PressurePeakSummary(GraphSummary):
 
 class VolumeSummary(GraphSummary):
     def value(self):
-        return "{:.0f}".format(self.store.volume)
+        return "{:.0f}".format(self.measurements.volume)
 
     def name(self):
         return "Volume"
@@ -83,7 +84,7 @@ class VolumeSummary(GraphSummary):
 
 class BPMSummary(GraphSummary):
     def value(self):
-        return "{:.0f}".format(self.store.bpm)
+        return "{:.0f}".format(self.measurements.bpm)
 
     def name(self):
         return "bpm"

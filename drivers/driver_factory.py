@@ -129,5 +129,5 @@ class DriverFactory(object):
 
     @staticmethod
     def get_mock_aux_driver():
-        from unittest.mock import MagicMock
-        return MagicMock()
+        from drivers.aux_sound import SoundViaAux
+        return SoundViaAux.instance()
