@@ -1,6 +1,8 @@
 # Tkinter stuff
 import platform
 
+from graphics.themes import Theme
+
 if platform.python_version() < '3':
     from Tkinter import *
 
@@ -13,10 +15,10 @@ from data.data_store import AlertsQueue, DataStore
 
 class IndicatorAlertBar(object):
     error_dict = {
-        alerts.AlertCodes.PRESSURE_LOW: "LOW PIP",
-        alerts.AlertCodes.PRESSURE_HIGH: "HIGH PIP",
-        alerts.AlertCodes.BREATHING_VOLUME_LOW: "LOW Ve",
-        alerts.AlertCodes.BREATHING_VOLUME_HIGH: "HIGH Ve"
+        alerts.AlertCodes.PRESSURE_LOW: "Low Pressure",
+        alerts.AlertCodes.PRESSURE_HIGH: "High Pressure",
+        alerts.AlertCodes.BREATHING_VOLUME_LOW: "Low Volume",
+        alerts.AlertCodes.BREATHING_VOLUME_HIGH: "High Volume"
     }
 
     def __init__(self, parent, store):
@@ -27,9 +29,13 @@ class IndicatorAlertBar(object):
         self.height = self.parent.height
         self.width = self.parent.width
 
-        self.bar = Frame(self.root, bg='green', height=self.height, width=self.width)
-        self.message_label = Label(master=self.bar, font=("Courrier", 40),
-                                   text="OK", bg='green', fg='black')
+        self.bar = Frame(self.root, bg=Theme.active().ALERT_BAR_OK,
+                         height=self.height, width=self.width)
+        self.message_label = Label(master=self.bar,
+                                   font=("Roboto", 40),
+                                   text="OK",
+                                   bg=Theme.active().ALERT_BAR_OK,
+                                   fg=Theme.active().ALERT_BAR_OK_TXT,)
 
     @property
     def element(self):
@@ -45,12 +51,15 @@ class IndicatorAlertBar(object):
             self.set_no_alert()
 
         else:
-            self.set_alert(self.error_dict[last_alert_code])
+            self.set_alert(self.error_dict.get(last_alert_code, "Multiple Errors"))
 
     def set_no_alert(self):
-        self.bar.config(bg="green")
-        self.message_label.config(bg="green", fg="black", text="OK")
+        self.bar.config(bg=Theme.active().ALERT_BAR_OK)
+        self.message_label.config(bg=Theme.active().ALERT_BAR_OK,
+                                  fg=Theme.active().ALERT_BAR_OK_TXT,
+                                  text="OK")
 
     def set_alert(self, message):
-        self.bar.config(bg="red")
-        self.message_label.config(bg="red", fg="black", text=message)
+        self.bar.config(bg=Theme.active().ERROR)
+        self.message_label.config(bg=Theme.active().ERROR,
+                                  fg=Theme.active().TXT_ON_ERROR, text=message)

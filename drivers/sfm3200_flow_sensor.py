@@ -36,6 +36,10 @@ class Sfm3200(object):
 
         try:
             self._dev = self._pig.i2c_open(self.I2C_BUS, self.I2C_ADDRESS)
+        except AttributeError as e:
+            log.error("Could not init pigpio lib. Did you run 'sudo pigpiod'?")
+            raise PiGPIOInitError("pigpio library init error")
+
         except pigpio.error as e:
             log.error("Could not open i2c connection to flow sensor."
                       "Is it connected?")
@@ -72,7 +76,7 @@ class Sfm3200(object):
             log.error("Could not write soft reset cmd to flow sensor.")
             raise I2CWriteError("i2c write failed")
 
-    def read_flow_slm(self, retries=2):
+    def read(self, retries=2):
         read_size, data = self._pig.i2c_read_device(self._dev, 3)
         if read_size >= 2:
             raw_value = data[0] << 8 | data[1]

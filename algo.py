@@ -11,6 +11,7 @@ class Sampler(threading.Thread):
     SAMPLING_INTERVAL = 0.02  # sec
     MS_IN_MIN = 60 * 1000
     OXYGEN_A2D_SAMPLE_CHANNELS = [0]
+    ML_IN_LITER = 1000
 
     def __init__(self, data_store, flow_sensor, pressure_sensor, oxygex_a2d):
         super(Sampler, self).__init__()
@@ -21,9 +22,12 @@ class Sampler(threading.Thread):
         self._oxygen_a2d = oxygex_a2d
 
         # State
-        self._currently_breathed_volume = 0
-        self._is_during_intake = False
+        self._current_intake_volume = 0
+        self._intake_max_flow = 0
+        self._intake_max_pressure = 0
         self._has_crossed_first_cycle = False
+        self._is_during_intake = False
+        self._last_intake_time = 0
 
         # Alerts related
         self.breathing_alert = AlertCodes.OK
@@ -32,24 +36,38 @@ class Sampler(threading.Thread):
     def _handle_intake(self, flow, pressure):
         """We are giving patient air."""
         sampling_interval_in_minutes = self.SAMPLING_INTERVAL / self.MS_IN_MIN
-        self._currently_breathed_volume += \
-            (flow * sampling_interval_in_minutes)
+        self._current_intake_volume += \
+            (flow * self.ML_IN_LITER * sampling_interval_in_minutes)
+        logging.debug("Current Intake volume: %s" % self._current_intake_volume)
 
-        if self._currently_breathed_volume > self._data_store.flow_max_threshold.value:
+        if self._data_store.volume_threshold.max != 'off' and \
+                self._current_intake_volume >\
+           self._data_store.volume_threshold.max:
             self.breathing_alert = AlertCodes.BREATHING_VOLUME_HIGH
 
         if pressure <= self._data_store.breathing_threshold:
             self._has_crossed_first_cycle = True
 
+        self._intake_max_pressure = max(pressure, self._intake_max_pressure)
+        self._intake_max_flow = max(flow, self._intake_max_flow)
+
     def _handle_intake_finished(self, flow, pressure):
         """We are not giving patient air anymore."""
-
-        if self._currently_breathed_volume < self._data_store.flow_min_threshold.value and \
+        if self._data_store.volume_threshold != "off" and \
+                self._current_intake_volume <\
+           self._data_store.volume_threshold.min and \
                 self._has_crossed_first_cycle:
 
             self.breathing_alert = AlertCodes.BREATHING_VOLUME_LOW
 
-        self._currently_breathed_volume = 0
+        self._data_store.set_intake_peaks(self._intake_max_pressure,
+                                          self._intake_max_pressure,
+                                          self._current_intake_volume)
+
+        # reset values of last intake
+        self._current_intake_volume = 0
+        self._intake_max_flow = 0
+        self._intake_max_pressure = 0
 
     def run(self):
         while True:
@@ -62,46 +80,50 @@ class Sampler(threading.Thread):
         self.pressure_alert = AlertCodes.OK
 
         # Read from sensors
-        flow_value = self._flow_sensor.read_flow_slm()
-        pressure_value = self._pressure_sensor.read_pressure()
-        oxygen_value = self._oxygen_a2d.sample_a2d_channels(
-            self.OXYGEN_A2D_SAMPLE_CHANNELS)
-
-        print("oxygen", oxygen_value)
+        flow_value = self._flow_sensor.read()
+        pressure_value = self._pressure_sensor.read()
+        oxygen_value = self._oxygen_a2d.read(self.OXYGEN_A2D_SAMPLE_CHANNELS)
 
         self._data_store.set_pressure_value(pressure_value)
 
-        if pressure_value > self._data_store.pressure_max_threshold.value:
+        if self._data_store.pressure_threshold.max != "off" and \
+                pressure_value > self._data_store.pressure_threshold.max:
             # Above healthy lungs pressure
             self.pressure_alert = AlertCodes.PRESSURE_HIGH
-        if pressure_value < self._data_store.pressure_min_threshold.value:
+
+        if self._data_store.pressure_threshold.max != "off" and \
+                pressure_value < self._data_store.pressure_threshold.min:
             # Below healthy lungs pressure
             self.pressure_alert = AlertCodes.PRESSURE_LOW
 
-        logging.debug("Breathed: %s" % self._currently_breathed_volume)
+        logging.debug("Breathed: %s" % self._current_intake_volume)
         logging.debug("Flow: %s" % flow_value)
         logging.debug("Pressure: %s" % pressure_value)
 
-        if pressure_value <= self._data_store.breathing_threshold:
+        if pressure_value <= self._data_store.breathing_threshold and\
+           self._is_during_intake:
             logging.debug("-----------is_during_intake=False----------")
+            self._handle_intake_finished(flow=flow_value,
+                                         pressure=pressure_value)
             self._is_during_intake = False
 
         if pressure_value > self._data_store.breathing_threshold:
             logging.debug("-----------is_during_intake=True-----------")
-            self._is_during_intake = True
-
-        if self._is_during_intake:
             self._handle_intake(flow=flow_value, pressure=pressure_value)
 
-        else:
-            self._handle_intake_finished(flow=flow_value,
-                                         pressure=pressure_value)
+            if not self._is_during_intake:
+                # Beginning of intake
+                # Calculate breaths per minute:
+                curr_time = time.time()
+                self._data_store.bpm = 1.0 / (
+                curr_time - self._last_intake_time) * 60
+                self._last_intake_time = curr_time
+
+            self._is_during_intake = True
 
         self._data_store.set_flow_value(flow_value)
 
-        # TODO: Multiplied by 100000 just so it looks good on graph, delete this
-        self._data_store.update_volume_value(self._currently_breathed_volume * 100000)
-
         alert = Alert(self.breathing_alert | self.pressure_alert)
-        if alert != AlertCodes.OK and self._data_store.alerts_queue.last_alert != alert:
-            self._data_store.alerts_queue.enqueue_alert(alert)
+        if alert != AlertCodes.OK and\
+           self._data_store.alerts_queue.last_alert != alert:
+                self._data_store.alerts_queue.enqueue_alert(alert)
