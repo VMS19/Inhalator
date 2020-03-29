@@ -8,7 +8,9 @@ from time import sleep
 from threading import Event
 
 from drivers.driver_factory import DriverFactory
-from data.data_store import DataStore
+from data.configurations import Configurations
+from data.measurements import Measurements
+from data.events import Events
 from application import Application
 from algo import Sampler
 from wd_task import WdTask
@@ -35,7 +37,9 @@ class BroadcastHandler(logging.handlers.DatagramHandler):
         return sock
 
 
-def configure_logging(level, store):
+def configure_logging(level):
+    config = Configurations.instance()
+
     logger = logging.getLogger()
     logger.setLevel(level)
     # create file handler which logs even debug messages
@@ -45,7 +49,7 @@ def configure_logging(level, store):
     ch = logging.StreamHandler()
     ch.setLevel(level)
     # create socket handler to broadcast logs
-    sh = BroadcastHandler('255.255.255.255', store.debug_port)
+    sh = BroadcastHandler('255.255.255.255', config.debug_port)
     sh.setLevel(level)
     # create formatter and add it to the handlers
     formatter = logging.Formatter(
@@ -57,7 +61,7 @@ def configure_logging(level, store):
     logger.addHandler(fh)
     logger.addHandler(ch)
     logger.addHandler(sh)
-    logger.disabled = not store.log_enabled
+    logger.disabled = not config.log_enabled
     return logger
 
 
@@ -78,11 +82,13 @@ def handle_sigterm(signum, frame):
 
 
 def main():
-    store = DataStore.load_from_config()
+    measurements = Measurements()
+    events = Events()
+
     signal.signal(signal.SIGTERM, handle_sigterm)
     args = parse_args()
-    log = configure_logging(args.verbose, store)
     arm_wd_event = Event()
+    log = configure_logging(args.verbose)
 
     # Initialize all drivers, or mocks if in simulation mode
     simulation = args.simulate or os.uname()[1] != 'raspberrypi'
@@ -96,9 +102,13 @@ def main():
     flow_sensor = drivers.get_driver("flow")
     wd = drivers.get_driver("wd")
 
+    app = Application(measurements=measurements,
+                      events=events,
+                      arm_wd_event=arm_wd_event,
+                      drivers=drivers)
 
-    sampler = Sampler(store, flow_sensor, pressure_sensor)
-    app = Application(store, arm_wd_event, drivers)
+    sampler = Sampler(measurements=measurements, events=events,
+                      flow_sensor=flow_sensor, pressure_sensor=pressure_sensor)
     app.render()
     sampler.start()
 

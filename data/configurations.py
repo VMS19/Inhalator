@@ -1,28 +1,31 @@
 import os
 import json
 import logging
-from threading import Lock
-from queue import Queue
 
+from errors import ConfigurationFileError
 from data.thresholds import (RespiratoryRateThreshold, PressureThreshold,
                              VolumeThreshold, FlowThreshold)
-from data.alerts import AlertsQueue
+
 
 THIS_DIRECTORY = os.path.dirname(__file__)
-
 log = logging.getLogger(__name__)
 
 
-class DataStore(object):
+class Configurations(object):
+    """Configurations for the entire project.
+
+    Note that this class is implemented with the 'Singleton' design pattern,
+    since access to it is needed all across the application and only a single
+    instance of it would make sense.
+    """
     CONFIG_FILE = os.path.abspath(os.path.join(THIS_DIRECTORY, "..", "config.json"))
-    SYSTEM_SAMPLE_INTERVAL = 22 #KHZ
-    I2C_BUS = 2
-    MS_TO_SEC = 1000
+    DEFAULT_CONFIG_FILE = os.path.abspath(os.path.join(THIS_DIRECTORY, "..", "default_config.json"))
+
+    __instance = None
 
     def __init__(self, flow_threshold, volume_threshold,
                  pressure_threshold, resp_rate_threshold,
-                 graph_seconds, breathing_threshold, log_enabled=True,
-                 debug_port=7777, i2c_bus=I2C_BUS):
+                 graph_seconds, breathing_threshold, log_enabled=True, debug_port=7777):
         self.flow_threshold = flow_threshold
         self.volume_threshold = volume_threshold
         self.pressure_threshold = pressure_threshold
@@ -31,39 +34,45 @@ class DataStore(object):
         self.breathing_threshold = breathing_threshold
         self.log_enabled = log_enabled
         self.debug_port = debug_port
-        self.i2c_bus = i2c_bus
-
-        self.samples_in_graph_amount = \
-            int((self.graph_seconds * self.MS_TO_SEC) /
-                self.SYSTEM_SAMPLE_INTERVAL)
-
-        self.volume = 0
-        self.flow_measurements = Queue(maxsize=40)
-        self.pressure_measurements = Queue(maxsize=40)
-        self.x_axis = range(0, self.samples_in_graph_amount)
-
-        self.intake_peak_flow = 0
-        self.intake_peak_pressure = 0
-        self.bpm = 0
-
-        self.alerts_queue = AlertsQueue()
-        self.lock = Lock()
 
     def __del__(self):
-        self.save_to_file()
+        self.save_to_file(self.CONFIG_FILE)
 
     @classmethod
-    def load_from_config(cls):
+    def instance(cls):
+        if cls.__instance is not None:
+            return cls.__instance
+
+        cls.__instance = cls._load()
+        return cls.__instance
+
+    @classmethod
+    def _load(cls):
         try:
-            with open(cls.CONFIG_FILE) as f:
+            return cls._parse_config_file(cls.CONFIG_FILE)
+
+        except ConfigurationFileError as e:
+            # The second call to _parse_config_file might fail,
+            # we will however let the exception propagate upwards
+            log.exception("Failed to load configuration file %s, "
+                          "defauting to %s",
+                          cls.CONFIG_FILE,
+                          cls.DEFAULT_CONFIG_FILE)
+            return cls._parse_config_file(cls.DEFAULT_CONFIG_FILE)
+
+
+    @classmethod
+    def _parse_config_file(cls, config_file):
+        try:
+            with open(config_file) as f:
                 config = json.load(f)
 
             flow = FlowThreshold(min=config["threshold"]["flow"]["min"],
-                               max=config["threshold"]["flow"]["max"],
-                               step=config["threshold"]["flow"]["step"])
+                                 max=config["threshold"]["flow"]["max"],
+                                 step=config["threshold"]["flow"]["step"])
             volume = VolumeThreshold(min=config["threshold"]["volume"]["min"],
-                               max=config["threshold"]["volume"]["max"],
-                               step=config["threshold"]["volume"]["step"])
+                                     max=config["threshold"]["volume"]["max"],
+                                     step=config["threshold"]["volume"]["step"])
             pressure = PressureThreshold(min=config["threshold"]["pressure"]["min"],
                                          max=config["threshold"]["pressure"]["max"],
                                          step=config["threshold"]["pressure"]["step"])
@@ -75,7 +84,6 @@ class DataStore(object):
             breathing_threshold = config["threshold"]["breathing_threshold"]
             log_enabled = config["log_enabled"]
             debug_port = config["debug_port"]
-            i2c_bus = config["i2c_bus"]
 
             return cls(flow_threshold=flow,
                        volume_threshold=volume,
@@ -84,19 +92,13 @@ class DataStore(object):
                        graph_seconds=graph_seconds,
                        breathing_threshold=breathing_threshold,
                        log_enabled=log_enabled,
-                       debug_port=debug_port,
-                       i2c_bus=i2c_bus)
+                       debug_port=debug_port)
 
         except Exception as e:
-            log.exception("Could not read log file, using default values", e)
-            return cls(flow_threshold=FlowThreshold(),
-                       volume_threshold=VolumeThreshold(),
-                       pressure_threshold=PressureThreshold(),
-                       resp_rate_threshold=RespiratoryRateThreshold(),
-                       graph_seconds=12,
-                       breathing_threshold=3.5)
+            raise ConfigurationFileError("Could not load config file %s"
+                                         % config_file) from e
 
-    def save_to_file(self):
+    def save_to_file(self, config_path=CONFIG_FILE):
         log.info("Saving threshold values to database")
         config = {
             "threshold": {
@@ -123,36 +125,9 @@ class DataStore(object):
                 "breathing_threshold": self.breathing_threshold
             },
             "log_enabled": self.log_enabled,
-            "graph_seconds": self.graph_seconds
+            "graph_seconds": self.graph_seconds,
+            "debug_port": self.debug_port,
         }
 
-        with open(self.CONFIG_FILE, "w") as config_file:
+        with open(config_path, "w") as config_file:
             json.dump(config, config_file, indent=4)
-
-
-    def set_flow_value(self, new_value):
-        with self.lock:
-            # pop last item if queue is full
-            if self.flow_measurements.full():
-                self.flow_measurements.get()
-            self.flow_measurements.put(new_value)
-
-    def set_pressure_value(self, new_value):
-        with self.lock:
-            # pop last item if queue is full
-            if self.pressure_measurements.full():
-                self.pressure_measurements.get()
-            self.pressure_measurements.put(new_value)
-
-    def get_flow_value(self, new_value):
-        with self.lock:
-            self.flow_measurements.get(new_value)
-
-    def get_pressure_value(self, new_value):
-        with self.lock:
-            self.pressure_measurements.get(new_value)
-
-    def set_intake_peaks(self, flow, pressure, volume):
-        self.intake_peak_flow = flow
-        self.intake_peak_pressure = pressure
-        self.volume = volume

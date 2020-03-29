@@ -11,10 +11,11 @@ else:
 
 
 class GraphSummary(object):
-    def __init__(self, parent, store):
+    def __init__(self, parent, measurements):
         self.parent = parent
-        self.store = store
         self.root = parent.element
+        self.measurements = measurements
+
         self.frame = Frame(master=self.root)
         self.value_label = Label(master=self.frame, text="HELLO",
                                  font=("Roboto", 18),
@@ -53,7 +54,7 @@ class GraphSummary(object):
 
 class PressurePeakSummary(GraphSummary):
     def value(self):
-        return "{:.0f}".format(self.store.intake_peak_pressure)
+        return "{:.0f}".format(self.measurements.intake_peak_pressure)
 
     def name(self):
         return "pPeak"
@@ -62,13 +63,13 @@ class PressurePeakSummary(GraphSummary):
         return "cmH2O"
 
     def render(self):
-        self.frame.place(relx=0, rely=0, relheight=(1/3), relwidth=1)
+        self.frame.place(relx=0, rely=0, relheight=(1/4), relwidth=1)
         super(PressurePeakSummary, self).render()
 
 
 class VolumeSummary(GraphSummary):
     def value(self):
-        return "{:.0f}".format(self.store.volume)
+        return "{:.0f}".format(self.measurements.volume)
 
     def name(self):
         return "Volume"
@@ -77,20 +78,35 @@ class VolumeSummary(GraphSummary):
         return "ml"
 
     def render(self):
-        self.frame.place(relx=0, rely=(1/3), relheight=(1/3), relwidth=1)
+        self.frame.place(relx=0, rely=(1/4), relheight=(1/4), relwidth=1)
         super(VolumeSummary, self).render()
 
 
 class BPMSummary(GraphSummary):
     def value(self):
-        return "{:.0f}".format(self.store.bpm)
+        return "{:.0f}".format(self.measurements.bpm)
 
     def name(self):
-        return "bpm"
-
-    def units(self):
         return "Rate"
 
+    def units(self):
+        return "bpm"
+
     def render(self):
-        self.frame.place(relx=0, rely=(2/3), relheight=(1/3), relwidth=1)
+        self.frame.place(relx=0, rely=(2/4), relheight=(1/4), relwidth=1)
         super(BPMSummary, self).render()
+
+
+class O2SaturationSummary(GraphSummary):
+    def value(self):
+        return "{}".format(self.measurements.o2_saturation_percentage)
+
+    def name(self):
+        return "FiO2"
+
+    def units(self):
+        return "%"
+
+    def render(self):
+        self.frame.place(relx=0, rely=(3/4), relheight=(1/4), relwidth=1)
+        super(O2SaturationSummary, self).render()
