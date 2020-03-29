@@ -42,7 +42,7 @@ def events():
 def test_sampler_inserts_pressure_measurement_to_store(events, measurements, config, driver_factory):
     flow_sensor = driver_factory.get_driver("flow")
     pressure_sensor = driver_factory.get_driver("pressure")
-    oxygen_a2d = driver_factory.get_driver("oxygen")
+    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor, oxygen_a2d)
     assert measurements.pressure_measurements.qsize() == 0
     sampler.sampling_iteration()
@@ -54,7 +54,7 @@ def test_sampler_inserts_pressure_measurement_to_store(events, measurements, con
 def test_sampler_alerts_when_pressure_exceeds_maximum(events, measurements, config, driver_factory):
     flow_sensor = driver_factory.get_driver("flow")
     pressure_sensor = driver_factory.get_driver("pressure")
-    oxygen_a2d = driver_factory.get_driver("oxygen")
+    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor, oxygen_a2d)
     assert len(events.alerts_queue) == 0
     sampler.sampling_iteration()
@@ -69,7 +69,7 @@ def test_sampler_alerts_when_pressure_exceeds_maximum(events, measurements, conf
 def test_sampler_alerts_when_pressure_exceeds_minimum(events, measurements, config, driver_factory):
     flow_sensor = driver_factory.get_driver("flow")
     pressure_sensor = driver_factory.get_driver("pressure")
-    oxygen_a2d = driver_factory.get_driver("oxygen")
+    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor, oxygen_a2d)
     assert len(events.alerts_queue) == 0
     sampler.sampling_iteration()
@@ -84,7 +84,7 @@ def test_sampler_alerts_when_pressure_exceeds_minimum(events, measurements, conf
 def test_sampler_alerts_when_flow_exceeds_maximum(events, measurements, config, driver_factory):
     flow_sensor = driver_factory.get_driver("flow")
     pressure_sensor = driver_factory.get_driver("pressure")
-    oxygen_a2d = driver_factory.get_driver("oxygen")
+    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor, oxygen_a2d)
     assert len(events.alerts_queue) == 0
     sampler.sampling_iteration()
@@ -99,7 +99,7 @@ def test_sampler_alerts_when_flow_exceeds_maximum(events, measurements, config, 
 def test_sampler_alerts_when_flow_exceeds_minimum(events, measurements, config, driver_factory):
     flow_sensor = driver_factory.get_driver("flow")
     pressure_sensor = driver_factory.get_driver("pressure")
-    oxygen_a2d = driver_factory.get_driver("oxygen")
+    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor, oxygen_a2d)
     assert len(events.alerts_queue) == 0
     sampler.sampling_iteration()
