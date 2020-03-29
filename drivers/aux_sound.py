@@ -30,7 +30,7 @@ class SoundViaAux(object):
     def __init__(self):
         self.alarm_process = None
         self.is_playing = False
-        os.system(self.SET_AUX_CMD, shell=True)
+        os.system(self.SET_AUX_CMD)
 
     def __del__(self):
         self.stop()
