@@ -19,7 +19,7 @@ Restart=on-failure
 Type=simple
 
 [Install]
-WantedBy=default.target
+WantedBy=multi-user.target
 """
 
 
