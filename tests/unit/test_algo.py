@@ -7,60 +7,6 @@ from pytest import approx
 
 from algo import RunningSlope, VentilationStateMachine, VentilationState
 from drivers.mocks.sinus import add_noise
-from hysteresis import Hysteresis
-
-
-def test_hysteresis_deactivated_by_default():
-    hyst = Hysteresis(
-        baseline=0,
-        positive_step=1,
-        negative_step=-1,
-        max_value=1000,
-        activation_threshold=3,
-        deactivation_threshold=3)
-    assert not hyst.activated
-
-
-def test_hysteresis_simple_activation():
-    hyst = Hysteresis(
-        baseline=0,
-        positive_step=1,
-        negative_step=-1,
-        max_value=1000,
-        activation_threshold=3,
-        deactivation_threshold=3)
-
-    test_cases = {
-        (): False,
-        (1,): False,
-        (1, 1): False,
-        (0, 1, 1): False,
-        (1, 0, 1): False,
-        (1, 1, 1, 1): True,
-        (1, 1, 1, 1, 0): True,
-        (1, 0, 1, 1, 1): True,
-    }
-    for data, expected_result in test_cases.items():
-        hyst.reset()
-        res = False
-        for s in data:
-            res = hyst.update(s)
-        assert res == expected_result, "Wrong result ({}) for {}".format(res, data)
-
-
-def test_hysteresis_simple_deactivation():
-    hyst = Hysteresis(
-        baseline=0,
-        positive_step=1,
-        negative_step=-2,
-        max_value=1000,
-        activation_threshold=3,
-        deactivation_threshold=3)
-
-    for _ in range(4):
-        hyst.update(1)
-    assert hyst.activated
-    assert not hyst.update(-1)
 
 
 def test_slope_finder_sanity():
