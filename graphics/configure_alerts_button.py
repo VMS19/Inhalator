@@ -11,9 +11,8 @@ from graphics.configure_alerts_screen import ConfigureAlarmsScreen
 
 
 class OpenConfigureAlertsScreenButton(object):
-    def __init__(self, parent, store):
+    def __init__(self, parent):
         self.parent = parent
-        self.store = store
         self.root = parent.element
 
         self.button = Button(master=self.root,
@@ -28,7 +27,7 @@ class OpenConfigureAlertsScreenButton(object):
 
     def on_click(self):
         master_frame = self.parent.parent.element
-        screen = ConfigureAlarmsScreen(master_frame, self.store)
+        screen = ConfigureAlarmsScreen(master_frame)
         screen.show()
 
     def render(self):
