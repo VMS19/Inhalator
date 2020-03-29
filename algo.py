@@ -4,6 +4,7 @@ import threading
 from enum import Enum
 from statistics import mean
 from collections import deque
+from scipy.stats import linregress
 
 from data.alerts import AlertCodes
 from data.measurements import Measurements
@@ -33,7 +34,6 @@ class VolumeAccumulator(object):
 class RunningAvg(object):
 
     def __init__(self, max_samples):
-        self.max_samples = max_samples
         self.samples = deque(maxlen=max_samples)
 
     def reset(self):
@@ -45,9 +45,11 @@ class RunningAvg(object):
 
 
 class VentilationState(Enum):
-    Inhale = 0
-    Exhale = 1
-    PEEP = 2
+    Calibration = 0  # State unknown yet
+    Inhale = 1  # Air is flowing to the lungs
+    Hold = 2  # PIP is maintained
+    Exhale = 3  # Pressure is relieved, air flowing out
+    PEEP = 4  # Positive low pressure is maintained until next cycle.
 
 
 class RateMeter(object):
@@ -96,6 +98,69 @@ class RateMeter(object):
         return rate
 
 
+class VentilationStateMachine(object):
+    def __init__(self,
+                 peep_to_inhale_slope=2,
+                 inhale_to_pip_slope=2,
+                 hold_to_exhale_slope=-2,
+                 exhale_to_peep_slope=-2):
+        self.log = logging.getLogger(self.__class__.__name__)
+        self.peep_to_inhale_slope = peep_to_inhale_slope
+        self.inhale_to_pip_slope = inhale_to_pip_slope
+        self.pip_to_exhale_slope = hold_to_exhale_slope
+        self.exhale_to_peep_slope = exhale_to_peep_slope
+        self.rs = RunningSlope(num_samples=7)
+
+        # TODO: Document
+        self.transitions = {
+            VentilationState.PEEP: (float.__gt__, self.peep_to_inhale_slope, VentilationState.Inhale),
+            VentilationState.Inhale: (float.__lt__, self.inhale_to_pip_slope, VentilationState.Hold),
+            VentilationState.Hold: (float.__lt__, self.pip_to_exhale_slope, VentilationState.Exhale),
+            VentilationState.Exhale: (float.__gt__, self.exhale_to_peep_slope, VentilationState.PEEP),
+        }
+        self.current_state = VentilationState.PEEP
+        self.entry_points_ts = {
+            VentilationState.PEEP: deque(maxlen=100),
+            VentilationState.Inhale: deque(maxlen=100),
+            VentilationState.Hold: deque(maxlen=100),
+            VentilationState.Exhale: deque(maxlen=100)
+        }
+
+    def update(self, pressure_cmH2O, timestamp):
+        slope = self.rs.add_sample(pressure_cmH2O, timestamp)
+        if slope is None:
+            return
+        func, threshold, next_state = self.transitions.get(self.current_state)
+        if func(slope, threshold):
+            self.rs.reset()
+            self.log.debug("%s -> %s", self.current_state, next_state)
+            self.current_state = next_state
+            self.entry_points_ts[next_state].append(timestamp)
+
+
+class RunningSlope(object):
+
+    def __init__(self, num_samples=10, period_ms=100):
+        self.period_ms = period_ms
+        self.max_samples = num_samples
+        self.data = deque(maxlen=num_samples)
+        self.ts = deque(maxlen=num_samples)
+
+    def reset(self):
+        self.data.clear()
+        self.ts.clear()
+
+    def add_sample(self, value, timestamp=None):
+        if timestamp is None:
+            timestamp = time.time()
+        self.data.append(value)
+        self.ts.append(timestamp)
+        if len(self.data) < self.max_samples:
+            return None  # Not enough data to infer.
+        slope, _, _, _, _ = linregress(self.ts, self.data)
+        return slope
+
+
 class Sampler(threading.Thread):
     SAMPLING_INTERVAL = 0.02  # sec
     MS_IN_MIN = 60 * 1000
@@ -119,11 +184,12 @@ class Sampler(threading.Thread):
         # State
         self.handlers = {
             VentilationState.Inhale: self.handle_inhale,
+            VentilationState.Hold: self.handle_inhale,
             VentilationState.Exhale: self.handle_exhale,
             VentilationState.PEEP: self.handle_peep
         }
 
-        self.current_state = VentilationState.Inhale  # Initial Value
+        self.vsm = VentilationStateMachine()
         self.last_pressure = 0
         self._inhale_max_flow = 0
         self._inhale_max_pressure = 0
@@ -132,13 +198,7 @@ class Sampler(threading.Thread):
 
     def handle_inhale(self, flow_slm, pressure):
         ts = time.time()
-        if pressure <= self.last_pressure:
-            self.log.debug("Inhale volume: %s" % self.accumulator.air_volume_liter)
-            self._inhale_finished(ts)
-            return
-
         self.accumulator.accumulate(ts, flow_slm)
-
         if (self._config.volume_threshold.max != 'off' and
                 self.accumulator.air_volume_liter >
                 self._config.volume_threshold.max):
@@ -167,17 +227,12 @@ class Sampler(threading.Thread):
         self.accumulator.reset()
         self._inhale_max_flow = 0
         self._inhale_max_pressure = 0
-        self.current_state = VentilationState.Exhale
 
     def handle_exhale(self, flow, pressure):
-        if pressure < self._config.breathing_threshold:
-            self.current_state = VentilationState.PEEP
+        pass
 
     def handle_peep(self, flow, pressure):
-        # peep_avg = self.peep_avg_calculator.process(pressure)
-        if pressure > self._config.breathing_threshold:
-            # self.log.debug("Last PEEP: %s", peep_avg)
-            self.current_state = VentilationState.Inhale
+        pass
 
     def run(self):
         while True:
@@ -189,7 +244,8 @@ class Sampler(threading.Thread):
         flow_slm = self._flow_sensor.read()
         pressure_cmh2o = self._pressure_sensor.read()
 
-        handler = self.handlers.get(self.current_state)
+        self.vsm.update(pressure_cmh2o, timestamp=time.time())
+        handler = self.handlers.get(self.vsm.current_state)
         handler(flow_slm, pressure_cmh2o)
         self._measurements.set_pressure_value(pressure_cmh2o)
 
