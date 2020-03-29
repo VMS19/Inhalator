@@ -1,11 +1,14 @@
 from queue import Queue
 
+
 class AlertCodes(object):
     OK = 0
-    PRESSURE_LOW = 1
-    PRESSURE_HIGH = 2
-    BREATHING_VOLUME_LOW = 4
-    BREATHING_VOLUME_HIGH = 8
+    PRESSURE_LOW = 1 << 0
+    PRESSURE_HIGH = 1 << 1
+    VOLUME_LOW = 1 << 2
+    VOLUME_HIGH = 1 << 3
+    PEEP_TOO_HIGH = 1 << 4
+    PEEP_TOO_LOW = 1 << 5
 
 
 class Alert(object):
@@ -16,8 +19,10 @@ class Alert(object):
     def __eq__(self, other):
         return self.code == other
 
+
 class AlertsQueue(object):
     MAXIMUM_ALERTS_AMOUNT = 2
+
     def __init__(self):
         self.queue = Queue(maxsize=self.MAXIMUM_ALERTS_AMOUNT)
         self.last_alert = Alert(AlertCodes.OK)
