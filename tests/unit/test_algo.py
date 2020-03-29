@@ -2,7 +2,6 @@ import csv
 import os
 
 import pytest
-import matplotlib.pyplot as plt
 from pytest import approx
 
 from algo import RunningSlope, VentilationStateMachine, VentilationState
@@ -49,9 +48,9 @@ def real_data():
 
 def test_slope_recognition(real_data):
     t, v = real_data
-    vmt = VentilationStateMachine()
+    vmt = VentilationStateMachine({})
     for ti, vi in zip(t, v):
-        vmt.update(vi, ti)
+        vmt.update(vi, 0, ti)
 
     inhale_entry = vmt.entry_points_ts[VentilationState.Inhale][0]
     hold_entry = vmt.entry_points_ts[VentilationState.Hold][0]
