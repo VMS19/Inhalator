@@ -21,7 +21,7 @@ class Sampler(threading.Thread):
         self._measurements = measurements  # type: Measurements
         self._flow_sensor = flow_sensor
         self._pressure_sensor = pressure_sensor
-        self._oxygen_a2d = oxygex_a2d
+        self._oxygen_a2d = oxygen_a2d
         self._config = Configurations.instance()
         self._events = events
 
