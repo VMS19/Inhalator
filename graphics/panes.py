@@ -9,11 +9,12 @@ else:
 
 from graphics.alert_bar import IndicatorAlertBar
 from graphics.graphs import FlowGraph, AirPressureGraph, BlankGraph
-from graphics.graph_summaries import VolumeSummary, BPMSummary, PressurePeakSummary
-from graphics.configure_alerts_button import OpenConfigureAlertsScreenButton
+from graphics.graph_summaries import VolumeSummary, BPMSummary, \
+    PressurePeakSummary, O2SaturationSummary
 from graphics.right_menu_options import (MuteAlertsButton,
                                          ClearAlertsButton,
-                                         LockThresholdsButton)
+                                         LockThresholdsButton,
+                                         OpenConfigureAlertsScreenButton)
 from graphics.themes import Theme
 
 
@@ -26,12 +27,11 @@ class MasterFrame(object):
         self.right_pane = RightPane(self, events=events)
         self.center_pane = CenterPane(self, watchdog=watchdog, measurements=measurements)
         self.top_pane = TopPane(self, events=events, drivers=drivers)
-        self.bottom_pane = BottomPane(self)
 
     @property
     def panes(self):
-        return [self.top_pane, self.bottom_pane,
-                self.center_pane, self.left_pane, self.right_pane]
+        return [self.top_pane, self.center_pane,
+                self.left_pane, self.right_pane]
 
     @property
     def element(self):
@@ -43,10 +43,10 @@ class MasterFrame(object):
         for pane in self.panes:
             pane.render()
 
-
     def update(self):
         for pane in self.panes:
             pane.update()
+
 
 class LeftPane(object):
     def __init__(self, parent, measurements):
@@ -57,7 +57,7 @@ class LeftPane(object):
         self.screen_height = self.root.winfo_screenheight()
         self.screen_width = self.root.winfo_screenwidth()
 
-        self.height = self.screen_height * 0.65
+        self.height = self.screen_height * 0.85
         self.width = self.screen_width * 0.2
 
         self.frame = Frame(master=self.root, bg=Theme.active().SURFACE,
@@ -67,6 +67,7 @@ class LeftPane(object):
         self.volume_summary = VolumeSummary(self, measurements)
         self.bpm_summary = BPMSummary(self, measurements)
         self.pressure_peak_summary = PressurePeakSummary(self, measurements)
+        self.o2_saturation_summary = O2SaturationSummary(self, measurements)
 
     @property
     def element(self):
@@ -74,7 +75,8 @@ class LeftPane(object):
 
     @property
     def summaries(self):
-        return (self.volume_summary, self.bpm_summary, self.pressure_peak_summary)
+        return (self.volume_summary, self.bpm_summary,
+                self.pressure_peak_summary, self.o2_saturation_summary)
 
     def render(self):
         self.frame.grid(row=1, column=0)
@@ -96,7 +98,7 @@ class CenterPane(object):
         self.screen_height = self.root.winfo_screenheight()
         self.screen_width = self.root.winfo_screenwidth()
 
-        self.height = self.screen_height * 0.65
+        self.height = self.screen_height * 0.85
         self.width = self.screen_width * 0.7
 
         self.frame = Frame(master=self.root, bg=Theme.active().SURFACE,
@@ -143,6 +145,7 @@ class CenterPane(object):
         if had_flow_change and had_pressure_change:
             self.watchdog.arm_wd()
 
+
 class RightPane(object):
     def __init__(self, parent, events):
         self.parent = parent
@@ -152,7 +155,7 @@ class RightPane(object):
         self.screen_height = self.root.winfo_screenheight()
         self.screen_width = self.root.winfo_screenwidth()
 
-        self.height = self.screen_height * 0.65
+        self.height = self.screen_height * 0.85
         self.width = self.screen_width * 0.1
 
         self.frame = Frame(master=self.root, bg=Theme.active().SURFACE,
@@ -161,10 +164,15 @@ class RightPane(object):
         self.mute_alerts_btn = MuteAlertsButton(parent=self, events=self.events)
         self.clear_alerts_btn = ClearAlertsButton(parent=self, events=self.events)
         self.lock_thresholds_btn = LockThresholdsButton(parent=self)
+        self.configure_alerts_btn = OpenConfigureAlertsScreenButton(self)
+
 
     @property
     def buttons(self):
-        return (self.mute_alerts_btn, self.clear_alerts_btn, self.lock_thresholds_btn)
+        return (self.mute_alerts_btn,
+                self.clear_alerts_btn,
+                self.configure_alerts_btn,
+                self.lock_thresholds_btn)
 
     @property
     def element(self):
@@ -176,8 +184,7 @@ class RightPane(object):
             button.render()
 
     def update(self):
-        for button in self.buttons:
-            button.update()
+        pass
 
 
 class TopPane(object):
@@ -210,33 +217,3 @@ class TopPane(object):
     def update(self):
         self.alerts_bar.update()
 
-
-class BottomPane(object):
-    def __init__(self, parent):
-        self.parent = parent
-
-        self.root = parent.element
-
-        self.screen_height = self.root.winfo_screenheight()
-        self.screen_width = self.root.winfo_screenwidth()
-
-        self.height = self.screen_height * 0.2
-        self.width = self.screen_width
-
-        self.frame = Frame(master=self.root,
-                           bg=Theme.active().SURFACE,
-                           height=self.height,
-                           width=self.width)
-
-        self.configure_alerts_btn = OpenConfigureAlertsScreenButton(self)
-
-    @property
-    def element(self):
-        return self.frame
-
-    def render(self):
-        self.frame.grid(row=2, columnspan=3)
-        self.configure_alerts_btn.render()
-
-    def update(self):
-        pass

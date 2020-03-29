@@ -3,6 +3,7 @@ from threading import Lock
 
 from data.configurations import Configurations
 
+
 class Measurements(object):
     SYSTEM_SAMPLE_INTERVAL = 22  # KHZ
     MS_TO_SEC = 1000
@@ -15,7 +16,7 @@ class Measurements(object):
         self.intake_peak_flow = 0
         self.intake_peak_pressure = 0
         self.bpm = 0
-
+        self.o2_saturation_percentage = 20
         self.lock = Lock()
 
     def set_flow_value(self, new_value):
