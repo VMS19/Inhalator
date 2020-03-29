@@ -54,7 +54,7 @@ class VentilationState(Enum):
 
 class RateMeter(object):
 
-    def __init__(self, time_span_seconds):
+    def __init__(self, time_span_seconds, max_samples):
         """
         :param time_span_seconds: How long (seconds) the sliding window of the
             running average should be
@@ -62,7 +62,7 @@ class RateMeter(object):
         if time_span_seconds <= 0:
             raise ValueError("Time span must be non-zero and positive")
         self.time_span_seconds = time_span_seconds
-        self.samples = deque()
+        self.samples = deque(maxlen=max_samples)
 
     def reset(self):
         self.samples.clear()
@@ -202,7 +202,7 @@ class InhaleStateHandler(StateHandler):
 
     def __init__(self, config, measurements, events):
         super(InhaleStateHandler, self).__init__(config, measurements, events)
-        self.breathes_rate_meter = RateMeter(time_span_seconds=60)
+        self.breathes_rate_meter = RateMeter(time_span_seconds=60, max_samples=4)
 
     def exit(self, timestamp):
         self._measurements.bpm = self.breathes_rate_meter.beat(timestamp)
@@ -218,8 +218,6 @@ class HoldStateHandler(StateHandler):
     def enter(self, timestamp):
         self._inhale_max_flow = 0
         self._inhale_max_pressure = 0
-        self._measurements.intake_peak_flow = self._inhale_max_flow
-        self._measurements.intake_peak_pressure = self._inhale_max_pressure
 
     def process(self, pressure_cmh2o, flow_slm, timestamp):
         self._inhale_max_pressure = max(pressure_cmh2o, self._inhale_max_pressure)
