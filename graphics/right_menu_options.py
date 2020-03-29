@@ -47,9 +47,9 @@ class ClearAlertsButton(object):
 class MuteAlertsButton(object):
 
     PATH_TO_MUTED = os.path.join(RESOURCES_DIRECTORY,
-                                "baseline_volume_off_white_24dp.png")
+                                 "baseline_volume_off_white_24dp.png")
     PATH_TO_UNMUTED = os.path.join(RESOURCES_DIRECTORY,
-                                "baseline_volume_up_white_24dp.png")
+                                   "baseline_volume_up_white_24dp.png")
 
     def __init__(self, parent, events):
         self.parent = parent
@@ -60,7 +60,7 @@ class MuteAlertsButton(object):
         self.button = ImageButton(master=self.root,
                                   command=self.on_click,
                                   font=("Roboto", 10),
-                                  image_path=self.PATH_TO_MUTED,
+                                  image_path=self.PATH_TO_UNMUTED,
                                   relief="flat",
                                   bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
                                   fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
@@ -68,8 +68,19 @@ class MuteAlertsButton(object):
                                   activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,)
 
     def on_click(self):
-        Events.mute_alerts = True
-        Events.mute_time = time.time()
+        self.events.mute_alerts = not self.events.mute_alerts
+        if self.events.mute_alerts:
+            self.unmute()
+
+        else:
+            self.mute()
+
+    def mute(self):
+        self.button.set_image(self.PATH_TO_UNMUTED)
+
+    def unmute(self):
+        self.events.mute_time = time.time()
+        self.button.set_image(self.PATH_TO_MUTED)
 
     def render(self):
         self.button.place(relx=0, rely=0.27, relwidth=0.8, relheight=0.2)
