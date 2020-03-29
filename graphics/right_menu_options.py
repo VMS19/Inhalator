@@ -1,7 +1,9 @@
 # Tkinter stuff
+import os
 import platform
 
 from graphics.configure_alerts_screen import ConfigureAlarmsScreen
+from graphics.imagebutton import ImageButton
 
 if platform.python_version() < '3':
     from Tkinter import *
@@ -12,21 +14,29 @@ else:
 from graphics.themes import Theme
 
 
+THIS_DIRECTORY = os.path.dirname(__file__)
+RESOURCES_DIRECTORY = os.path.join(os.path.dirname(THIS_DIRECTORY), "resources")
+
+
 class ClearAlertsButton(object):
+
+    CLEAR_ICON_PATH = os.path.join(RESOURCES_DIRECTORY,
+                                   "baseline_delete_forever_white_24dp.png")
+
     def __init__(self, parent, events):
         self.parent = parent
         self.root = parent.element
         self.events = events
 
-        self.button = Button(master=self.root,
-                             command=self.on_click,
-                             font=("Roboto", 10),
-                             relief="flat",
-                             bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
-                             fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
-                             activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
-                             activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,
-                             text="Clear")
+        self.button = ImageButton(master=self.root,
+                                  command=self.on_click,
+                                  font=("Roboto", 10),
+                                  relief="flat",
+                                  bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
+                                  fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
+                                  activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
+                                  activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,
+                                  image_path=self.CLEAR_ICON_PATH)
 
     def on_click(self):
         self.events.alerts_queue.clear_alerts()
