@@ -91,8 +91,8 @@ class DriverFactory(object):
             self.MOCK_A2D_AMPLITUDE,
             self.MOCK_BPM / 60)
         samples = truncate(
-            samples, lower_limit=0, upper_limit=cls.MOCK_A2D_AMPLITUDE)
-        return add_noise(samples, cls.MOCK_NOISE_SIGMA)
+            samples, lower_limit=0, upper_limit=self.MOCK_A2D_AMPLITUDE)
+        return add_noise(samples, self.MOCK_NOISE_SIGMA)
 
     @staticmethod
     def get_pressure_driver():
