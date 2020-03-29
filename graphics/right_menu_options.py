@@ -18,13 +18,20 @@ THIS_DIRECTORY = os.path.dirname(__file__)
 RESOURCES_DIRECTORY = os.path.join(os.path.dirname(THIS_DIRECTORY), "resources")
 
 
+THIS_DIRECTORY = os.path.dirname(__file__)
+RESOURCES_DIRECTORY = os.path.join(os.path.dirname(THIS_DIRECTORY), "resources")
+
+
 class ClearAlertsButton(object):
+
+    PATH_TO_IMAGE = os.path.join(RESOURCES_DIRECTORY,
+                                 "baseline_delete_forever_white_24dp.png")
+
     def __init__(self, parent, events):
         self.parent = parent
         self.root = parent.element
         self.events = events
-
-        self.button = Button(master=self.root,
+        self.button = ImageButton(master=self.root,
                              command=self.on_click,
                              font=("Roboto", 10),
                              relief="flat",
@@ -32,7 +39,7 @@ class ClearAlertsButton(object):
                              fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
                              activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
                              activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,
-                             text="Clear")
+                             image_path=self.PATH_TO_IMAGE)
 
     def on_click(self):
         self.events.alerts_queue.clear_alerts()
