@@ -6,7 +6,7 @@ log = logging.getLogger(__name__)
 
 
 class WdTask(Thread):
-    WD_TIMEOUT = 100
+    WD_TIMEOUT = 200
 
     def __init__(self, measurements, wd, arm_wd_event):
         super(WdTask, self).__init__()
