@@ -55,7 +55,7 @@ class Sampler(threading.Thread):
 
     def _handle_intake_finished(self, flow, pressure):
         """We are not giving patient air anymore."""
-        if self._config.volume_threshold != "off" and \
+        if self._config.volume_threshold.min != "off" and \
                 self._current_intake_volume <\
            self._config.volume_threshold.min and \
                 self._has_crossed_first_cycle:
@@ -92,7 +92,7 @@ class Sampler(threading.Thread):
             # Above healthy lungs pressure
             self.pressure_alert = AlertCodes.PRESSURE_HIGH
 
-        if self._config.pressure_threshold.max != "off" and \
+        if self._config.pressure_threshold.min != "off" and \
                 pressure_value < self._config.pressure_threshold.min:
             # Below healthy lungs pressure
             self.pressure_alert = AlertCodes.PRESSURE_LOW
