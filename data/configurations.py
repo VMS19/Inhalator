@@ -25,7 +25,7 @@ class Configurations(object):
 
     def __init__(self, flow_threshold, volume_threshold,
                  pressure_threshold, resp_rate_threshold,
-                 graph_seconds, breathing_threshold, log_enabled=True, debug_port=7777):
+                 graph_seconds, breathing_threshold, log_enabled=True, debug_port=7777, mute_time_limit=120):
         self.flow_threshold = flow_threshold
         self.volume_threshold = volume_threshold
         self.pressure_threshold = pressure_threshold
@@ -34,6 +34,7 @@ class Configurations(object):
         self.breathing_threshold = breathing_threshold
         self.log_enabled = log_enabled
         self.debug_port = debug_port
+        self.mute_time_limit = mute_time_limit
 
     def __del__(self):
         self.save_to_file(self.CONFIG_FILE)
@@ -84,6 +85,7 @@ class Configurations(object):
             breathing_threshold = config["threshold"]["breathing_threshold"]
             log_enabled = config["log_enabled"]
             debug_port = config["debug_port"]
+            mute_time_limit = config["mute_time_limit"]
 
             return cls(flow_threshold=flow,
                        volume_threshold=volume,
@@ -92,7 +94,8 @@ class Configurations(object):
                        graph_seconds=graph_seconds,
                        breathing_threshold=breathing_threshold,
                        log_enabled=log_enabled,
-                       debug_port=debug_port)
+                       debug_port=debug_port,
+                       mute_time_limit=mute_time_limit)
 
         except Exception as e:
             raise ConfigurationFileError("Could not load config file %s"
@@ -127,6 +130,7 @@ class Configurations(object):
             "log_enabled": self.log_enabled,
             "graph_seconds": self.graph_seconds,
             "debug_port": self.debug_port,
+            "mute_time_limit" : self.mute_time_limit,
         }
 
         with open(config_path, "w") as config_file:

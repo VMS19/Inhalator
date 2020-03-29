@@ -184,7 +184,8 @@ class RightPane(object):
             button.render()
 
     def update(self):
-        pass
+        for btn in self.buttons:
+            btn.update()
 
 
 class TopPane(object):

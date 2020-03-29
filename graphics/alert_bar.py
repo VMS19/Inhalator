@@ -1,3 +1,4 @@
+import time
 # Tkinter stuff
 import platform
 
@@ -9,23 +10,26 @@ if platform.python_version() < '3':
 else:
     from tkinter import *
 
-from data import alerts
+from data import alerts, events, configurations
 
 from drivers.driver_factory import DriverFactory
+
+from data.configurations import Configurations
 
 
 class IndicatorAlertBar(object):
     error_dict = {
         alerts.AlertCodes.PRESSURE_LOW: "Low Pressure",
         alerts.AlertCodes.PRESSURE_HIGH: "High Pressure",
-        alerts.AlertCodes.BREATHING_VOLUME_LOW: "Low Volume",
-        alerts.AlertCodes.BREATHING_VOLUME_HIGH: "High Volume"
+        alerts.AlertCodes.VOLUME_LOW: "Low Volume",
+        alerts.AlertCodes.VOLUME_HIGH: "High Volume"
     }
 
     def __init__(self, parent, events, drivers):
         self.parent = parent
         self.root = parent.element
         self.events = events
+        self.configs = Configurations.instance()
         self.drivers = drivers
 
         self.height = self.parent.height
@@ -50,12 +54,17 @@ class IndicatorAlertBar(object):
         self.message_label.place(anchor="nw", relx=0.03, rely=0.2)
 
     def update(self):
-        last_alert_code = self.events.alerts_queue.last_alert.code
+        # Check mute time limit
+        if (self.events.mute_alerts 
+                and (time.time() - self.events.mute_time) > self.configs.mute_time_limit):
+            self.events.mute_alerts = False
+
+        last_alert_code = self.events.alerts_queue.last_alert
         if last_alert_code == alerts.AlertCodes.OK:
             self.set_no_alert()
-
         else:
             self.set_alert(self.error_dict.get(last_alert_code, "Multiple Errors"))
+
 
     def set_no_alert(self):
         self.bar.config(bg=Theme.active().ALERT_BAR_OK)
@@ -68,4 +77,8 @@ class IndicatorAlertBar(object):
         self.bar.config(bg=Theme.active().ERROR)
         self.message_label.config(bg=Theme.active().ERROR,
                                   fg=Theme.active().TXT_ON_ERROR, text=message)
-        self.sound_device.start()
+        if self.events.mute_alerts:
+            self.sound_device.stop()
+
+        else:
+            self.sound_device.start()

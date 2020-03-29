@@ -1,6 +1,7 @@
 # Tkinter stuff
 import platform
 
+import time
 from graphics.configure_alerts_screen import ConfigureAlarmsScreen
 
 if platform.python_version() < '3':
@@ -55,13 +56,21 @@ class MuteAlertsButton(object):
                              activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,)
 
     def on_click(self):
-        print("Not Implemented Yet")
+        self.events.mute_alerts = not self.events.mute_alerts
+        if self.events.mute_alerts:
+            self.events.mute_time = time.time()
+
+        self.update()
 
     def render(self):
         self.button.place(relx=0, rely=0.27, relwidth=0.8, relheight=0.2)
 
     def update(self):
-        pass
+        if self.events.mute_alerts:
+            self.button.configure(text="Unmute")
+
+        else:
+            self.button.configure(text="Mute")
 
 
 class LockThresholdsButton(object):
