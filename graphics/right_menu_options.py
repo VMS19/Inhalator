@@ -1,8 +1,10 @@
 # Tkinter stuff
+import os
 import platform
 
 import time
 from graphics.configure_alerts_screen import ConfigureAlarmsScreen
+from graphics.imagebutton import ImageButton
 
 if platform.python_version() < '3':
     from Tkinter import *
@@ -11,7 +13,9 @@ else:
     from tkinter import *
 
 from graphics.themes import Theme
-from data.events import Events
+
+THIS_DIRECTORY = os.path.dirname(__file__)
+RESOURCES_DIRECTORY = os.path.join(os.path.dirname(THIS_DIRECTORY), "resources")
 
 
 class ClearAlertsButton(object):
@@ -41,20 +45,27 @@ class ClearAlertsButton(object):
 
 
 class MuteAlertsButton(object):
+
+    PATH_TO_MUTED = os.path.join(RESOURCES_DIRECTORY,
+                                "baseline_volume_off_white_24dp.png")
+    PATH_TO_UNMUTED = os.path.join(RESOURCES_DIRECTORY,
+                                "baseline_volume_up_white_24dp.png")
+
     def __init__(self, parent, events):
         self.parent = parent
         self.root = parent.element
         self.events = events
+        self.muted = False
 
-        self.button = Button(master=self.root,
-                             command=self.on_click,
-                             font=("Roboto", 10),
-                             text="Mute",
-                             relief="flat",
-                             bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
-                             fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
-                             activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
-                             activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,)
+        self.button = ImageButton(master=self.root,
+                                  command=self.on_click,
+                                  font=("Roboto", 10),
+                                  image_path=self.PATH_TO_MUTED,
+                                  relief="flat",
+                                  bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
+                                  fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
+                                  activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
+                                  activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,)
 
     def on_click(self):
         Events.mute_alerts = True
