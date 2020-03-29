@@ -73,10 +73,9 @@ class Ads7844A2D(object):
 
         return self._calibrate_a2d(sample_reading)
 
-    def read(self, channels, input_mode=MODE_SGL,
-                            power_down_mode=PD_DISABLED):
+    def read(self, channels, input_mode=MODE_SGL, power_down_mode=PD_DISABLED):
         sample_res = []
         for channel in channels:
             sample_res.append(self._sample_a2d(channel, input_mode,
-                           power_down_mode))
+                              power_down_mode))
         return sample_res
