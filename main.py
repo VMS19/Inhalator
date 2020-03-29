@@ -14,7 +14,6 @@ from data.events import Events
 from application import Application
 from algo import Sampler
 from wd_task import WdTask
-from drivers.aux_sound import SoundViaAux
 
 
 class BroadcastHandler(logging.handlers.DatagramHandler):
@@ -43,7 +42,8 @@ def configure_logging(level):
     logger = logging.getLogger()
     logger.setLevel(level)
     # create file handler which logs even debug messages
-    fh = RotatingFileHandler('inhalator.log', maxBytes=1024 * 100, backupCount=3)
+    fh = RotatingFileHandler('inhalator.log', maxBytes=1024 * 100,
+                             backupCount=3)
     fh.setLevel(logging.DEBUG)
     # create console handler with a higher log level
     ch = logging.StreamHandler()
@@ -112,7 +112,7 @@ def main():
     app.render()
     sampler.start()
 
-    watchdog_task = WdTask(store, wd, arm_wd_event)
+    watchdog_task = WdTask(measurements, wd, arm_wd_event)
     watchdog_task.start()
 
     while app.should_run:

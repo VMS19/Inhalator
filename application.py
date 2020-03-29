@@ -33,7 +33,7 @@ class Application(object):
         self.root.title("Inhalator")
         self.root.geometry('800x480')
         self.root.attributes("-fullscreen", True)
-        self.master_frame = MasterFrame(self.root, arm_wd_event=watchdog,
+        self.master_frame = MasterFrame(self.root, arm_wd_event=arm_wd_event,
                                         measurements=measurements,
                                         events=events,
                                         drivers=drivers)
