@@ -14,6 +14,7 @@ class SoundViaAux(object):
     BEEP_FILE_PATH = os.path.join(RESOURCES_DIRECTORY, "beep-3.wav")
     TIME_BETWEEN_BEEPS = 0.1
     PLAY_BEEP_IN_LOOP = "while [ True ] ; do aplay -q -N {wav_path}; sleep {frequency}; done"
+    SET_AUX_CMD = "amixer cset numid=3 1"
 
     __instance = None  # shared instance
 
@@ -29,6 +30,7 @@ class SoundViaAux(object):
     def __init__(self):
         self.alarm_process = None
         self.is_playing = False
+        os.system(self.SET_AUX_CMD)
 
     def __del__(self):
         self.stop()
