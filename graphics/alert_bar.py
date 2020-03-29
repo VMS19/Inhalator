@@ -1,3 +1,4 @@
+import time
 # Tkinter stuff
 import platform
 
@@ -9,9 +10,11 @@ if platform.python_version() < '3':
 else:
     from tkinter import *
 
-from data import alerts, events
+from data import alerts, events, configurations
 
 from drivers.driver_factory import DriverFactory
+
+from data.configurations import Configurations
 
 
 class IndicatorAlertBar(object):
@@ -26,6 +29,7 @@ class IndicatorAlertBar(object):
         self.parent = parent
         self.root = parent.element
         self.events = events
+        self.configs = Configurations.instance()
         self.drivers = drivers
 
         self.height = self.parent.height
@@ -56,6 +60,12 @@ class IndicatorAlertBar(object):
 
         else:
             self.set_alert(self.error_dict.get(last_alert_code, "Multiple Errors"))
+
+        # Check mute time limit
+        if (self.events.mute_alerts 
+                and (time.time() - self.events.mute_time) > self.configs.mute_time_limit):
+            self.events.mute_alerts = True
+            self.sound_device.start()
 
     def set_no_alert(self):
         self.bar.config(bg=Theme.active().ALERT_BAR_OK)

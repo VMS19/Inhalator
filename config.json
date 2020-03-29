@@ -25,5 +25,5 @@
     "log_enabled": true,
     "graph_seconds": 12.0,
     "debug_port": 7777,
-    "mute_time_limit" : 120
+    "mute_time_limit" : 5
 }
