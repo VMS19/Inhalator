@@ -9,6 +9,7 @@ else:
 from graphics.panes import MasterFrame
 from graphics.themes import Theme, DarkTheme
 
+
 class Application(object):
     """The Inhalator application"""
     TEXT_SIZE = 10
@@ -24,7 +25,7 @@ class Application(object):
     def instance(cls):
         return cls.__instance
 
-    def __init__(self, data_store, arm_wd_event):
+    def __init__(self, data_store, arm_wd_event, drivers):
         self.should_run = True
         self.root = Tk()
         self.theme = Theme.toggle_theme()  # Set to dark mode, TODO: Make this configurable
@@ -32,10 +33,11 @@ class Application(object):
         self.root.title("Inhalator")
         self.root.geometry('800x480')
         self.root.attributes("-fullscreen", True)
-        self.master_frame = MasterFrame(self.root, store=data_store, arm_wd_event=arm_wd_event)
+        self.master_frame = MasterFrame(self.root, store=data_store,
+            arm_wd_event=arm_wd_event, drivers=drivers)
 
     def exit(self):
-        self.root.destroy()
+        self.root.quit()
         self.should_run = False
 
     def render(self):

@@ -11,7 +11,6 @@ class Sampler(threading.Thread):
     SAMPLING_INTERVAL = 0.02  # sec
     MS_IN_MIN = 60 * 1000
     ML_IN_LITER = 1000
-    PSI_CMH2O_RATIO = 70.307
 
     def __init__(self, data_store, flow_sensor, pressure_sensor):
         super(Sampler, self).__init__()
@@ -52,7 +51,7 @@ class Sampler(threading.Thread):
 
     def _handle_intake_finished(self, flow, pressure):
         """We are not giving patient air anymore."""
-        if self._data_store.volume_threshold != "off" and \
+        if self._data_store.volume_threshold.min != "off" and \
                 self._current_intake_volume <\
            self._data_store.volume_threshold.min and \
                 self._has_crossed_first_cycle:
@@ -80,7 +79,7 @@ class Sampler(threading.Thread):
 
         # Read from sensors
         flow_value = self._flow_sensor.read() * self.ML_IN_LITER
-        pressure_cmh2o = self._pressure_sensor.read() * self.PSI_CMH20_RATIO
+        pressure_cmh2o = self._pressure_sensor.read()
 
         self._data_store.set_pressure_value(pressure_cmh2o)
 
@@ -89,7 +88,7 @@ class Sampler(threading.Thread):
             # Above healthy lungs pressure
             self.pressure_alert = AlertCodes.PRESSURE_HIGH
 
-        if self._data_store.pressure_threshold.max != "off" and \
+        if self._data_store.pressure_threshold.min != "off" and \
                 pressure_cmh2o < self._data_store.pressure_threshold.min:
             # Below healthy lungs pressure
             self.pressure_alert = AlertCodes.PRESSURE_LOW
