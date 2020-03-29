@@ -89,7 +89,7 @@ class Sampler(threading.Thread):
             self.pressure_alert = AlertCodes.PRESSURE_HIGH
 
         if self._data_store.pressure_threshold.min != "off" and \
-                pressure_value < self._data_store.pressure_threshold.min:
+                pressure_value_cmh2o < self._data_store.pressure_threshold.min:
             # Below healthy lungs pressure
             self.pressure_alert = AlertCodes.PRESSURE_LOW
 
