@@ -100,10 +100,12 @@ class RateMeter(object):
 
 class VentilationStateMachine(object):
     def __init__(self,
-                 peep_to_inhale_slope=2,
-                 inhale_to_pip_slope=2,
-                 hold_to_exhale_slope=-2,
-                 exhale_to_peep_slope=-2):
+                 state_handlers,
+                 peep_to_inhale_slope=8,
+                 inhale_to_pip_slope=4,
+                 hold_to_exhale_slope=-4,
+                 exhale_to_peep_slope=-4):
+        self.handlers = state_handlers
         self.log = logging.getLogger(self.__class__.__name__)
         self.peep_to_inhale_slope = peep_to_inhale_slope
         self.inhale_to_pip_slope = inhale_to_pip_slope
@@ -111,7 +113,16 @@ class VentilationStateMachine(object):
         self.exhale_to_peep_slope = exhale_to_peep_slope
         self.rs = RunningSlope(num_samples=7)
 
-        # TODO: Document
+        # Transition table:
+        # The key is the current state, and the value is a tuple of:
+        # 1. The compare func against the threshold (greater-than, less-than)
+        # 2. The threshold to compare against
+        # 3. The next state if the comparison evaluates to true.
+        #
+        # For each new sample we compute the current slope, and according to
+        # the current state we perform the appropriate comparison against the
+        # appropriate threshold. If the comparison returns True - we transition
+        # to the next state according to the table.
         self.transitions = {
             VentilationState.PEEP: (float.__gt__, self.peep_to_inhale_slope, VentilationState.Inhale),
             VentilationState.Inhale: (float.__lt__, self.inhale_to_pip_slope, VentilationState.Hold),
@@ -126,16 +137,24 @@ class VentilationStateMachine(object):
             VentilationState.Exhale: deque(maxlen=100)
         }
 
-    def update(self, pressure_cmH2O, timestamp):
-        slope = self.rs.add_sample(pressure_cmH2O, timestamp)
+    def update(self, pressure_cmh2o, flow_slm, timestamp):
+        slope = self.rs.add_sample(pressure_cmh2o, timestamp)
         if slope is None:
             return
         func, threshold, next_state = self.transitions.get(self.current_state)
+        current_state_handler = self.handlers.get(self.current_state, None)
         if func(slope, threshold):
+            if current_state_handler is not None:
+                current_state_handler.exit(timestamp)
             self.rs.reset()
             self.log.debug("%s -> %s", self.current_state, next_state)
             self.current_state = next_state
             self.entry_points_ts[next_state].append(timestamp)
+            new_state_handler = self.handlers.get(next_state, None)
+            if new_state_handler is not None:
+                new_state_handler.enter(timestamp)
+        if current_state_handler is not None:
+            current_state_handler.process(pressure_cmh2o, flow_slm, timestamp)
 
 
 class RunningSlope(object):
@@ -161,8 +180,77 @@ class RunningSlope(object):
         return slope
 
 
+class StateHandler(object):
+
+    def __init__(self, config, measurements, events):
+        self._config = config
+        self._measurements = measurements
+        self._events = events
+        self.log = logging.getLogger(self.__class__.__name__)
+
+    def process(self, pressure_cmh2o, flow_slm, timestamp):
+        pass
+
+    def enter(self, timestamp):
+        pass
+
+    def exit(self, timestamp):
+        pass
+
+
+class InhaleStateHandler(StateHandler):
+
+    def __init__(self, config, measurements, events):
+        super(InhaleStateHandler, self).__init__(config, measurements, events)
+        self.breathes_rate_meter = RateMeter(time_span_seconds=60)
+
+    def exit(self, timestamp):
+        self._measurements.bpm = self.breathes_rate_meter.beat(timestamp)
+
+
+class HoldStateHandler(StateHandler):
+
+    def __init__(self, config, measurements, events):
+        super(HoldStateHandler, self).__init__(config, measurements, events)
+        self._inhale_max_pressure = 0
+        self._inhale_max_flow = 0
+
+    def enter(self, timestamp):
+        self._inhale_max_flow = 0
+        self._inhale_max_pressure = 0
+        self._measurements.intake_peak_flow = self._inhale_max_flow
+        self._measurements.intake_peak_pressure = self._inhale_max_pressure
+
+    def process(self, pressure_cmh2o, flow_slm, timestamp):
+        self._inhale_max_pressure = max(pressure_cmh2o, self._inhale_max_pressure)
+        self._inhale_max_flow = max(flow_slm, self._inhale_max_flow)
+
+    def exit(self, timestamp):
+        self._measurements.intake_peak_flow = self._inhale_max_flow
+        self._measurements.intake_peak_pressure = self._inhale_max_pressure
+
+
+class PEEPHandler(StateHandler):
+    def __init__(self, config, measurements, events, accumulator):
+        super().__init__(config, measurements, events)
+        self.accumulator = accumulator
+
+    def enter(self, timestamp):
+        self.log.info("Hold finished. Exhale starts")
+        if (self._config.volume_threshold.min != "off" and
+                self.accumulator.air_volume_liter <
+                self._config.volume_threshold.min):
+            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW)
+
+        volume_mlm = self.accumulator.air_volume_liter * 1000
+        self.log.info("Volume: %s", volume_mlm)
+        self._measurements.volume = volume_mlm
+        # reset values of last intake
+        self.accumulator.reset()
+
+
 class Sampler(threading.Thread):
-    SAMPLING_INTERVAL = 0.02  # sec
+    SAMPLING_INTERVAL = 0.045  # sec
     MS_IN_MIN = 60 * 1000
     ML_IN_LITER = 1000
 
@@ -175,64 +263,20 @@ class Sampler(threading.Thread):
         self._pressure_sensor = pressure_sensor
         self._config = Configurations.instance()
         self._events = events
-        self.accumulator = VolumeAccumulator()
         # No good reason for 1000 max samples. Sounds enough.
         self.peep_avg_calculator = RunningAvg(max_samples=1000)
-        self.breathes_rate_meter = RateMeter(time_span_seconds=60)
-        self.alerts = AlertCodes.OK
 
-        # State
-        self.handlers = {
-            VentilationState.Inhale: self.handle_inhale,
-            VentilationState.Hold: self.handle_inhale,
-            VentilationState.Exhale: self.handle_exhale,
-            VentilationState.PEEP: self.handle_peep
-        }
-
-        self.vsm = VentilationStateMachine()
-        self.last_pressure = 0
-        self._inhale_max_flow = 0
-        self._inhale_max_pressure = 0
-        self._has_crossed_first_cycle = False
-        self._is_during_intake = False
-
-    def handle_inhale(self, flow_slm, pressure):
-        ts = time.time()
-        self.accumulator.accumulate(ts, flow_slm)
-        if (self._config.volume_threshold.max != 'off' and
-                self.accumulator.air_volume_liter >
-                self._config.volume_threshold.max):
-            self.alerts |= AlertCodes.VOLUME_HIGH
-
-        if pressure <= self._config.breathing_threshold:
-            self._has_crossed_first_cycle = True
-
-        self._inhale_max_pressure = max(pressure, self._inhale_max_pressure)
-        self._inhale_max_flow = max(flow_slm, self._inhale_max_flow)
-
-    def _inhale_finished(self, timestamp):
-        self.log.debug("Inhale finished. Exhale starts")
-        self._measurements.bpm = self.breathes_rate_meter.beat(timestamp)
-        if (self._config.volume_threshold.min != "off" and
-                self.accumulator.air_volume_liter <
-                self._config.volume_threshold.min and
-                self._has_crossed_first_cycle):
-
-            self.alerts |= AlertCodes.VOLUME_LOW
-
-        self._measurements.set_intake_peaks(self._inhale_max_pressure,
-                                            self._inhale_max_pressure,
-                                            self.accumulator.air_volume_liter)
-        # reset values of last intake
-        self.accumulator.reset()
-        self._inhale_max_flow = 0
-        self._inhale_max_pressure = 0
-
-    def handle_exhale(self, flow, pressure):
-        pass
-
-    def handle_peep(self, flow, pressure):
-        pass
+        self.accumulator = VolumeAccumulator()
+        inhale_handler = InhaleStateHandler(
+            self._config, self._measurements, self._events)
+        hold_handler = HoldStateHandler(
+            self._config, self._measurements, self._events)
+        peep_handler = PEEPHandler(
+            self._config, self._measurements, self._events, self.accumulator)
+        self.vsm = VentilationStateMachine({
+            VentilationState.Inhale: inhale_handler,
+            VentilationState.Hold: hold_handler,
+            VentilationState.PEEP: peep_handler})
 
     def run(self):
         while True:
@@ -243,25 +287,24 @@ class Sampler(threading.Thread):
         # Read from sensors
         flow_slm = self._flow_sensor.read()
         pressure_cmh2o = self._pressure_sensor.read()
-
-        self.vsm.update(pressure_cmh2o, timestamp=time.time())
-        handler = self.handlers.get(self.vsm.current_state)
-        handler(flow_slm, pressure_cmh2o)
+        ts = time.time()
+        self.vsm.update(pressure_cmh2o, flow_slm, timestamp=ts)
+        self.accumulator.accumulate(ts, flow_slm)
         self._measurements.set_pressure_value(pressure_cmh2o)
 
         if self._config.pressure_threshold.max != "off" and \
                 pressure_cmh2o > self._config.pressure_threshold.max:
             # Above healthy lungs pressure
-            self.alerts |= AlertCodes.PRESSURE_HIGH
+            self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_HIGH)
 
         if self._config.pressure_threshold.max != "off" and \
                 pressure_cmh2o < self._config.pressure_threshold.min:
             # Below healthy lungs pressure
-            self.alerts |= AlertCodes.PRESSURE_LOW
+            self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW)
+
+        if (self._config.volume_threshold.max != 'off' and
+                self.accumulator.air_volume_liter >
+                self._config.volume_threshold.max):
+            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH)
 
         self._measurements.set_flow_value(flow_slm)
-
-        if (self.alerts != AlertCodes.OK and
-                self._events.alerts_queue.last_alert != self.alerts):
-            self._events.alerts_queue.enqueue_alert(self.alerts)
-        self.last_pressure = pressure_cmh2o
