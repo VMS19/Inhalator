@@ -10,7 +10,8 @@ else:
     from tkinter import *
 
 from data import alerts
-from data.data_store import AlertsQueue, DataStore
+
+from drivers.driver_factory import DriverFactory
 
 
 class IndicatorAlertBar(object):
@@ -21,10 +22,11 @@ class IndicatorAlertBar(object):
         alerts.AlertCodes.BREATHING_VOLUME_HIGH: "High Volume"
     }
 
-    def __init__(self, parent, store):
+    def __init__(self, parent, events, drivers):
         self.parent = parent
-        self.store = store  # type: DataStore
         self.root = parent.element
+        self.events = events
+        self.drivers = drivers
 
         self.height = self.parent.height
         self.width = self.parent.width
@@ -32,10 +34,12 @@ class IndicatorAlertBar(object):
         self.bar = Frame(self.root, bg=Theme.active().ALERT_BAR_OK,
                          height=self.height, width=self.width)
         self.message_label = Label(master=self.bar,
-                                   font=("Roboto", 40),
+                                   font=("Roboto", 34),
                                    text="OK",
                                    bg=Theme.active().ALERT_BAR_OK,
                                    fg=Theme.active().ALERT_BAR_OK_TXT,)
+
+        self.sound_device = drivers.get_driver("aux")
 
     @property
     def element(self):
@@ -46,7 +50,7 @@ class IndicatorAlertBar(object):
         self.message_label.place(anchor="nw", relx=0.03, rely=0.2)
 
     def update(self):
-        last_alert_code = self.store.alerts_queue.last_alert.code
+        last_alert_code = self.events.alerts_queue.last_alert.code
         if last_alert_code == alerts.AlertCodes.OK:
             self.set_no_alert()
 
@@ -58,8 +62,10 @@ class IndicatorAlertBar(object):
         self.message_label.config(bg=Theme.active().ALERT_BAR_OK,
                                   fg=Theme.active().ALERT_BAR_OK_TXT,
                                   text="OK")
+        self.sound_device.stop()
 
     def set_alert(self, message):
         self.bar.config(bg=Theme.active().ERROR)
         self.message_label.config(bg=Theme.active().ERROR,
                                   fg=Theme.active().TXT_ON_ERROR, text=message)
+        self.sound_device.start()

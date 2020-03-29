@@ -3,21 +3,30 @@ import argparse
 import logging
 import signal
 import socket
-
 from logging.handlers import RotatingFileHandler
 from time import sleep
 
 from drivers.driver_factory import DriverFactory
-from data.data_store import DataStore
+from data.configurations import Configurations
+from data.measurements import Measurements
+from data.events import Events
 from application import Application
 from algo import Sampler
-from sound import SoundDevice
+from drivers.aux_sound import SoundViaAux
 
 
 class BroadcastHandler(logging.handlers.DatagramHandler):
     '''
     A handler for the python logging system which is able to broadcast packets.
     '''
+
+    def send(self, s):
+        try:
+            super().send(s)
+
+        except OSError as e:
+            if e.errno != 101:  # Network is unreachable
+                raise e
 
     def makeSocket(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -26,7 +35,9 @@ class BroadcastHandler(logging.handlers.DatagramHandler):
         return sock
 
 
-def configure_logging(level, store):
+def configure_logging(level):
+    config = Configurations.instance()
+
     logger = logging.getLogger()
     logger.setLevel(level)
     # create file handler which logs even debug messages
@@ -36,7 +47,7 @@ def configure_logging(level, store):
     ch = logging.StreamHandler()
     ch.setLevel(level)
     # create socket handler to broadcast logs
-    sh = BroadcastHandler('255.255.255.255', store.debug_port)
+    sh = BroadcastHandler('255.255.255.255', config.debug_port)
     sh.setLevel(level)
     # create formatter and add it to the handlers
     formatter = logging.Formatter(
@@ -48,7 +59,7 @@ def configure_logging(level, store):
     logger.addHandler(fh)
     logger.addHandler(ch)
     logger.addHandler(sh)
-    logger.disabled = not store.log_enabled
+    logger.disabled = not config.log_enabled
     return logger
 
 
@@ -56,6 +67,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--verbose", "-v", action="count", default=0)
     parser.add_argument("--simulate", "-s", action='store_true')
+    parser.add_argument("--data", '-d', default='sinus')
     args = parser.parse_args()
     args.verbose = max(0, logging.WARNING - (10 * args.verbose))
     return args
@@ -68,32 +80,34 @@ def handle_sigterm(signum, frame):
 
 
 def main():
-    store = DataStore.load_from_config()
+    measurements = Measurements()
+    events = Events()
+
     signal.signal(signal.SIGTERM, handle_sigterm)
     args = parse_args()
-    log = configure_logging(args.verbose, store)
+    log = configure_logging(args.verbose)
 
     # Initialize all drivers, or mocks if in simulation mode
-    if args.simulate or os.uname()[1] != 'raspberrypi':
+    simulation = args.simulate or os.uname()[1] != 'raspberrypi'
+    if simulation:
         log.info("Running in simulation mode! simulating: "
                  "flow, pressure sensors, and watchdog")
-        drivers = DriverFactory(simulation_mode=True)
-
-    else:
-        drivers = DriverFactory(simulation_mode=False)
+    drivers = DriverFactory(
+        simulation_mode=simulation, simulation_data=args.data)
 
     pressure_sensor = drivers.get_driver("pressure")
     flow_sensor = drivers.get_driver("flow")
     watchdog = drivers.get_driver("wd")
     oxygen_a2d = drivers.get_driver("oxygen_a2d")
 
-    sound_device = SoundDevice()
-    store.alerts_queue.subscribe(sound_device, sound_device.on_alert)
+    app = Application(measurements=measurements,
+                      events=events,
+                      watchdog=watchdog,
+                      drivers=drivers)
+    sampler = Sampler(measurements=measurements, events=events,
+                      flow_sensor=flow_sensor, pressure_sensor=pressure_sensor,
+                      oxygen_a2d=oxygen_a2d)
 
-
-    app = Application(store, watchdog)
-
-    sampler = Sampler(store, flow_sensor, pressure_sensor, oxygen_a2d)
     app.render()
     sampler.start()
 
@@ -102,8 +116,10 @@ def main():
             app.gui_update()
             sleep(0.02)
         except KeyboardInterrupt:
-            app.exit()
             break
+
+    app.exit()
+    drivers.get_driver("aux").stop()
 
 
 if __name__ == '__main__':
