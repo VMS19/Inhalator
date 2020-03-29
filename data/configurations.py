@@ -21,7 +21,7 @@ class Configurations(object):
     CONFIG_FILE = os.path.abspath(os.path.join(THIS_DIRECTORY, "..", "config.json"))
     DEFAULT_CONFIG_FILE = os.path.abspath(os.path.join(THIS_DIRECTORY, "..", "default_config.json"))
 
-    __configurations_instance = None
+    __instance = None
 
     def __init__(self, flow_threshold, volume_threshold,
                  pressure_threshold, resp_rate_threshold,
@@ -40,21 +40,24 @@ class Configurations(object):
 
     @classmethod
     def instance(cls):
-        if cls.__configurations_instance is not None:
-            return cls.__configurations_instance
+        if cls.__instance is not None:
+            return cls.__instance
 
-        instance = cls._load()
-        cls.__configurations_instance = instance
-        return instance
+        cls.__instance = cls._load()
+        return cls.__instance
 
     @classmethod
     def _load(cls):
         try:
             return cls._parse_config_file(cls.CONFIG_FILE)
 
-        except ConfigurationFileError:
+        except ConfigurationFileError as e:
             # The second call to _parse_config_file might fail,
             # we will however let the exception propagate upwards
+            log.exception("Failed to load configuration file %s, "
+                          "defauting to %s",
+                          cls.CONFIG_FILE,
+                          cls.DEFAULT_CONFIG_FILE)
             return cls._parse_config_file(cls.DEFAULT_CONFIG_FILE)
 
 
