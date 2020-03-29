@@ -34,6 +34,7 @@ class Configurations(object):
         self.breathing_threshold = breathing_threshold
         self.log_enabled = log_enabled
         self.debug_port = debug_port
+        self.mute_time_limit = 2 * 60  # 2 minute
 
     def __del__(self):
         self.save_to_file(self.CONFIG_FILE)
@@ -84,6 +85,7 @@ class Configurations(object):
             breathing_threshold = config["threshold"]["breathing_threshold"]
             log_enabled = config["log_enabled"]
             debug_port = config["debug_port"]
+            self.mute_time_limit = config["mute_time_limit"]
 
             return cls(flow_threshold=flow,
                        volume_threshold=volume,
@@ -127,6 +129,7 @@ class Configurations(object):
             "log_enabled": self.log_enabled,
             "graph_seconds": self.graph_seconds,
             "debug_port": self.debug_port,
+            "mute_time_limit" : self.mute_time_limit,
         }
 
         with open(config_path, "w") as config_file:
