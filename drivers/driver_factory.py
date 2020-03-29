@@ -22,7 +22,7 @@ class DriverFactory(object):
     MOCK_BPM = 15  # Breathes per minutes to simulate
     MOCK_NOISE_SIGMA = 0.5  # Play with it to get desired result
     MOCK_AIRFLOW_AMPLITUDE = 20
-    MOCK_PRESSURE_AMPLITUDE = 0.25
+    MOCK_PRESSURE_AMPLITUDE = 25
     MOCK_PIP = 25  # Peak Intake Pressure
     MOCK_PEEP = 3  # Positive End-Expiratory Pressure
 
