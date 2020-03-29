@@ -1,7 +1,9 @@
 # Tkinter stuff
+import os
 import platform
 
 from graphics.configure_alerts_screen import ConfigureAlarmsScreen
+from graphics.imagebutton import ImageButton
 
 if platform.python_version() < '3':
     from Tkinter import *
@@ -12,13 +14,20 @@ else:
 from graphics.themes import Theme
 
 
+THIS_DIRECTORY = os.path.dirname(__file__)
+RESOURCES_DIRECTORY = os.path.join(os.path.dirname(THIS_DIRECTORY), "resources")
+
+
 class ClearAlertsButton(object):
+
+    PATH_TO_IMAGE = os.path.join(RESOURCES_DIRECTORY,
+                                 "baseline_delete_forever_white_24dp.png")
+
     def __init__(self, parent, events):
         self.parent = parent
         self.root = parent.element
         self.events = events
-
-        self.button = Button(master=self.root,
+        self.button = ImageButton(master=self.root,
                              command=self.on_click,
                              font=("Roboto", 10),
                              relief="flat",
@@ -26,7 +35,7 @@ class ClearAlertsButton(object):
                              fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
                              activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
                              activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,
-                             text="Clear")
+                             image_path=self.PATH_TO_IMAGE)
 
     def on_click(self):
         self.events.alerts_queue.clear_alerts()
@@ -39,23 +48,38 @@ class ClearAlertsButton(object):
 
 
 class MuteAlertsButton(object):
+
+    PATH_TO_NO_SOUND = os.path.join(RESOURCES_DIRECTORY,
+                                 "baseline_volume_off_white_24dp.png")
+
+    PATH_TO_SOUND = os.path.join(RESOURCES_DIRECTORY,
+                                 "baseline_volume_up_white_24dp.png")
     def __init__(self, parent, events):
         self.parent = parent
         self.root = parent.element
         self.events = events
 
-        self.button = Button(master=self.root,
+        self.muted = False
+        self.button = ImageButton(master=self.root,
                              command=self.on_click,
                              font=("Roboto", 10),
-                             text="Mute",
                              relief="flat",
+                             image_path=self.PATH_TO_SOUND,
                              bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
                              fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
                              activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
                              activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,)
 
+    def toggle(self):
+        self.muted = not self.muted
+        if self.muted:
+            self.button.set_image(self.PATH_TO_NO_SOUND)
+
+        else:
+            self.button.set_image(self.PATH_TO_SOUND)
+
     def on_click(self):
-        print("Not Implemented Yet")
+        self.toggle()
 
     def render(self):
         self.button.place(relx=0, rely=0.27, relwidth=0.8, relheight=0.2)
