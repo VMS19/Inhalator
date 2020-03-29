@@ -1,4 +1,5 @@
 # Tkinter stuff
+import os
 import platform
 
 if platform.python_version() < '3':
@@ -33,6 +34,11 @@ class Application(object):
         self.root.title("Inhalator")
         self.root.geometry('800x480')
         self.root.attributes("-fullscreen", True)
+
+        if os.uname()[1] == 'raspberrypi':
+            # on production we don't want to see the ugly cursor
+            self.root.config(cursor="none")
+
         self.master_frame = MasterFrame(self.root, watchdog=watchdog,
                                         measurements=measurements,
                                         events=events,
