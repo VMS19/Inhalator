@@ -43,8 +43,9 @@ class Sampler(threading.Thread):
         logging.debug("Current Intake volume: %s" % self._current_intake_volume)
 
         if self._config.volume_threshold.max != 'off' and \
-                self._current_intake_volume >\
-           self._config.volume_threshold.max:
+                self._current_intake_volume > \
+                self._config.volume_threshold.max:
+            log.error('Flow high value %s' % self._current_intake_volume)
             self.breathing_alert = AlertCodes.BREATHING_VOLUME_HIGH
 
         if pressure <= self._config.breathing_threshold:
@@ -56,10 +57,9 @@ class Sampler(threading.Thread):
     def _handle_intake_finished(self, flow, pressure):
         """We are not giving patient air anymore."""
         if self._config.volume_threshold.min != "off" and \
-                self._current_intake_volume <\
-           self._config.volume_threshold.min and \
+                self._current_intake_volume < \
+                self._config.volume_threshold.min and \
                 self._has_crossed_first_cycle:
-
             self.breathing_alert = AlertCodes.BREATHING_VOLUME_LOW
 
         self._measurements.set_intake_peaks(self._intake_max_pressure,
@@ -91,18 +91,20 @@ class Sampler(threading.Thread):
                 pressure_value_cmh2o > self._config.pressure_threshold.max:
             # Above healthy lungs pressure
             self.pressure_alert = AlertCodes.PRESSURE_HIGH
+            log.error('Pressure high value %s' % pressure_value_cmh2o)
 
         if self._config.pressure_threshold.min != "off" and \
                 pressure_value_cmh2o < self._config.pressure_threshold.min:
             # Below healthy lungs pressure
             self.pressure_alert = AlertCodes.PRESSURE_LOW
+            log.error('Pressure low value %s' % pressure_value_cmh2o)
 
         logging.debug("Breathed: %s" % self._current_intake_volume)
         logging.debug("Flow: %s" % flow_value)
         logging.debug("Pressure: %s" % pressure_value_cmh2o)
 
-        if pressure_value_cmh2o <= self._config.breathing_threshold and\
-           self._is_during_intake:
+        if pressure_value_cmh2o <= self._config.breathing_threshold and \
+                self._is_during_intake:
             logging.debug("-----------is_during_intake=False----------")
             self._handle_intake_finished(flow=flow_value,
                                          pressure=pressure_value_cmh2o)
@@ -110,7 +112,7 @@ class Sampler(threading.Thread):
 
         if pressure_value_cmh2o > self._config.breathing_threshold:
             logging.debug("-----------is_during_intake=True-----------")
-            self._handle_intake(flow=flow_value, pressure= pressure_value_cmh2o)
+            self._handle_intake(flow=flow_value, pressure=pressure_value_cmh2o)
 
             if not self._is_during_intake:
                 # Beginning of intake
@@ -124,6 +126,6 @@ class Sampler(threading.Thread):
         self._measurements.set_flow_value(flow_value)
 
         alert = Alert(self.breathing_alert | self.pressure_alert)
-        if alert != AlertCodes.OK and\
-           self._events.alerts_queue.last_alert != alert:
-                self._events.alerts_queue.enqueue_alert(alert)
+        if alert != AlertCodes.OK and \
+                self._events.alerts_queue.last_alert != alert:
+            self._events.alerts_queue.enqueue_alert(alert)
