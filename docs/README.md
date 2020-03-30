@@ -48,12 +48,12 @@ Denote by Yi the fucntion of Xi, notice that Yi is a DOUBLE variable;
  
  #### CONSTANTS 
  
- VREF = 2.5 ;
- BIT_ACCURACY = 2**14;
- R23 = 24.3;
- R24 = 348;
- R29 = 348 ;
- BATT_RDIV = R23/(R23+R29+R24)
+ VREF = 2.5\
+ BIT_ACCURACY = 2**14\
+ R23 = 24.3\
+ R24 = 348\
+ R29 = 348\
+ BATT_RDIV = R23/(R23+R29+R24)\
  CONV_COEFF=VREF/ BIT_ACCURACY
  
  #### CALCULATION
