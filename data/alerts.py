@@ -1,7 +1,11 @@
+import time
+import datetime
+from enum import IntEnum
 from queue import Queue
+from functools import lru_cache
 
 
-class AlertCodes(object):
+class AlertCodes(IntEnum):
     OK = 0
     PRESSURE_LOW = 1 << 0
     PRESSURE_HIGH = 1 << 1
@@ -11,14 +15,38 @@ class AlertCodes(object):
     PEEP_TOO_LOW = 1 << 5
     NO_BREATH = 1 << 6
 
+    @classmethod
+    def is_valid(cls, alert_code):
+        return alert_code in map(int, list(cls))
 
 class Alert(object):
-    def __init__(self, alert_code, additional_info=None):
+    error_dict = {
+        AlertCodes.PRESSURE_LOW: "Low Pressure",
+        AlertCodes.PRESSURE_HIGH: "High Pressure",
+        AlertCodes.VOLUME_LOW: "Low Volume",
+        AlertCodes.VOLUME_HIGH: "High Volume",
+        AlertCodes.NO_BREATH: "No Breathing",
+        AlertCodes.PEEP_TOO_HIGH: "High PEEP",
+        AlertCodes.PEEP_TOO_LOW: "Low PEEP",
+    }
+
+    def __init__(self, alert_code, timestamp=None):
         self.code = alert_code
-        self.value = additional_info
+
+        if timestamp is None:
+            self.timestamp = time.time()
+
+        else:
+            self.timestamp = timestamp
 
     def __eq__(self, other):
         return self.code == other
+
+    def __str__(self):
+        return self.error_dict.get(self.code, "Multiple Alerts")  # TODO: Elaborate
+
+    def date(self):
+        return datetime.datetime.fromtimestamp(self.timestamp).strftime("%A %X")
 
 
 class AlertsQueue(object):
@@ -33,6 +61,9 @@ class AlertsQueue(object):
         return self.queue.qsize()
 
     def enqueue_alert(self, alert):
+        if not isinstance(alert, Alert) and AlertCodes.is_valid(alert):
+            alert = Alert(alert)
+
         if self.queue.qsize() == self.MAXIMUM_ALERTS_AMOUNT:
             self.dequeue_alert()
 

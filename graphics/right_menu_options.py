@@ -3,6 +3,8 @@ import os
 import platform
 
 import time
+
+from graphics.alerts_history_screen import AlertsHistoryScreen
 from graphics.configure_alerts_screen import ConfigureAlarmsScreen
 from graphics.imagebutton import ImageButton
 
@@ -110,31 +112,69 @@ class LockThresholdsButton(object):
         print("Not Implemented Yet")
 
     def render(self):
-        self.button.place(relx=0, rely=0.53, relwidth=0.8, relheight=0.2)
+        # self.button.place(relx=0, rely=0.53, relwidth=0.8, relheight=0.2)
+        pass
 
     def update(self):
         pass
 
 
 class OpenConfigureAlertsScreenButton(object):
+    PATH_TO_SETTINGS = os.path.join(RESOURCES_DIRECTORY,
+                                    "baseline_settings_white_24dp.png")
+
     def __init__(self, parent):
         self.parent = parent
         self.root = parent.element
 
-        self.button = Button(master=self.root,
-                             text="Alerts",
-                             command=self.on_click,
-                             font=("Roboto", 10),
-                             relief="flat",
-                             bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
-                             fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
-                             activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
-                             activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,
+        self.button = ImageButton(
+            master=self.root,
+            image_path=self.PATH_TO_SETTINGS,
+            command=self.on_click,
+            font=("Roboto", 10),
+            relief="flat",
+            bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
+            fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
+            activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
+            activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,
         )
 
     def on_click(self):
         master_frame = self.parent.parent.element
         screen = ConfigureAlarmsScreen(master_frame)
+        screen.show()
+
+    def render(self):
+        self.button.place(relx=0, rely=0.53, relwidth=0.8, relheight=0.2)
+
+    def update(self):
+        pass
+
+
+class OpenAlertsHistoryScreenButton(object):
+    PATH_TO_HISTORY = os.path.join(RESOURCES_DIRECTORY,
+                                   "baseline_history_white_24dp.png")
+
+    def __init__(self, parent, events):
+        self.parent = parent
+        self.root = parent.element
+        self.events = events
+
+        self.button = ImageButton(
+            master=self.root,
+            image_path=self.PATH_TO_HISTORY,
+            command=self.on_click,
+            font=("Roboto", 10),
+            relief="flat",
+            bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
+            fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
+            activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
+            activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,
+        )
+
+    def on_click(self):
+        master_frame = self.parent.parent.element
+        screen = AlertsHistoryScreen(master_frame, events=self.events)
         screen.show()
 
     def render(self):
