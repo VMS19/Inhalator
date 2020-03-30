@@ -45,7 +45,7 @@ class Sampler(threading.Thread):
         if self._config.volume_threshold.max != 'off' and \
                 self._current_intake_volume > \
                 self._config.volume_threshold.max:
-            log.error('Flow high value %s' % self._current_intake_volume)
+
             self.breathing_alert = AlertCodes.BREATHING_VOLUME_HIGH
 
         if pressure <= self._config.breathing_threshold:
@@ -91,13 +91,13 @@ class Sampler(threading.Thread):
                 pressure_value_cmh2o > self._config.pressure_threshold.max:
             # Above healthy lungs pressure
             self.pressure_alert = AlertCodes.PRESSURE_HIGH
-            log.error('Pressure high value %s' % pressure_value_cmh2o)
+            log.error('Pressure high: %s' % pressure_value_cmh2o)
 
         if self._config.pressure_threshold.min != "off" and \
                 pressure_value_cmh2o < self._config.pressure_threshold.min:
             # Below healthy lungs pressure
             self.pressure_alert = AlertCodes.PRESSURE_LOW
-            log.error('Pressure low value %s' % pressure_value_cmh2o)
+            log.error('Pressure low: %s' % pressure_value_cmh2o)
 
         logging.debug("Breathed: %s" % self._current_intake_volume)
         logging.debug("Flow: %s" % flow_value)
