@@ -9,6 +9,7 @@ class AlertCodes(object):
     VOLUME_HIGH = 1 << 3
     PEEP_TOO_HIGH = 1 << 4
     PEEP_TOO_LOW = 1 << 5
+    NO_BREATH = 1 << 6
 
 
 class Alert(object):

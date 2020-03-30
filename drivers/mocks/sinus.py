@@ -11,6 +11,12 @@ def sinus(sample_rate, amplitude, freq):
     return signal
 
 
+def zero(sample_rate, amplitude, freq):
+    full_cycle = 1 / freq
+    num_samples = int(sample_rate * full_cycle)
+    return [0] * num_samples
+
+
 def truncate(signal, lower_limit, upper_limit):
     return [min(upper_limit, max(lower_limit, s)) for s in signal]
 

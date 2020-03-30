@@ -203,6 +203,10 @@ class InhaleStateHandler(StateHandler):
     def __init__(self, config, measurements, events):
         super(InhaleStateHandler, self).__init__(config, measurements, events)
         self.breathes_rate_meter = RateMeter(time_span_seconds=60, max_samples=4)
+        self.last_breath_timestamp = time.time()
+
+    def enter(self, timestamp):
+        self.last_breath_timestamp = timestamp
 
     def exit(self, timestamp):
         self._measurements.bpm = self.breathes_rate_meter.beat(timestamp)
@@ -266,14 +270,14 @@ class Sampler(threading.Thread):
         self.peep_avg_calculator = RunningAvg(max_samples=1000)
 
         self.accumulator = VolumeAccumulator()
-        inhale_handler = InhaleStateHandler(
+        self.inhale_handler = InhaleStateHandler(
             self._config, self._measurements, self._events)
         hold_handler = HoldStateHandler(
             self._config, self._measurements, self._events)
         peep_handler = PEEPHandler(
             self._config, self._measurements, self._events, self.accumulator)
         self.vsm = VentilationStateMachine({
-            VentilationState.Inhale: inhale_handler,
+            VentilationState.Inhale: self.inhale_handler,
             VentilationState.Hold: hold_handler,
             VentilationState.PEEP: peep_handler})
 
@@ -283,11 +287,17 @@ class Sampler(threading.Thread):
             time.sleep(self.SAMPLING_INTERVAL)
 
     def sampling_iteration(self):
+        ts = time.time()
+
+        seconds_from_last_breath = ts - self.inhale_handler.last_breath_timestamp
+        if seconds_from_last_breath >= 12:
+            self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH)
+
         # Read from sensors
         flow_slm = self._flow_sensor.read()
         pressure_cmh2o = self._pressure_sensor.read()
         o2_saturation_percentage = self._oxygen_a2d.read()
-        ts = time.time()
+
         self.vsm.update(pressure_cmh2o, flow_slm, timestamp=ts)
         self.accumulator.accumulate(ts, flow_slm)
         self._measurements.set_pressure_value(pressure_cmh2o)
