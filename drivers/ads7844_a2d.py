@@ -79,4 +79,4 @@ class Ads7844A2D(object):
         for channel in self.SAMPLE_CHANNELS:
             sample_res.append(self._sample_a2d(channel, input_mode,
                               power_down_mode))
-        return sample_res
+        return sample_res[0]
