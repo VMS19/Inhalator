@@ -1,6 +1,34 @@
 # Software Configuration
 
-This guide will document the requierments on the software.
+1. This guide will document the requierments on the software.
+2. The software accesses the reading of 3 sensors, oxygen-sensor (via a2d) , battery-level(via a2d)  and flow-sensor (directly).
+3. The software handles and RTC which will raise a WD alarm which causes a software reset
+4. The software controls LEDs and turn them on in case of an alaram
+
+The software accesses several data buses as described later.
+The software-hardware interfaces is described later. 
+
+## LOGIC 
+
+### SENSOR READ LOGIC 
+Read A2D CH0 every 1 seconds
+Read A2D CH1 every 15 minutes
+Read Flow-Sensor every 1 seconds
+
+### WD LOGIC 
+Set WD alarm to 30 seconds, reset the alarm before the WD rises. 
+If WD signal is raised the reset the software
+
+
+### ALARM RAISING LOGIC 
+1. If last the stadnard-deviation of the last 30 readings of A2D CH0 
+ is smaller than 5 % of the average value turn LED ON using GPIO 25
+
+
+2. If last the stadnard-deviation of the last 30 readings of Flow-Sensor 
+ is smaller than 5 % of the average value turn LED ON using GPIO 25
+
+
 
 ## HARDWARE 
 
@@ -26,10 +54,20 @@ This guide will document the requierments on the software.
 
 ![Alt text](./rasp-3b+-pinout.png?raw=true "Title")
 
-## I2C Bus
-Th
+### DATA BUSES
 
-## A2D Logic
+#### I2C BUS
+The I2C bus is populated with the following:
+1. Raspberry-PI3b+ - master
+2. Air-Flow sensor (A.K.A Flow) - 
+3. RTC  [here](/RTCmanual.pdf)
+
+#### SPI BUS
+The SPI bus is populated with the following:
+1. Raspberry-PI3b+ - master
+2. A2D
+
+### A2D Logic
 The A2D has 8 analog inputs.
 The populated inputs are (the rest of the inputs are unsued)
 1. Channel 0 (CH0) - oxygen sensor amplified output
@@ -39,14 +77,14 @@ The populated inputs are (the rest of the inputs are unsued)
 5. Channel 4 (CH4) - TBD 
 6. Channel 5 (CH5) - TBD 
 
-### Conversion required in software
+#### Conversion required in software
 Due to hardware constraint the A2D measures a certain value,
 but the software needs to output to the screen a function of this value
 
 Denote by Xi the A2D value on channel i ;
 Denote by Yi the fucntion of Xi, notice that Yi is a DOUBLE variable;
  
- #### CONSTANTS 
+##### CONSTANTS 
  
  VREF = 2.5\
  BIT_ACCURACY = 2**14\
@@ -58,7 +96,7 @@ Denote by Yi the fucntion of Xi, notice that Yi is a DOUBLE variable;
  OX_GAIN=100\
  OX_OFFSET = 1.5\
  
- #### CALCULATION
+##### CALCULATION
  Y1 =  (CONV_COEFF * X1-OX_OFFSET)\OX_GAIN
  Y2 = CONV_COEFF * X2 / BATT_RDIV\
  Y3 =  CONV_COEFF * X3\
