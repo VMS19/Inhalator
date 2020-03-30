@@ -6,9 +6,9 @@ This guide will document the requierments on the software.
 
 ### PINOUT 
 
-| Attempt | #1  | #2  |
-| ------- | --- | --- |
-| Seconds | 301 | 283 |
+| Pin Name | Pin Number  | Funcitonality  |
+| 1 | ----------- | -------------- |
+| -------- | ----------- | -------------- |
 
 ### NEXT SECd
 
