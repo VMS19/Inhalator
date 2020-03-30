@@ -1,6 +1,7 @@
 import re
 import csv
 import sys
+from itertools import zip_longest
 
 
 def log_to_csv(log_file_path, sensor):

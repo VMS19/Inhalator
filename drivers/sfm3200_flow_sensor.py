@@ -122,7 +122,6 @@ class Sfm3200(object):
 
         # Normalize flow to slm units
         flow = float(raw_value - self.OFFSET_FLOW) / self.SCALE_FACTOR_FLOW
-        log.debug("Flow sensor value: {} slm. CRC correct".format(flow))
         return flow
 
     def _crc8(self, data):
