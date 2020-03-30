@@ -140,7 +140,6 @@ class CenterPane(object):
         for graph in self.graphs:
             graph.update()
 
-        #Todo: Move outside of gui thread. arm_wd causes 50ms sleep!
         # arm wd only if both queues had sampling values
         if had_flow_change and had_pressure_change:
             self.arm_wd_event.set()

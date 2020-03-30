@@ -112,7 +112,7 @@ def main():
     app.render()
     sampler.start()
 
-    watchdog_task = WdTask(measurements, wd, arm_wd_event)
+    watchdog_task = WdTask(wd, arm_wd_event)
     watchdog_task.start()
 
     while app.should_run:
