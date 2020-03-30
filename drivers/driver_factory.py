@@ -62,11 +62,14 @@ class DriverFactory(object):
         driver = method()
 
         def wrap_read_method(read_method):
-            if STUCK:
-                while True:
-                    pass
+            def new_read(*args, **kwargs):
+                if STUCK:
+                    while True:
+                        pass
 
-            return read_method()
+                return read_method()
+
+            return new_read
 
         driver.read = wrap_read_method(driver.read)
 
