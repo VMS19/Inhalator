@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 
 class ConfigurationState(Enum):
-    STANDARD = 0
+    VALID_CONFIG = 0
     CONFIG_CORRUPTED = 1
     DEFAULT_CORRUPTED = 2
 
@@ -58,7 +58,7 @@ class Configurations(object):
     def configuration_state(cls):
         try:
             cls._parse_config_file(cls.CONFIG_FILE)
-            return ConfigurationState.STANDARD
+            return ConfigurationState.VALID_CONFIG
 
         except ConfigurationFileError:
             try:
