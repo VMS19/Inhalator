@@ -165,7 +165,7 @@ class StuckButton(object):
         drivers.abp_pressure_sensor.STUCK = True
 
     def render(self):
-        self.button.place(relx=0, rely=0.79, relwidth=0.8, relheight=0.2)
+        self.button.place(relx=0, rely=0.99, relwidth=0.8, relheight=0.2)
 
     def update(self):
         pass
