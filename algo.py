@@ -243,7 +243,8 @@ class PEEPHandler(StateHandler):
                 self.accumulator.air_volume_liter <
                 self._config.volume_threshold.min):
             self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW)
-            self.log.debug('volume low value: %s' % self.accumulator.air_volume_liter)
+            self.log.debug('volume low value: %s, low threshold: %s' % self.accumulator.air_volume_liter,
+                           self._config.volume_threshold.min)
 
         volume_ml = self.accumulator.air_volume_liter * 1000
         self.log.info("Volume: %s", volume_ml)
@@ -297,7 +298,7 @@ class Sampler(object):
 
         self.log.debug('flow sensor value: %s' % flow_slm)
         self.log.debug('pressure sensor value: %s' % pressure_cmh2o)
-        self.log.debug('saturation sensor value: %s' % o2_saturation_percentage)
+        self.log.debug('oxygen sensor value: %s' % o2_saturation_percentage)
 
         self.vsm.update(pressure_cmh2o, flow_slm, timestamp=ts)
         self.accumulator.accumulate(ts, flow_slm)
@@ -307,19 +308,22 @@ class Sampler(object):
                 pressure_cmh2o > self._config.pressure_threshold.max:
             # Above healthy lungs pressure
             self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_HIGH)
-            self.log.debug('pressure high value: %s' % pressure_cmh2o)
+            self.log.debug('pressure high value: %s, high threshold: %s' % pressure_cmh2o,
+                           self._config.pressure_threshold.max)
 
         if self._config.pressure_threshold.min != "off" and \
                 pressure_cmh2o < self._config.pressure_threshold.min:
             # Below healthy lungs pressure
             self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW)
-            self.log.debug('pressure low value: %s' % pressure_cmh2o)
+            self.log.debug('pressure low value: %s, low threshold: %s' % pressure_cmh2o,
+                           self._config.pressure_threshold.min)
 
         if (self._config.volume_threshold.max != 'off' and
                 self.accumulator.air_volume_liter >
                 self._config.volume_threshold.max):
             self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH)
-            self.log.debug('volume high value: %s' % self.accumulator.air_volume_liter)
+            self.log.debug('volume high value: %s, high threshold: %s' % self.accumulator.air_volume_liter,
+                           self._config.volume_threshold.max)
 
         self._measurements.set_flow_value(flow_slm)
         self._measurements.set_saturation_percentage(o2_saturation_percentage)
