@@ -75,7 +75,7 @@ class AirPressureGraph(object):
                                     len(self.measurements.x_axis),
                                     color=MAX_TRHLD_COLOR,
                                     animated=True,
-                                    linewidth=4)
+                                    linewidth=3)
 
         self.pressure_min_threshold_graph, = \
             self.pressure_axis.plot(self.measurements.x_axis,
@@ -83,7 +83,7 @@ class AirPressureGraph(object):
                                     len(self.measurements.x_axis),
                                     color=MIN_TRHLD_COLOR,
                                     animated=True,
-                                    linewidth=4)
+                                    linewidth=3)
 
     def render(self):
         self.pressure_canvas.draw()
