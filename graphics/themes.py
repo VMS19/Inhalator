@@ -84,6 +84,6 @@ class DarkTheme(Theme):
     ALERT_BAR_OK_TXT = "#ffffff"
 
     RIGHT_SIDE_BUTTON_BG = "#3c3149"
-    RIGHT_SIDE_BUTTON_FG = "#d7b1f9"
+    RIGHT_SIDE_BUTTON_FG = "#fdfffc"
     RIGHT_SIDE_BUTTON_BG_ACTIVE = "#d7b1f9"
     RIGHT_SIDE_BUTTON_FG_ACTIVE = "#3c3149"
