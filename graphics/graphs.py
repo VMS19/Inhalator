@@ -71,13 +71,13 @@ class AirPressureGraph(object):
         # Thresholds
         self.pressure_max_threshold_graph, = \
             self.pressure_axis.plot(self.measurements.x_axis,
-                                    [self.config.pressure_threshold.max] *
+                                    [self.config.pressure_range.max] *
                                     len(self.measurements.x_axis),
                                     color=MAX_TRHLD_COLOR, linestyle=":", animated=True)
 
         self.pressure_min_threshold_graph, = \
             self.pressure_axis.plot(self.measurements.x_axis,
-                                    [self.config.pressure_threshold.min] *
+                                    [self.config.pressure_range.min] *
                                     len(self.measurements.x_axis),
                                     color=MIN_TRHLD_COLOR, linestyle=":", animated=True)
 
@@ -94,9 +94,9 @@ class AirPressureGraph(object):
 
         self.pressure_graph.set_ydata(self.pressure_display_values)
         # Update threshold lines
-        self.pressure_min_threshold_graph.set_ydata([self.config.pressure_threshold.min] *
+        self.pressure_min_threshold_graph.set_ydata([self.config.pressure_range.min] *
                                                     len(self.measurements.x_axis))
-        self.pressure_max_threshold_graph.set_ydata([self.config.pressure_threshold.max] *
+        self.pressure_max_threshold_graph.set_ydata([self.config.pressure_range.max] *
                                                     len(self.measurements.x_axis))
 
         self.pressure_axis.draw_artist(self.pressure_graph)
@@ -150,13 +150,13 @@ class FlowGraph(object):
 
         self.flow_max_threshold_graph, = \
             self.flow_axis.plot(self.measurements.x_axis,
-                                [self.config.flow_threshold.max] *
+                                [self.config.flow_range.max] *
                                 len(self.measurements.x_axis),
                                 color=MAX_TRHLD_COLOR, linestyle=":", animated=True)
 
         self.flow_min_threshold_graph, = \
             self.flow_axis.plot(self.measurements.x_axis,
-                                [self.config.flow_threshold.min] *
+                                [self.config.flow_range.min] *
                                 len(self.measurements.x_axis),
                                 color=MIN_TRHLD_COLOR, linestyle=":", animated=True)
 
@@ -179,9 +179,9 @@ class FlowGraph(object):
         self.flow_figure.canvas.flush_events()
 
         # Update threshold lines
-        self.flow_min_threshold_graph.set_ydata([self.config.flow_threshold.min] *
+        self.flow_min_threshold_graph.set_ydata([self.config.flow_range.min] *
                                                 len(self.measurements.x_axis))
-        self.flow_max_threshold_graph.set_ydata([self.config.flow_threshold.max] *
+        self.flow_max_threshold_graph.set_ydata([self.config.flow_range.max] *
                                                 len(self.measurements.x_axis))
 
     @property

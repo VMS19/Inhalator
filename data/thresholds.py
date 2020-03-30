@@ -1,28 +1,44 @@
-class Threshold(object):  # TODO: Add option to turn off
+class Range(object):
     NAME = NotImplemented
     UNIT = NotImplemented
     MINIMAL_VALUE = 0
-    OFF = "off"
 
-    def __init__(self, min=OFF, max=OFF, step=0.5):
+    def __init__(self, min=None, max=None, step=0.5):
         self.min = min
         self.max = max
         self.step = step
 
     def __setattr__(self, key, value):
         # We want to limit the precision of thresholds to 3 after the dot
-        if key in ("min", "max") and value != self.OFF:
+        if key in ("min", "max") and value is not None:
             self.__dict__[key] = float("{:.3f}".format(value))
-
         else:
             self.__dict__[key] = value
 
     def copy(self):
         return self.__class__(self.min, self.max)
 
-    def load_from(self, threshold):
-        self.min = threshold.min
-        self.max = threshold.max
+    def below(self, value):
+        """
+        Test is a value is below the range.
+        :param value: The value to test.
+        :return: True is a minimum threshold is set, and the tested value is
+            below that. False otherwise.
+        """
+        return self.min is not None and value < self.min
+
+    def over(self, value):
+        """
+        Test is a value is over the range.
+        :param value: The value to test.
+        :return: True is a maximum threshold is set, and the tested value is
+            over that. False otherwise.
+        """
+        return self.max is not None and value > self.max
+
+    def load_from(self, other):
+        self.min = other.min
+        self.max = other.max
 
     def increase_min(self):
         self.min += self.step
@@ -37,21 +53,21 @@ class Threshold(object):  # TODO: Add option to turn off
         self.max -= self.step
 
 
-
-class FlowThreshold(Threshold):
+class FlowRange(Range):
     NAME = "Flow"
     UNIT = "L/min"
 
 
-class VolumeThreshold(Threshold):
+class VolumeRange(Range):
     NAME = "Volume"
     UNIT = "mL"
 
 
-class PressureThreshold(Threshold):
+class PressureRange(Range):
     NAME = "Pressure"
     UNIT = "cmH2O"
 
-class RespiratoryRateThreshold(Threshold):
-    NAME = "Resp.\nrate"
+
+class RespiratoryRateRange(Range):
+    NAME = "Resp.\nrate"  # TODO: This is fucked up. It should be dealt in GUI.
     UNIT = "per min"
