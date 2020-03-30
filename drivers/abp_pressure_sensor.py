@@ -8,6 +8,7 @@ log = logging.getLogger(__name__)
 
 class AbpPressureSensor(object):
     """Driver class for ABPMAND001PG2A3 Flow sensor."""
+    I2C_BUS = 1
     I2C_ADDRESS = 0x28
     MEASURE_BYTE_COUNT = 0x2
     MAX_RANGE_PRESSURE = 0x1  # 1 psi
@@ -18,7 +19,7 @@ class AbpPressureSensor(object):
         float(MAX_OUT_PRESSURE - MIN_OUT_PRESSURE)
     PSI_CMH2O_RATIO = 70.307
 
-    def __init__(self, i2c_bus):
+    def __init__(self):
         try:
             self._pig = pigpio.pi()
         except pigpio.error as e:
