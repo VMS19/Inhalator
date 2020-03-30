@@ -7,7 +7,7 @@
     3  Air Flow (I2C)
     4. Pressure (I2C)
 3. The software handles and RTC which will raise a WD alarm which causes a software reset
-4. The software controls LEDs and turn them on in case of an alaram
+4. The software controls LEDs and turn them on/off reflecting the alerts in the system 
 
 The software accesses several data buses as described later.
 The software-hardware interfaces is described later. 
@@ -113,4 +113,3 @@ Denote by Yi the fucntion of Xi, notice that Yi is a DOUBLE variable;
 ## TBD -
 PSS 24 
 duplication of INT1_RTC~ 36 , 40
-
