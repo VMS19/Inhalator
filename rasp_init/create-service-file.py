@@ -15,7 +15,7 @@ ExecStart={python3_executable} {main_path}
 WorkingDirectory={main_dir}
 Environment=DISPLAY={display}
 Environment=XAUTHORITY={xauthority}
-Restart=on-failure
+Restart=always
 Type=simple
 
 [Install]

@@ -2,6 +2,7 @@
 import os
 import platform
 
+import time
 from graphics.configure_alerts_screen import ConfigureAlarmsScreen
 from graphics.imagebutton import ImageButton
 
@@ -12,6 +13,9 @@ else:
     from tkinter import *
 
 from graphics.themes import Theme
+
+THIS_DIRECTORY = os.path.dirname(__file__)
+RESOURCES_DIRECTORY = os.path.join(os.path.dirname(THIS_DIRECTORY), "resources")
 
 
 THIS_DIRECTORY = os.path.dirname(__file__)
@@ -49,43 +53,43 @@ class ClearAlertsButton(object):
 
 class MuteAlertsButton(object):
 
-    PATH_TO_NO_SOUND = os.path.join(RESOURCES_DIRECTORY,
+    PATH_TO_MUTED = os.path.join(RESOURCES_DIRECTORY,
                                  "baseline_volume_off_white_24dp.png")
+    PATH_TO_UNMUTED = os.path.join(RESOURCES_DIRECTORY,
+                                   "baseline_volume_up_white_24dp.png")
 
-    PATH_TO_SOUND = os.path.join(RESOURCES_DIRECTORY,
-                                 "baseline_volume_up_white_24dp.png")
     def __init__(self, parent, events):
         self.parent = parent
         self.root = parent.element
         self.events = events
-
         self.muted = False
+
         self.button = ImageButton(master=self.root,
-                             command=self.on_click,
-                             font=("Roboto", 10),
-                             relief="flat",
-                             image_path=self.PATH_TO_SOUND,
-                             bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
-                             fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
-                             activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
-                             activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,)
-
-    def toggle(self):
-        self.muted = not self.muted
-        if self.muted:
-            self.button.set_image(self.PATH_TO_NO_SOUND)
-
-        else:
-            self.button.set_image(self.PATH_TO_SOUND)
+                                  command=self.on_click,
+                                  font=("Roboto", 10),
+                                  image_path=self.PATH_TO_UNMUTED,
+                                  relief="flat",
+                                  bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
+                                  fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
+                                  activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
+                                  activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,)
 
     def on_click(self):
-        self.toggle()
+        self.events.mute_alerts = not self.events.mute_alerts
+        if self.events.mute_alerts:
+            self.events.mute_time = time.time()
+
+        self.update()
 
     def render(self):
         self.button.place(relx=0, rely=0.27, relwidth=0.8, relheight=0.2)
 
     def update(self):
-        pass
+        if self.events.mute_alerts:
+            self.button.set_image(self.PATH_TO_MUTED)
+
+        else:
+            self.button.set_image(self.PATH_TO_UNMUTED)
 
 
 class LockThresholdsButton(object):

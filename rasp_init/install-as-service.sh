@@ -16,5 +16,17 @@ echo "enabling the service..."
 sudo systemctl enable /usr/lib/systemd/user/inhalator.service
 echo "done!"
 
+echo "enabling pigpiod"
+sudo systemctl enable pigpiod
+echo "done!"
+
+echo "removing annoying ssh prompt"
+sudo rm -f /etc/profile.d/sshpwd.sh /etc/profile.d/sshpasswd.sh /etc/xdg/lxsession/LXDE-pi/sshpwd.sh
+echo "done!"
+
+echo "reloading daemons (notifying systemd of a change)"
+sudo systemctl daemon-reload
+echo "done!"
+
 sudo echo "starting the service"
 systemctl start inhalator
