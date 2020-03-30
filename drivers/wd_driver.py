@@ -1,4 +1,5 @@
 import time
+from threading import Timer
 
 import RPi.GPIO as GPIO
 
@@ -17,8 +18,15 @@ class WdDriver(object):
         # Set FAULT leg as high
         GPIO.setup(self.FAULT_GPIO, GPIO.OUT)
         GPIO.output(self.FAULT_GPIO, GPIO.HIGH)
+        self.refresh_delay_timer = Timer(self.WD_REFRESH_SIGNAL_SEC,
+                                         self._pull_wd_down)
+
+    def _pull_wd_up(self):
+        GPIO.output(self.WD_GPIO, GPIO.HIGH)
+
+    def _pull_wd_down(self):
+        GPIO.output(self.WD_GPIO, GPIO.LOW)
 
     def arm_wd(self):
-        GPIO.output(self.WD_GPIO, GPIO.HIGH)
-        time.sleep(self.WD_REFRESH_SIGNAL_SEC)
-        GPIO.output(self.WD_GPIO, GPIO.LOW)
+        self._pull_wd_up()
+        self.refresh_delay_timer.start()
