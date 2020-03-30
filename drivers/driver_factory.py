@@ -70,8 +70,8 @@ class DriverFactory(object):
                 return read_method()
 
             return new_read
-
-        driver.read = wrap_read_method(driver.read)
+        if hasattr(driver, 'read'):
+            driver.read = wrap_read_method(driver.read)
 
         self.drivers_cache[key] = driver
         return driver
