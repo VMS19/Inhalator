@@ -10,5 +10,5 @@ This guide will document the requierments on the software.
 | ------- | --- | --- |
 | Seconds | 301 | 283 |
 
-### NEXT SEC
+### NEXT SECd
 
