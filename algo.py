@@ -4,6 +4,7 @@ import threading
 from enum import Enum
 from statistics import mean
 from collections import deque
+
 from scipy.stats import linregress
 
 from data.alerts import AlertCodes
@@ -306,16 +307,19 @@ class Sampler(threading.Thread):
                 pressure_cmh2o > self._config.pressure_threshold.max:
             # Above healthy lungs pressure
             self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_HIGH)
+            self.log.warning('Pressure high %s' % pressure_cmh2o)
 
         if self._config.pressure_threshold.min != "off" and \
                 pressure_cmh2o < self._config.pressure_threshold.min:
             # Below healthy lungs pressure
             self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW)
+            self.log.warning('Pressure low %s' % pressure_cmh2o)
 
         if (self._config.volume_threshold.max != 'off' and
                 self.accumulator.air_volume_liter >
                 self._config.volume_threshold.max):
             self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH)
+            self.log.warning('volume high')
 
         self._measurements.set_flow_value(flow_slm)
         self._measurements.set_saturation_percentage(o2_saturation_percentage)
