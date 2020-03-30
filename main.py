@@ -114,7 +114,6 @@ def main():
     while app.should_run:
         try:
             app.gui_update()
-            sleep(0.02)
         except KeyboardInterrupt:
             break
 
