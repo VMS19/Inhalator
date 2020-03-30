@@ -17,22 +17,54 @@ This guide will document the requierments on the software.
 | GPIO  11 CE1 SPI (26) | OX_CS | a2d cs input from raspb|	
 | GPIO 22 GPCLK2 (31) | busy | a2d busy output to raspb|
 |GPIO 21 GPCLK2(29)| WD| WD input from raspb| 
-
+|GPIO 23 PWM1 (33) | EN_SPK_RAS | output from raspb to enabel speaker (IO-HIGH=speaker ON)|
+|GPIO 25 (37) | EN_SYSTEM_RAS | output from raspb to enabel system (IO-LOW=RAISE ALARM)|
+|GPIO 24 PCM_FS/PWN1 (35) | "#FLT" | output from raspb to LED  (IO-LOW=LED ON )|
+|GPIO 28 PCM_DIN (38) | GPIO | output from raspb to LED  (IO-LOW=LED ON )|
+|GPIO 27 (36) | INT1_RTC~| output from RTC to raspb input ( IO-LOW = INT ON )|
+|GPIO 29 (40) | INT1_RTC~| output from RTC to raspb input ( IO-LOW = INT ON )|
 ![Alt text](./rasp-3b+-pinout.png?raw=true "Title")
 
-Questions 
+##I2C Bus
+Th
+
+## A2D Logic
+The A2D has 8 analog inputs.
+The populated inputs are (the rest of the inputs are unsued)
+1. Channel 0 (CH0) - oxygen sensor amplified output
+2. Channel 1 (CH1) - backup battery level measurement
+3. Channel 2 (CH2) - TBD 
+4. Channel 3 (CH3) - TBD 
+5. Channel 4 (CH4) - TBD 
+6. Channel 5 (CH5) - TBD 
+
+### Conversion required in software
+Due to hardware constraint the A2D measures a certain value,
+but the software needs to output to the screen a function of this value
+
+ Denote by Xi the A2D value on channel i 
+ Denote by Yi the fucntion of Xi, notice that Yi is a DOUBLE variable
+ 
+ #### CONSTANTS 
+ VREF = 2.5 
+ BIT_ACCURACY = 2**14
+ R23 = 24.3
+ R24 = 348
+ R29 = 348 
+ BATT_RDIV = R23/(R23+R29+R24)
+ CONV_COEFF=VREF/ BIT_ACCURACY
+ 
+ #### CALCULATION
+ Y1 =  CONV_COEFF * X1  
+ Y2 = CONV_COEFF * X2 / BATT_RDIV
+ Y3 =  CONV_COEFF * X3
+ Y4 =  CONV_COEFF * X4
+ Y5 =  CONV_COEFF * X5
+ 
+
+
+TBD -
 PSS 24 
+duplication of INT1_RTC~ 36 , 40
 
-
-----OX_CS 26
-
-WD 29
-----busy 31
-EN_SPK_RAS 33
-#FLT 35
-EN_SYSTEM_RAS 37
-GPIO 38
-
-INT1_RTC~ 36 , 40
-### NEXT SECd
 
