@@ -239,16 +239,16 @@ class PEEPHandler(StateHandler):
 
     def enter(self, timestamp):
         self.log.info("Hold finished. Exhale starts")
-        if (self._config.volume_threshold.min != "off" and
-                self.accumulator.air_volume_liter <
-                self._config.volume_threshold.min):
-            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW)
-
         volume_ml = self.accumulator.air_volume_liter * 1000
-        self.log.info("Volume: %s", volume_ml)
+        self.log.info("Volume: %sml", volume_ml)
         self._measurements.volume = volume_ml
         # reset values of last intake
         self.accumulator.reset()
+
+        if self._config.volume_range.below(volume_ml):
+            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW)
+        elif self._config.volume_range.over(volume_ml):
+            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH)
 
 
 class Sampler(object):
@@ -297,20 +297,12 @@ class Sampler(object):
         self.accumulator.accumulate(ts, flow_slm)
         self._measurements.set_pressure_value(pressure_cmh2o)
 
-        if self._config.pressure_threshold.max != "off" and \
-                pressure_cmh2o > self._config.pressure_threshold.max:
+        if self._config.pressure_range.over(pressure_cmh2o):
             # Above healthy lungs pressure
             self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_HIGH)
-
-        if self._config.pressure_threshold.min != "off" and \
-                pressure_cmh2o < self._config.pressure_threshold.min:
+        elif self._config.pressure_range.below(pressure_cmh2o):
             # Below healthy lungs pressure
             self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW)
-
-        if (self._config.volume_threshold.max != 'off' and
-                self.accumulator.air_volume_liter >
-                self._config.volume_threshold.max):
-            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH)
 
         self._measurements.set_flow_value(flow_slm)
         self._measurements.set_saturation_percentage(o2_saturation_percentage)

@@ -72,7 +72,7 @@ class AirPressureGraph(object):
         # Thresholds
         self.pressure_max_threshold_graph, = \
             self.pressure_axis.plot(self.measurements.x_axis,
-                                    [self.config.pressure_threshold.max] *
+                                    [self.config.pressure_range.max] *
                                     len(self.measurements.x_axis),
                                     color=Theme.active().RED,
                                     animated=True,
@@ -80,7 +80,7 @@ class AirPressureGraph(object):
 
         self.pressure_min_threshold_graph, = \
             self.pressure_axis.plot(self.measurements.x_axis,
-                                    [self.config.pressure_threshold.min] *
+                                    [self.config.pressure_range.min] *
                                     len(self.measurements.x_axis),
                                     color=Theme.active().RED,
                                     animated=True,
@@ -99,9 +99,9 @@ class AirPressureGraph(object):
 
         self.pressure_graph.set_ydata(self.pressure_display_values)
         # Update threshold lines
-        self.pressure_min_threshold_graph.set_ydata([self.config.pressure_threshold.min] *
+        self.pressure_min_threshold_graph.set_ydata([self.config.pressure_range.min] *
                                                     len(self.measurements.x_axis))
-        self.pressure_max_threshold_graph.set_ydata([self.config.pressure_threshold.max] *
+        self.pressure_max_threshold_graph.set_ydata([self.config.pressure_range.max] *
                                                     len(self.measurements.x_axis))
 
         self.pressure_axis.draw_artist(self.pressure_graph)
@@ -155,7 +155,6 @@ class FlowGraph(object):
 
         # Scale y values
         self.flow_graph.axes.set_ylim(self.MIN_Y, self.MAX_Y)
-
 
     def render(self):
         self.flow_canvas.draw()
