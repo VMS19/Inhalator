@@ -14,8 +14,8 @@ def log_to_csv(log_file_path, sensor):
 LOG_FILE_PATH = sys.argv[1]
 CSV_PATH = sys.argv[2]
 
-pressures = log_to_csv(LOG_FILE_PATH, 'pressure')
-flows = log_to_csv(LOG_FILE_PATH, 'flows')
+pressures = log_to_csv(LOG_FILE_PATH, 'Pressure')
+flows = log_to_csv(LOG_FILE_PATH, 'Flow')
 
 with open(CSV_PATH, 'w') as csv_file:
     writer = csv.writer(csv_file)
