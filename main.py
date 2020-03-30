@@ -100,25 +100,16 @@ def main():
     watchdog = drivers.get_driver("wd")
     oxygen_a2d = drivers.get_driver("oxygen_a2d")
 
-    app = Application(measurements=measurements,
-                      events=events,
-                      watchdog=watchdog,
-                      drivers=drivers)
     sampler = Sampler(measurements=measurements, events=events,
                       flow_sensor=flow_sensor, pressure_sensor=pressure_sensor,
                       oxygen_a2d=oxygen_a2d)
 
-    app.render()
-    sampler.start()
-
-    while app.should_run:
-        try:
-            app.gui_update()
-        except KeyboardInterrupt:
-            break
-
-    app.exit()
-    drivers.get_driver("aux").stop()
+    app = Application(measurements=measurements,
+                      events=events,
+                      watchdog=watchdog,
+                      drivers=drivers,
+                      sampler=sampler)
+    app.run()
 
 
 if __name__ == '__main__':
