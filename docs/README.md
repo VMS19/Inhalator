@@ -26,7 +26,7 @@ This guide will document the requierments on the software.
 
 ![Alt text](./rasp-3b+-pinout.png?raw=true "Title")
 
-##I2C Bus
+## I2C Bus
 Th
 
 ## A2D Logic
@@ -43,15 +43,16 @@ The populated inputs are (the rest of the inputs are unsued)
 Due to hardware constraint the A2D measures a certain value,
 but the software needs to output to the screen a function of this value
 
- Denote by Xi the A2D value on channel i 
- Denote by Yi the fucntion of Xi, notice that Yi is a DOUBLE variable
+Denote by Xi the A2D value on channel i ;
+Denote by Yi the fucntion of Xi, notice that Yi is a DOUBLE variable;
  
  #### CONSTANTS 
- VREF = 2.5 
- BIT_ACCURACY = 2**14
- R23 = 24.3
- R24 = 348
- R29 = 348 
+ 
+ VREF = 2.5 ;
+ BIT_ACCURACY = 2**14;
+ R23 = 24.3;
+ R24 = 348;
+ R29 = 348 ;
  BATT_RDIV = R23/(R23+R29+R24)
  CONV_COEFF=VREF/ BIT_ACCURACY
  
