@@ -1,5 +1,6 @@
 import re
 import csv
+import sys
 
 
 def log_to_csv(log_file_path, sensor):
@@ -10,8 +11,8 @@ def log_to_csv(log_file_path, sensor):
                 yield match.group(1)
 
 
-LOG_FILE_PATH = ''
-CSV_PATH = ''
+LOG_FILE_PATH = sys.argv[1]
+CSV_PATH = sys.argv[2]
 
 pressures = log_to_csv(LOG_FILE_PATH, 'pressure')
 flows = log_to_csv(LOG_FILE_PATH, 'flows')
