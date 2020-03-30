@@ -12,7 +12,6 @@ log = logging.getLogger(__name__)
 class Sampler(threading.Thread):
     SAMPLING_INTERVAL = 0.02  # sec
     MS_IN_MIN = 60 * 1000
-    OXYGEN_A2D_SAMPLE_CHANNELS = [0]
     ML_IN_LITER = 1000
 
     def __init__(self, measurements, events, flow_sensor, pressure_sensor, oxygen_a2d):
@@ -85,7 +84,7 @@ class Sampler(threading.Thread):
 
         # Read from sensors
         flow_value = self._flow_sensor.read()
-        oxygen_value = self._oxygen_a2d.read(self.OXYGEN_A2D_SAMPLE_CHANNELS)
+        oxygen_value = self._oxygen_a2d.read()
         pressure_value_cmh2o = self._pressure_sensor.read()
 
         self._measurements.set_pressure_value(pressure_value_cmh2o)

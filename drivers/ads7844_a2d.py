@@ -25,6 +25,7 @@ class Ads7844A2D(object):
     VOLTAGE_STEP_COUNT = 2 ** 12
     VOLTAGE_CALIBRATION = (VOLTAGE_REF / VOLTAGE_STEP_COUNT)
     FIRST_READING_BIT_SHIFT = 5
+    SAMPLE_CHANNELS = [0]
 
     def __init__(self):
         self._spi = spidev.SpiDev()
@@ -73,9 +74,9 @@ class Ads7844A2D(object):
 
         return self._calibrate_a2d(sample_reading)
 
-    def read(self, channels, input_mode=MODE_SGL, power_down_mode=PD_DISABLED):
+    def read(self, input_mode=MODE_SGL, power_down_mode=PD_DISABLED):
         sample_res = []
-        for channel in channels:
+        for channel in self.SAMPLE_CHANNELS:
             sample_res.append(self._sample_a2d(channel, input_mode,
                               power_down_mode))
         return sample_res
