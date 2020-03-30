@@ -9,6 +9,8 @@ else:
 
 from graphics.panes import MasterFrame
 from graphics.themes import Theme, DarkTheme
+from data.configurations import Configurations, ConfigurationState
+from data.alerts import Alert, AlertCodes
 
 
 class Application(object):
@@ -26,8 +28,10 @@ class Application(object):
     def instance(cls):
         return cls.__instance
 
-    def __init__(self, measurements, events, arm_wd_event, drivers):
+    def __init__(self, measurements, events, arm_wd_event, drivers, sampler):
         self.should_run = True
+        self.drivers = drivers
+        self.sampler = sampler
         self.root = Tk()
         self.theme = Theme.toggle_theme()  # Set to dark mode, TODO: Make this configurable
         self.root.protocol("WM_DELETE_WINDOW", self.exit)  # Catches Alt-F4
@@ -39,7 +43,11 @@ class Application(object):
             # on production we don't want to see the ugly cursor
             self.root.config(cursor="none")
 
-        self.master_frame = MasterFrame(self.root, arm_wd_event=arm_wd_event,
+        # We want to alert that config.json is corrupted
+        if Configurations.configuration_state() == ConfigurationState.CONFIG_CORRUPTED:
+            events.alerts_queue.enqueue_alert(AlertCodes.NO_CONFIGURATION_FILE)
+
+        self.master_frame = MasterFrame(self.root, watchdog=arm_wd_event,
                                         measurements=measurements,
                                         events=events,
                                         drivers=drivers)
@@ -55,3 +63,14 @@ class Application(object):
         self.root.update()
         self.root.update_idletasks()
         self.master_frame.update()
+
+    def run(self):
+        self.render()
+        while self.should_run:
+            try:
+                self.sampler.sampling_iteration()
+                self.gui_update()
+            except KeyboardInterrupt:
+                break
+        self.exit()
+        self.drivers.get_driver("aux").stop()

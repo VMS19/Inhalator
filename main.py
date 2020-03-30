@@ -4,15 +4,16 @@ import logging
 import signal
 import socket
 from logging.handlers import RotatingFileHandler
-from time import sleep
+
 from threading import Event
 
 from drivers.driver_factory import DriverFactory
-from data.configurations import Configurations
+from data.configurations import Configurations, ConfigurationState
 from data.measurements import Measurements
 from data.events import Events
 from application import Application
 from algo import Sampler
+
 from wd_task import WdTask
 
 
@@ -84,7 +85,6 @@ def handle_sigterm(signum, frame):
 def main():
     measurements = Measurements()
     events = Events()
-
     signal.signal(signal.SIGTERM, handle_sigterm)
     args = parse_args()
     arm_wd_event = Event()
@@ -100,29 +100,24 @@ def main():
 
     pressure_sensor = drivers.get_driver("pressure")
     flow_sensor = drivers.get_driver("flow")
-    wd = drivers.get_driver("wd")
+
+    watchdog = drivers.get_driver("wd")
+    oxygen_a2d = drivers.get_driver("oxygen_a2d")
+
+    sampler = Sampler(measurements=measurements, events=events,
+                      flow_sensor=flow_sensor, pressure_sensor=pressure_sensor,
+                      oxygen_a2d=oxygen_a2d)
 
     app = Application(measurements=measurements,
                       events=events,
                       arm_wd_event=arm_wd_event,
-                      drivers=drivers)
+                      drivers=drivers,
+                      sampler=sampler)
 
-    sampler = Sampler(measurements=measurements, events=events,
-                      flow_sensor=flow_sensor, pressure_sensor=pressure_sensor)
-    app.render()
-    sampler.start()
-
-    watchdog_task = WdTask(wd, arm_wd_event)
+    watchdog_task = WdTask(watchdog, arm_wd_event)
     watchdog_task.start()
 
-    while app.should_run:
-        try:
-            app.gui_update()
-        except KeyboardInterrupt:
-            break
-
-    app.exit()
-    drivers.get_driver("aux").stop()
+    app.run()
 
 
 if __name__ == '__main__':

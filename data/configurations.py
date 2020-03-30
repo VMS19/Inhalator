@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+from enum import Enum
 
 from errors import ConfigurationFileError
 from data.thresholds import (RespiratoryRateThreshold, PressureThreshold,
@@ -9,6 +10,12 @@ from data.thresholds import (RespiratoryRateThreshold, PressureThreshold,
 
 THIS_DIRECTORY = os.path.dirname(__file__)
 log = logging.getLogger(__name__)
+
+
+class ConfigurationState(Enum):
+    VALID_CONFIG = 0
+    CONFIG_CORRUPTED = 1
+    DEFAULT_CORRUPTED = 2
 
 
 class Configurations(object):
@@ -46,6 +53,21 @@ class Configurations(object):
 
         cls.__instance = cls._load()
         return cls.__instance
+
+    @classmethod
+    def configuration_state(cls):
+        try:
+            cls._parse_config_file(cls.CONFIG_FILE)
+            return ConfigurationState.VALID_CONFIG
+
+        except ConfigurationFileError:
+            try:
+                cls._parse_config_file(cls.DEFAULT_CONFIG_FILE)
+                return ConfigurationState.CONFIG_CORRUPTED
+
+            except ConfigurationFileError:
+                return ConfigurationState.DEFAULT_CORRUPTED
+
 
     @classmethod
     def _load(cls):

@@ -16,19 +16,19 @@ class GraphSummary(object):
         self.root = parent.element
         self.measurements = measurements
 
-        self.frame = Frame(master=self.root)
+        self.frame = Frame(master=self.root, borderwidth=1)
         self.value_label = Label(master=self.frame, text="HELLO",
                                  font=("Roboto", 18),
-                                 bg=Theme.active().SURFACE,
+                                 bg=Theme.active().BACKGROUND,
                                  fg=Theme.active().TXT_ON_SURFACE)
         self.units_label = Label(master=self.frame, text="HELLO",
                                  font=("Roboto", 8),
-                                 bg=Theme.active().SURFACE,
+                                 bg=Theme.active().BACKGROUND,
                                  fg=Theme.active().TXT_ON_SURFACE)
         self.name_label = Label(master=self.frame, text="HELLO",
                                 font=("Roboto", 15),
-                                 bg=Theme.active().SURFACE,
-                                 fg=Theme.active().TXT_ON_SURFACE)
+                                bg=Theme.active().BACKGROUND,
+                                fg=Theme.active().TXT_ON_SURFACE)
 
     def units(self):
         pass
@@ -99,7 +99,9 @@ class BPMSummary(GraphSummary):
 
 class O2SaturationSummary(GraphSummary):
     def value(self):
-        return "{}".format(self.measurements.o2_saturation_percentage)
+        # Round to nearest half
+        return "{:.2f}".format(
+            round(self.measurements.o2_saturation_percentage * 2) / 2)
 
     def name(self):
         return "FiO2"

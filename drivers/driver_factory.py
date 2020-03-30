@@ -1,20 +1,13 @@
-import re
+import csv
 
-from drivers.mocks.sinus import sinus, truncate, add_noise
+from drivers.mocks.sinus import sinus, truncate, add_noise, zero
 
 
 def generate_data_from_file(sensor, file_path):
-    sensors_to_regex = {
-        'pressure': 'Pressure: (.*)',
-        'flow': 'Flow: (.*)',
-        'oxygen': "Breathed: (.*)"
-    }
-
-    with open(file_path, 'r') as log_file:
-        for sample_line in log_file:
-            match = re.search(sensors_to_regex[sensor], sample_line)
-            if match is not None:
-                yield float(match.group(1))
+    with open(file_path, 'r') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            yield float(row[sensor])
 
 
 class DriverFactory(object):
@@ -25,6 +18,10 @@ class DriverFactory(object):
     MOCK_PRESSURE_AMPLITUDE = 25
     MOCK_PIP = 25  # Peak Intake Pressure
     MOCK_PEEP = 3  # Positive End-Expiratory Pressure
+    BASE_O2_SATURATION = 20
+    OFFSET_O2_SATURATION = 3
+    MOCK_O2_SATURATION_AMPLITUDE = BASE_O2_SATURATION + OFFSET_O2_SATURATION
+    MOCK_O2_SATURATION_LOWER_LIMIT = BASE_O2_SATURATION - OFFSET_O2_SATURATION
 
     __instance = None
 
@@ -60,6 +57,12 @@ class DriverFactory(object):
         self.drivers_cache[key] = driver
         return driver
 
+    def generate_mock_dead_man(self):
+        return zero(
+            sample_rate = self.MOCK_SAMPLE_RATE_HZ,
+            amplitude = self.MOCK_PRESSURE_AMPLITUDE,
+            freq = self.MOCK_BPM / 60.0)
+
     def generate_mock_pressure_data(self):
         samples = sinus(
             sample_rate=self.MOCK_SAMPLE_RATE_HZ,
@@ -84,6 +87,16 @@ class DriverFactory(object):
             samples, lower_limit=0, upper_limit=self.MOCK_AIRFLOW_AMPLITUDE)
         return add_noise(samples, self.MOCK_NOISE_SIGMA)
 
+    def generate_mock_oxygen_a2d_data(self):
+        samples = sinus(
+            self.MOCK_SAMPLE_RATE_HZ,
+            self.MOCK_O2_SATURATION_AMPLITUDE,
+            self.MOCK_BPM / 60)
+        samples = truncate(
+            samples, lower_limit=self.MOCK_O2_SATURATION_LOWER_LIMIT,
+            upper_limit=self.MOCK_O2_SATURATION_AMPLITUDE)
+        return add_noise(samples, self.MOCK_NOISE_SIGMA)
+
     @staticmethod
     def get_pressure_driver():
         from drivers.abp_pressure_sensor import AbpPressureSensor
@@ -93,6 +106,11 @@ class DriverFactory(object):
     def get_flow_driver():
         from drivers.sfm3200_flow_sensor import Sfm3200
         return Sfm3200()
+
+    @staticmethod
+    def get_oxygen_a2d_driver():
+        from drivers.ads7844_a2d import Ads7844A2D
+        return Ads7844A2D()
 
     @staticmethod
     def get_wd_driver():
@@ -107,7 +125,9 @@ class DriverFactory(object):
     def get_mock_pressure_driver(self):
         from drivers.mocks.sensor import MockSensor
         data_source = self.simulation_data
-        if data_source == 'sinus':
+        if data_source == 'dead':
+            data = self.generate_mock_dead_man()
+        elif data_source == 'sinus':
             data = self.generate_mock_pressure_data()
         else:
             data = generate_data_from_file('pressure', data_source)
@@ -116,10 +136,21 @@ class DriverFactory(object):
     def get_mock_flow_driver(self):
         from drivers.mocks.sensor import MockSensor
         simulation_data = self.simulation_data
-        if simulation_data == 'sinus':
+        if simulation_data == 'dead':
+            data = self.generate_mock_dead_man()
+        elif simulation_data == 'sinus':
             data = self.generate_mock_air_flow_data()
         else:
             data = generate_data_from_file('flow', simulation_data)
+        return MockSensor(data)
+
+    def get_mock_oxygen_a2d_driver(self):
+        from drivers.mocks.sensor import MockSensor
+        simulation_data = self.simulation_data
+        if simulation_data == 'sinus':
+            data = self.generate_mock_oxygen_a2d_data()
+        else:
+            data = generate_data_from_file('oxygen', simulation_data)
         return MockSensor(data)
 
     @staticmethod

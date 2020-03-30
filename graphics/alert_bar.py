@@ -22,7 +22,9 @@ class IndicatorAlertBar(object):
         alerts.AlertCodes.PRESSURE_LOW: "Low Pressure",
         alerts.AlertCodes.PRESSURE_HIGH: "High Pressure",
         alerts.AlertCodes.VOLUME_LOW: "Low Volume",
-        alerts.AlertCodes.VOLUME_HIGH: "High Volume"
+        alerts.AlertCodes.VOLUME_HIGH: "High Volume",
+        alerts.AlertCodes.NO_BREATH: "No Breathing",
+        alerts.AlertCodes.NO_CONFIGURATION_FILE: "Cannot Read Configuration"
     }
 
     def __init__(self, parent, events, drivers):
@@ -55,8 +57,9 @@ class IndicatorAlertBar(object):
 
     def update(self):
         # Check mute time limit
-        if (self.events.mute_alerts 
-                and (time.time() - self.events.mute_time) > self.configs.mute_time_limit):
+        if (self.events.mute_alerts and
+                (time.time() - self.events.mute_time) >
+                self.configs.mute_time_limit):
             self.events.mute_alerts = False
 
         last_alert_code = self.events.alerts_queue.last_alert
@@ -64,7 +67,6 @@ class IndicatorAlertBar(object):
             self.set_no_alert()
         else:
             self.set_alert(self.error_dict.get(last_alert_code, "Multiple Errors"))
-
 
     def set_no_alert(self):
         self.bar.config(bg=Theme.active().ALERT_BAR_OK)

@@ -73,13 +73,17 @@ class AirPressureGraph(object):
             self.pressure_axis.plot(self.measurements.x_axis,
                                     [self.config.pressure_threshold.max] *
                                     len(self.measurements.x_axis),
-                                    color=MAX_TRHLD_COLOR, linestyle=":", animated=True)
+                                    color=MAX_TRHLD_COLOR,
+                                    animated=True,
+                                    linewidth=3)
 
         self.pressure_min_threshold_graph, = \
             self.pressure_axis.plot(self.measurements.x_axis,
                                     [self.config.pressure_threshold.min] *
                                     len(self.measurements.x_axis),
-                                    color=MIN_TRHLD_COLOR, linestyle=":", animated=True)
+                                    color=MIN_TRHLD_COLOR,
+                                    animated=True,
+                                    linewidth=3)
 
     def render(self):
         self.pressure_canvas.draw()
@@ -148,17 +152,6 @@ class FlowGraph(object):
         # Scale y values
         self.flow_graph.axes.set_ylim(self.MIN_Y, self.MAX_Y)
 
-        self.flow_max_threshold_graph, = \
-            self.flow_axis.plot(self.measurements.x_axis,
-                                [self.config.flow_threshold.max] *
-                                len(self.measurements.x_axis),
-                                color=MAX_TRHLD_COLOR, linestyle=":", animated=True)
-
-        self.flow_min_threshold_graph, = \
-            self.flow_axis.plot(self.measurements.x_axis,
-                                [self.config.flow_threshold.min] *
-                                len(self.measurements.x_axis),
-                                color=MIN_TRHLD_COLOR, linestyle=":", animated=True)
 
     def render(self):
         self.flow_canvas.draw()
@@ -173,16 +166,8 @@ class FlowGraph(object):
 
         self.flow_graph.set_ydata(self.flow_display_values)
         self.flow_axis.draw_artist(self.flow_graph)
-        self.flow_axis.draw_artist(self.flow_min_threshold_graph)
-        self.flow_axis.draw_artist(self.flow_max_threshold_graph)
         self.flow_figure.canvas.blit(self.flow_axis.bbox)
         self.flow_figure.canvas.flush_events()
-
-        # Update threshold lines
-        self.flow_min_threshold_graph.set_ydata([self.config.flow_threshold.min] *
-                                                len(self.measurements.x_axis))
-        self.flow_max_threshold_graph.set_ydata([self.config.flow_threshold.max] *
-                                                len(self.measurements.x_axis))
 
     @property
     def element(self):

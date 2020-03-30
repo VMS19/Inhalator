@@ -46,6 +46,9 @@ class Measurements(object):
         self.intake_peak_pressure = pressure
         self.volume = volume
 
+    def set_saturation_percentage(self, o2_saturation_percentage):
+        self.o2_saturation_percentage = o2_saturation_percentage
+
     @property
     def _amount_of_samples_in_graph(self):
         config = Configurations.instance()
