@@ -251,7 +251,7 @@ class PEEPHandler(StateHandler):
         self.accumulator.reset()
 
 
-class Sampler(threading.Thread):
+class Sampler(object):
     SAMPLING_INTERVAL = 0.02  # sec
     MS_IN_MIN = 60 * 1000
     ML_IN_LITER = 1000
@@ -280,11 +280,6 @@ class Sampler(threading.Thread):
             VentilationState.Inhale: self.inhale_handler,
             VentilationState.Hold: hold_handler,
             VentilationState.PEEP: peep_handler})
-
-    def run(self):
-        while True:
-            self.sampling_iteration()
-            time.sleep(self.SAMPLING_INTERVAL)
 
     def sampling_iteration(self):
         ts = time.time()

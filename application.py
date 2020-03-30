@@ -26,8 +26,10 @@ class Application(object):
     def instance(cls):
         return cls.__instance
 
-    def __init__(self, measurements, events, watchdog, drivers):
+    def __init__(self, measurements, events, watchdog, drivers, sampler):
         self.should_run = True
+        self.drivers = drivers
+        self.sampler = sampler
         self.root = Tk()
         self.theme = Theme.toggle_theme()  # Set to dark mode, TODO: Make this configurable
         self.root.protocol("WM_DELETE_WINDOW", self.exit)  # Catches Alt-F4
@@ -55,3 +57,14 @@ class Application(object):
         self.root.update()
         self.root.update_idletasks()
         self.master_frame.update()
+
+    def run(self):
+        self.render()
+        while self.should_run:
+            try:
+                self.sampler.sampling_iteration()
+                self.gui_update()
+            except KeyboardInterrupt:
+                break
+        self.exit()
+        self.drivers.get_driver("aux").stop()
