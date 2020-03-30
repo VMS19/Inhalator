@@ -1,20 +1,13 @@
-import re
+import csv
 
 from drivers.mocks.sinus import sinus, truncate, add_noise
 
 
 def generate_data_from_file(sensor, file_path):
-    sensors_to_regex = {
-        'pressure': 'Pressure: (.*)',
-        'flow': 'Flow: (.*)',
-        'oxygen': "Breathed: (.*)"
-    }
-
-    with open(file_path, 'r') as log_file:
-        for sample_line in log_file:
-            match = re.search(sensors_to_regex[sensor], sample_line)
-            if match is not None:
-                yield float(match.group(1))
+    with open(file_path, 'r') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            yield float(row[sensor])
 
 
 class DriverFactory(object):
