@@ -256,13 +256,14 @@ class Sampler(threading.Thread):
     MS_IN_MIN = 60 * 1000
     ML_IN_LITER = 1000
 
-    def __init__(self, measurements, events, flow_sensor, pressure_sensor):
+    def __init__(self, measurements, events, flow_sensor, pressure_sensor, oxygen_a2d):
         super(Sampler, self).__init__()
         self.log = logging.getLogger(self.__class__.__name__)
         self.daemon = True
         self._measurements = measurements  # type: Measurements
         self._flow_sensor = flow_sensor
         self._pressure_sensor = pressure_sensor
+        self._oxygen_a2d = oxygen_a2d
         self._config = Configurations.instance()
         self._events = events
         # No good reason for 1000 max samples. Sounds enough.
@@ -295,6 +296,8 @@ class Sampler(threading.Thread):
         # Read from sensors
         flow_slm = self._flow_sensor.read()
         pressure_cmh2o = self._pressure_sensor.read()
+        o2_saturation_percentage = self._oxygen_a2d.read()
+
         self.vsm.update(pressure_cmh2o, flow_slm, timestamp=ts)
         self.accumulator.accumulate(ts, flow_slm)
         self._measurements.set_pressure_value(pressure_cmh2o)
@@ -315,3 +318,4 @@ class Sampler(threading.Thread):
             self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH)
 
         self._measurements.set_flow_value(flow_slm)
+        self._measurements.set_saturation_percentage(o2_saturation_percentage)
