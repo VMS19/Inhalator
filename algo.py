@@ -252,7 +252,7 @@ class PEEPHandler(StateHandler):
 
 
 class Sampler(threading.Thread):
-    SAMPLING_INTERVAL = 0.045  # sec
+    SAMPLING_INTERVAL = 0.02  # sec
     MS_IN_MIN = 60 * 1000
     ML_IN_LITER = 1000
 
