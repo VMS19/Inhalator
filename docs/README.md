@@ -59,8 +59,8 @@ If WD signal is raised the reset the software
 #### I2C BUS
 The I2C bus is populated with the following:
 1. Raspberry-PI3b+ - master
-2. Air-Flow sensor (A.K.A Flow) - 
-3. RTC  [here](/RTCmanual.pdf)
+2. Air-Flow sensor (A.K.A Flow) -  <span style="color:red">TBDtext</span> 
+3. RTC  [manual here](/RTCmanual.pdf)
 
 #### SPI BUS
 The SPI bus is populated with the following:
