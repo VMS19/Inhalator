@@ -1,14 +1,9 @@
+import pigpio
 import logging
 
-import pigpio
-
-from errors import PiGPIOInitError
-from errors import I2CDeviceNotFoundError
-from errors import I2CReadError
+from errors import PiGPIOInitError, I2CDeviceNotFoundError, I2CReadError
 
 log = logging.getLogger(__name__)
-
-STUCK = False
 
 
 class AbpPressureSensor(object):
@@ -20,8 +15,8 @@ class AbpPressureSensor(object):
     MIN_RANGE_PRESSURE = 0x00  # 0 psi
     MAX_OUT_PRESSURE = 0x399A
     MIN_OUT_PRESSURE = 0x666
-    SENSITIVITY = float(MAX_RANGE_PRESSURE - MIN_RANGE_PRESSURE) / \
-                  float(MAX_OUT_PRESSURE - MIN_OUT_PRESSURE)
+    SENSITIVITY = float(MAX_RANGE_PRESSURE - MIN_RANGE_PRESSURE) /\
+        float(MAX_OUT_PRESSURE - MIN_OUT_PRESSURE)
     PSI_CMH2O_RATIO = 70.307
 
     def __init__(self):
@@ -46,17 +41,12 @@ class AbpPressureSensor(object):
 
     def _calculate_pressure(self, pressure_reading):
         psi_pressure = (((pressure_reading - self.MIN_OUT_PRESSURE) *
-                         self.SENSITIVITY) + self.MIN_RANGE_PRESSURE)
+                self.SENSITIVITY) + self.MIN_RANGE_PRESSURE)
         cmh2o_pressure = psi_pressure * self.PSI_CMH2O_RATIO
         return (cmh2o_pressure)
 
     def read(self):
         """ Returns pressure as cmh2o """
-
-        if STUCK:
-            while True:
-                pass
-
         try:
             read_size, pressure_raw = self._pig.i2c_read_device(self._dev, self.MEASURE_BYTE_COUNT)
             if read_size >= self.MEASURE_BYTE_COUNT:

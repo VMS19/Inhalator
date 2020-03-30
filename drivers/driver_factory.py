@@ -1,6 +1,11 @@
 import csv
 
-from drivers.mocks.sinus import sinus, truncate, add_noise, zero
+from drivers.mocks.sinus import sinus
+from drivers.mocks.sinus import truncate
+from drivers.mocks.sinus import add_noise
+from drivers.mocks.sinus import zero
+
+STUCK = False
 
 
 def generate_data_from_file(sensor, file_path):
@@ -53,15 +58,26 @@ class DriverFactory(object):
         method = getattr(self, method_name, None)
         if method is None:
             raise ValueError("Unsupported driver {}".format(driver_name))
+
         driver = method()
+
+        def wrap_read_method(read_method):
+            if STUCK:
+                while True:
+                    pass
+
+            return read_method()
+
+        driver.read = wrap_read_method(driver.read)
+
         self.drivers_cache[key] = driver
         return driver
 
     def generate_mock_dead_man(self):
         return zero(
-            sample_rate = self.MOCK_SAMPLE_RATE_HZ,
-            amplitude = self.MOCK_PRESSURE_AMPLITUDE,
-            freq = self.MOCK_BPM / 60.0)
+            sample_rate=self.MOCK_SAMPLE_RATE_HZ,
+            amplitude=self.MOCK_PRESSURE_AMPLITUDE,
+            freq=self.MOCK_BPM / 60.0)
 
     def generate_mock_pressure_data(self):
         samples = sinus(
