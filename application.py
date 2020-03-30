@@ -9,6 +9,8 @@ else:
 
 from graphics.panes import MasterFrame
 from graphics.themes import Theme, DarkTheme
+from data.configurations import Configurations, ConfigurationState
+from data.alerts import Alert, AlertCodes
 
 
 class Application(object):
@@ -40,6 +42,10 @@ class Application(object):
         if os.uname()[1] == 'raspberrypi':
             # on production we don't want to see the ugly cursor
             self.root.config(cursor="none")
+
+        # We want to alert that config.json is corrupted
+        if Configurations.configuration_state() == ConfigurationState.CONFIG_CORRUPTED:
+            events.alerts_queue.enqueue_alert(AlertCodes.NO_CONFIGURATION_FILE)
 
         self.master_frame = MasterFrame(self.root, watchdog=watchdog,
                                         measurements=measurements,

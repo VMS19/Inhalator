@@ -5,7 +5,6 @@ import signal
 import socket
 from logging.handlers import RotatingFileHandler
 
-from data.alerts import Alert, AlertCodes
 from drivers.driver_factory import DriverFactory
 from data.configurations import Configurations, ConfigurationState
 from data.measurements import Measurements
@@ -108,10 +107,6 @@ def main():
                       watchdog=watchdog,
                       drivers=drivers,
                       sampler=sampler)
-
-    # We want to alert that config.json is corrupted
-    if Configurations.configuration_state() == ConfigurationState.CONFIG_CORRUPTED:
-        events.alerts_queue.enqueue_alert(AlertCodes.NO_CONFIGURATION_FILE)
 
     app.run()
 
