@@ -14,7 +14,6 @@ else:
     from tkinter import *
 
 MIN_TRHLD_COLOR = "green"
-MAX_TRHLD_COLOR = "red"
 
 
 class BlankGraph(object):
@@ -63,7 +62,11 @@ class AirPressureGraph(object):
         self.pressure_display_values = [0] * amount_of_xs
         self.pressure_graph, = self.pressure_axis.plot(
             self.measurements.x_axis,
-            self.pressure_display_values, linewidth=2, animated=True)
+            self.pressure_display_values,
+            color=Theme.active().YELLOW,  # yellow
+            linewidth=2,
+            animated=True)
+
 
         # Scale y values
         self.pressure_graph.axes.set_ylim(self.MIN_Y, self.MAX_Y)
@@ -73,7 +76,7 @@ class AirPressureGraph(object):
             self.pressure_axis.plot(self.measurements.x_axis,
                                     [self.config.pressure_threshold.max] *
                                     len(self.measurements.x_axis),
-                                    color=MAX_TRHLD_COLOR,
+                                    color=Theme.active().RED,
                                     animated=True,
                                     linewidth=3)
 
@@ -143,9 +146,12 @@ class FlowGraph(object):
         self.flow_axis.set_xticklabels(labels)
 
         self.flow_display_values = [0] * self.measurements._amount_of_samples_in_graph
-        self.flow_graph, = self.flow_axis.plot(self.measurements.x_axis,
-                                               self.flow_display_values,
-                                               linewidth=2, animated=True)
+        self.flow_graph, = self.flow_axis.plot(
+            self.measurements.x_axis,
+            self.flow_display_values,
+            color=Theme.active().LIGHT_BLUE,  # blue
+            linewidth=2,
+            animated=True)
 
         self.flow_canvas = FigureCanvasTkAgg(self.flow_figure, master=self.root)
 

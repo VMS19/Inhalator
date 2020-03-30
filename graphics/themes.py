@@ -56,6 +56,12 @@ class DarkTheme(Theme):
         import matplotlib.pyplot as plt
         plt.style.use('dark_background')
 
+    DARK_BLUE = "#011627"
+    WHITE = "#fdfffc"
+    LIGHT_BLUE = "#2ec4b6"
+    RED = "#e71d36"
+    YELLOW = "#ff9f1c"
+
     BACKGROUND = "#191919"
     SURFACE = "#232323"
     ERROR = "#b00020"
