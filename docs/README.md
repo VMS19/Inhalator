@@ -57,15 +57,15 @@ Denote by Yi the fucntion of Xi, notice that Yi is a DOUBLE variable;
  CONV_COEFF=VREF/ BIT_ACCURACY
  
  #### CALCULATION
- Y1 =  CONV_COEFF * X1  
- Y2 = CONV_COEFF * X2 / BATT_RDIV
- Y3 =  CONV_COEFF * X3
- Y4 =  CONV_COEFF * X4
- Y5 =  CONV_COEFF * X5
+ Y1 =  CONV_COEFF * X1\
+ Y2 = CONV_COEFF * X2 / BATT_RDIV\
+ Y3 =  CONV_COEFF * X3\
+ Y4 =  CONV_COEFF * X4\
+ Y5 =  CONV_COEFF * X5\
  
 
 
-TBD -
+## TBD -
 PSS 24 
 duplication of INT1_RTC~ 36 , 40
 
