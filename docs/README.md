@@ -6,7 +6,7 @@
     2. Battery Level (via a2d)
     3  Air Flow (I2C)
     4. Pressure (I2C)
-3. The software handles and RTC which will raise a WD alarm which causes a software reset
+3. The software also "kicks" an RTC Watchdog which will sound an alarm if the software hangs
 4. The software controls LEDs and turn them on/off reflecting the alerts in the system 
 
 The software accesses several data buses as described later.
