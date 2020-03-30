@@ -10,6 +10,7 @@ class AlertCodes(object):
     PEEP_TOO_HIGH = 1 << 4
     PEEP_TOO_LOW = 1 << 5
     NO_BREATH = 1 << 6
+    NO_CONFIGURATION_FILE = 1 << 7
 
 
 class Alert(object):

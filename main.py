@@ -4,15 +4,14 @@ import logging
 import signal
 import socket
 from logging.handlers import RotatingFileHandler
-from time import sleep
 
 from drivers.driver_factory import DriverFactory
-from data.configurations import Configurations
+from data.configurations import Configurations, ConfigurationState
 from data.measurements import Measurements
 from data.events import Events
 from application import Application
 from algo import Sampler
-from drivers.aux_sound import SoundViaAux
+
 
 
 class BroadcastHandler(logging.handlers.DatagramHandler):
@@ -82,7 +81,6 @@ def handle_sigterm(signum, frame):
 def main():
     measurements = Measurements()
     events = Events()
-
     signal.signal(signal.SIGTERM, handle_sigterm)
     args = parse_args()
     log = configure_logging(args.verbose)
@@ -109,6 +107,7 @@ def main():
                       watchdog=watchdog,
                       drivers=drivers,
                       sampler=sampler)
+
     app.run()
 
 
