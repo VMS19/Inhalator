@@ -23,6 +23,7 @@ This guide will document the requierments on the software.
 |GPIO 28 PCM_DIN (38) | GPIO | output from raspb to LED  (IO-LOW=LED ON )|
 |GPIO 27 (36) | INT1_RTC~| output from RTC to raspb input ( IO-LOW = INT ON )|
 |GPIO 29 (40) | INT1_RTC~| output from RTC to raspb input ( IO-LOW = INT ON )|
+
 ![Alt text](./rasp-3b+-pinout.png?raw=true "Title")
 
 ##I2C Bus
