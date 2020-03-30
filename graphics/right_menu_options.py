@@ -83,7 +83,7 @@ class MuteAlertsButton(object):
         self.update()
 
     def render(self):
-        self.button.place(relx=0, rely=0.27, relwidth=0.8, relheight=0.2)
+        self.button.place(relx=0, rely=0.21, relwidth=0.8, relheight=0.2)
 
     def update(self):
         if self.events.mute_alerts:
@@ -111,7 +111,7 @@ class LockThresholdsButton(object):
         print("Not Implemented Yet")
 
     def render(self):
-        self.button.place(relx=0, rely=0.53, relwidth=0.8, relheight=0.2)
+        self.button.place(relx=0, rely=0.42, relwidth=0.8, relheight=0.2)
 
     def update(self):
         pass
@@ -139,7 +139,7 @@ class OpenConfigureAlertsScreenButton(object):
         screen.show()
 
     def render(self):
-        self.button.place(relx=0, rely=0.79, relwidth=0.8, relheight=0.2)
+        self.button.place(relx=0, rely=0.63, relwidth=0.8, relheight=0.2)
 
     def update(self):
         pass
@@ -165,7 +165,7 @@ class StuckButton(object):
         drivers.abp_pressure_sensor.STUCK = True
 
     def render(self):
-        self.button.place(relx=0, rely=0.99, relwidth=0.8, relheight=0.2)
+        self.button.place(relx=0, rely=0.84, relwidth=0.8, relheight=0.2)
 
     def update(self):
         pass
