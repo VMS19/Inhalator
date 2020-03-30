@@ -5,7 +5,7 @@ import platform
 import time
 from graphics.configure_alerts_screen import ConfigureAlarmsScreen
 from graphics.imagebutton import ImageButton
-import drivers.abp_pressure_sensor
+import drivers.driver_factory
 
 if platform.python_version() < '3':
     from Tkinter import *
@@ -162,7 +162,7 @@ class StuckButton(object):
         )
 
     def on_click(self):
-        drivers.abp_pressure_sensor.STUCK = True
+        drivers.driver_factory.STUCK = True
 
     def render(self):
         self.button.place(relx=0, rely=0.84, relwidth=0.8, relheight=0.2)
