@@ -239,14 +239,20 @@ class PEEPHandler(StateHandler):
 
     def enter(self, timestamp):
         self.log.info("Hold finished. Exhale starts")
-        if (self._config.volume_threshold.min != "off" and
-                self.accumulator.air_volume_liter <
-                self._config.volume_threshold.min):
-            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW)
 
         volume_ml = self.accumulator.air_volume_liter * 1000
         self.log.info("Volume: %s", volume_ml)
         self._measurements.volume = volume_ml
+
+        # Test volume threshold
+        if (self._config.volume_threshold.min != "off" and
+                volume_ml < self._config.volume_threshold.min):
+            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW)
+
+        if (self._config.volume_threshold.max != 'off' and
+                volume_ml > self._config.volume_threshold.max):
+            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH)
+
         # reset values of last intake
         self.accumulator.reset()
 
@@ -312,10 +318,6 @@ class Sampler(threading.Thread):
             # Below healthy lungs pressure
             self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW)
 
-        if (self._config.volume_threshold.max != 'off' and
-                self.accumulator.air_volume_liter >
-                self._config.volume_threshold.max):
-            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH)
 
         self._measurements.set_flow_value(flow_slm)
         self._measurements.set_saturation_percentage(o2_saturation_percentage)
