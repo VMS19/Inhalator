@@ -299,6 +299,10 @@ class Sampler(threading.Thread):
         pressure_cmh2o = self._pressure_sensor.read()
         o2_saturation_percentage = self._oxygen_a2d.read()
 
+        self.log.debug('Pressure: %s' % pressure_cmh2o)
+        self.log.debug('Flow: %s' % flow_slm)
+        self.log.debug('oxygen: %s' % o2_saturation_percentage)
+
         self.vsm.update(pressure_cmh2o, flow_slm, timestamp=ts)
         self.accumulator.accumulate(ts, flow_slm)
         self._measurements.set_pressure_value(pressure_cmh2o)
