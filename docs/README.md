@@ -17,6 +17,8 @@ This guide will document the requierments on the software.
 | GPIO  11 CE1 SPI (26) | OX_CS | a2d cs input|	
 | GPIO 22 GPCLK2 (31) | busy | a2d busy output|
 
+![Image description](/rasp-3b+-pinout.png)
+
 
 Questions 
 PSS 24 
