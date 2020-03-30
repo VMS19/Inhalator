@@ -1,6 +1,8 @@
 # Tkinter stuff
 import platform
 
+from graphics.right_menu_options import StuckButton
+
 if platform.python_version() < '3':
     from Tkinter import *
 
@@ -165,6 +167,7 @@ class RightPane(object):
         self.clear_alerts_btn = ClearAlertsButton(parent=self, events=self.events)
         self.lock_thresholds_btn = LockThresholdsButton(parent=self)
         self.configure_alerts_btn = OpenConfigureAlertsScreenButton(self)
+        self.stuck_btn = StuckButton(self)
 
 
     @property
@@ -172,7 +175,8 @@ class RightPane(object):
         return (self.mute_alerts_btn,
                 self.clear_alerts_btn,
                 self.configure_alerts_btn,
-                self.lock_thresholds_btn)
+                self.lock_thresholds_btn,
+                self.stuck_btn)
 
     @property
     def element(self):
