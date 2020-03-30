@@ -47,7 +47,7 @@ class Application(object):
         if Configurations.configuration_state() == ConfigurationState.CONFIG_CORRUPTED:
             events.alerts_queue.enqueue_alert(AlertCodes.NO_CONFIGURATION_FILE)
 
-        self.master_frame = MasterFrame(self.root, watchdog=arm_wd_event,
+        self.master_frame = MasterFrame(self.root, arm_wd_event=arm_wd_event,
                                         measurements=measurements,
                                         events=events,
                                         drivers=drivers)
