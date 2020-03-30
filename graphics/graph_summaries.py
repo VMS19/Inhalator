@@ -99,7 +99,7 @@ class BPMSummary(GraphSummary):
 
 class O2SaturationSummary(GraphSummary):
     def value(self):
-        return "{}".format(self.measurements.o2_saturation_percentage)
+        return "{:.2f}".format(self.measurements.o2_saturation_percentage)
 
     def name(self):
         return "FiO2"

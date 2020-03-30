@@ -84,7 +84,7 @@ class Sampler(threading.Thread):
 
         # Read from sensors
         flow_value = self._flow_sensor.read()
-        oxygen_value = self._oxygen_a2d.read()
+        o2_saturation_percentage = self._oxygen_a2d.read()
         pressure_value_cmh2o = self._pressure_sensor.read()
 
         self._measurements.set_pressure_value(pressure_value_cmh2o)
@@ -124,6 +124,7 @@ class Sampler(threading.Thread):
             self._is_during_intake = True
 
         self._measurements.set_flow_value(flow_value)
+        self._measurements.set_saturation_percentage(o2_saturation_percentage)
 
         alert = Alert(self.breathing_alert | self.pressure_alert)
         if alert != AlertCodes.OK and\
