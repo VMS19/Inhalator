@@ -1,6 +1,6 @@
 import re
 
-from drivers.mocks.sinus import sinus, truncate, add_noise
+from drivers.mocks.sinus import sinus, truncate, add_noise, zero
 
 
 def generate_data_from_file(sensor, file_path):
@@ -60,6 +60,12 @@ class DriverFactory(object):
         self.drivers_cache[key] = driver
         return driver
 
+    def generate_mock_dead_man(self):
+        return zero(
+            sample_rate = self.MOCK_SAMPLE_RATE_HZ,
+            amplitude = self.MOCK_PRESSURE_AMPLITUDE,
+            freq = self.MOCK_BPM / 60.0)
+
     def generate_mock_pressure_data(self):
         samples = sinus(
             sample_rate=self.MOCK_SAMPLE_RATE_HZ,
@@ -107,7 +113,9 @@ class DriverFactory(object):
     def get_mock_pressure_driver(self):
         from drivers.mocks.sensor import MockSensor
         data_source = self.simulation_data
-        if data_source == 'sinus':
+        if data_source == 'dead':
+            data = self.generate_mock_dead_man()
+        elif data_source == 'sinus':
             data = self.generate_mock_pressure_data()
         else:
             data = generate_data_from_file('pressure', data_source)
@@ -116,7 +124,9 @@ class DriverFactory(object):
     def get_mock_flow_driver(self):
         from drivers.mocks.sensor import MockSensor
         simulation_data = self.simulation_data
-        if simulation_data == 'sinus':
+        if simulation_data == 'dead':
+            data = self.generate_mock_dead_man()
+        elif simulation_data == 'sinus':
             data = self.generate_mock_air_flow_data()
         else:
             data = generate_data_from_file('flow', simulation_data)
