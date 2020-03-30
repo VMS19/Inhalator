@@ -1,7 +1,11 @@
 # Software Configuration
 
 1. This guide will document the requierments on the software.
-2. The software accesses the reading of 3 sensors, oxygen-sensor (via a2d) , battery-level(via a2d)  and flow-sensor (directly).
+2. The software accesses the reading of 4 sensors:
+    1. Oxygen (via a2d)
+    2. Battery Level (via a2d)
+    3  Air Flow (I2C)
+    4. Pressure (I2C)
 3. The software handles and RTC which will raise a WD alarm which causes a software reset
 4. The software controls LEDs and turn them on in case of an alaram
 
@@ -109,5 +113,4 @@ Denote by Yi the fucntion of Xi, notice that Yi is a DOUBLE variable;
 ## TBD -
 PSS 24 
 duplication of INT1_RTC~ 36 , 40
-
 
