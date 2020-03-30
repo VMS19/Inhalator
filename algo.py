@@ -240,9 +240,9 @@ class PEEPHandler(StateHandler):
                 self._config.volume_threshold.min):
             self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW)
 
-        volume_mlm = self.accumulator.air_volume_liter * 1000
-        self.log.info("Volume: %s", volume_mlm)
-        self._measurements.volume = volume_mlm
+        volume_ml = self.accumulator.air_volume_liter * 1000
+        self.log.info("Volume: %s", volume_ml)
+        self._measurements.volume = volume_ml
         # reset values of last intake
         self.accumulator.reset()
 
@@ -295,7 +295,7 @@ class Sampler(threading.Thread):
             # Above healthy lungs pressure
             self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_HIGH)
 
-        if self._config.pressure_threshold.max != "off" and \
+        if self._config.pressure_threshold.min != "off" and \
                 pressure_cmh2o < self._config.pressure_threshold.min:
             # Below healthy lungs pressure
             self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW)
