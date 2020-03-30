@@ -70,7 +70,6 @@ def parse_args():
     parser.add_argument("--data", '-d', default='sinus')
     args = parser.parse_args()
     args.verbose = max(0, logging.ERROR - (10 * args.verbose))
-    print(logging.getLevelName(args.verbose))
     return args
 
 
