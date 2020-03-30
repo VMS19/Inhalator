@@ -18,9 +18,9 @@ from wd_task import WdTask
 
 
 class BroadcastHandler(logging.handlers.DatagramHandler):
-    '''
+    """
     A handler for the python logging system which is able to broadcast packets.
-    '''
+    """
 
     def send(self, s):
         try:
