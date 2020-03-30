@@ -4,7 +4,8 @@ language: python
 
 before_install:
   - pip install -r requirements.txt
+  - pip install -r test_requirements.txt
 
 script:
-  - pytest --ignore "tests/unit/drivers/"
+  - pytest --ignore "tests/unit/drivers/" --cov=.
   
