@@ -3,10 +3,13 @@ from queue import Queue
 
 class AlertCodes(object):
     OK = 0
-    PRESSURE_LOW = 1
-    PRESSURE_HIGH = 2
-    BREATHING_VOLUME_LOW = 4
-    BREATHING_VOLUME_HIGH = 8
+    PRESSURE_LOW = 1 << 0
+    PRESSURE_HIGH = 1 << 1
+    VOLUME_LOW = 1 << 2
+    VOLUME_HIGH = 1 << 3
+    PEEP_TOO_HIGH = 1 << 4
+    PEEP_TOO_LOW = 1 << 5
+    NO_BREATH = 1 << 6
 
 
 class Alert(object):

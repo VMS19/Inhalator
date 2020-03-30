@@ -98,14 +98,16 @@ def main():
     pressure_sensor = drivers.get_driver("pressure")
     flow_sensor = drivers.get_driver("flow")
     watchdog = drivers.get_driver("wd")
+    oxygen_a2d = drivers.get_driver("oxygen_a2d")
 
     app = Application(measurements=measurements,
                       events=events,
                       watchdog=watchdog,
                       drivers=drivers)
-
     sampler = Sampler(measurements=measurements, events=events,
-                      flow_sensor=flow_sensor, pressure_sensor=pressure_sensor)
+                      flow_sensor=flow_sensor, pressure_sensor=pressure_sensor,
+                      oxygen_a2d=oxygen_a2d)
+
     app.render()
     sampler.start()
 
