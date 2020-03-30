@@ -24,6 +24,7 @@ class IndicatorAlertBar(object):
         alerts.AlertCodes.VOLUME_LOW: "Low Volume",
         alerts.AlertCodes.VOLUME_HIGH: "High Volume",
         alerts.AlertCodes.NO_BREATH: "No Breathing",
+        alerts.AlertCodes.NO_CONFIGURATION_FILE: "Can't Read config.json"
     }
 
     def __init__(self, parent, events, drivers):
