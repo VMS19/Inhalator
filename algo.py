@@ -25,8 +25,7 @@ class VolumeAccumulator(object):
             # the time elapsed in minutes to calculate the accumulated volume
             # inhaled in this inhale.
             self.air_volume_liter += air_flow * elapsed_time_minutes
-            # print(f"prev:{self.last_sample_ts}, current: {timestamp}")
-            # print(self.air_volume_liter, elapsed_time_minutes)
+
         self.last_sample_ts = timestamp
 
     def reset(self):
@@ -294,7 +293,6 @@ class Sampler(object):
         self.vsm.update(pressure_cmh2o, flow_slm, timestamp=ts)
         self.accumulator.accumulate(ts, flow_slm)
         self._measurements.set_pressure_value(pressure_cmh2o)
-        print(f"pressure: {pressure_cmh2o} at time {ts}")
         self._measurements.set_flow_value(flow_slm)
         self._measurements.set_saturation_percentage(o2_saturation_percentage)
 

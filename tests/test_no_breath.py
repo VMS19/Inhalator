@@ -13,9 +13,8 @@ from drivers.driver_factory import DriverFactory
 
 
 MICROSECOND = 10 ** -6
-SIMULATION_LENGTH = 1  # seconds
-LOW_THRESHOLD = -50000
-HIGH_THRESHOLD = 50000
+SIMULATION_LENGTH = 3  # seconds
+NO_BREATH_TIME = 13  # seconds
 
 
 @pytest.fixture
@@ -47,45 +46,22 @@ def events():
     return Events()
 
 
-def test_sampler_alerts_when_pressure_exceeds_minium(events, measurements, config, driver_factory):
+def test_sampler_alerts_when_no_breath(events, measurements, config, driver_factory):
     flow_sensor = driver_factory.get_driver("flow")
     pressure_sensor = driver_factory.get_driver("pressure")
     oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor, oxygen_a2d)
-    assert len(events.alerts_queue) == 0
-    sampler.sampling_iteration()
-    assert len(events.alerts_queue) == 0
-
-    config.volume_range = VolumeRange(HIGH_THRESHOLD, HIGH_THRESHOLD)
 
     current_time = time.time()
     while time.time() - current_time < SIMULATION_LENGTH:
         time.sleep(MICROSECOND)
         sampler.sampling_iteration()
 
-    assert len(events.alerts_queue) > 0
-
-    all_alerts = list(events.alerts_queue.queue.queue)
-    assert all(alert == alerts.AlertCodes.VOLUME_LOW for alert in all_alerts)
-
-
-def test_sampler_alerts_when_pressure_exceeds_maximum(events, measurements, config, driver_factory):
-    flow_sensor = driver_factory.get_driver("flow")
-    pressure_sensor = driver_factory.get_driver("pressure")
-    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor, oxygen_a2d)
     assert len(events.alerts_queue) == 0
+    time.sleep(NO_BREATH_TIME)
     sampler.sampling_iteration()
-    assert len(events.alerts_queue) == 0
 
-    config.volume_range = VolumeRange(LOW_THRESHOLD, LOW_THRESHOLD)
+    assert len(events.alerts_queue) == 1
 
-    current_time = time.time()
-    while time.time() - current_time < SIMULATION_LENGTH:
-        time.sleep(MICROSECOND)
-        sampler.sampling_iteration()
-
-    assert len(events.alerts_queue) > 0
-
-    all_alerts = list(events.alerts_queue.queue.queue)
-    assert all(alert == alerts.AlertCodes.VOLUME_HIGH for alert in all_alerts)
+    alert = list(events.alerts_queue.queue.queue)[0]
+    assert alert == alerts.AlertCodes.NO_BREATH
