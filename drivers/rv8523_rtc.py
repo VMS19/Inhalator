@@ -2,7 +2,8 @@ import pigpio
 import logging
 from datetime import date
 
-from errors import PiGPIOInitError, I2CDeviceNotFoundError, I2CReadError
+from errors import PiGPIOInitError, I2CDeviceNotFoundError, \
+                I2CReadError, I2CWriteError
 
 log = logging.getLogger(__name__)
 
@@ -21,6 +22,7 @@ class Rv8523Rtc(object):
     REG_MONTHS = 0x8
     REG_YEARS = 0x9
     ERR_FAIL = -1
+    REG_YEARS_OFFSET = 2000
 
     def __init__(self):
         try:
@@ -44,20 +46,40 @@ class Rv8523Rtc(object):
                       "Is it connected?")
             raise I2CDeviceNotFoundError("i2c connection open failed")
 
+        # Start RTC
+        try:
+            self._rtc_start()
+        except pigpio.error as e:
+            raise e
+
         log.info("rtc initialized")
 
     def set_24h_mode(self):
         pass
 
     def _rtc_start(self):
-        self._pig.i2c_write_device(self._dev, self.REG_CONTROL_1)
-        read_size, ctrl_1 = self._pig.i2c_read_device(self._dev, 1)
 
-        if read_size == 1:
-            # Disable stop bit
-            ctrl_1 |= 0x20
+        try:
+            self._pig.i2c_write_device(self._dev, self.REG_CONTROL_1)
+            read_size, ctrl_1 = self._pig.i2c_read_device(self._dev, 1)
+            if read_size != 1:
+                log.error("control 1 reg data not ready")
+                raise I2CReadError("rtc data unavailable.")
+        except pigpio.error as e:
+            log.error("Could not write control 1 reg to RTC. "
+                      "Is the RTC connected?.")
+            raise I2CWriteError("i2c write failed")
+
+        # Disable stop bit
+        ctrl_1 |= 0x20
+
+        try:
             self._pig.i2c_write_device(self._dev, self.REG_CONTROL_1)
             self._pig.i2c_write_device(self._dev, ctrl_1)
+        except pigpio.error as e:
+            log.error("Could not write control 1 reg to RTC. "
+                      "Is the RTC connected?.")
+            raise I2CWriteError("i2c write failed")
 
     def bcd_to_int(self, bcd):
         units = bcd & self.NIBBLE_MASK
@@ -70,8 +92,11 @@ class Rv8523Rtc(object):
         return (tens + units)
 
     def _set_clock_unit(self, reg, value):
-        self._pig.i2c_write_device(self._dev, reg)
-        self._pig.i2c_write_device(self._dev, value)
+        try:
+            self._pig.i2c_write_device(self._dev, reg)
+            self._pig.i2c_write_device(self._dev, value)
+        except pigpio.error as e:
+            raise e
 
     def _get_clock_unit(self, reg):
         self._pig.i2c_write_device(self._dev, reg)
@@ -88,17 +113,23 @@ class Rv8523Rtc(object):
         hours = self._get_clock_unit(self.REG_HOURS)
         days = self._get_clock_unit(self.REG_DAYS)
         months = self._get_clock_unit(self.REG_MONTHS)
-        years = self._get_clock_unit(self.REG_YEARS) + 2000
+        years = self._get_clock_unit(self.REG_YEARS) + self.REG_YEARS_OFFSET
 
         return date(years, months, days, hours, minutes, seconds)
 
-    def _set_time(self, date):
-        self._set_clock_unit(self.REG_SECONDS, date.second)
-        self._set_clock_unit(self.REG_MINUTES, date.minute)
-        self._set_clock_unit(self.REG_HOURS, date.hour)
-        self._set_clock_unit(self.REG_DAYS, date.day)
-        self._set_clock_unit(self.REG_MONTHS, date.month)
-        self._set_clock_unit(self.REG_YEARS, date.year - 2000)
+    def set_time(self, date):
+        try:
+            self._set_clock_unit(self.REG_SECONDS, date.second)
+            self._set_clock_unit(self.REG_MINUTES, date.minute)
+            self._set_clock_unit(self.REG_HOURS, date.hour)
+            self._set_clock_unit(self.REG_DAYS, date.day)
+            self._set_clock_unit(self.REG_MONTHS, date.month)
+            self._set_clock_unit(self.REG_YEARS,
+                                 date.year - self.REG_YEARS_OFFSET)
+        except pigpio.error as e:
+            log.error("Could not set RTC time. "
+                      "Is the RTC connected?.")
+            raise I2CWriteError("i2c write failed")
 
     def read(self):
         """ Returns date years to seconds """
