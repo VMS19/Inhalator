@@ -12,8 +12,6 @@ from data.events import Events
 from application import Application
 from algo import Sampler
 
-NOTICE = logging.DEBUG - 1
-
 
 class BroadcastHandler(logging.handlers.DatagramHandler):
     '''

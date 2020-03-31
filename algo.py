@@ -9,7 +9,8 @@ from scipy.stats import linregress
 from data.alerts import AlertCodes
 from data.measurements import Measurements
 from data.configurations import Configurations
-from main import NOTICE
+
+NOTICE = logging.DEBUG - 1
 
 
 class VolumeAccumulator(object):
