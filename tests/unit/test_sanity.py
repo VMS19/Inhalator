@@ -142,7 +142,7 @@ def run_scenarios(events, sampler, config):
         print(f"pressure:{pressure}; flow:{flow}; volume:{volume}")
         print(f"alarms:{alarms} of length {len(alarms)}")
         for alarm in alarms:
-            print(f"{alarm.code} - {alarm.value}")
+            print(alarm)
 
         assert len(alarms) == below_th + over_th
         events.alerts_queue.clear_alerts()
