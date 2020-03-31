@@ -133,7 +133,7 @@ def run_scenarios(events, sampler, config):
 
         sampler.sampling_iteration()
 
-        sensor_values = [pressure, flow]  # , volume] - No event for volume yet
+        sensor_values = [pressure, volume]  # , flow] - No event for flow yet
 
         low = sum([1 for state in sensor_values if state == LOW_VALUE])
         high = sum([True for state in sensor_values if state == HIGH_VALUE])
