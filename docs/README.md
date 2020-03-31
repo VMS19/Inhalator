@@ -88,11 +88,11 @@ Denote by Yi the fucntion of Xi, notice that Yi is a DOUBLE variable;
  OX_OFFSET = 1.5\
  
 ##### CALCULATION
- Y0 =  (CONV_COEFF * X0-OX_OFFSET)\OX_GAIN
+ Y0 =  (CONV_COEFF * X0-OX_OFFSET)\OX_GAIN\
  Y1 = CONV_COEFF * X1 / BATT_RDIV\
  Y2 =  CONV_COEFF * X2\
  Y3 =  CONV_COEFF * X3\
- Y4 =  CONV_COEFF * X4
+ Y4 =  CONV_COEFF * X4\
  Y5 =  CONV_COEFF * X5
  
 
