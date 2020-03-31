@@ -37,5 +37,5 @@ sudo service inhalator stop
 ## Running tests
 You can run your tests using
 ```shell_script
-pytest --ignore "tests/unit/drivers"
+tox
 ```

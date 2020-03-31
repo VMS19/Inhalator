@@ -6,3 +6,5 @@ __pycache__/*
 *.service
 config.json
 .coverage
+.tox
+htmlcov

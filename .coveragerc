@@ -1,7 +1,10 @@
 # .coveragerc to control coverage.py
 [run]
 branch = True
-omit = tests/
+omit =
+    tests/*
+    drivers/mocks/*
+    .tox/*
 
 
 [report]
