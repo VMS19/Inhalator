@@ -50,10 +50,23 @@ class LightTheme(Theme):
         import matplotlib.pyplot as plt
         plt.style.use('classic')
 
+    DARK_BLUE = "#011627"
+    WHITE = "#fdfffc"
+    LIGHT_BLUE = "#2ec4b6"
+    RED = "#e71d36"
+    YELLOW = "#ff9f1c"
+
+
 class DarkTheme(Theme):
     def __init__(self):
         import matplotlib.pyplot as plt
         plt.style.use('dark_background')
+
+    DARK_BLUE = "#011627"
+    WHITE = "#fdfffc"
+    LIGHT_BLUE = "#2ec4b6"
+    RED = "#e71d36"
+    YELLOW = "#ff9f1c"
 
     BACKGROUND = "#191919"
     SURFACE = "#232323"
@@ -77,6 +90,6 @@ class DarkTheme(Theme):
     ALERT_BAR_OK_TXT = "#ffffff"
 
     RIGHT_SIDE_BUTTON_BG = "#3c3149"
-    RIGHT_SIDE_BUTTON_FG = "#d7b1f9"
+    RIGHT_SIDE_BUTTON_FG = "#fdfffc"
     RIGHT_SIDE_BUTTON_BG_ACTIVE = "#d7b1f9"
     RIGHT_SIDE_BUTTON_FG_ACTIVE = "#3c3149"

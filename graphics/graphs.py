@@ -13,9 +13,6 @@ if platform.python_version() < '3':
 else:
     from tkinter import *
 
-MIN_TRHLD_COLOR = "green"
-MAX_TRHLD_COLOR = "red"
-
 
 class BlankGraph(object):
     def __init__(self, root):
@@ -63,7 +60,11 @@ class AirPressureGraph(object):
         self.pressure_display_values = [0] * amount_of_xs
         self.pressure_graph, = self.pressure_axis.plot(
             self.measurements.x_axis,
-            self.pressure_display_values, linewidth=2, animated=True)
+            self.pressure_display_values,
+            color=Theme.active().YELLOW,  # yellow
+            linewidth=2,
+            animated=True)
+
 
         # Scale y values
         self.pressure_graph.axes.set_ylim(self.MIN_Y, self.MAX_Y)
@@ -71,17 +72,17 @@ class AirPressureGraph(object):
         # Thresholds
         self.pressure_max_threshold_graph, = \
             self.pressure_axis.plot(self.measurements.x_axis,
-                                    [self.config.pressure_threshold.max] *
+                                    [self.config.pressure_range.max] *
                                     len(self.measurements.x_axis),
-                                    color=MAX_TRHLD_COLOR,
+                                    color=Theme.active().RED,
                                     animated=True,
                                     linewidth=3)
 
         self.pressure_min_threshold_graph, = \
             self.pressure_axis.plot(self.measurements.x_axis,
-                                    [self.config.pressure_threshold.min] *
+                                    [self.config.pressure_range.min] *
                                     len(self.measurements.x_axis),
-                                    color=MIN_TRHLD_COLOR,
+                                    color=Theme.active().RED,
                                     animated=True,
                                     linewidth=3)
 
@@ -98,9 +99,9 @@ class AirPressureGraph(object):
 
         self.pressure_graph.set_ydata(self.pressure_display_values)
         # Update threshold lines
-        self.pressure_min_threshold_graph.set_ydata([self.config.pressure_threshold.min] *
+        self.pressure_min_threshold_graph.set_ydata([self.config.pressure_range.min] *
                                                     len(self.measurements.x_axis))
-        self.pressure_max_threshold_graph.set_ydata([self.config.pressure_threshold.max] *
+        self.pressure_max_threshold_graph.set_ydata([self.config.pressure_range.max] *
                                                     len(self.measurements.x_axis))
 
         self.pressure_axis.draw_artist(self.pressure_graph)
@@ -143,15 +144,17 @@ class FlowGraph(object):
         self.flow_axis.set_xticklabels(labels)
 
         self.flow_display_values = [0] * self.measurements._amount_of_samples_in_graph
-        self.flow_graph, = self.flow_axis.plot(self.measurements.x_axis,
-                                               self.flow_display_values,
-                                               linewidth=2, animated=True)
+        self.flow_graph, = self.flow_axis.plot(
+            self.measurements.x_axis,
+            self.flow_display_values,
+            color=Theme.active().LIGHT_BLUE,  # blue
+            linewidth=2,
+            animated=True)
 
         self.flow_canvas = FigureCanvasTkAgg(self.flow_figure, master=self.root)
 
         # Scale y values
         self.flow_graph.axes.set_ylim(self.MIN_Y, self.MAX_Y)
-
 
     def render(self):
         self.flow_canvas.draw()

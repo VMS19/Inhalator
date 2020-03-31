@@ -4,21 +4,23 @@ import logging
 import signal
 import socket
 from logging.handlers import RotatingFileHandler
-from time import sleep
+
+from threading import Event
 
 from drivers.driver_factory import DriverFactory
-from data.configurations import Configurations
+from data.configurations import Configurations, ConfigurationState
 from data.measurements import Measurements
 from data.events import Events
 from application import Application
 from algo import Sampler
-from drivers.aux_sound import SoundViaAux
+
+from wd_task import WdTask
 
 
 class BroadcastHandler(logging.handlers.DatagramHandler):
-    '''
+    """
     A handler for the python logging system which is able to broadcast packets.
-    '''
+    """
 
     def send(self, s):
         try:
@@ -41,7 +43,8 @@ def configure_logging(level):
     logger = logging.getLogger()
     logger.setLevel(level)
     # create file handler which logs even debug messages
-    fh = RotatingFileHandler('inhalator.log', maxBytes=1024 * 100, backupCount=3)
+    fh = RotatingFileHandler('inhalator.log', maxBytes=1024 * 100,
+                             backupCount=3)
     fh.setLevel(logging.DEBUG)
     # create console handler with a higher log level
     ch = logging.StreamHandler()
@@ -82,9 +85,9 @@ def handle_sigterm(signum, frame):
 def main():
     measurements = Measurements()
     events = Events()
-
     signal.signal(signal.SIGTERM, handle_sigterm)
     args = parse_args()
+    arm_wd_event = Event()
     log = configure_logging(args.verbose)
 
     # Initialize all drivers, or mocks if in simulation mode
@@ -97,6 +100,7 @@ def main():
 
     pressure_sensor = drivers.get_driver("pressure")
     flow_sensor = drivers.get_driver("flow")
+
     watchdog = drivers.get_driver("wd")
     oxygen_a2d = drivers.get_driver("oxygen_a2d")
 
@@ -106,9 +110,13 @@ def main():
 
     app = Application(measurements=measurements,
                       events=events,
-                      watchdog=watchdog,
+                      arm_wd_event=arm_wd_event,
                       drivers=drivers,
                       sampler=sampler)
+
+    watchdog_task = WdTask(watchdog, arm_wd_event)
+    watchdog_task.start()
+
     app.run()
 
 

@@ -15,6 +15,7 @@ class AlertCodes(IntEnum):
     PEEP_TOO_HIGH = 1 << 4
     PEEP_TOO_LOW = 1 << 5
     NO_BREATH = 1 << 6
+    NO_CONFIGURATION_FILE = 1 << 7
 
     @classmethod
     def is_valid(cls, alert_code):
@@ -29,6 +30,7 @@ class Alert(object):
         AlertCodes.NO_BREATH: "No Breathing",
         AlertCodes.PEEP_TOO_HIGH: "High PEEP",
         AlertCodes.PEEP_TOO_LOW: "Low PEEP",
+        AlertCodes.NO_CONFIGURATION_FILE: "Cannot Read Configuration"
     }
 
     def __init__(self, alert_code, timestamp=None):
