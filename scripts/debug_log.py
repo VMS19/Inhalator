@@ -8,11 +8,11 @@ import logging
 import argparse
 import datetime
 
-NOTICE = logging.DEBUG - 1
-logging.addLevelName(NOTICE, 'NOTICE')
+TRACE = logging.DEBUG - 1
+logging.addLevelName(TRACE, 'TRACE')
 
 PORT = 7777
-LOG_LEVEL = 'NOTICE'
+LOG_LEVEL = 'TRACE'
 LOG_FILE_PATH = '/tmp/inhalator.log'
 CSV_FILE_OUTPUT = '/tmp/inhalator.csv'
 

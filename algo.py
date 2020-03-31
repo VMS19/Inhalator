@@ -10,8 +10,8 @@ from data.alerts import AlertCodes
 from data.measurements import Measurements
 from data.configurations import Configurations
 
-NOTICE = logging.DEBUG - 1
-logging.addLevelName(NOTICE, 'NOTICE')
+TRACE = logging.DEBUG - 1
+logging.addLevelName(TRACE, 'TRACE')
 
 
 class VolumeAccumulator(object):
@@ -302,9 +302,9 @@ class Sampler(object):
         # WARNING! These log messages are useful for debugging sensors but
         # might spam you since they are printed on every sample. In order to see
         # them run the application in maximum verbosity mode by passing `-vvv` to `main.py
-        self.log.log(NOTICE, 'flow: %s', flow_slm)
-        self.log.log(NOTICE, 'pressure: %s', pressure_cmh2o)
-        self.log.log(NOTICE, 'oxygen: %s', o2_saturation_percentage)
+        self.log.log(TRACE, 'flow: %s', flow_slm)
+        self.log.log(TRACE, 'pressure: %s', pressure_cmh2o)
+        self.log.log(TRACE, 'oxygen: %s', o2_saturation_percentage)
 
         self.vsm.update(pressure_cmh2o, flow_slm, timestamp=ts)
         self.accumulator.accumulate(ts, flow_slm)
