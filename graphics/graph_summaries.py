@@ -19,16 +19,16 @@ class GraphSummary(object):
         self.frame = Frame(master=self.root,
                            borderwidth=1)
         self.value_label = Label(master=self.frame, text="HELLO",
-                                 font=("Roboto", 18),
-                                 bg=self.color(),
+                                 font=("Roboto", 29),
+                                 bg=Theme.active().BACKGROUND,
                                  fg=Theme.active().TXT_ON_SURFACE)
         self.units_label = Label(master=self.frame, text="HELLO",
                                  font=("Roboto", 8),
-                                 bg=self.color(),
+                                 bg=Theme.active().BACKGROUND,
                                  fg=Theme.active().TXT_ON_SURFACE)
         self.name_label = Label(master=self.frame, text="HELLO",
-                                font=("Roboto", 15),
-                                bg=self.color(),
+                                font=("Roboto", 13),
+                                bg=Theme.active().BACKGROUND,
                                 fg=Theme.active().TXT_ON_SURFACE)
 
     def units(self):

@@ -23,9 +23,8 @@ RESOURCES_DIRECTORY = os.path.join(os.path.dirname(THIS_DIRECTORY), "resources")
 
 
 class ClearAlertsButton(object):
-
     PATH_TO_IMAGE = os.path.join(RESOURCES_DIRECTORY,
-                                 "baseline_delete_forever_white_24dp.png")
+                                 "baseline_history_white_24dp.png")
 
     def __init__(self, parent, events):
         self.parent = parent
@@ -93,12 +92,17 @@ class MuteAlertsButton(object):
 
 
 class LockThresholdsButton(object):
+
+    IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY,
+                                    "outline_lock_open_white_24dp.png")
+
     def __init__(self, parent):
         self.parent = parent
         self.root = parent.element
 
-        self.button = Button(master=self.root,
+        self.button = ImageButton(master=self.root,
                              command=self.on_click,
+                             image_path=self.IMAGE_PATH,
                              text="Lock", relief="flat",
                              font=("Roboto", 10),
                              bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
@@ -117,12 +121,15 @@ class LockThresholdsButton(object):
 
 
 class OpenConfigureAlertsScreenButton(object):
+    PATH_TO_SETTINGS = os.path.join(RESOURCES_DIRECTORY,
+                                    "baseline_settings_white_24dp.png")
+
     def __init__(self, parent):
         self.parent = parent
         self.root = parent.element
 
-        self.button = Button(master=self.root,
-                             text="Alerts",
+        self.button = ImageButton(master=self.root,
+                                  image_path=self.PATH_TO_SETTINGS,
                              command=self.on_click,
                              font=("Roboto", 10),
                              relief="flat",
