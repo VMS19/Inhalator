@@ -127,7 +127,6 @@ def run_scenarios(events, sampler, config):
 
     for pressure, flow, volume in product(pressure_values, flow_values,
                                           volume_values):
-        print(f"{pressure}-{flow}-{volume}")
         config.pressure_threshold = PressureThreshold(pressure, pressure)
         config.flow_threshold = FlowThreshold(flow, flow)
         config.volume_threshold = VolumeThreshold(volume, volume)
@@ -139,7 +138,11 @@ def run_scenarios(events, sampler, config):
         low = sum([1 for state in sensor_values if state == LOW_VALUE])
         high = sum([True for state in sensor_values if state == HIGH_VALUE])
 
-        assert len(events.alerts_queue) == low + high
+        alarms = events.alerts_queue
+        print(f"pressure:{pressure}; flow:{flow}; volume:{volume}")
+        print(f"alarms:{alarms} of length {len(alarms)}")
+
+        assert len(alarms) == low + high
 
 
 def test_sampler_alerts_when_sensors_exceeds_threshold(events, measurements, config, driver_factory):
