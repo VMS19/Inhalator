@@ -36,8 +36,6 @@ class BroadcastHandler(logging.handlers.DatagramHandler):
 def configure_logging(level):
     config = Configurations.instance()
 
-    logging.addLevelName(NOTICE, 'NOTICE')
-
     logger = logging.getLogger()
     logger.setLevel(level)
     # create file handler which logs even debug messages

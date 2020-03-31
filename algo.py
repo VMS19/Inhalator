@@ -11,6 +11,7 @@ from data.measurements import Measurements
 from data.configurations import Configurations
 
 NOTICE = logging.DEBUG - 1
+logging.addLevelName(NOTICE, 'NOTICE')
 
 
 class VolumeAccumulator(object):
