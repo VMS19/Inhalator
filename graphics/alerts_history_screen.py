@@ -52,6 +52,7 @@ class BottomBar(object):
         self.back_btn = Button(master=self.frame,
                                bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
                                text="Back",
+                               font=("Roboto", 20),
                                command=self.on_click,
                                fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
                                activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
