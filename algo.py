@@ -243,8 +243,8 @@ class PEEPHandler(StateHandler):
                 self.accumulator.air_volume_liter <
                 self._config.volume_threshold.min):
             self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW)
-            self.log.debug('volume low value: %s, low threshold: %s' % self.accumulator.air_volume_liter,
-                           self._config.volume_threshold.min)
+            self.log.warning('volume too low: %s, bottom threshold: %s', self.accumulator.air_volume_liter,
+                             self._config.volume_threshold.min)
 
         volume_ml = self.accumulator.air_volume_liter * 1000
         self.log.info("Volume: %s", volume_ml)
@@ -289,16 +289,19 @@ class Sampler(object):
         seconds_from_last_breath = ts - self.inhale_handler.last_breath_timestamp
         if seconds_from_last_breath >= 12:
             self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH)
-            self.log.debug('No breath')
+            self.log.warning('No breath detected for the last 12 seconds')
 
         # Read from sensors
         flow_slm = self._flow_sensor.read()
         pressure_cmh2o = self._pressure_sensor.read()
         o2_saturation_percentage = self._oxygen_a2d.read()
 
-        self.log.debug('flow sensor value: %s' % flow_slm)
-        self.log.debug('pressure sensor value: %s' % pressure_cmh2o)
-        self.log.debug('oxygen sensor value: %s' % o2_saturation_percentage)
+        # WARNING! These log messages are useful for debugging sensors but
+        # might spam you since they are printed on every sample. In order to see
+        # them run the application in maximum verbosity mode by passing `-vvv` to `main.py
+        self.log.log('NOTICE', 'flow: %s', flow_slm)
+        self.log.log('NOTICE', 'pressure: %s', pressure_cmh2o)
+        self.log.log('NOTICE', 'oxygen: %s', o2_saturation_percentage)
 
         self.vsm.update(pressure_cmh2o, flow_slm, timestamp=ts)
         self.accumulator.accumulate(ts, flow_slm)
@@ -308,22 +311,22 @@ class Sampler(object):
                 pressure_cmh2o > self._config.pressure_threshold.max:
             # Above healthy lungs pressure
             self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_HIGH)
-            self.log.debug('pressure high value: %s, high threshold: %s' % pressure_cmh2o,
-                           self._config.pressure_threshold.max)
+            self.log.warning('pressure too high: %s, top threshold: %s', pressure_cmh2o,
+                             self._config.pressure_threshold.max)
 
         if self._config.pressure_threshold.min != "off" and \
                 pressure_cmh2o < self._config.pressure_threshold.min:
             # Below healthy lungs pressure
             self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW)
-            self.log.debug('pressure low value: %s, low threshold: %s' % pressure_cmh2o,
-                           self._config.pressure_threshold.min)
+            self.log.warning('pressure too low: %s, bottom threshold: %s', pressure_cmh2o,
+                             self._config.pressure_threshold.min)
 
         if (self._config.volume_threshold.max != 'off' and
                 self.accumulator.air_volume_liter >
                 self._config.volume_threshold.max):
             self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH)
-            self.log.debug('volume high value: %s, high threshold: %s' % self.accumulator.air_volume_liter,
-                           self._config.volume_threshold.max)
+            self.log.warning('volume too high: %s, top threshold: %s', self.accumulator.air_volume_liter,
+                             self._config.volume_threshold.max)
 
         self._measurements.set_flow_value(flow_slm)
         self._measurements.set_saturation_percentage(o2_saturation_percentage)

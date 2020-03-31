@@ -4,7 +4,6 @@ import logging
 import signal
 import socket
 from logging.handlers import RotatingFileHandler
-from time import sleep
 
 from drivers.driver_factory import DriverFactory
 from data.configurations import Configurations
@@ -12,7 +11,6 @@ from data.measurements import Measurements
 from data.events import Events
 from application import Application
 from algo import Sampler
-from drivers.aux_sound import SoundViaAux
 
 
 class BroadcastHandler(logging.handlers.DatagramHandler):
@@ -37,6 +35,8 @@ class BroadcastHandler(logging.handlers.DatagramHandler):
 
 def configure_logging(level):
     config = Configurations.instance()
+
+    logging.addLevelName(logging.DEBUG - 1, 'NOTICE')
 
     logger = logging.getLogger()
     logger.setLevel(level)
@@ -69,7 +69,7 @@ def parse_args():
     parser.add_argument("--simulate", "-s", action='store_true')
     parser.add_argument("--data", '-d', default='sinus')
     args = parser.parse_args()
-    args.verbose = max(0, logging.ERROR - (10 * args.verbose))
+    args.verbose = max(0, logging.WARNING - (10 * args.verbose))
     return args
 
 
