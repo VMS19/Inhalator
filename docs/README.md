@@ -12,25 +12,11 @@
 The software accesses several data buses as described later.
 The software-hardware interfaces is described later. 
 
-## LOGIC 
-
-### SENSOR READ LOGIC 
-Read A2D CH0 every 1 seconds
-Read A2D CH1 every 15 minutes
-Read Flow-Sensor every 1 seconds
-
-### WD LOGIC 
-Set WD alarm to 30 seconds, reset the alarm before the WD rises. 
-If WD signal is raised the reset the software
+## ALARM RAISING LOGIC 
+1. If the patients stats are bad then turn LED on using GPIO 25
+2. If the sensor or a2d malfunctions then turn LED on using GPIO 24
 
 
-### ALARM RAISING LOGIC 
-1. If last the stadnard-deviation of the last 30 readings of A2D CH0 
- is smaller than 5 % of the average value turn LED ON using GPIO 25
-
-
-2. If last the stadnard-deviation of the last 30 readings of Flow-Sensor 
- is smaller than 5 % of the average value turn LED ON using GPIO 25
 
 
 
@@ -53,8 +39,8 @@ If WD signal is raised the reset the software
 |GPIO 25 (37) | EN_SYSTEM_RAS | output from raspb to enabel system (IO-LOW=RAISE ALARM)|
 |GPIO 24 PCM_FS/PWN1 (35) | "#FLT" | output from raspb to LED  (IO-LOW=LED ON )|
 |GPIO 28 PCM_DIN (38) | GPIO | output from raspb to LED  (IO-LOW=LED ON )|
-|GPIO 27 (36) | INT1_RTC~| output from RTC to raspb input ( IO-LOW = INT ON )|
-|GPIO 29 (40) | INT1_RTC~| output from RTC to raspb input ( IO-LOW = INT ON )|
+|GPIO 27 (36) | INT1_RTC~| output from RTC to raspb input ( NOT USED )|
+|GPIO 29 (40) | INT1_RTC~| output from RTC to raspb input ( NOT USED )|
 
 ![Alt text](./rasp-3b+-pinout.png?raw=true "Title")
 
