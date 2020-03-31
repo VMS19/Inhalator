@@ -50,6 +50,7 @@ The software-hardware interfaces is described later.
 The I2C bus is populated with the following:
 1. Raspberry-PI3b+ - master
 2. Air-Flow sensor (A.K.A Flow) - <font color='red'>TBD</font>
+2. Pressure sensor - <font color='red'>TBD</font>
 
 3. RTC  [manual here](/RTCmanual.pdf)
 
