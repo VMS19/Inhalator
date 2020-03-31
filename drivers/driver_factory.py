@@ -59,9 +59,9 @@ class DriverFactory(object):
 
     def generate_mock_dead_man(self):
         return zero(
-            sample_rate = self.MOCK_SAMPLE_RATE_HZ,
-            amplitude = self.MOCK_PRESSURE_AMPLITUDE,
-            freq = self.MOCK_BPM / 60.0)
+            sample_rate=self.MOCK_SAMPLE_RATE_HZ,
+            amplitude=self.MOCK_PRESSURE_AMPLITUDE,
+            freq=self.MOCK_BPM / 60.0)
 
     def generate_mock_pressure_data(self):
         samples = sinus(
