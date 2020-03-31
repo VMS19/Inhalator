@@ -1,3 +1,5 @@
+from itertools import product
+
 import pytest
 
 from algo import Sampler
@@ -8,6 +10,13 @@ from data.thresholds import (FlowThreshold, PressureThreshold,
                              RespiratoryRateThreshold, VolumeThreshold)
 from drivers.mocks.sensor import MockSensor
 from drivers.driver_factory import DriverFactory
+
+
+HIGH_VALUE = 500
+LOW_VALUE = -500
+PRESSURE_VALID = 17.5
+FLOW_VALID = 17.5
+VOLUME_VALID = 17.5
 
 
 @pytest.fixture
@@ -109,3 +118,39 @@ def test_sampler_alerts_when_flow_exceeds_minimum(events, measurements, config, 
     sampler.sampling_iteration()
 
     assert len(events.alerts_queue) == 1
+
+
+def run_scenarios(events, sampler, config):
+    pressure_values = [LOW_VALUE, PRESSURE_VALID, HIGH_VALUE]
+    flow_values = [LOW_VALUE, FLOW_VALID, HIGH_VALUE]
+    volume_values = [LOW_VALUE, VOLUME_VALID, HIGH_VALUE]
+
+    for pressure, flow, volume in product(pressure_values, flow_values,
+                                          volume_values):
+        config.pressure_threshold = PressureThreshold(pressure, pressure)
+        config.flow_threshold = FlowThreshold(flow, flow)
+        config.volume_threshold = VolumeThreshold(volume, volume)
+
+        sampler.sampling_iteration()
+
+        low = any([True for state in [pressure, flow, volume] if state == LOW_VALUE])
+        high = any([True for state in [pressure, flow, volume] if state == HIGH_VALUE])
+
+        if low or high:
+            assert len(events.alerts_queue) == 1
+
+        else:
+            assert len(events.alerts_queue) == 0
+
+
+def test_sampler_alerts_when_sensors_exceeds_threshold(events, measurements, config, driver_factory):
+    flow_sensor = driver_factory.get_driver("flow")
+    pressure_sensor = driver_factory.get_driver("pressure")
+    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
+    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
+                      oxygen_a2d)
+    assert len(events.alerts_queue) == 0
+    sampler.sampling_iteration()
+    assert len(events.alerts_queue) == 0
+
+    run_scenarios(events, sampler, config)
