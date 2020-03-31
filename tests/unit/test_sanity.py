@@ -12,8 +12,8 @@ from drivers.mocks.sensor import MockSensor
 from drivers.driver_factory import DriverFactory
 
 
-HIGH_VALUE = 500
-LOW_VALUE = -500
+HIGH_VALUE = 50000
+LOW_VALUE = -50000
 PRESSURE_VALID = 17.5
 FLOW_VALID = 17.5
 VOLUME_VALID = 17.5
