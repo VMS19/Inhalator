@@ -13,8 +13,8 @@ logging.addLevelName(TRACE, 'TRACE')
 
 PORT = 7777
 LOG_LEVEL = 'TRACE'
-LOG_FILE_PATH = '/tmp/inhalator.log'
-CSV_FILE_OUTPUT = '/tmp/inhalator.csv'
+LOG_FILE_PATH = 'inhalator.log'
+CSV_FILE_OUTPUT = 'inhalator.csv'
 
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S,%f'
 
@@ -31,19 +31,19 @@ def configure_logger(log_level, output_file_path):
     logger = logging.getLogger()
     logger.setLevel(log_level)
     # create file handler which logs even debug messages
-    fh = logging.FileHandler(output_file_path, mode='w')
-    fh.setLevel(log_level)
+    file_handler = logging.FileHandler(output_file_path, mode='w')
+    file_handler.setLevel(log_level)
     # create console handler with a higher log level
-    ch = logging.StreamHandler()
-    ch.setLevel(log_level)
+    stream_handler = logging.StreamHandler()
+    stream_handler.setLevel(log_level)
     # create formatter and add it to the handlers
     formatter = logging.Formatter(
         '%(asctime)s >> %(message)s')
-    fh.setFormatter(formatter)
-    ch.setFormatter(formatter)
+    file_handler.setFormatter(formatter)
+    stream_handler.setFormatter(formatter)
     # add the handlers to the logger
-    logger.addHandler(fh)
-    logger.addHandler(ch)
+    logger.addHandler(file_handler)
+    logger.addHandler(stream_handler)
     return logger
 
 
@@ -77,24 +77,28 @@ def time_diff(timestamp1, timestamp2):
     return (timestamp2 - timestamp1).total_seconds()
 
 
+def unix_time(timestamp):
+    return datetime.datetime.strptime(timestamp, DATE_FORMAT).timestamp() * 1000
+
+
 def log_file_to_csv(log_file_path, csv_file_path):
     start_ts = None
     values = []
-    with open(csv_file_path, 'w') as csv_file:
+    with open(csv_file_path, 'w', newline='') as csv_file:
         writer = csv.writer(csv_file)
-        writer.writerow(['timestamp', 'time elapsed (seconds)', 'flow', 'pressure', 'oxygen'])
+        writer.writerow(['timestamp', 'unix_time (seconds)', 'time elapsed (seconds)', 'flow', 'pressure', 'oxygen'])
         for timestamp, value in sample_generator(log_file_path):
             if start_ts is None:
                 start_ts = timestamp
 
-            if len(values) == 3:
-                writer.writerow([timestamp, time_diff(start_ts, timestamp)] + values)
+            if len(values) == len(SENSORS_LOG_ORDER):
+                writer.writerow([timestamp, unix_time(timestamp), time_diff(start_ts, timestamp)] + values)
                 values = []
 
             values.append(value)
 
-        values = values + [None] * (3 - len(values))
-        writer.writerow([timestamp, time_diff(start_ts, timestamp)] + values)
+        values = values + [None] * (len(SENSORS_LOG_ORDER) - len(values))
+        writer.writerow([timestamp, unix_time(timestamp), time_diff(start_ts, timestamp)] + values)
 
 
 def main():

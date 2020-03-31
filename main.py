@@ -41,25 +41,25 @@ def configure_logging(level):
     logger = logging.getLogger()
     logger.setLevel(level)
     # create file handler which logs even debug messages
-    fh = RotatingFileHandler('inhalator.log', maxBytes=1024 * 100,
-                             backupCount=3)
-    fh.setLevel(level)
+    file_handler = RotatingFileHandler('inhalator.log', maxBytes=1024 * 100,
+                                       backupCount=3)
+    file_handler.setLevel(level)
     # create console handler with a higher log level
-    ch = logging.StreamHandler()
-    ch.setLevel(level)
+    stream_handler = logging.StreamHandler()
+    stream_handler.setLevel(level)
     # create socket handler to broadcast logs
-    sh = BroadcastHandler('255.255.255.255', config.debug_port)
-    sh.setLevel(level)
+    socket_handler = BroadcastHandler('255.255.255.255', config.debug_port)
+    socket_handler.setLevel(level)
     # create formatter and add it to the handlers
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    fh.setFormatter(formatter)
-    ch.setFormatter(formatter)
-    sh.setFormatter(formatter)
+    file_handler.setFormatter(formatter)
+    stream_handler.setFormatter(formatter)
+    socket_handler.setFormatter(formatter)
     # add the handlers to the logger
-    logger.addHandler(fh)
-    logger.addHandler(ch)
-    logger.addHandler(sh)
+    logger.addHandler(file_handler)
+    logger.addHandler(stream_handler)
+    logger.addHandler(socket_handler)
     logger.disabled = not config.log_enabled
     return logger
 
