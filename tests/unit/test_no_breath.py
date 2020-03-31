@@ -47,6 +47,13 @@ def events():
 
 
 def test_sampler_alerts_when_no_breath(events, measurements, config, driver_factory):
+    """Test that no-breath alert is sent after time without breathing
+
+    Flow:
+        * Run sinus simulation for a few cycles and make sure no alert was sent.
+        * Don't simulate sensors for time required to sent no-breath alert.
+        * Make sure a single no-breath alert was sent.
+    """
     flow_sensor = driver_factory.get_driver("flow")
     pressure_sensor = driver_factory.get_driver("pressure")
     oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
