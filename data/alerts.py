@@ -23,7 +23,7 @@ class Alert(object):
 
 
 class AlertsQueue(object):
-    MAXIMUM_ALERTS_AMOUNT = 2
+    MAXIMUM_ALERTS_AMOUNT = 3
 
     def __init__(self):
         self.queue = Queue(maxsize=self.MAXIMUM_ALERTS_AMOUNT)

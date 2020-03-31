@@ -143,6 +143,7 @@ def run_scenarios(events, sampler, config):
         print(f"alarms:{alarms} of length {len(alarms)}")
 
         assert len(alarms) == low + high
+        events.alerts_queue.clear_alerts()
 
 
 def test_sampler_alerts_when_sensors_exceeds_threshold(events, measurements, config, driver_factory):
