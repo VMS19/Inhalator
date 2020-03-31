@@ -133,8 +133,10 @@ def run_scenarios(events, sampler, config):
 
         sampler.sampling_iteration()
 
-        low = sum([1 for state in [pressure, flow, volume] if state == LOW_VALUE])
-        high = sum([True for state in [pressure, flow, volume] if state == HIGH_VALUE])
+        sensor_values = [pressure, flow]  # , volume] - No event for volume yet
+
+        low = sum([1 for state in sensor_values if state == LOW_VALUE])
+        high = sum([True for state in sensor_values if state == HIGH_VALUE])
 
         assert len(events.alerts_queue) == low + high
 
