@@ -38,7 +38,7 @@ class AlertTitles(object):
                                        fg=Theme.active().TXT_ON_BG)
 
     def render(self):
-        self.frame.place(relx=0, rely=0, relwidth=0.85, relheight=0.1)
+        self.frame.place(relx=0, rely=0, relwidth=0.85, relheight=0.15)
 
         self.time_label.place(relx=0, rely=0, relheight=1, relwidth=0.3)
         self.description_label.place(relx=0.3, rely=0, relheight=1, relwidth=0.7)
@@ -61,23 +61,25 @@ class BottomBar(object):
         self.parent.on_back_button_click()
 
     def render(self):
-        self.frame.place(relx=0, rely=0.85, relwidth=1, relheight=0.15)
-        self.back_btn.place(relx=0.2, rely=0.1, relheight=0.8, relwidth=0.6)
+        self.frame.place(relx=0, rely=0.85, relwidth=0.85, relheight=0.15)
+        self.back_btn.place(relx=0.25, rely=0.1, relheight=0.8, relwidth=0.5)
 
 
 class EntriesContainer(object):
-    def __init__(self, root):
+    def __init__(self, root, total_alerts_in_screen):
         self.root = root
+        self.total_alerts_in_screen = total_alerts_in_screen
+
         self.frame = Frame(master=self.root, bg=Theme.active().BACKGROUND)
         self.entries = []
 
     def set_entries(self, alerts):
-        self.entries = [AlertEntry(self.frame, alert, index)
+        self.entries = [AlertEntry(self.frame, alert, index, self.total_alerts_in_screen)
                         for index, alert in enumerate(alerts)]
         self.render()
 
     def render(self):
-        self.frame.place(relx=0, rely=0.1, relwidth=0.85, relheight=0.75)
+        self.frame.place(relx=0, rely=0.15, relwidth=0.85, relheight=0.7)
 
         for entry in self.entries:
             entry.render()
@@ -96,27 +98,28 @@ class ScrollUpDownContainer(object):
                                      image_path=self.UP_IMAGE_PATH,
                                      compound="center",
                                      command=self.parent.on_scroll_up,
-                                     bg=Theme.active().SURFACE,
-                                     activebackground=Theme.active().UP_DOWN_BTN_ON_CLICK)
+                                     bg=Theme.active().BUTTON,
+                                     activebackground=Theme.active().BUTTON_ACTIVE)
 
         self.down_button = ImageButton(master=self.frame,
                                        image_path=self.DOWN_IMAGE_PATH,
                                        compound="center",
                                        command=self.parent.on_scroll_down,
-                                       bg=Theme.active().SURFACE,
-                                       activebackground=Theme.active().UP_DOWN_BTN_ON_CLICK)
+                                       bg=Theme.active().BUTTON,
+                                       activebackground=Theme.active().BUTTON_ACTIVE)
 
     def render(self):
-        self.frame.place(relx=0.85, rely=0, relwidth=0.15, relheight=0.85)
-        self.up_button.place(relx=0.05, rely=0.22, relheight=0.35, relwidth=0.95)
-        self.down_button.place(relx=0.05, rely=0.63, relheight=0.35, relwidth=0.95)
+        self.frame.place(relx=0.85, rely=0, relwidth=0.15, relheight=1)
+        self.up_button.place(relx=0, rely=0, relheight=0.5, relwidth=1)
+        self.down_button.place(relx=0, rely=0.5, relheight=0.5, relwidth=1)
 
 
 class AlertEntry(object):
-    def __init__(self, root, alert, index):
+    def __init__(self, root, alert, index, total_alerts_in_screen):
         self.root = root
         self.alert = alert
         self.index = index
+        self.total_alerts_in_screen = total_alerts_in_screen
 
         self.frame = Frame(master=self.root,
                            highlightbackground="white",
@@ -133,15 +136,17 @@ class AlertEntry(object):
                                        fg=Theme.active().TXT_ON_SURFACE)
 
     def render(self):
-        self.frame.place(relwidth=1, relheight=0.2, relx=0, rely=(0.2 * self.index))
+        relheight = 1 / self.total_alerts_in_screen
+        rely = relheight * self.index
+        self.frame.place(relwidth=1, relheight=relheight, relx=0, rely=rely)
 
         self.time_label.place(relx=0, rely=0, relheight=1, relwidth=0.3)
         self.description_label.place(relx=0.3, rely=0, relheight=1, relwidth=0.7)
 
 
-class AlertsHistoryScreen(object):  # TODO: This class should register to event queue
+class AlertsHistoryScreen(object):
 
-    ALERTS_ON_SCREEN = 5  # TODO: Component should support different values
+    ALERTS_ON_SCREEN = 6
 
     def __init__(self, root, events):
         self.root = root
@@ -153,17 +158,18 @@ class AlertsHistoryScreen(object):  # TODO: This class should register to event 
         self.alerts_history_screen = Frame(master=self.root, bg=Theme.active().BACKGROUND)
         self.titles = AlertTitles(self.alerts_history_screen)
         self.bottom_bar = BottomBar(self, self.alerts_history_screen)
-        self.entries_container = EntriesContainer(self.alerts_history_screen)
+        self.entries_container = EntriesContainer(self.alerts_history_screen,
+                                                  total_alerts_in_screen=self.ALERTS_ON_SCREEN)
         self.scroll_up_down_container = ScrollUpDownContainer(self, self.alerts_history_screen)
 
         self.events.alerts_queue.subscribe(self, self.on_new_alert)
 
     @property
     def alerts(self):
-        return list(self.events.alerts_queue.queue)
+        return self.events.alerts_queue.history()
 
     def on_new_alert(self, alert):
-        print(alert)
+        self.update_entries()
 
     def on_scroll_up(self):
         if self.index == 0:

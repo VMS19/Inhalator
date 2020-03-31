@@ -1,5 +1,6 @@
 import time
 import datetime
+from collections import deque
 from enum import IntEnum
 from queue import Queue
 from functools import lru_cache
@@ -51,8 +52,11 @@ class Alert(object):
 
 class AlertsQueue(object):
     MAXIMUM_ALERTS_AMOUNT = 2
+    MAXIMUM_HISTORY_COUNT = 40
+    TIME_DIFFERENCE_BETWEEN_SAME_ALERTS = 60 * 5
 
     def __init__(self):
+        self.alerts_history = deque(maxlen=self.MAXIMUM_HISTORY_COUNT)
         self.queue = Queue(maxsize=self.MAXIMUM_ALERTS_AMOUNT)
         self.last_alert = Alert(AlertCodes.OK)
         self._subscribers = {}
@@ -60,30 +64,54 @@ class AlertsQueue(object):
     def __len__(self):
         return self.queue.qsize()
 
+    def history(self):
+        return list(self.alerts_history)
+
     def enqueue_alert(self, alert):
         if not isinstance(alert, Alert) and AlertCodes.is_valid(alert):
             alert = Alert(alert)
 
+        self.append_to_history(alert)
+
         if self.queue.qsize() == self.MAXIMUM_ALERTS_AMOUNT:
             self.dequeue_alert()
 
-        # with self.queue.mutex:
         self.last_alert = alert
 
         self.publish()
         self.queue.put(alert)
 
+    def append_to_history(self, alert):
+        """
+        We append an alert to the history in any one of the following cases:
+            * The alert history is empty
+            * The last alert is different from this one
+            * The last alert is the same as this one, but some time has passed since
+        """
+        alerts_history_is_empty = len(self.alerts_history) == 0
+        if not alerts_history_is_empty:
+            last_alert = self.alerts_history[0]
+            same_as_last_alert = last_alert == alert
+            if not same_as_last_alert:
+                self.alerts_history.appendleft(alert)
+
+            else:
+                time_passed_since = time.time() - last_alert.timestamp
+                if time_passed_since >= self.TIME_DIFFERENCE_BETWEEN_SAME_ALERTS:
+                    self.alerts_history.appendleft(alert)
+
+        else:
+            self.alerts_history.appendleft(alert)
+
     def dequeue_alert(self):
         alert = self.queue.get()
-        # with self.queue.mutex:
         self.last_alert = self.queue.queue[0]
 
         self.publish()
         return alert
 
     def clear_alerts(self):
-        # Note that emptying a queue is not thread-safe hence the mutex lock
-        # with self.queue.mutex:
+        # Note that emptying a queue is not thread-safe
         self.queue.queue.clear()
 
         self.last_alert = Alert(AlertCodes.OK)
