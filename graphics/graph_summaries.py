@@ -81,7 +81,7 @@ class VolumeSummary(GraphSummary):
         return "{:.0f}".format(self.measurements.volume)
 
     def name(self):
-        return "Volume"
+        return "Tv"
 
     def units(self):
         return "ml"
@@ -99,7 +99,7 @@ class BPMSummary(GraphSummary):
         return "{:.0f}".format(self.measurements.bpm)
 
     def name(self):
-        return "Rate"
+        return "RR"
 
     def units(self):
         return "bpm"
