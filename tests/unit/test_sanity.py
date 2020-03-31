@@ -138,11 +138,11 @@ def run_scenarios(events, sampler, config):
         over_th = sum([1 for state in sensor_values if state == LOW_VALUE])
         below_th = sum([True for state in sensor_values if state == HIGH_VALUE])
 
-        alarms = list(events.alerts_queue.queue)
+        alarms = list(events.alerts_queue.queue.queue)
         print(f"pressure:{pressure}; flow:{flow}; volume:{volume}")
         print(f"alarms:{alarms} of length {len(alarms)}")
-        for alaram in alarms:
-            print(f"{alaram.code} - {alaram.value}")
+        for alarm in alarms:
+            print(f"{alarm.code} - {alarm.value}")
 
         assert len(alarms) == below_th + over_th
         events.alerts_queue.clear_alerts()
