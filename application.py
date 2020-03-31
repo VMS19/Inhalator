@@ -9,6 +9,8 @@ else:
 
 from graphics.panes import MasterFrame
 from graphics.themes import Theme, DarkTheme
+from data.configurations import Configurations, ConfigurationState
+from data.alerts import Alert, AlertCodes
 
 
 class Application(object):
@@ -26,7 +28,7 @@ class Application(object):
     def instance(cls):
         return cls.__instance
 
-    def __init__(self, measurements, events, watchdog, drivers, sampler):
+    def __init__(self, measurements, events, arm_wd_event, drivers, sampler):
         self.should_run = True
         self.drivers = drivers
         self.sampler = sampler
@@ -41,7 +43,11 @@ class Application(object):
             # on production we don't want to see the ugly cursor
             self.root.config(cursor="none")
 
-        self.master_frame = MasterFrame(self.root, watchdog=watchdog,
+        # We want to alert that config.json is corrupted
+        if Configurations.configuration_state() == ConfigurationState.CONFIG_CORRUPTED:
+            events.alerts_queue.enqueue_alert(AlertCodes.NO_CONFIGURATION_FILE)
+
+        self.master_frame = MasterFrame(self.root, arm_wd_event=arm_wd_event,
                                         measurements=measurements,
                                         events=events,
                                         drivers=drivers)

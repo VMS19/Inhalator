@@ -99,7 +99,7 @@ class LockThresholdsButton(object):
 
         self.button = Button(master=self.root,
                              command=self.on_click,
-                             text="Lock",relief="flat",
+                             text="Lock", relief="flat",
                              font=("Roboto", 10),
                              bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
                              fg=Theme.active().RIGHT_SIDE_BUTTON_FG,

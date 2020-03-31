@@ -16,19 +16,20 @@ class GraphSummary(object):
         self.root = parent.element
         self.measurements = measurements
 
-        self.frame = Frame(master=self.root)
+        self.frame = Frame(master=self.root,
+                           borderwidth=1)
         self.value_label = Label(master=self.frame, text="HELLO",
                                  font=("Roboto", 18),
-                                 bg=Theme.active().SURFACE,
+                                 bg=self.color(),
                                  fg=Theme.active().TXT_ON_SURFACE)
         self.units_label = Label(master=self.frame, text="HELLO",
                                  font=("Roboto", 8),
-                                 bg=Theme.active().SURFACE,
+                                 bg=self.color(),
                                  fg=Theme.active().TXT_ON_SURFACE)
         self.name_label = Label(master=self.frame, text="HELLO",
                                 font=("Roboto", 15),
-                                 bg=Theme.active().SURFACE,
-                                 fg=Theme.active().TXT_ON_SURFACE)
+                                bg=self.color(),
+                                fg=Theme.active().TXT_ON_SURFACE)
 
     def units(self):
         pass
@@ -54,13 +55,18 @@ class GraphSummary(object):
 
 class PressurePeakSummary(GraphSummary):
     def value(self):
-        return "{:.0f}".format(self.measurements.intake_peak_pressure)
+        return "{}/{}".format(
+            round(self.measurements.intake_peak_pressure),
+            round(self.measurements.peep_min_pressure))
 
     def name(self):
-        return "pPeak"
+        return "PIP/PEEP"
 
     def units(self):
         return "cmH2O"
+
+    def color(self):
+        return Theme.active().YELLOW
 
     def render(self):
         self.frame.place(relx=0, rely=0, relheight=(1/4), relwidth=1)
@@ -77,6 +83,9 @@ class VolumeSummary(GraphSummary):
     def units(self):
         return "ml"
 
+    def color(self):
+        return Theme.active().LIGHT_BLUE
+
     def render(self):
         self.frame.place(relx=0, rely=(1/4), relheight=(1/4), relwidth=1)
         super(VolumeSummary, self).render()
@@ -91,6 +100,9 @@ class BPMSummary(GraphSummary):
 
     def units(self):
         return "bpm"
+
+    def color(self):
+        return Theme.active().LIGHT_BLUE
 
     def render(self):
         self.frame.place(relx=0, rely=(2/4), relheight=(1/4), relwidth=1)
@@ -108,6 +120,9 @@ class O2SaturationSummary(GraphSummary):
 
     def units(self):
         return "%"
+
+    def color(self):
+        return "green"
 
     def render(self):
         self.frame.place(relx=0, rely=(3/4), relheight=(1/4), relwidth=1)
