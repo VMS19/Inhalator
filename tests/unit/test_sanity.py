@@ -1,5 +1,3 @@
-from itertools import product
-
 import pytest
 
 from algo import Sampler

@@ -25,7 +25,6 @@ class VolumeAccumulator(object):
             # the time elapsed in minutes to calculate the accumulated volume
             # inhaled in this inhale.
             self.air_volume_liter += air_flow * elapsed_time_minutes
-
         self.last_sample_ts = timestamp
 
     def reset(self):
