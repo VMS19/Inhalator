@@ -133,14 +133,10 @@ def run_scenarios(events, sampler, config):
 
         sampler.sampling_iteration()
 
-        low = any([True for state in [pressure, flow, volume] if state == LOW_VALUE])
-        high = any([True for state in [pressure, flow, volume] if state == HIGH_VALUE])
+        low = sum([1 for state in [pressure, flow, volume] if state == LOW_VALUE])
+        high = sum([True for state in [pressure, flow, volume] if state == HIGH_VALUE])
 
-        if low or high:
-            assert len(events.alerts_queue) == 1
-
-        else:
-            assert len(events.alerts_queue) == 0
+        assert len(events.alerts_queue) == low + high
 
 
 def test_sampler_alerts_when_sensors_exceeds_threshold(events, measurements, config, driver_factory):
