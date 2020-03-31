@@ -87,9 +87,9 @@ Denote by Yi the fucntion of Xi, notice that Yi is a DOUBLE variable;
  CONV_COEFF=VREF/ BIT_ACCURACY\
  OX_GAIN=100\
  OX_OFFSET = 1.5\
- 
+ VOLTAGE_TO_OX= 0.16 / 0.0005
 ##### CALCULATION
- Y0 =  (CONV_COEFF * X0-OX_OFFSET) / OX_GAIN\
+ Y0 =  VOLTAGE_TO_OX * (CONV_COEFF * X0-OX_OFFSET) / OX_GAIN\
  Y1 = CONV_COEFF * X1 / BATT_RDIV\
  Y2 =  CONV_COEFF * X2\
  Y3 =  CONV_COEFF * X3\
