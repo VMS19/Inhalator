@@ -12,6 +12,8 @@ from data.events import Events
 from application import Application
 from algo import Sampler
 
+NOTICE = logging.DEBUG - 1
+
 
 class BroadcastHandler(logging.handlers.DatagramHandler):
     '''
@@ -36,7 +38,7 @@ class BroadcastHandler(logging.handlers.DatagramHandler):
 def configure_logging(level):
     config = Configurations.instance()
 
-    logging.addLevelName(logging.DEBUG - 1, 'NOTICE')
+    logging.addLevelName(NOTICE, 'NOTICE')
 
     logger = logging.getLogger()
     logger.setLevel(level)
