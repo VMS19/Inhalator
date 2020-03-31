@@ -82,19 +82,19 @@ def log_file_to_csv(log_file_path, csv_file_path):
     values = []
     with open(csv_file_path, 'w') as csv_file:
         writer = csv.writer(csv_file)
-        writer.writerow(['timestamp', 'flow', 'pressure', 'oxygen'])
+        writer.writerow(['timestamp', 'time elapsed (seconds)', 'flow', 'pressure', 'oxygen'])
         for timestamp, value in sample_generator(log_file_path):
             if start_ts is None:
                 start_ts = timestamp
 
             if len(values) == 3:
-                writer.writerow([time_diff(start_ts, timestamp)] + values)
+                writer.writerow([timestamp, time_diff(start_ts, timestamp)] + values)
                 values = []
 
             values.append(value)
 
         values = values + [None] * (3 - len(values))
-        writer.writerow([time_diff(start_ts, timestamp)] + values)
+        writer.writerow([timestamp, time_diff(start_ts, timestamp)] + values)
 
 
 def main():
