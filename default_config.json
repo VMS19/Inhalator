@@ -22,6 +22,16 @@
     },
     "breathing_threshold": 3.5
   },
+  "graph_y_scale" : {
+        "flow" : {
+            "min" : -40,
+            "max" : 80
+        },
+        "pressure" : {
+            "min" : 0,
+            "max" : 50
+        }
+  },
   "log_enabled": true,
   "graph_seconds": 12.0,
   "debug_port": 7777,
