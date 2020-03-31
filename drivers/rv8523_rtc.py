@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 class Rv8523Rtc(object):
     """Driver class for rv8523 rtc."""
     I2C_BUS = 1
-    I2C_ADDRESS = 0xD0
+    I2C_ADDRESS = 0x68
     BCD_TENS_SHIFT = 0x4
     BCD_NIBBLE_MASK = 0xF
     REG_CONTROL_1 = 0x0
@@ -60,7 +60,7 @@ class Rv8523Rtc(object):
     def _rtc_start(self):
 
         try:
-            self._pig.i2c_write_device(self._dev, self.REG_CONTROL_1)
+            self._pig.i2c_write_device(self._dev, [self.REG_CONTROL_1])
             read_size, ctrl_1 = self._pig.i2c_read_device(self._dev, 1)
             if read_size != 1:
                 log.error("control 1 reg data not ready")
@@ -71,10 +71,10 @@ class Rv8523Rtc(object):
             raise I2CWriteError("i2c write failed")
 
         # Disable stop bit
-        ctrl_1 |= 0x20
+        ctrl_1[0] |= 0x20
 
         try:
-            self._pig.i2c_write_device(self._dev, self.REG_CONTROL_1)
+            self._pig.i2c_write_device(self._dev, [self.REG_CONTROL_1])
             self._pig.i2c_write_device(self._dev, ctrl_1)
         except pigpio.error as e:
             log.error("Could not write control 1 reg to RTC. "
@@ -82,8 +82,8 @@ class Rv8523Rtc(object):
             raise I2CWriteError("i2c write failed")
 
     def bcd_to_int(self, bcd):
-        units = bcd & self.NIBBLE_MASK
-        tens = (bcd >> self.BCD_TENS_SHIFT) & self.NIBBLE_MASK
+        units = bcd[0] & self.BCD_NIBBLE_MASK
+        tens = (bcd[0] >> self.BCD_TENS_SHIFT) & self.BCD_NIBBLE_MASK
         return (tens * 10 + units)
 
     def int_to_bcd(self, number):
@@ -93,13 +93,13 @@ class Rv8523Rtc(object):
 
     def _set_clock_unit(self, reg, value):
         try:
-            self._pig.i2c_write_device(self._dev, reg)
-            self._pig.i2c_write_device(self._dev, value)
+            self._pig.i2c_write_device(self._dev, [reg])
+            self._pig.i2c_write_device(self._dev, [value])
         except pigpio.error as e:
             raise e
 
     def _get_clock_unit(self, reg):
-        self._pig.i2c_write_device(self._dev, reg)
+        self._pig.i2c_write_device(self._dev, [reg])
         read_size, clock_unit_bcd = self._pig.i2c_read_device(self._dev, 1)
 
         if read_size == 1:
@@ -114,8 +114,8 @@ class Rv8523Rtc(object):
         days = self._get_clock_unit(self.REG_DAYS)
         months = self._get_clock_unit(self.REG_MONTHS)
         years = self._get_clock_unit(self.REG_YEARS) + self.REG_YEARS_OFFSET
-
-        return date(years, months, days, hours, minutes, seconds)
+        return seconds
+        return date(years, months, days)
 
     def set_time(self, date):
         try:
