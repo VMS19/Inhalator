@@ -32,7 +32,9 @@ class Configurations(object):
 
     def __init__(self, flow_threshold, volume_threshold,
                  pressure_threshold, resp_rate_threshold,
-                 graph_seconds, breathing_threshold, log_enabled=True, debug_port=7777, mute_time_limit=120):
+                 graph_seconds, flow_y_scale, pressure_y_scale,
+                 breathing_threshold, log_enabled=True,
+                 debug_port=7777, mute_time_limit=120):
         self.flow_threshold = flow_threshold
         self.volume_threshold = volume_threshold
         self.pressure_threshold = pressure_threshold
@@ -42,6 +44,8 @@ class Configurations(object):
         self.log_enabled = log_enabled
         self.debug_port = debug_port
         self.mute_time_limit = mute_time_limit
+        self.flow_y_scale = flow_y_scale
+        self.pressure_y_scale = pressure_y_scale
 
     def __del__(self):
         self.save_to_file(self.CONFIG_FILE)
@@ -103,6 +107,11 @@ class Configurations(object):
                                                  max=config["threshold"]["bpm"]["max"],
                                                  step=config["threshold"]["bpm"]["step"])
 
+            flow_y_scale = (config["graph_y_scale"]["flow"]["min"], \
+                            config["graph_y_scale"]["flow"]["max"])
+            pressure_y_scale = (config["graph_y_scale"]["pressure"]["min"], \
+                                config["graph_y_scale"]["pressure"]["max"])
+
             graph_seconds = config["graph_seconds"]
             breathing_threshold = config["threshold"]["breathing_threshold"]
             log_enabled = config["log_enabled"]
@@ -117,7 +126,9 @@ class Configurations(object):
                        breathing_threshold=breathing_threshold,
                        log_enabled=log_enabled,
                        debug_port=debug_port,
-                       mute_time_limit=mute_time_limit)
+                       mute_time_limit=mute_time_limit,
+                       flow_y_scale=flow_y_scale,
+                       pressure_y_scale=pressure_y_scale)
 
         except Exception as e:
             raise ConfigurationFileError("Could not load config file %s"
@@ -148,6 +159,16 @@ class Configurations(object):
                     "step": self.volume_threshold.step
                 },
                 "breathing_threshold": self.breathing_threshold
+            },
+            "graph_y_scale" : {
+                "flow" : {
+                    "min" : self.flow_y_scale[0],
+                    "max" : self.flow_y_scale[1]
+                },
+                "pressure" : {
+                    "min" : self.pressure_y_scale[0],
+                    "max" : self.pressure_y_scale[1]
+                }
             },
             "log_enabled": self.log_enabled,
             "graph_seconds": self.graph_seconds,

@@ -27,8 +27,6 @@ class BlankGraph(object):
 
 
 class AirPressureGraph(object):
-    MIN_Y, MAX_Y = (0, 50)
-
     def __init__(self, parent, measurements, blank):
         self.parent = parent
         self.root = parent.element
@@ -67,7 +65,7 @@ class AirPressureGraph(object):
 
 
         # Scale y values
-        self.pressure_graph.axes.set_ylim(self.MIN_Y, self.MAX_Y)
+        self.pressure_graph.axes.set_ylim(*self.config.pressure_y_scale)
 
         # Thresholds
         self.pressure_max_threshold_graph, = \
@@ -116,8 +114,6 @@ class AirPressureGraph(object):
 
 
 class FlowGraph(object):
-    MIN_Y, MAX_Y = (0, 80)
-
     def __init__(self, parent, measurements, blank):
         self.parent = parent
         self.root = parent.element
@@ -154,8 +150,7 @@ class FlowGraph(object):
         self.flow_canvas = FigureCanvasTkAgg(self.flow_figure, master=self.root)
 
         # Scale y values
-        self.flow_graph.axes.set_ylim(self.MIN_Y, self.MAX_Y)
-
+        self.flow_graph.axes.set_ylim(*self.config.flow_y_scale)
 
     def render(self):
         self.flow_canvas.draw()
