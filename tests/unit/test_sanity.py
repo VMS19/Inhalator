@@ -127,6 +127,7 @@ def run_scenarios(events, sampler, config):
 
     for pressure, flow, volume in product(pressure_values, flow_values,
                                           volume_values):
+        print(f"{pressure}-{flow}-{volume}")
         config.pressure_threshold = PressureThreshold(pressure, pressure)
         config.flow_threshold = FlowThreshold(flow, flow)
         config.volume_threshold = VolumeThreshold(volume, volume)
