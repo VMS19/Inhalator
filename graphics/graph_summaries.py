@@ -19,17 +19,17 @@ class GraphSummary(object):
         self.frame = Frame(master=self.root,
                            borderwidth=1)
         self.value_label = Label(master=self.frame, text="HELLO",
-                                 font=("Roboto", 29),
+                                 font=("Roboto", 25),
                                  bg=Theme.active().BACKGROUND,
-                                 fg=Theme.active().TXT_ON_SURFACE)
+                                 fg=self.color())
         self.units_label = Label(master=self.frame, text="HELLO",
                                  font=("Roboto", 8),
                                  bg=Theme.active().BACKGROUND,
-                                 fg=Theme.active().TXT_ON_SURFACE)
+                                 fg=self.color())
         self.name_label = Label(master=self.frame, text="HELLO",
                                 font=("Roboto", 13),
                                 bg=Theme.active().BACKGROUND,
-                                fg=Theme.active().TXT_ON_SURFACE)
+                                fg=self.color())
 
     def units(self):
         pass
@@ -38,6 +38,9 @@ class GraphSummary(object):
         pass
 
     def value(self):
+        pass
+
+    def color(self):
         pass
 
     def render(self):
@@ -120,7 +123,7 @@ class O2SaturationSummary(GraphSummary):
         return "%"
 
     def color(self):
-        return "green"
+        return Theme.active().WHITE
 
     def render(self):
         self.frame.place(relx=0, rely=(3/4), relheight=(1/4), relwidth=1)
