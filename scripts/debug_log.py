@@ -8,8 +8,11 @@ import logging
 import argparse
 import datetime
 
+NOTICE = logging.DEBUG - 1
+logging.addLevelName(NOTICE, 'NOTICE')
+
 PORT = 7777
-LOG_LEVEL = logging.DEBUG
+LOG_LEVEL = 'NOTICE'
 LOG_FILE_PATH = '/tmp/inhalator.log'
 CSV_FILE_OUTPUT = '/tmp/inhalator.csv'
 
@@ -28,7 +31,7 @@ def configure_logger(log_level, output_file_path):
     logger = logging.getLogger()
     logger.setLevel(log_level)
     # create file handler which logs even debug messages
-    fh = logging.FileHandler(output_file_path)
+    fh = logging.FileHandler(output_file_path, mode='w')
     fh.setLevel(log_level)
     # create console handler with a higher log level
     ch = logging.StreamHandler()
