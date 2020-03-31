@@ -47,7 +47,7 @@ def events():
     return Events()
 
 
-def test_sampler_alerts_when_pressure_exceeds_minium(events, measurements, config, driver_factory):
+def test_sampler_alerts_when_volume_exceeds_minium(events, measurements, config, driver_factory):
     flow_sensor = driver_factory.get_driver("flow")
     pressure_sensor = driver_factory.get_driver("pressure")
     oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
@@ -69,7 +69,7 @@ def test_sampler_alerts_when_pressure_exceeds_minium(events, measurements, confi
     assert all(alert == alerts.AlertCodes.VOLUME_LOW for alert in all_alerts)
 
 
-def test_sampler_alerts_when_pressure_exceeds_maximum(events, measurements, config, driver_factory):
+def test_sampler_alerts_when_volume_exceeds_maximum(events, measurements, config, driver_factory):
     flow_sensor = driver_factory.get_driver("flow")
     pressure_sensor = driver_factory.get_driver("pressure")
     oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
