@@ -1,15 +1,18 @@
 import sys
 import time
 import logging
-import threading
 from enum import Enum
 from statistics import mean
 from collections import deque
+
 from scipy.stats import linregress
 
 from data.alerts import AlertCodes
 from data.measurements import Measurements
 from data.configurations import Configurations
+
+TRACE = logging.DEBUG - 1
+logging.addLevelName(TRACE, 'TRACE')
 
 
 class VolumeAccumulator(object):
@@ -222,8 +225,11 @@ class PEEPHandler(StateHandler):
 
         if self._config.volume_range.below(volume_ml):
             self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW)
+            self.log.warning("volume too low %s, bottom threshold %s", volume_ml, self._config.volume_range.min)
+
         elif self._config.volume_range.over(volume_ml):
             self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH)
+            self.log.warning("volume too high %s, top threshold %s", volume_ml, self._config.volume_range.max)
 
     def exit(self, timestamp):
         self.machine.reset_min_values()
@@ -283,11 +289,19 @@ class Sampler(object):
         seconds_from_last_breath = ts - self.inhale_handler.last_breath_timestamp
         if seconds_from_last_breath >= 12:
             self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH)
+            self.log.warning("No breath detected for the last 12 seconds")
 
         # Read from sensors
         flow_slm = self._flow_sensor.read()
         pressure_cmh2o = self._pressure_sensor.read()
         o2_saturation_percentage = self._oxygen_a2d.read()
+
+        # WARNING! These log messages are useful for debugging sensors but
+        # might spam you since they are printed on every sample. In order to see
+        # them run the application in maximum verbosity mode by passing `-vvv` to `main.py
+        self.log.log(TRACE, 'flow: %s', flow_slm)
+        self.log.log(TRACE, 'pressure: %s', pressure_cmh2o)
+        self.log.log(TRACE, 'oxygen: %s', o2_saturation_percentage)
 
         self.vsm.update(pressure_cmh2o, flow_slm, timestamp=ts)
         self.accumulator.accumulate(ts, flow_slm)
@@ -303,6 +317,10 @@ class Sampler(object):
         if self._config.pressure_range.over(pressure_cmh2o):
             # Above healthy lungs pressure
             self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_HIGH)
+            self.log.warning("pressure too high %s, top threshold %s", pressure_cmh2o, self._config.pressure_range.max)
+
         elif self._config.pressure_range.below(pressure_cmh2o):
             # Below healthy lungs pressure
             self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW)
+            self.log.warning("pressure too low %s, bottom threshold %s", pressure_cmh2o,
+                             self._config.pressure_range.min)

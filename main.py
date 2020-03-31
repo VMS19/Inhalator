@@ -4,16 +4,14 @@ import logging
 import signal
 import socket
 from logging.handlers import RotatingFileHandler
-
 from threading import Event
 
 from drivers.driver_factory import DriverFactory
-from data.configurations import Configurations, ConfigurationState
+from data.configurations import Configurations
 from data.measurements import Measurements
 from data.events import Events
 from application import Application
 from algo import Sampler
-
 from wd_task import WdTask
 
 
