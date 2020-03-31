@@ -1,4 +1,4 @@
-from drivers.dsp_pressure_sensor.py import DspPressureSensor
+from dsp_pressure_sensor import DspPressureSensor
 import logging
 
 
