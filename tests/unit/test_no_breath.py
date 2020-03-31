@@ -75,9 +75,8 @@ def test_dead_man_alerts_when_no_breath(events, measurements, config):
     """Test that no-breath alert is sent after time without breathing
 
     Flow:
-        * Run sinus simulation for a few cycles and make sure no alert was sent.
-        * Don't simulate sensors for time required to sent no-breath alert.
-        * Make sure a single no-breath alert was sent.
+        * Run deadman simulation for no-breath time.
+        * Make sure at least one no-breath alert was sent.
     """
     driver_factory = DriverFactory(simulation_mode=True, simulation_data="dead")
     flow_sensor = driver_factory.get_driver("flow")
