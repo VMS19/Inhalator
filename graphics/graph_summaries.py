@@ -55,10 +55,12 @@ class GraphSummary(object):
 
 class PressurePeakSummary(GraphSummary):
     def value(self):
-        return "{:.0f}".format(self.measurements.intake_peak_pressure)
+        return "{}/{}".format(
+            round(self.measurements.intake_peak_pressure),
+            round(self.measurements.peep_min_pressure))
 
     def name(self):
-        return "pPeak"
+        return "PIP/PEEP"
 
     def units(self):
         return "cmH2O"

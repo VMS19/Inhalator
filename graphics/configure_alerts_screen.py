@@ -12,8 +12,8 @@ if platform.python_version() < '3':
 else:
     from tkinter import *
 
-from data.thresholds import (VolumeThreshold, PressureThreshold,
-                             RespiratoryRateThreshold, FlowThreshold)
+from data.thresholds import (VolumeRange, PressureRange,
+                             RespiratoryRateRange, FlowRange)
 
 from graphics.imagebutton import ImageButton
 from graphics.themes import Theme
@@ -77,7 +77,7 @@ class Section(object):
         self.parent = parent
         self.root = root
 
-        self.original_threshold = self.threshold.copy()
+        self.original_range = self.range.copy()
 
         self.frame = Frame(self.root, bg="red")
         self.name_label = Label(master=self.frame, font=("Roboto", 15),
@@ -105,15 +105,15 @@ class Section(object):
         return Configurations.instance()
 
     @property
-    def threshold(self):
+    def range(self):
         raise NotImplementedError()
 
     def undo(self):
-        self.threshold.load_from(self.original_threshold)
+        self.range.load_from(self.original_range)
 
     def update(self):
-        self.max_button.configure(text="MAX\n{}".format(self.threshold.max))
-        self.min_button.configure(text="MIN\n{}".format(self.threshold.min))
+        self.max_button.configure(text="MAX\n{}".format(self.range.max))
+        self.min_button.configure(text="MIN\n{}".format(self.range.min))
 
     def render(self):
         self.frame.place(relx=(0.2) * self.INDEX,
@@ -124,39 +124,42 @@ class Section(object):
         self.minmax_divider.place(relx=0, rely=0.499, relwidth=1, relheight=0.26)
         self.min_button.place(relx=0, rely=0.75, relwidth=1, relheight=0.25)
 
-        self.name_label.configure(text=self.threshold.NAME)
-        self.unit_label.configure(text=self.threshold.UNIT)
-        self.max_button.configure(text="MAX\n{}".format(self.threshold.max))
-        self.min_button.configure(text="MIN\n{}".format(self.threshold.min))
+        self.name_label.configure(text=self.range.NAME)
+        self.unit_label.configure(text=self.range.UNIT)
+        self.max_button.configure(text="MAX\n{}".format(self.range.max))
+        self.min_button.configure(text="MIN\n{}".format(self.range.min))
 
 
 class VTISection(Section):
     INDEX = 0
 
     @property
-    def threshold(self):
-        return self.config.flow_threshold
+    def range(self):
+        return self.config.flow_range
+
 
 class MVISection(Section):
     INDEX = 1
 
     @property
-    def threshold(self):
-        return self.config.volume_threshold
+    def range(self):
+        return self.config.volume_range
+
 
 class PressureSection(Section):
     INDEX = 2
 
     @property
-    def threshold(self):
-        return self.config.pressure_threshold
+    def range(self):
+        return self.config.pressure_range
+
 
 class RespRateSection(Section):
     INDEX = 3
 
     @property
-    def threshold(self):
-        return self.config.resp_rate_threshold
+    def range(self):
+        return self.config.resp_rate_range
 
 
 class UpOrDownSection(object):
@@ -244,13 +247,13 @@ class ConfigureAlarmsScreen(object):
             irrelevant_button.deselect()
 
         # Toggle selected threshold
-        if (self.selected_threshold, self.is_min) == (button.parent.threshold, is_min):
+        if (self.selected_threshold, self.is_min) == (button.parent.range, is_min):
             self.selected_threshold = None
             self.is_min = False
             button.deselect()
 
         else:
-            self.selected_threshold = button.parent.threshold
+            self.selected_threshold = button.parent.range
             self.is_min = is_min
             button.select()
 
