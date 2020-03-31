@@ -3,6 +3,7 @@ from itertools import product
 import pytest
 
 from algo import Sampler
+from data import alerts
 from data.measurements import Measurements
 from data.events import Events
 from data.configurations import Configurations
@@ -17,6 +18,14 @@ LOW_VALUE = -50000
 PRESSURE_VALID = 17.5
 FLOW_VALID = 17.5
 VOLUME_VALID = 17.5
+ERROR_DICT = {
+        alerts.AlertCodes.PRESSURE_LOW: "Low Pressure",
+        alerts.AlertCodes.PRESSURE_HIGH: "High Pressure",
+        alerts.AlertCodes.VOLUME_LOW: "Low Volume",
+        alerts.AlertCodes.VOLUME_HIGH: "High Volume",
+        alerts.AlertCodes.NO_BREATH: "No Breathing",
+        alerts.AlertCodes.NO_CONFIGURATION_FILE: "Cannot Read Configuration"
+    }
 
 
 @pytest.fixture
@@ -120,6 +129,16 @@ def test_sampler_alerts_when_flow_exceeds_minimum(events, measurements, config, 
     assert len(events.alerts_queue) == 1
 
 
+def state_to_message(value, name):
+    if value == LOW_VALUE:
+        return f"High {name}"
+
+    elif value == HIGH_VALUE:
+        return f"Low {name}"
+
+    return ""
+
+
 def run_scenarios(events, sampler, config):
     pressure_values = [LOW_VALUE, PRESSURE_VALID, HIGH_VALUE]
     flow_values = [LOW_VALUE, FLOW_VALID, HIGH_VALUE]
@@ -133,18 +152,20 @@ def run_scenarios(events, sampler, config):
 
         sampler.sampling_iteration()
 
-        sensor_values = [pressure, volume]  # , flow] - No event for flow yet
+        sensor_values = [pressure, volume]  # TODo: add flow, when there is an alert for it
 
         over_th = sum([1 for state in sensor_values if state == LOW_VALUE])
         below_th = sum([True for state in sensor_values if state == HIGH_VALUE])
 
-        alarms = list(events.alerts_queue.queue.queue)
-        print(f"pressure:{pressure}; flow:{flow}; volume:{volume}")
-        print(f"alarms:{alarms} of length {len(alarms)}")
-        for alarm in alarms:
-            print(alarm)
+        expect = f"Expected {state_to_message(pressure, 'Pressure')} " \
+                 f"{state_to_message(volume, 'Volume')} "
+                 # f"{state_to_message(flow, 'flow')}"  # TODO: return when flow alerts
 
-        assert len(alarms) == below_th + over_th
+        alarms = list(events.alerts_queue.queue.queue)
+        received = "Received " + ' '.join([ERROR_DICT[alarm] for alarm in alarms])
+
+        error_msg = f"{expect}, {received}"
+        assert len(alarms) == below_th + over_th,  error_msg
         events.alerts_queue.clear_alerts()
 
 
