@@ -16,7 +16,8 @@ class GraphSummary(object):
         self.root = parent.element
         self.measurements = measurements
 
-        self.frame = Frame(master=self.root, borderwidth=1)
+        self.frame = Frame(master=self.root,
+                           borderwidth=1)
         self.value_label = Label(master=self.frame, text="HELLO",
                                  font=("Roboto", 18),
                                  bg=self.color(),

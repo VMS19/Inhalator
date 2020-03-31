@@ -13,8 +13,6 @@ if platform.python_version() < '3':
 else:
     from tkinter import *
 
-MIN_TRHLD_COLOR = "green"
-
 
 class BlankGraph(object):
     def __init__(self, root):
@@ -84,7 +82,7 @@ class AirPressureGraph(object):
             self.pressure_axis.plot(self.measurements.x_axis,
                                     [self.config.pressure_threshold.min] *
                                     len(self.measurements.x_axis),
-                                    color=MIN_TRHLD_COLOR,
+                                    color=Theme.active().RED,
                                     animated=True,
                                     linewidth=3)
 

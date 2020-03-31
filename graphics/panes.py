@@ -60,7 +60,8 @@ class LeftPane(object):
         self.height = self.screen_height * 0.85
         self.width = self.screen_width * 0.2
 
-        self.frame = Frame(master=self.root, bg=Theme.active().SURFACE,
+        self.frame = Frame(master=self.root,
+                           bg=Theme.active().SURFACE,
                            height=self.height,
                            width=self.width)
 
