@@ -2,17 +2,39 @@ import os
 import argparse
 import logging
 import signal
+import socket
 from logging.handlers import RotatingFileHandler
-from logging.handlers import SocketHandler
+
 from threading import Event
 
 from drivers.driver_factory import DriverFactory
-from data.configurations import Configurations
+from data.configurations import Configurations, ConfigurationState
 from data.measurements import Measurements
 from data.events import Events
 from application import Application
 from algo import Sampler
+
 from wd_task import WdTask
+
+
+class BroadcastHandler(logging.handlers.DatagramHandler):
+    """
+    A handler for the python logging system which is able to broadcast packets.
+    """
+
+    def send(self, s):
+        try:
+            super().send(s)
+
+        except OSError as e:
+            if e.errno != 101:
+                raise RuntimeError("Network is unreachable") from e
+
+    def makeSocket(self):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        return sock
 
 
 def configure_logging(level):
@@ -21,25 +43,25 @@ def configure_logging(level):
     logger = logging.getLogger()
     logger.setLevel(level)
     # create file handler which logs even debug messages
-    file_handler = RotatingFileHandler('inhalator.log', maxBytes=1024 * 100,
-                                       backupCount=3)
-    file_handler.setLevel(level)
+    fh = RotatingFileHandler('inhalator.log', maxBytes=1024 * 100,
+                             backupCount=3)
+    fh.setLevel(logging.DEBUG)
     # create console handler with a higher log level
-    stream_handler = logging.StreamHandler()
-    stream_handler.setLevel(level)
+    ch = logging.StreamHandler()
+    ch.setLevel(level)
     # create socket handler to broadcast logs
-    socket_handler = SocketHandler('192.168.43.152', config.debug_port)
-    socket_handler.setLevel(level)
+    sh = BroadcastHandler('255.255.255.255', config.debug_port)
+    sh.setLevel(level)
     # create formatter and add it to the handlers
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    file_handler.setFormatter(formatter)
-    stream_handler.setFormatter(formatter)
-    socket_handler.setFormatter(formatter)
+    fh.setFormatter(formatter)
+    ch.setFormatter(formatter)
+    sh.setFormatter(formatter)
     # add the handlers to the logger
-    logger.addHandler(file_handler)
-    logger.addHandler(stream_handler)
-    logger.addHandler(socket_handler)
+    logger.addHandler(fh)
+    logger.addHandler(ch)
+    logger.addHandler(sh)
     logger.disabled = not config.log_enabled
     return logger
 

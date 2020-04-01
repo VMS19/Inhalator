@@ -72,12 +72,11 @@ class RateMeter(object):
         self.samples.clear()
 
     def beat(self, timestamp=None):
-        now = time.time()
         if timestamp is None:
-            timestamp = now
+            timestamp = time.time()
         self.samples.append(timestamp)
         # Discard beats older than `self.time_span_seconds`
-        while self.samples[0] < (now - self.time_span_seconds):
+        while self.samples[0] < (timestamp - self.time_span_seconds):
             self.samples.popleft()
 
         # Basically the rate is the number of elements left, since the container
@@ -91,7 +90,7 @@ class RateMeter(object):
         # in the data, and calculate the rate based on it. After we accumulate
         # enough data, this interval will be pretty close to the desired span.
         oldest = self.samples[0]
-        interval = now - oldest
+        interval = timestamp - oldest
         # protect against division by zero
         if interval == 0:
             # Technically rate is infinity, but 0 will be more descriptive

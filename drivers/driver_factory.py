@@ -49,10 +49,10 @@ class DriverFactory(object):
         driver = self.drivers_cache.get(key)
         if driver is not None:
             return driver
-        method_name = "get{}_{}_driver".format(("_mock" if self.mock else ""), driver_name)
+        method_name = f"get{'_mock' if self.mock else ''}_{driver_name}_driver"
         method = getattr(self, method_name, None)
         if method is None:
-            raise ValueError("Unsupported driver {}".format(driver_name))
+            raise ValueError(f"Unsupported driver {driver_name}")
         driver = method()
         self.drivers_cache[key] = driver
         return driver
@@ -147,7 +147,9 @@ class DriverFactory(object):
     def get_mock_oxygen_a2d_driver(self):
         from drivers.mocks.sensor import MockSensor
         simulation_data = self.simulation_data
-        if simulation_data == 'sinus':
+        if simulation_data == 'dead':
+            data = self.generate_mock_dead_man()
+        elif simulation_data == 'sinus':
             data = self.generate_mock_oxygen_a2d_data()
         else:
             data = generate_data_from_file('oxygen', simulation_data)

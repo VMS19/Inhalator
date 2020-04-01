@@ -1,11 +1,4 @@
-# Tkinter stuff
-import platform
-
-if platform.python_version() < '3':
-    from Tkinter import *
-
-else:
-    from tkinter import *
+from tkinter import *
 
 from graphics.alert_bar import IndicatorAlertBar
 from graphics.graphs import FlowGraph, AirPressureGraph, BlankGraph
@@ -14,18 +7,18 @@ from graphics.graph_summaries import VolumeSummary, BPMSummary, \
 from graphics.right_menu_options import (MuteAlertsButton,
                                          ClearAlertsButton,
                                          LockThresholdsButton,
-                                         OpenConfigureAlertsScreenButton)
+                                         OpenConfigureAlertsScreenButton, OpenAlertsHistoryScreenButton)
 from graphics.themes import Theme
 
 
 class MasterFrame(object):
-    def __init__(self, root, arm_wd_event, drivers, events, measurements):
+    def __init__(self, root, drivers, events, measurements):
         self.root = root
 
         self.master_frame = Frame(master=self.root, bg="black")
         self.left_pane = LeftPane(self, measurements=measurements)
         self.right_pane = RightPane(self, events=events)
-        self.center_pane = CenterPane(self, arm_wd_event=arm_wd_event, measurements=measurements)
+        self.center_pane = CenterPane(self, measurements=measurements)
         self.top_pane = TopPane(self, events=events, drivers=drivers)
 
     @property
@@ -90,9 +83,8 @@ class LeftPane(object):
 
 
 class CenterPane(object):
-    def __init__(self, parent, arm_wd_event, measurements):
+    def __init__(self, parent, measurements):
         self.parent = parent
-        self.arm_wd_event = arm_wd_event
         self.measurements = measurements
 
         self.root = parent.element
@@ -141,10 +133,6 @@ class CenterPane(object):
         for graph in self.graphs:
             graph.update()
 
-        # arm wd only if both queues had sampling values
-        if had_flow_change and had_pressure_change:
-            self.arm_wd_event.set()
-
 
 class RightPane(object):
     def __init__(self, parent, events):
@@ -165,13 +153,14 @@ class RightPane(object):
         self.clear_alerts_btn = ClearAlertsButton(parent=self, events=self.events)
         self.lock_thresholds_btn = LockThresholdsButton(parent=self)
         self.configure_alerts_btn = OpenConfigureAlertsScreenButton(self)
-
+        self.alerts_history_btn = OpenAlertsHistoryScreenButton(self, events=self.events)
 
     @property
     def buttons(self):
         return (self.mute_alerts_btn,
                 self.clear_alerts_btn,
                 self.configure_alerts_btn,
+                self.alerts_history_btn,
                 self.lock_thresholds_btn)
 
     @property

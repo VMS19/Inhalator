@@ -1,17 +1,11 @@
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-
-# Tkinter stuff
-import platform
+from matplotlib import rcParams
 
 from data.configurations import Configurations
 from graphics.themes import Theme
 
-if platform.python_version() < '3':
-    from Tkinter import *
-
-else:
-    from tkinter import *
+from tkinter import *
 
 
 class BlankGraph(object):
@@ -115,6 +109,7 @@ class AirPressureGraph(object):
 
 class FlowGraph(object):
     def __init__(self, parent, measurements, blank):
+        rcParams.update({'figure.autolayout':True})
         self.parent = parent
         self.root = parent.element
         self.measurements = measurements
