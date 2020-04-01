@@ -134,4 +134,4 @@ def test_noise_alerts_when_no_breath(events, measurements, config):
     assert len(events.alerts_queue) >= 1
 
     all_alerts = list(events.alerts_queue.queue.queue)
-    assert all(alert == alerts.AlertCodes.NO_BREATH for alert in all_alerts)
+    assert all(alert == alerts.AlertCodes.NO_BREATH for alert in all_alerts), f"Received alerts {all_alerts}"
