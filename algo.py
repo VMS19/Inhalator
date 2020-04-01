@@ -220,9 +220,9 @@ class PEEPHandler(StateHandler):
         self.machine.accumulator.reset()
 
         if self._config.volume_range.below(volume_ml):
-            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW)
+            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW, timestamp)
         elif self._config.volume_range.over(volume_ml):
-            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH)
+            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH, timestamp)
 
     def exit(self, timestamp):
         self.machine.reset_min_values()
@@ -301,7 +301,7 @@ class Sampler(object):
 
         if self._config.pressure_range.over(pressure_cmh2o):
             # Above healthy lungs pressure
-            self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_HIGH)
+            self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_HIGH, ts)
         elif self._config.pressure_range.below(pressure_cmh2o):
             # Below healthy lungs pressure
-            self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW)
+            self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW, ts)

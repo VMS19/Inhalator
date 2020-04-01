@@ -83,7 +83,7 @@ class AlertsQueue(object):
         if not isinstance(alert, Alert) and AlertCodes.is_valid(alert):
             alert = Alert(alert, timestamp)
 
-        self.append_to_history(alert)
+        self.append_to_history(alert, timestamp)
 
         if self.queue.qsize() == self.MAXIMUM_ALERTS_AMOUNT:
             self.dequeue_alert()
@@ -93,13 +93,16 @@ class AlertsQueue(object):
         self.publish()
         self.queue.put(alert)
 
-    def append_to_history(self, alert):
+    def append_to_history(self, alert, timestamp):
         """
         We append an alert to the history in any one of the following cases:
             * The alert history is empty
             * The last alert is different from this one
             * The last alert is the same as this one, but some time has passed since
         """
+        if timestamp is None:
+            timestamp = time.time()
+
         alerts_history_is_empty = len(self.alerts_history) == 0
         if not alerts_history_is_empty:
             last_alert = self.alerts_history[0]
@@ -108,7 +111,7 @@ class AlertsQueue(object):
                 self.alerts_history.appendleft(alert)
 
             else:
-                time_passed_since = time.time() - last_alert.timestamp
+                time_passed_since = timestamp - last_alert.timestamp
                 if time_passed_since >= self.TIME_DIFFERENCE_BETWEEN_SAME_ALERTS:
                     self.alerts_history.appendleft(alert)
 
