@@ -4,12 +4,17 @@ The use of this driver requires pigpio deamon:
 'sudo pigpiod'
 (sudo apt-get install pigpio)
 """
-import pigpio
 from time import sleep
 import logging
 
-from errors import PiGPIOInitError, I2CDeviceNotFoundError, \
-                I2CReadError, I2CWriteError, FlowSensorCRCError
+import pigpio
+
+from errors import (I2CReadError,
+                    I2CWriteError,
+                    PiGPIOInitError,
+                    FlowSensorCRCError,
+                    I2CDeviceNotFoundError)
+
 log = logging.getLogger(__name__)
 
 
@@ -121,7 +126,6 @@ class Sfm3200(object):
 
         # Normalize flow to slm units
         flow = float(raw_value - self.OFFSET_FLOW) / self.SCALE_FACTOR_FLOW
-        log.debug(f"Flow sensor value: {flow} slm. CRC correct")
         return flow
 
     def _crc8(self, data):
