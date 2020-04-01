@@ -45,13 +45,15 @@ class AlertTitles(object):
 
 
 class BottomBar(object):
+    BACK_IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY, "baseline_exit_to_app_white_36dp.png")
+
     def __init__(self, parent, root):
         self.parent = parent
         self.root = root
         self.frame = Frame(master=self.root, bg=Theme.active().BACKGROUND)
-        self.back_btn = Button(master=self.frame,
+        self.back_btn = ImageButton(master=self.frame,
                                bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
-                               text="Back",
+                               image_path=self.BACK_IMAGE_PATH,
                                font=("Roboto", 20),
                                command=self.on_click,
                                fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
