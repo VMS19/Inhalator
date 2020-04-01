@@ -9,7 +9,8 @@ class Measurements(object):
     MS_TO_SEC = 1000
 
     def __init__(self):
-        self.volume = 0
+        self.inspiration_volume = 0
+        self.expiration_volume = 0
         self.flow_measurements = Queue(maxsize=40)  # TODO: Rename?
         self.pressure_measurements = Queue(maxsize=40)  # TODO: Rename?
         self.x_axis = range(0, self._amount_of_samples_in_graph)
@@ -45,7 +46,7 @@ class Measurements(object):
     def set_intake_peaks(self, flow, pressure, volume):
         self.intake_peak_flow = flow
         self.intake_peak_pressure = pressure
-        self.volume = volume
+        self.inspiration_volume = volume
 
     def set_saturation_percentage(self, o2_saturation_percentage):
         self.o2_saturation_percentage = o2_saturation_percentage
