@@ -27,7 +27,6 @@ class Theme(object):
     RIGHT_SIDE_BUTTON_BG_ACTIVE = NotImplemented
     RIGHT_SIDE_BUTTON_FG_ACTIVE = NotImplemented
 
-
     @classmethod
     def active(cls):
         # This is an abstract Java Factory reduced to a static

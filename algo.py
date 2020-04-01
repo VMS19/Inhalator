@@ -5,11 +5,15 @@ import threading
 from enum import Enum
 from statistics import mean
 from collections import deque
+
 from scipy.stats import linregress
 
 from data.alerts import AlertCodes
 from data.measurements import Measurements
 from data.configurations import Configurations
+
+TRACE = logging.DEBUG - 1
+logging.addLevelName(TRACE, 'TRACE')
 
 
 class VolumeAccumulator(object):
@@ -69,12 +73,11 @@ class RateMeter(object):
         self.samples.clear()
 
     def beat(self, timestamp=None):
-        now = time.time()
         if timestamp is None:
-            timestamp = now
+            timestamp = time.time()
         self.samples.append(timestamp)
         # Discard beats older than `self.time_span_seconds`
-        while self.samples[0] < (now - self.time_span_seconds):
+        while self.samples[0] < (timestamp - self.time_span_seconds):
             self.samples.popleft()
 
         # Basically the rate is the number of elements left, since the container
@@ -88,7 +91,7 @@ class RateMeter(object):
         # in the data, and calculate the rate based on it. After we accumulate
         # enough data, this interval will be pretty close to the desired span.
         oldest = self.samples[0]
-        interval = now - oldest
+        interval = timestamp - oldest
         # protect against division by zero
         if interval == 0:
             # Technically rate is infinity, but 0 will be more descriptive
@@ -222,8 +225,11 @@ class PEEPHandler(StateHandler):
 
         if self._config.volume_range.below(volume_ml):
             self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW)
+            self.log.warning("volume too low %s, bottom threshold %s", volume_ml, self._config.volume_range.min)
+
         elif self._config.volume_range.over(volume_ml):
             self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH)
+            self.log.warning("volume too high %s, top threshold %s", volume_ml, self._config.volume_range.max)
 
     def exit(self, timestamp):
         self.machine.reset_min_values()
@@ -277,17 +283,56 @@ class Sampler(object):
         self._measurements.peep_min_pressure = self.min_pressure
         self.min_pressure = sys.maxsize
 
+    def read_single_sensor(self, sensor, alert_code):
+        try:
+            return sensor.read()
+        except Exception as e:
+            self._events.alerts_queue.enqueue_alert(alert_code)
+            self.log.error(e)
+        return None
+
+    def read_sensors(self):
+        """
+        Read the sensors and return the samples.
+
+        We try to read all of the sensors even in case of error in order to
+        better understand the nature of the problem - Is it a single sensor that
+        failed, or maybe something wrong with out bus for example.
+        :return: Tuple of (flow, pressure, saturation) if there are no errors,
+                or None if an error occurred in any of the drivers.
+        """
+        flow_slm = self.read_single_sensor(
+            self._flow_sensor, AlertCodes.FLOW_SENSOR_ERROR)
+        pressure_cmh2o = self.read_single_sensor(
+            self._pressure_sensor, AlertCodes.PRESSURE_SENSOR_ERROR)
+        o2_saturation_percentage = self.read_single_sensor(
+            self._oxygen_a2d, AlertCodes.SATURATION_SENSOR_ERROR)
+
+        data = (flow_slm, pressure_cmh2o, o2_saturation_percentage)
+        errors = [x is None for x in data]
+        return None if any(errors) else data
+
     def sampling_iteration(self):
         ts = time.time()
 
         seconds_from_last_breath = ts - self.inhale_handler.last_breath_timestamp
         if seconds_from_last_breath >= 12:
-            self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH)
+            self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH, ts)
+            self.log.warning("No breath detected for the last 12 seconds")
 
         # Read from sensors
-        flow_slm = self._flow_sensor.read()
-        pressure_cmh2o = self._pressure_sensor.read()
-        o2_saturation_percentage = self._oxygen_a2d.read()
+        result = self.read_sensors()
+        if result is None:
+            return
+
+        flow_slm, pressure_cmh2o, o2_saturation_percentage = result
+
+        # WARNING! These log messages are useful for debugging sensors but
+        # might spam you since they are printed on every sample. In order to see
+        # them run the application in maximum verbosity mode by passing `-vvv` to `main.py
+        self.log.log(TRACE, 'flow: %s', flow_slm)
+        self.log.log(TRACE, 'pressure: %s', pressure_cmh2o)
+        self.log.log(TRACE, 'oxygen: %s', o2_saturation_percentage)
 
         self.vsm.update(pressure_cmh2o, flow_slm, timestamp=ts)
         self.accumulator.accumulate(ts, flow_slm)
@@ -303,6 +348,10 @@ class Sampler(object):
         if self._config.pressure_range.over(pressure_cmh2o):
             # Above healthy lungs pressure
             self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_HIGH)
+            self.log.warning("pressure too high %s, top threshold %s", pressure_cmh2o, self._config.pressure_range.max)
+
         elif self._config.pressure_range.below(pressure_cmh2o):
             # Below healthy lungs pressure
             self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW)
+            self.log.warning("pressure too low %s, bottom threshold %s", pressure_cmh2o,
+                             self._config.pressure_range.min)
