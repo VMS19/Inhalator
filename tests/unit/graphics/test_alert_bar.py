@@ -56,7 +56,7 @@ def test_mute_disappears_after_some_time(alert_bar: IndicatorAlertBar):
     assert alert_bar.events.mute_alerts == False
 
 
-def test_mute_does_not_disappear_immidiately(alert_bar: IndicatorAlertBar):
+def test_mute_does_not_disappear_immediately(alert_bar: IndicatorAlertBar):
     alert_bar.events.mute_alerts = True
     with freezegun.freeze_time("12 February 2000 00:00:00"):
         alert_bar.events.mute_time = time.time()
