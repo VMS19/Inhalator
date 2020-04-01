@@ -9,11 +9,11 @@ import logging
 
 import pigpio
 
-from errors import PiGPIOInitError
-from errors import I2CDeviceNotFoundError
-from errors import I2CReadError
-from errors import I2CWriteError
-from errors import FlowSensorCRCError
+from errors import (I2CReadError,
+                    I2CWriteError,
+                    PiGPIOInitError,
+                    FlowSensorCRCError,
+                    I2CDeviceNotFoundError)
 
 log = logging.getLogger(__name__)
 
