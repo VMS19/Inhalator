@@ -1,16 +1,10 @@
 import os
-import platform
 
 from cached_property import cached_property
 
-# Tkinter stuff
 from data.configurations import Configurations
 
-if platform.python_version() < '3':
-    from Tkinter import *
-
-else:
-    from tkinter import *
+from tkinter import *
 
 from data.thresholds import (VolumeRange, PressureRange,
                              RespiratoryRateRange, FlowRange)
@@ -112,8 +106,8 @@ class Section(object):
         self.range.load_from(self.original_range)
 
     def update(self):
-        self.max_button.configure(text="MAX\n{}".format(self.range.max))
-        self.min_button.configure(text="MIN\n{}".format(self.range.min))
+        self.max_button.configure(text=f"MAX\n{self.range.max}")
+        self.min_button.configure(text=f"MIN\n{self.range.min}")
 
     def render(self):
         self.frame.place(relx=(0.2) * self.INDEX,
@@ -126,8 +120,8 @@ class Section(object):
 
         self.name_label.configure(text=self.range.NAME)
         self.unit_label.configure(text=self.range.UNIT)
-        self.max_button.configure(text="MAX\n{}".format(self.range.max))
-        self.min_button.configure(text="MIN\n{}".format(self.range.min))
+        self.max_button.configure(text=f"MAX\n{self.range.max}")
+        self.min_button.configure(text=f"MIN\n{self.range.min}")
 
 
 class VTISection(Section):

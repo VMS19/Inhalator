@@ -24,8 +24,8 @@
   },
   "graph_y_scale" : {
         "flow" : {
-            "min" : 0,
-            "max" : 80
+            "min" : -40,
+            "max" : 50
         },
         "pressure" : {
             "min" : 0,

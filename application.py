@@ -1,11 +1,5 @@
-# Tkinter stuff
 import os
-import platform
-
-if platform.python_version() < '3':
-    from Tkinter import *
-else:
-    from tkinter import *
+from tkinter import *
 
 from graphics.panes import MasterFrame
 from graphics.themes import Theme, DarkTheme
