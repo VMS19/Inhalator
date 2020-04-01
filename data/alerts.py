@@ -42,12 +42,7 @@ class Alert(object):
 
     def __init__(self, alert_code, timestamp=None):
         self.code = alert_code
-
-        if timestamp is None:
-            self.timestamp = time.time()
-
-        else:
-            self.timestamp = timestamp
+        self.timestamp = timestamp
 
     def __eq__(self, other):
         return self.code == other
@@ -75,7 +70,6 @@ class AlertsQueue(object):
     TIME_DIFFERENCE_BETWEEN_SAME_ALERTS = 60 * 5
 
     def __init__(self):
-        self.alerts_history = deque(maxlen=self.MAXIMUM_HISTORY_COUNT)
         self.queue = Queue(maxsize=self.MAXIMUM_ALERTS_AMOUNT)
         self.last_alert = Alert(AlertCodes.OK)
         self._subscribers = {}
@@ -83,14 +77,9 @@ class AlertsQueue(object):
     def __len__(self):
         return self.queue.qsize()
 
-    def history(self):
-        return list(self.alerts_history)
-
     def enqueue_alert(self, alert, timestamp=None):
-        if not isinstance(alert, Alert) and AlertCodes.is_valid(alert):
+        if not isinstance(alert, Alert):
             alert = Alert(alert, timestamp)
-
-        self.append_to_history(alert, timestamp)
 
         if self.queue.qsize() == self.MAXIMUM_ALERTS_AMOUNT:
             self.dequeue_alert()
@@ -99,31 +88,6 @@ class AlertsQueue(object):
 
         self.publish()
         self.queue.put(alert)
-
-    def append_to_history(self, alert, timestamp):
-        """
-        We append an alert to the history in any one of the following cases:
-            * The alert history is empty
-            * The last alert is different from this one
-            * The last alert is the same as this one, but some time has passed since
-        """
-        if timestamp is None:
-            timestamp = time.time()
-
-        alerts_history_is_empty = len(self.alerts_history) == 0
-        if not alerts_history_is_empty:
-            last_alert = self.alerts_history[0]
-            same_as_last_alert = last_alert == alert
-            if not same_as_last_alert:
-                self.alerts_history.appendleft(alert)
-
-            else:
-                time_passed_since = timestamp - last_alert.timestamp
-                if time_passed_since >= self.TIME_DIFFERENCE_BETWEEN_SAME_ALERTS:
-                    self.alerts_history.appendleft(alert)
-
-        else:
-            self.alerts_history.appendleft(alert)
 
     def dequeue_alert(self):
         alert = self.queue.get()
