@@ -11,7 +11,8 @@ class DspPressureSensor(object):
     I2C_BUS = 1
     I2C_ADDRESS = 0x25
     MEASURE_BYTE_COUNT = 0x2
-    CMD_TRIGGERED_DIFFERENTIAL_PRESSURE = b"\x36\x1e"
+    CMD_TRIGGERED_DIFFERENTIAL_PRESSURE = b"\x36\x2f"
+    CMD_CONT_DIFFERENTIAL_PRESSURE = b"\x36\x1e"
     CMD_STOP = b"\x3F\xF9"
     PSI_CMH2O_RATIO = 70.307
     CRC_POLYNOMIAL = 0x31
@@ -37,9 +38,8 @@ class DspPressureSensor(object):
             log.error("Could not open i2c connection to pressure sensor."
                       "Is it connected?")
             raise I2CDeviceNotFoundError("i2c connection open failed")
-            self._pig.i2c_write_device(self._dev, self.CMD_STOP)
+            #self._pig.i2c_write_device(self._dev, self.CMD_STOP)
             time.sleep(1)
-            self._pig.i2c_write_device(self._dev, self.CMD_TRIGGERED_DIFFERENTIAL_PRESSURE)
 
         log.info("ABP pressure sensor initialized")
 
@@ -56,6 +56,7 @@ class DspPressureSensor(object):
     def read(self):
         """ Returns pressure as cmh2o """
         try:
+            self._pig.i2c_write_device(self._dev, self.CMD_TRIGGERED_DIFFERENTIAL_PRESSURE)
             time.sleep(0.1)
             read_size, pressure_raw = self._pig.i2c_read_device(self._dev, self.MEASURE_BYTE_COUNT)
             #print('read_size',read_size)
