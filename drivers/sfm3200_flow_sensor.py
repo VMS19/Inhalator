@@ -89,7 +89,7 @@ class Sfm3200(object):
                     raise FlowSensorCRCError("CRC mismatch")
 
             else:
-                log.error(f"Too much data recieved, "
+                log.error(f"Too much data received, "
                           "got {len(data)} expected 3. data: {data}")
                 raise I2CReadError("Too much data read, invalid state")
 
