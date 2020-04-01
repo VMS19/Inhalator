@@ -281,7 +281,7 @@ class Sampler(object):
 
         seconds_from_last_breath = ts - self.inhale_handler.last_breath_timestamp
         if seconds_from_last_breath >= 12:
-            self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH)
+            self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH, ts)
 
         # Read from sensors
         flow_slm = self._flow_sensor.read()

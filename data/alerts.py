@@ -79,9 +79,9 @@ class AlertsQueue(object):
     def history(self):
         return list(self.alerts_history)
 
-    def enqueue_alert(self, alert):
+    def enqueue_alert(self, alert, timestamp=None):
         if not isinstance(alert, Alert) and AlertCodes.is_valid(alert):
-            alert = Alert(alert)
+            alert = Alert(alert, timestamp)
 
         self.append_to_history(alert)
 
