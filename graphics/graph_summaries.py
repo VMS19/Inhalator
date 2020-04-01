@@ -19,7 +19,7 @@ class GraphSummary(object):
         self.frame = Frame(master=self.root,
                            borderwidth=1)
         self.value_label = Label(master=self.frame, text="HELLO",
-                                 font=("Roboto", 25),
+                                 font=("Roboto", 24),
                                  bg=Theme.active().BACKGROUND,
                                  fg=self.color())
         self.units_label = Label(master=self.frame, text="HELLO",
