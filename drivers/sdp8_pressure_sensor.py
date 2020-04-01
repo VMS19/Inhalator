@@ -6,8 +6,8 @@ from errors import PiGPIOInitError, I2CDeviceNotFoundError, I2CReadError
 log = logging.getLogger(__name__)
 
 
-class DspPressureSensor(object):
-    """Driver class for ABPMAND001PG2A3 Flow sensor."""
+class SdpPressureSensor(object):
+    """Driver class for SDP8XXX Pressure sensor."""
     I2C_BUS = 1
     I2C_ADDRESS = 0x25
     MEASURE_BYTE_COUNT = 0x2
@@ -40,18 +40,21 @@ class DspPressureSensor(object):
             log.error("Could not open i2c connection to pressure sensor."
                       "Is it connected?")
             raise I2CDeviceNotFoundError("i2c connection open failed")
-            #self._pig.i2c_write_device(self._dev, self.CMD_STOP)
-            time.sleep(1)
+            # self._pig.i2c_write_device(self._dev, self.CMD_STOP)
 
-        log.info("ABP pressure sensor initialized")
+        log.info("SDP pressure sensor initialized")
 
     def _calculate_pressure(self, pressure_reading):
-        differential_psi_pressure = pressure_reading / (self.SCALE_FACTOR_PASCAL)
-        differential_cmh2o_pressure = psi_pressure * (1 / self.CMH20_PASCAL_RATIO)
+        differential_psi_pressure =\
+            pressure_reading / (self.SCALE_FACTOR_PASCAL)
+        differential_cmh2o_pressure =\
+            differential_psi_pressure * (1 / self.CMH20_PASCAL_RATIO)
         return (differential_cmh2o_pressure)
 
-    def _pressure_to_airflow(self, pressure):
-        return ***
+    def _pressure_to_flow(self, pressure):
+        flow = pressure
+
+        return flow
 
     def twos_complement(self, number):
         import sys
@@ -59,23 +62,23 @@ class DspPressureSensor(object):
         return int.from_bytes(b, byteorder=sys.byteorder, signed=True)
 
     def read(self):
-        """ Returns pressure as cmh2o """
+        """ Returns pressure as flow """
         try:
             self._pig.i2c_write_device(self._dev, self.CMD_TRIGGERED_DIFFERENTIAL_PRESSURE)
             time.sleep(0.1)
-            read_size, pressure_raw = self._pig.i2c_read_device(self._dev, self.MEASURE_BYTE_COUNT)
-            #print('read_size',read_size)
+            read_size, pressure_raw =\
+                self._pig.i2c_read_device(self._dev, self.MEASURE_BYTE_COUNT)
+
             if read_size >= self.MEASURE_BYTE_COUNT:
                 pressure_reading = (pressure_raw[0] << 8) | (pressure_raw[1])
                 pressure_reading = self.twos_complement(pressure_reading)
-                expected_crc = 0  #pressure_raw[2]
-                crc_calc = expected_crc  #self._crc8(pressure_reading)
+                expected_crc = 0  # pressure_raw[2]
+                crc_calc = expected_crc  # self._crc8(pressure_reading)
                 if not crc_calc == expected_crc:
                     print('bad crc')
                 return (self._pressure_to_airflow(
                         self._calculate_pressure(pressure_reading)))
             else:
-                # Todo: Do we need to retry reading after a little sleep? (see flow sensor logic)
                 log.error("Pressure sensor's measure data not ready")
                 raise I2CReadError("Pressure sensor measurement unavailable.")
         except pigpio.error as e:
