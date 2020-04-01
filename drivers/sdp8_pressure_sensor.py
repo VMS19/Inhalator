@@ -64,29 +64,6 @@ class SdpPressureSensor(object):
         b = number.to_bytes(2, byteorder=sys.byteorder, signed=False)
         return int.from_bytes(b, byteorder=sys.byteorder, signed=True)
 
-    def read(self):
-        """ Returns pressure as flow """
-        try:
-            self._pig.i2c_write_device(self._dev, self.CMD_TRIGGERED_DIFFERENTIAL_PRESSURE)
-            time.sleep(0.1)
-            read_size, pressure_raw =\
-                self._pig.i2c_read_device(self._dev, self.MEASURE_BYTE_COUNT)
-
-            if read_size >= self.MEASURE_BYTE_COUNT:
-                pressure_reading = (pressure_raw[0] << 8) | (pressure_raw[1])
-                pressure_reading = self.twos_complement(pressure_reading)
-                expected_crc = pressure_raw[2]
-                crc_calc = self._crc8(pressure_reading)
-                if not crc_calc == expected_crc:
-                    print('bad crc')
-                return (self._pressure_to_flow(self._calculate_pressure(pressure_reading)))
-            else:
-                log.error("Pressure sensor's measure data not ready")
-                raise I2CReadError("Pressure sensor measurement unavailable.")
-        except pigpio.error as e:
-            log.error("Could not read from pressure sensor. "
-                      "Is the pressure sensor connected?.")
-            raise I2CReadError("i2c write failed")
 
     def _crc8(self, data):
         crc = self.CRC_INIT_VALUE
@@ -99,3 +76,27 @@ class SdpPressureSensor(object):
                 else:
                     crc = crc << 1
         return crc
+
+    def read(self):
+        """ Returns pressure as flow """
+        try:
+            self._pig.i2c_write_device(self._dev, self.CMD_TRIGGERED_DIFFERENTIAL_PRESSURE)
+            time.sleep(0.1)
+            read_size, pressure_raw =\
+                self._pig.i2c_read_device(self._dev, self.MEASURE_BYTE_COUNT)
+
+            if read_size >= self.MEASURE_BYTE_COUNT:
+                pressure_reading = (pressure_raw[0] << 8) | (pressure_raw[1])
+                pressure_reading = self.twos_complement(pressure_reading)
+                expected_crc = 0#pressure_raw[2]
+                crc_calc = expected_crc #self._crc8(pressure_reading)
+                if not crc_calc == expected_crc:
+                    print('bad crc')
+                return (self._pressure_to_flow(self._calculate_pressure(pressure_reading)))
+            else:
+                log.error("Pressure sensor's measure data not ready")
+                raise I2CReadError("Pressure sensor measurement unavailable.")
+        except pigpio.error as e:
+            log.error("Could not read from pressure sensor. "
+                      "Is the pressure sensor connected?.")
+            raise I2CReadError("i2c write failed")
