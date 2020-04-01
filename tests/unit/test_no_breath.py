@@ -1,3 +1,4 @@
+import logging
 from itertools import cycle
 from unittest.mock import Mock, patch
 
@@ -12,6 +13,13 @@ from data.thresholds import (FlowRange, PressureRange,
                              RespiratoryRateRange, VolumeRange)
 from drivers.driver_factory import DriverFactory
 
+logging.disable(logging.DEBUG)
+logging.disable(logging.DEBUG - 1)
+logging.disable(logging.WARNING)
+logging.disable(logging.INFO)
+logging.disable(logging.WARN)
+logging.disable(logging.FATAL)
+logging.disable(logging.CRITICAL)
 
 MICROSECOND = 10 ** -6
 NO_BREATH_TIME = 13  # seconds
@@ -82,7 +90,6 @@ def test_sinus_alerts_when_no_breath(events, measurements, config):
     assert alert == alerts.AlertCodes.NO_BREATH
 
 
-@pytest.mark.xfail(reason="logging time.time() is mocked")
 @patch('time.time', dead_no_breath_time_mock)
 def test_dead_man_alerts_when_no_breath(events, measurements, config):
     """Test that no-breath alert is sent after time without breathing

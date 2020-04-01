@@ -1,4 +1,5 @@
 import csv
+import logging
 import os
 import time
 from itertools import cycle
@@ -15,6 +16,14 @@ from data.thresholds import (FlowRange, PressureRange,
                              RespiratoryRateRange, VolumeRange)
 from drivers.driver_factory import DriverFactory
 
+
+logging.disable(logging.DEBUG)
+logging.disable(logging.DEBUG - 1)
+logging.disable(logging.WARNING)
+logging.disable(logging.INFO)
+logging.disable(logging.WARN)
+logging.disable(logging.FATAL)
+logging.disable(logging.CRITICAL)
 
 MICROSECOND = 10 ** -6
 SIMULATION_LENGTH = 2  # seconds
@@ -138,8 +147,8 @@ def test_sampler_pig_min_max(events, measurements, config):
         * Validate min & max for pressure and flow.
 
     Note:
-        Min values are read at the first peep exit at timestamp 4.455 (not including)
-        Max values are read at the first hold exit at timestamp 6.075 (not including)
+        Min values are read at the first peep exit at timestamp 4.455 (including)
+        Max values are read at the first hold exit at timestamp 6.075 (including)
 
     Simulation graph:
                                         Pig simulation pressure graph
@@ -183,7 +192,7 @@ def test_sampler_pig_min_max(events, measurements, config):
                        f"received {measurements.intake_peak_pressure}"
     assert measurements.intake_peak_pressure == expected_max_pressure, max_pressure_msg
 
-    expected_max_flow = 36.30099079
+    expected_max_flow = 36.90266823
     max_flow_msg = f"Expected max flow of {expected_max_flow}, " \
                    f"received {measurements.intake_peak_flow}"
     assert measurements.intake_peak_flow == expected_max_flow, max_flow_msg

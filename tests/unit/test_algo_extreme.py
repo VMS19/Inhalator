@@ -1,4 +1,5 @@
 import csv
+import logging
 import os
 from itertools import cycle
 from unittest.mock import Mock, patch
@@ -12,6 +13,15 @@ from data.measurements import Measurements
 from data.thresholds import FlowRange, PressureRange, RespiratoryRateRange, \
     VolumeRange
 from drivers.driver_factory import DriverFactory
+
+logging.disable(logging.DEBUG)
+logging.disable(logging.DEBUG - 1)
+logging.disable(logging.WARNING)
+logging.disable(logging.INFO)
+logging.disable(logging.WARN)
+logging.disable(logging.FATAL)
+logging.disable(logging.CRITICAL)
+
 
 SIMULATION_FOLDER = "simulation"
 
