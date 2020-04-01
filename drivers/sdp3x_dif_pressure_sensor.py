@@ -19,6 +19,7 @@ class Sdp3(object):
     CRC_POLYNOMIAL = 0x131
     I2C_BUS = 1
     I2C_ADDRESS = 0x25
+    STARTUP_DELAY = 0.01  # 10ms
     SCALE_FACTOR_FLOW = 120
     OFFSET_FLOW = 0x8000
     START_MEASURE_FLOW_CMD = b"\x36\x08"
@@ -53,18 +54,6 @@ class Sdp3(object):
             raise I2CDeviceNotFoundError("i2c connection open failed")
 
         self._start_measure()
-        sleep(0.1)
-        # Dummy read - first read values are invalid
-        read_size, dummy = self._pig.i2c_read_device(self._dev, 3)
-        if read_size == pigpio.PI_I2C_READ_FAILED:
-            log.error("Could not read first data from flow sensor."
-                      "Is it connected?")
-            raise I2CDeviceNotFoundError("i2c read failed")
-
-        log.debug("Flow sensor: Successfully read dummy values: {}"
-                  .format(dummy))
-
-    # Todo: Implement read serial number command
 
     def _start_measure(self):
         try:
@@ -73,6 +62,7 @@ class Sdp3(object):
             log.error("Could not write start_measure cmd to flow sensor. "
                       "Is the flow sensor connected?.")
             raise I2CWriteError("i2c write failed")
+        sleep(self.STARTUP_DELAY)
 
         log.info("Started flow sensor measurement")
 
