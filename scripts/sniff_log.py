@@ -101,17 +101,30 @@ def log_file_to_csv(log_file_path, csv_file_path):
         writer.writerow([timestamp, unix_time(timestamp), time_diff(start_ts, timestamp)] + values)
 
 
+def get_connection(port):
+    sock = socket.socket()
+    sock.bind(('0.0.0.0', port))
+    sock.listen()
+    x, _ = sock.accept()
+    return x
+
+
 def main():
     cli_args = parse_cli_args()
     logger = configure_logger(cli_args.level, cli_args.output)
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind(('0.0.0.0', PORT))
 
     try:
+        logger.info("Waiting for module to start sending logs.")
+        sock = get_connection(cli_args.port)
         while True:
-            raw_log = sock.recv(2 ** 16)
-            log_meta = pickle.loads(raw_log[4:])  # Remove header
-            logger.handle(logging.makeLogRecord(log_meta))
+            try:
+                raw_log = sock.recv(2 ** 16)
+                log_meta = pickle.loads(raw_log[4:])  # Remove header
+                logger.handle(logging.makeLogRecord(log_meta))
+
+            except ConnectionResetError:
+                logger.warning("Connection reset, waiting for new connection from module")
+                sock = get_connection(cli_args.port)
 
     except KeyboardInterrupt:
         # Save to CSV file.

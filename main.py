@@ -2,8 +2,8 @@ import os
 import argparse
 import logging
 import signal
-import socket
 from logging.handlers import RotatingFileHandler
+from logging.handlers import SocketHandler
 from threading import Event
 
 from drivers.driver_factory import DriverFactory
@@ -13,26 +13,6 @@ from data.events import Events
 from application import Application
 from algo import Sampler
 from wd_task import WdTask
-
-
-class BroadcastHandler(logging.handlers.DatagramHandler):
-    """
-    A handler for the python logging system which is able to broadcast packets.
-    """
-
-    def send(self, s):
-        try:
-            super().send(s)
-
-        except OSError as e:
-            if e.errno != 101:  # Network is unreachable
-                raise e
-
-    def makeSocket(self):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        return sock
 
 
 def configure_logging(level):
@@ -48,7 +28,7 @@ def configure_logging(level):
     stream_handler = logging.StreamHandler()
     stream_handler.setLevel(level)
     # create socket handler to broadcast logs
-    socket_handler = BroadcastHandler('255.255.255.255', config.debug_port)
+    socket_handler = SocketHandler('192.168.43.152', config.debug_port)
     socket_handler.setLevel(level)
     # create formatter and add it to the handlers
     formatter = logging.Formatter(
