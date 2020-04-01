@@ -24,7 +24,7 @@ RESOURCES_DIRECTORY = os.path.join(os.path.dirname(THIS_DIRECTORY), "resources")
 
 class ClearAlertsButton(object):
     IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY,
-                              "baseline_history_white_24dp.png")
+                              "baseline_history_white_48dp.png")
 
     def __init__(self, parent, events):
         self.parent = parent
@@ -55,9 +55,9 @@ class ClearAlertsButton(object):
 class MuteAlertsButton(object):
 
     PATH_TO_MUTED = os.path.join(RESOURCES_DIRECTORY,
-                                 "baseline_volume_off_white_24dp.png")
+                                 "baseline_volume_off_white_48dp.png")
     PATH_TO_UNMUTED = os.path.join(RESOURCES_DIRECTORY,
-                                   "baseline_volume_up_white_24dp.png")
+                                   "baseline_volume_up_white_48dp.png")
 
     def __init__(self, parent, events):
         self.parent = parent
@@ -98,7 +98,7 @@ class MuteAlertsButton(object):
 class LockThresholdsButton(object):
 
     IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY,
-                              "outline_lock_open_white_24dp.png")
+                              "outline_lock_open_white_48dp.png")
 
     def __init__(self, parent):
         self.parent = parent
@@ -129,7 +129,7 @@ class LockThresholdsButton(object):
 
 class OpenConfigureAlertsScreenButton(object):
     IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY,
-                              "baseline_settings_white_24dp.png")
+                              "baseline_settings_white_48dp.png")
 
     def __init__(self, parent):
         self.parent = parent
