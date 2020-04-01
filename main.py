@@ -99,7 +99,7 @@ def main():
         simulation_mode=simulation, simulation_data=args.data)
 
     pressure_sensor = drivers.get_driver("pressure")
-    flow_sensor = drivers.get_driver("flow")
+    flow_sensor = drivers.get_driver("differential_pressure")
 
     watchdog = drivers.get_driver("wd")
     oxygen_a2d = drivers.get_driver("oxygen_a2d")

@@ -50,8 +50,8 @@ class DspPressureSensor(object):
         differential_cmh2o_pressure = psi_pressure * (1 / self.CMH20_PASCAL_RATIO)
         return (differential_cmh2o_pressure)
 
-        #cmh2o_pressure = psi_pressure * self.PSI_CMH2O_RATIO
-        return (differential_psi_pressure)
+    def _pressure_to_airflow(self, pressure):
+        return ***
 
     def twos_complement(self, number):
         import sys
@@ -72,7 +72,8 @@ class DspPressureSensor(object):
                 crc_calc = expected_crc  #self._crc8(pressure_reading)
                 if not crc_calc == expected_crc:
                     print('bad crc')
-                return (self._calculate_pressure(pressure_reading))
+                return (self._pressure_to_airflow(
+                        self._calculate_pressure(pressure_reading)))
             else:
                 # Todo: Do we need to retry reading after a little sleep? (see flow sensor logic)
                 log.error("Pressure sensor's measure data not ready")

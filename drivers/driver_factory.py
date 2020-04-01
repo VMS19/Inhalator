@@ -122,6 +122,11 @@ class DriverFactory(object):
         from drivers.aux_sound import SoundViaAux
         return SoundViaAux.instance()
 
+    @staticmethod
+    def get_differential_pressure_driver():
+        from drivers.dsp8_pressure_sensor import DspPressureSensor
+        return DspPressureSensor()
+
     def get_mock_pressure_driver(self):
         from drivers.mocks.sensor import MockSensor
         data_source = self.simulation_data
