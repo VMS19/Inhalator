@@ -54,7 +54,52 @@ def events():
 
 @pytest.mark.xfail(reason="Can't handle extreme errors from sensors")
 @patch('time.time', time_mock)
-def test_slope_recognition_with_error(events, measurements, config):
+def test_slope_recognition_with_error_in_peep(events, measurements, config):
+    this_dir = os.path.dirname(__file__)
+    file_path = os.path.join(this_dir, SIMULATION_FOLDER,
+                             "pig_sim_extreme_pressure_in_peep.csv")
+    driver_factory = DriverFactory(simulation_mode=True,
+                                   simulation_data=file_path)
+
+    flow_sensor = driver_factory.get_driver("flow")
+    pressure_sensor = driver_factory.get_driver("pressure")
+    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
+    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
+                      oxygen_a2d)
+
+    for i in range(DATA_SIZE):
+        sampler.sampling_iteration()
+
+    inhale_entry = sampler.vsm.entry_points_ts[VentilationState.Inhale][0]
+
+    assert inhale_entry == approx(4.41, rel=0.1)
+
+
+@pytest.mark.parametrize('scenario', ['low_error', 'high_error'])
+@patch('time.time', time_mock)
+def test_slope_recognition_with_error_in_inhale(events, measurements, config, scenario):
+    this_dir = os.path.dirname(__file__)
+    file_path = os.path.join(this_dir, SIMULATION_FOLDER,
+                             f"pig_sim_extreme_pressure_in_inhale_{scenario}.csv")
+    driver_factory = DriverFactory(simulation_mode=True,
+                                   simulation_data=file_path)
+
+    flow_sensor = driver_factory.get_driver("flow")
+    pressure_sensor = driver_factory.get_driver("pressure")
+    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
+    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
+                      oxygen_a2d)
+
+    for i in range(DATA_SIZE):
+        sampler.sampling_iteration()
+
+    hold_entry = sampler.vsm.entry_points_ts[VentilationState.Hold][0]
+
+    assert hold_entry == approx(4.95, rel=0.1)
+
+
+@patch('time.time', time_mock)
+def test_slope_recognition_with_error_in_hold(events, measurements, config):
     this_dir = os.path.dirname(__file__)
     file_path = os.path.join(this_dir, SIMULATION_FOLDER,
                              "pig_sim_extreme_pressure_in_peep.csv")
