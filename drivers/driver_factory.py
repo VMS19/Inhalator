@@ -104,8 +104,10 @@ class DriverFactory(object):
 
     @staticmethod
     def get_flow_driver():
-        from drivers.sfm3200_flow_sensor import Sfm3200
-        return Sfm3200()
+        # from drivers.sfm3200_flow_sensor import Sfm3200
+        # return Sfm3200()
+        from drivers.sdp3x_dif_pressure_sensor import Sdp3
+        return Sdp3()
 
     @staticmethod
     def get_oxygen_a2d_driver():
