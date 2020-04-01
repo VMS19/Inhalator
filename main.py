@@ -27,8 +27,8 @@ class BroadcastHandler(logging.handlers.DatagramHandler):
             super().send(s)
 
         except OSError as e:
-            if e.errno != 101:  # Network is unreachable
-                raise e
+            if e.errno != 101:
+                raise RuntimeError("Network is unreachable") from e
 
     def makeSocket(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

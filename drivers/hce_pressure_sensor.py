@@ -33,20 +33,20 @@ class HcePressureSensor(object):
         except IOError as e:
             log.error("Couldn't init spi device, \
                 is the peripheral initialized?")
-            raise SPIDriverInitError("spidev peripheral init error")
+            raise SPIDriverInitError("spidev peripheral init error") from e
 
         try:
             self._spi.max_speed_hz = self.SPI_CLK_SPEED_KHZ
         except IOError as e:
             log.error("setting spi speed failed, \
                 is speed in the correct range?")
-            raise SPIDriverInitError("spidev peripheral init error")
+            raise SPIDriverInitError("spidev peripheral init error") from e
 
         try:
             self._spi.mode = self.SPI_MODE
         except TypeError as e:
-            log.error(e.strerror)
-            raise SPIDriverInitError("spi mode error")
+            log.exception(e)
+            raise SPIDriverInitError("spi mode error") from e
 
         log.info("HCE pressure sensor initialized")
 
@@ -66,7 +66,7 @@ class HcePressureSensor(object):
                     self.PERIPHERAL_MINIMAL_DELAY)
         except IOError as e:
             log.error("Failed to read pressure sensor. check if peripheral is initialized correctly")
-            raise SPIIOError("hce spi read error")
+            raise SPIIOError("hce spi read error") from e
 
         pressure_reading = (pressure_raw[1] << 8) | (pressure_raw[2])
         pressure_parsed = self._calculate_pressure(pressure_reading)

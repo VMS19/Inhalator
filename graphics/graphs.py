@@ -2,16 +2,10 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from matplotlib import rcParams
 
-# Tkinter stuff
-import platform
-
 from data.configurations import Configurations
 from graphics.themes import Theme
 
-if platform.python_version() < '3':
-    from Tkinter import *
-else:
-    from tkinter import *
+from tkinter import *
 
 
 class BlankGraph(object):

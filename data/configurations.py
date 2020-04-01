@@ -107,9 +107,9 @@ class Configurations(object):
                                              max=config["threshold"]["bpm"]["max"],
                                              step=config["threshold"]["bpm"]["step"])
 
-            flow_y_scale = (config["graph_y_scale"]["flow"]["min"], \
+            flow_y_scale = (config["graph_y_scale"]["flow"]["min"],
                             config["graph_y_scale"]["flow"]["max"])
-            pressure_y_scale = (config["graph_y_scale"]["pressure"]["min"], \
+            pressure_y_scale = (config["graph_y_scale"]["pressure"]["min"],
                                 config["graph_y_scale"]["pressure"]["max"])
 
             graph_seconds = config["graph_seconds"]
@@ -131,8 +131,8 @@ class Configurations(object):
                        pressure_y_scale=pressure_y_scale)
 
         except Exception as e:
-            raise ConfigurationFileError("Could not load config file %s"
-                                         % config_file) from e
+            raise ConfigurationFileError(f"Could not load "
+                                         f"config file {config_file}") from e
 
     def save_to_file(self, config_path=CONFIG_FILE):
         log.info("Saving threshold values to database")

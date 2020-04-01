@@ -1,13 +1,6 @@
-# Tkinter stuff
-import platform
-
 from graphics.themes import Theme
 
-if platform.python_version() < '3':
-    from Tkinter import *
-
-else:
-    from tkinter import *
+from tkinter import *
 
 
 class GraphSummary(object):

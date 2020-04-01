@@ -24,7 +24,7 @@ class AbpPressureSensor(object):
             self._pig = pigpio.pi()
         except pigpio.error as e:
             log.error("Could not init pigpio lib. Did you run 'sudo pigpiod'?")
-            raise PiGPIOInitError("pigpio library init error")
+            raise PiGPIOInitError("pigpio library init error") from e
 
         if self._pig is None:
             log.error("Could not init pigpio lib. Did you run 'sudo pigpiod'?")
@@ -32,14 +32,14 @@ class AbpPressureSensor(object):
 
         try:
             self._dev = self._pig.i2c_open(self.I2C_BUS, self.I2C_ADDRESS)
-        except AttributeError:
+        except AttributeError as e:
             log.error("Could not init pigpio lib. Did you run 'sudo pigpiod'?")
-            raise PiGPIOInitError("pigpio library init error")
+            raise PiGPIOInitError("pigpio library init error") from e
 
-        except pigpio.error:
+        except pigpio.error as e:
             log.error("Could not open i2c connection to pressure sensor."
                       "Is it connected?")
-            raise I2CDeviceNotFoundError("i2c connection open failed")
+            raise I2CDeviceNotFoundError("i2c connection open failed") from e
 
         log.info("ABP pressure sensor initialized")
 
@@ -63,4 +63,4 @@ class AbpPressureSensor(object):
         except pigpio.error as e:
             log.error("Could not read from pressure sensor. "
                       "Is the pressure sensor connected?.")
-            raise I2CReadError("i2c write failed")
+            raise I2CReadError("i2c write failed") from e
