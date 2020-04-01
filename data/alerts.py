@@ -19,10 +19,10 @@ class AlertCodes(IntEnum):
 
     @classmethod
     def is_valid(cls, alert_code):
-        return alert_code in map(int, list(cls))
+        return alert_code in map(int, cls)
 
 class Alert(object):
-    error_dict = {
+    ALERT_CODE_TO_MESSAGE = {
         AlertCodes.PRESSURE_LOW: "Low Pressure",
         AlertCodes.PRESSURE_HIGH: "High Pressure",
         AlertCodes.VOLUME_LOW: "Low Volume",
@@ -30,7 +30,7 @@ class Alert(object):
         AlertCodes.NO_BREATH: "No Breathing",
         AlertCodes.PEEP_TOO_HIGH: "High PEEP",
         AlertCodes.PEEP_TOO_LOW: "Low PEEP",
-        AlertCodes.NO_CONFIGURATION_FILE: "Cannot Read Configuration"
+        AlertCodes.NO_CONFIGURATION_FILE: "Configuration Error"
     }
 
     def __init__(self, alert_code, timestamp=None):
@@ -46,7 +46,17 @@ class Alert(object):
         return self.code == other
 
     def __str__(self):
-        return self.error_dict.get(self.code, "Multiple Alerts")  # TODO: Elaborate
+        if self.code in self.ALERT_CODE_TO_MESSAGE:
+            return self.ALERT_CODE_TO_MESSAGE[self.code]
+
+        # For each on bit it in the alert code, we want to concatenate the
+        # relevant error message
+        errors = []
+        for code, message in self.ALERT_CODE_TO_MESSAGE.items():
+            if self.code & code:
+                errors.append(message)
+
+        return " | ".join(errors)
 
     def date(self):
         return datetime.datetime.fromtimestamp(self.timestamp).strftime("%A %X")
