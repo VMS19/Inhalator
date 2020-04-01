@@ -1,16 +1,14 @@
-from dsp_pressure_sensor import DspPressureSensor
+from sdp8_pressure_sensor import SdpPressureSensor
 import logging
 import time
 
 def main():
     logging.basicConfig(level=logging.DEBUG)
-    dsp = DspPressureSensor()
+    sdp = SdpPressureSensor()
     while True:
-        pressure = dsp.read()
+        pressure = sdp.read()
         print(pressure)
         time.sleep(0.2)
-    #print('cmh20', pressure/100.0)
-
 
 if __name__ == "__main__":
     main()

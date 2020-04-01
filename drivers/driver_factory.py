@@ -124,8 +124,19 @@ class DriverFactory(object):
 
     @staticmethod
     def get_differential_pressure_driver():
-        from drivers.dsp8_pressure_sensor import DspPressureSensor
-        return DspPressureSensor()
+        from drivers.sdp8_pressure_sensor import SdpPressureSensor
+        return SdpPressureSensor()
+
+    def get_mock_differential_pressure_driver(self):
+        from drivers.mocks.sensor import MockSensor
+        simulation_data = self.simulation_data
+        if simulation_data == 'dead':
+            data = self.generate_mock_dead_man()
+        elif simulation_data == 'sinus':
+            data = self.generate_mock_air_flow_data()
+        else:
+            data = generate_data_from_file('flow', simulation_data)
+        return MockSensor(data)
 
     def get_mock_pressure_driver(self):
         from drivers.mocks.sensor import MockSensor
