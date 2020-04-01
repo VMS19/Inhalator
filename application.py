@@ -32,6 +32,7 @@ class Application(object):
         self.should_run = True
         self.drivers = drivers
         self.sampler = sampler
+        self.arm_wd_event = arm_wd_event
         self.root = Tk()
         self.theme = Theme.toggle_theme()  # Set to dark mode, TODO: Make this configurable
         self.root.protocol("WM_DELETE_WINDOW", self.exit)  # Catches Alt-F4
@@ -47,7 +48,7 @@ class Application(object):
         if Configurations.configuration_state() == ConfigurationState.CONFIG_CORRUPTED:
             events.alerts_queue.enqueue_alert(AlertCodes.NO_CONFIGURATION_FILE)
 
-        self.master_frame = MasterFrame(self.root, arm_wd_event=arm_wd_event,
+        self.master_frame = MasterFrame(self.root,
                                         measurements=measurements,
                                         events=events,
                                         drivers=drivers)
@@ -70,6 +71,7 @@ class Application(object):
             try:
                 self.sampler.sampling_iteration()
                 self.gui_update()
+                self.arm_wd_event.set()
             except KeyboardInterrupt:
                 break
         self.exit()

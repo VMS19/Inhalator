@@ -9,7 +9,6 @@ from graphics.themes import Theme
 
 if platform.python_version() < '3':
     from Tkinter import *
-
 else:
     from tkinter import *
 
@@ -27,8 +26,6 @@ class BlankGraph(object):
 
 
 class AirPressureGraph(object):
-    MIN_Y, MAX_Y = (0, 50)
-
     def __init__(self, parent, measurements, blank):
         self.parent = parent
         self.root = parent.element
@@ -67,7 +64,7 @@ class AirPressureGraph(object):
 
 
         # Scale y values
-        self.pressure_graph.axes.set_ylim(self.MIN_Y, self.MAX_Y)
+        self.pressure_graph.axes.set_ylim(*self.config.pressure_y_scale)
 
         # Thresholds
         self.pressure_max_threshold_graph, = \
@@ -116,8 +113,6 @@ class AirPressureGraph(object):
 
 
 class FlowGraph(object):
-    MIN_Y, MAX_Y = (0, 80)
-
     def __init__(self, parent, measurements, blank):
         self.parent = parent
         self.root = parent.element
@@ -137,10 +132,10 @@ class FlowGraph(object):
         # Calibrate x-axis
         amount_of_xs = self.measurements._amount_of_samples_in_graph
         self.flow_axis.set_xticks(
-            range(0, (amount_of_xs + 1),
+            range(0, amount_of_xs + 1,
                   int(amount_of_xs / self.config.graph_seconds)))
 
-        labels = range(0, int(self.config.graph_seconds + 1))
+        labels = range(int(self.config.graph_seconds + 1))
         self.flow_axis.set_xticklabels(labels)
 
         self.flow_display_values = [0] * self.measurements._amount_of_samples_in_graph
@@ -154,7 +149,7 @@ class FlowGraph(object):
         self.flow_canvas = FigureCanvasTkAgg(self.flow_figure, master=self.root)
 
         # Scale y values
-        self.flow_graph.axes.set_ylim(self.MIN_Y, self.MAX_Y)
+        self.flow_graph.axes.set_ylim(*self.config.flow_y_scale)
 
     def render(self):
         self.flow_canvas.draw()
