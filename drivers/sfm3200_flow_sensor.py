@@ -4,12 +4,17 @@ The use of this driver requires pigpio deamon:
 'sudo pigpiod'
 (sudo apt-get install pigpio)
 """
-import pigpio
 from time import sleep
 import logging
 
-from errors import PiGPIOInitError, I2CDeviceNotFoundError, \
-                I2CReadError, I2CWriteError, FlowSensorCRCError
+import pigpio
+
+from errors import PiGPIOInitError
+from errors import I2CDeviceNotFoundError
+from errors import I2CReadError
+from errors import I2CWriteError
+from errors import FlowSensorCRCError
+
 log = logging.getLogger(__name__)
 
 
