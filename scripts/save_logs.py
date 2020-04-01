@@ -97,7 +97,12 @@ def log_file_to_csv(log_file_path, csv_file_path):
         writer.writerow([timestamp, unix_time(timestamp), time_diff(start_ts, timestamp)] + values)
 
 
-def copy_log_files(output_file, ip, user='pi', passwd='raspberry'):
+def remote_log_files(ftp):
+    log_files = ftp.nlst('Inhalator/inhalator.log*')
+    yield from sorted(log_files, reverse=True)
+
+
+def copy_log_files(output_file, ftp):
     """Copy log file from the Raspberry pi using FTP.
 
     Copying all log files from the remote RPi, and merging them into one file locally.
@@ -108,23 +113,21 @@ def copy_log_files(output_file, ip, user='pi', passwd='raspberry'):
         user (str): raspberry pi user.
         passwd (str): raspberry pi password.
     """
-    with ftplib.FTP(ip, user, passwd) as ftp:
-        ftp.cwd('Inhalator')
-        log_files = ftp.nlst('inhalator.log*')
-        log_files.sort(reverse=True)
-        open(output_file, 'w').close()  # create empty file
-        with open(output_file, 'ab') as out_file:
-            for log_file in log_files:
-                ftp.retrbinary(f'RETR {log_file}', out_file.write)
+    open(output_file, 'w').close()  # create empty file
+    with open(output_file, 'ab') as out_file:
+        for log_file in remote_log_files(ftp):
+            ftp.retrbinary(f'RETR {log_file}', out_file.write)
+
 
 
 def main():
     cli_args = parse_cli_args()
     logger = configure_logger(cli_args.level)
 
-    # Copy files from RPi to local storage.
-    logger.info(f"Copying log files from Raspberry(%s) to %s", cli_args.ip, cli_args.output)
-    copy_log_files(cli_args.output, cli_args.ip)
+    with ftplib.FTP(cli_args.ip, user='pi', passwd='raspberry') as ftp:
+        # Copy files from RPi to local storage.
+        logger.info(f"Copying log files from Raspberry(%s) to %s", cli_args.ip, cli_args.output)
+        copy_log_files(cli_args.output, ftp)
 
     # parse file.
     logger.info("Saving CSV file at %s", cli_args.csv_output)
