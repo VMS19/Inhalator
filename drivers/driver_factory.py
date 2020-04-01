@@ -49,10 +49,10 @@ class DriverFactory(object):
         driver = self.drivers_cache.get(key)
         if driver is not None:
             return driver
-        method_name = "get{}_{}_driver".format(("_mock" if self.mock else ""), driver_name)
+        method_name = f"get{'_mock' if self.mock else ''}_{driver_name}_driver"
         method = getattr(self, method_name, None)
         if method is None:
-            raise ValueError("Unsupported driver {}".format(driver_name))
+            raise ValueError(f"Unsupported driver {driver_name}")
         driver = method()
         self.drivers_cache[key] = driver
         return driver

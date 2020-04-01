@@ -1,11 +1,4 @@
-# Tkinter stuff
-import platform
-
-if platform.python_version() < '3':
-    from Tkinter import *
-
-else:
-    from tkinter import *
+from tkinter import *
 
 from graphics.alert_bar import IndicatorAlertBar
 from graphics.graphs import FlowGraph, AirPressureGraph, BlankGraph
