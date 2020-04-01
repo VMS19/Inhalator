@@ -121,7 +121,7 @@ def test_noise_alerts_when_no_breath(events, measurements, config):
         * Run noise simulation for no-breath time.
         * Make sure at least one no-breath alert was sent.
     """
-    driver_factory = DriverFactory(simulation_mode=True, simulation_data="dead")
+    driver_factory = DriverFactory(simulation_mode=True, simulation_data="noise")
     flow_sensor = driver_factory.get_driver("flow")
     pressure_sensor = driver_factory.get_driver("pressure")
     oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
