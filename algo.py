@@ -161,6 +161,7 @@ class VentilationStateMachine(object):
         # Data structure to record last 100 entry timestamp for each state.
         # Useful for debugging and plotting.
         self.entry_points_ts = {
+            VentilationState.Calibration: deque(maxlen=100),
             VentilationState.PEEP: deque(maxlen=100),
             VentilationState.Inhale: deque(maxlen=100),
             VentilationState.Hold: deque(maxlen=100),
@@ -185,17 +186,10 @@ class VentilationStateMachine(object):
     def enter_inhale(self, timestamp):
         self.last_breath_timestamp = timestamp
         self._measurements.bpm = self.breathes_rate_meter.beat(timestamp)
-        # Update final expiration volume
-        exp_volume_ml = self.expiration_volume.air_volume_liter * 1000
-        self.log.debug("TV exp: : %sml", exp_volume_ml)
-        self._measurements.expiration_volume = exp_volume_ml
-        self.expiration_volume.reset()
         self.reset_min_values()
 
     def enter_exhale(self, timestamp):
         self.reset_peaks()
-
-    def enter_peep(self, timestamp):
         # Update final inspiration volume
         insp_volume_ml = self.inspiration_volume.air_volume_liter * 1000
         self.log.debug("TV insp: : %sml", insp_volume_ml)
@@ -212,6 +206,13 @@ class VentilationStateMachine(object):
             self.log.warning(
                 "volume too high %s, top threshold %s",
                 insp_volume_ml, self._config.volume_range.max)
+
+    def enter_peep(self, timestamp):
+        # Update final expiration volume
+        exp_volume_ml = self.expiration_volume.air_volume_liter * 1000
+        self.log.debug("TV exp: : %sml", exp_volume_ml)
+        self._measurements.expiration_volume = exp_volume_ml
+        self.expiration_volume.reset()
 
     def reset_peaks(self):
         self._measurements.intake_peak_pressure = self.peak_pressure
@@ -254,18 +255,17 @@ class VentilationStateMachine(object):
                 pressure_cmh2o, self._config.pressure_range.min)
             self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW)
 
-        self.check_transition(pressure_cmh2o, timestamp)
+        self.check_transition(flow_slm, timestamp)
 
-    def check_transition(self, pressure_cmh2o, timestamp):
+    def check_transition(self, flow_slm, timestamp):
         # Now, calculate the current slope of the pressure graph to see in which
         # ventilation state we are.
-        slope = self.rs.add_sample(pressure_cmh2o, timestamp)
+        slope = self.rs.add_sample(flow_slm, timestamp)
         if slope is None:
             return  # Not enough data
 
-        func, threshold, next_state = self.TRANSITION_TABLE.get(self.current_state)
-        if func(slope, threshold):
-            self.rs.reset()  # TODO: Rethink. Maybe not reset?
+        next_state = self.infer_state(slope, flow_slm)
+        if next_state != self.current_state:
             self.log.debug("%s -> %s", self.current_state, next_state)
             self.current_state = next_state
             self.entry_points_ts[next_state].append(timestamp)
@@ -273,6 +273,15 @@ class VentilationStateMachine(object):
             if entry_handler is not None:
                 # noinspection PyArgumentList
                 entry_handler(timestamp)
+
+    def infer_state(self, slope, flow_slm):
+        if flow_slm > 5 and abs(slope) > 3:
+            return VentilationState.Inhale
+        if flow_slm < 5 and abs(slope) > 0.5:
+            return VentilationState.Exhale
+        if abs(slope) < 0.5 and abs(flow_slm) < 5:
+            return VentilationState.PEEP
+        return self.current_state
 
 
 class Sampler(object):
