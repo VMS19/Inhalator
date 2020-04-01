@@ -3,6 +3,8 @@ import logging
 
 from errors import PiGPIOInitError, I2CDeviceNotFoundError, I2CReadError
 
+from i2c_driver import I2cDriver
+
 log = logging.getLogger(__name__)
 
 
