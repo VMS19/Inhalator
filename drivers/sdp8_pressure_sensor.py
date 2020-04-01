@@ -19,6 +19,10 @@ class SdpPressureSensor(object):
     SCALE_FACTOR_PASCAL = 60
     CMH20_PASCAL_RATIO = 98.0665
     SYSTEM_RATIO = 46.24
+    START_MEASURE_FLOW_CMD = b"\x36\x08"
+    START_MEASURE_FLOW_AVG_CMD = b"\x36\x03"
+    START_MEASURE_DIFF_PRESSURE_CMD = b"\x36\x1E"
+    START_MEASURE_DIFF_PRESSURE_AVG_CMD = b"\x36\x15"
 
     def __init__(self):
         try:
@@ -43,7 +47,20 @@ class SdpPressureSensor(object):
             raise I2CDeviceNotFoundError("i2c connection open failed")
             # self._pig.i2c_write_device(self._dev, self.CMD_STOP)
 
+        self._start_measure()
+
         log.info("SDP pressure sensor initialized")
+
+    def _start_measure(self):
+        try:
+            self._pig.i2c_write_device(self._dev, self.START_MEASURE_FLOW_AVG_CMD)
+        except pigpio.error as e:
+            log.error("Could not write start_measure cmd to flow sensor. "
+                      "Is the flow sensor connected?.")
+            raise I2CWriteError("i2c write failed")
+        sleep(0.1)
+
+        log.info("Started flow sensor measurement")
 
     def _calculate_pressure(self, pressure_reading):
         differential_psi_pressure =\
@@ -80,8 +97,8 @@ class SdpPressureSensor(object):
     def read(self):
         """ Returns pressure as flow """
         try:
-            self._pig.i2c_write_device(self._dev, self.CMD_TRIGGERED_DIFFERENTIAL_PRESSURE)
-            time.sleep(0.1)
+            #self._pig.i2c_write_device(self._dev, self.CMD_TRIGGERED_DIFFERENTIAL_PRESSURE)
+            #time.sleep(0.1)
             read_size, pressure_raw =\
                 self._pig.i2c_read_device(self._dev, self.MEASURE_BYTE_COUNT)
 
