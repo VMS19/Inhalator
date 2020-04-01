@@ -276,6 +276,46 @@ class Sampler(object):
         self._measurements.peep_min_pressure = self.min_pressure
         self.min_pressure = sys.maxsize
 
+    def read_sensors(self):
+        """
+        Read the sensors and return the samples.
+
+        We try to read all of the sensors even in case of error in order to
+        better understand the nature of the problem - Is it a single sensor that
+        failed, or maybe something wrong with out bus for example.
+        :return: Tuple of (flow, pressure, saturation) if there are no errors,
+                or None if an error occurred in any of the drivers.
+        """
+        error = False
+        flow_slm = None
+        pressure_cmh2o = None
+        o2_saturation_percentage = None
+        try:
+            flow_slm = self._flow_sensor.read()
+        except Exception as e:
+            error = True
+            self._events.alerts_queue.enqueue_alert(AlertCodes.FLOW_SENSOR_ERROR)
+            self.log.error(e)
+
+        try:
+            pressure_cmh2o = self._pressure_sensor.read()
+        except Exception as e:
+            error = True
+            self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_SENSOR_ERROR)
+            self.log.error(e)
+
+        try:
+            o2_saturation_percentage = self._oxygen_a2d.read()
+        except Exception as e:
+            error = True
+            self._events.alerts_queue.enqueue_alert(AlertCodes.SATURATION_SENSOR_ERROR)
+            self.log.error(e)
+
+        if error:
+            return None
+
+        return flow_slm, pressure_cmh2o, o2_saturation_percentage
+
     def sampling_iteration(self):
         ts = time.time()
 
@@ -284,9 +324,11 @@ class Sampler(object):
             self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH, ts)
 
         # Read from sensors
-        flow_slm = self._flow_sensor.read()
-        pressure_cmh2o = self._pressure_sensor.read()
-        o2_saturation_percentage = self._oxygen_a2d.read()
+        result = self.read_sensors()
+        if result is None:
+            return
+
+        flow_slm, pressure_cmh2o, o2_saturation_percentage = result
 
         self.vsm.update(pressure_cmh2o, flow_slm, timestamp=ts)
         self.accumulator.accumulate(ts, flow_slm)
