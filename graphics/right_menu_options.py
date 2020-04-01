@@ -98,7 +98,7 @@ class MuteAlertsButton(object):
 class LockThresholdsButton(object):
 
     IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY,
-                              "outline_lock_open_white_48dp.png")
+                              "baseline_lock_open_white_48dp.png")
 
     def __init__(self, parent):
         self.parent = parent
