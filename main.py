@@ -22,21 +22,21 @@ def configure_logging(level):
     logger = logging.getLogger()
     logger.setLevel(level)
     # create file handler which logs even debug messages
-    fh = RotatingFileHandler('inhalator.log',
-                             maxBytes=GB_IN_BYTES,
-                             backupCount=10)
-    fh.setLevel(logging.DEBUG)
+    file_handler = RotatingFileHandler('inhalator.log',
+                                       maxBytes=GB_IN_BYTES,
+                                       backupCount=10)
+    file_handler.setLevel(level)
     # # create console handler with a higher log level
-    ch = logging.StreamHandler()
-    ch.setLevel(level)
+    steam_handler = logging.StreamHandler()
+    steam_handler.setLevel(level)
     # create formatter and add it to the handlers
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    fh.setFormatter(formatter)
-    # ch.setFormatter(formatter)
+    file_handler.setFormatter(formatter)
+    steam_handler.setFormatter(formatter)
     # add the handlers to the logger
-    logger.addHandler(fh)
-    logger.addHandler(ch)
+    logger.addHandler(file_handler)
+    logger.addHandler(steam_handler)
     logger.disabled = not config.log_enabled
     return logger
 
