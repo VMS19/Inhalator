@@ -185,25 +185,33 @@ class VentilationStateMachine(object):
     def enter_inhale(self, timestamp):
         self.last_breath_timestamp = timestamp
         self._measurements.bpm = self.breathes_rate_meter.beat(timestamp)
+        # Update final expiration volume
+        exp_volume_ml = self.expiration_volume.air_volume_liter * 1000
+        self.log.debug("TV exp: : %sml", exp_volume_ml)
+        self._measurements.expiration_volume = exp_volume_ml
+        self.expiration_volume.reset()
         self.reset_min_values()
 
     def enter_exhale(self, timestamp):
         self.reset_peaks()
 
     def enter_peep(self, timestamp):
-        volume_ml = self.inspiration_volume.air_volume_liter * 1000
-        self.log.info("Volume: %sml", volume_ml)
-        self._measurements.volume = volume_ml
-        # reset values of last intake
+        # Update final inspiration volume
+        insp_volume_ml = self.inspiration_volume.air_volume_liter * 1000
+        self.log.debug("TV insp: : %sml", insp_volume_ml)
+        self._measurements.inspiration_volume = insp_volume_ml
         self.inspiration_volume.reset()
 
-        if self._config.volume_range.below(volume_ml):
+        if self._config.volume_range.below(insp_volume_ml):
             self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW)
-            self.log.warning("volume too low %s, bottom threshold %s", volume_ml, self._config.volume_range.min)
-
-        elif self._config.volume_range.over(volume_ml):
+            self.log.warning(
+                "volume too low %s, bottom threshold %s",
+                insp_volume_ml, self._config.volume_range.min)
+        elif self._config.volume_range.over(insp_volume_ml):
             self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH)
-            self.log.warning("volume too high %s, top threshold %s", volume_ml, self._config.volume_range.max)
+            self.log.warning(
+                "volume too high %s, top threshold %s",
+                insp_volume_ml, self._config.volume_range.max)
 
     def reset_peaks(self):
         self._measurements.intake_peak_pressure = self.peak_pressure
@@ -222,7 +230,10 @@ class VentilationStateMachine(object):
             self.log.warning("No breath detected for the last 12 seconds")
             self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH, timestamp)
 
-        self.inspiration_volume.accumulate(timestamp, flow_slm)
+        # We track inhale and exhale volume separately. Positive flow means
+        # inhale, and negative flow means exhale.
+        accumulator = self.inspiration_volume if flow_slm > 0 else self.expiration_volume
+        accumulator.accumulate(timestamp, abs(flow_slm))
         self._measurements.set_pressure_value(pressure_cmh2o)
         self._measurements.set_flow_value(flow_slm)
         self._measurements.set_saturation_percentage(o2_saturation_percentage)
