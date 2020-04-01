@@ -1,22 +1,12 @@
-# Tkinter stuff
 import os
-import platform
 
 import time
 from graphics.configure_alerts_screen import ConfigureAlarmsScreen
 from graphics.imagebutton import ImageButton
 
-if platform.python_version() < '3':
-    from Tkinter import *
-
-else:
-    from tkinter import *
+from tkinter import *
 
 from graphics.themes import Theme
-
-THIS_DIRECTORY = os.path.dirname(__file__)
-RESOURCES_DIRECTORY = os.path.join(os.path.dirname(THIS_DIRECTORY), "resources")
-
 
 THIS_DIRECTORY = os.path.dirname(__file__)
 RESOURCES_DIRECTORY = os.path.join(os.path.dirname(THIS_DIRECTORY), "resources")

@@ -1,19 +1,10 @@
 import time
-# Tkinter stuff
-import platform
+from tkinter import *
+
 
 from graphics.themes import Theme
-
-if platform.python_version() < '3':
-    from Tkinter import *
-
-else:
-    from tkinter import *
-
 from data import alerts, events, configurations
-
 from drivers.driver_factory import DriverFactory
-
 from data.configurations import Configurations
 
 
