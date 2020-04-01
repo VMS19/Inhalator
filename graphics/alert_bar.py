@@ -20,6 +20,7 @@ class IndicatorAlertBar(object):
 
         self.bar = Frame(self.root, bg=Theme.active().ALERT_BAR_OK,
                          height=self.height, width=self.width)
+
         self.message_label = Label(master=self.bar,
                                    font=("Roboto", 34),
                                    text="OK",
