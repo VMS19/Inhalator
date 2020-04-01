@@ -92,8 +92,8 @@ def test_sampler_volume_calculation(events, measurements, config):
         sampler.sampling_iteration()
 
     expected_volume = (START_PEEP_TIME - START_CYCLE_TIME) / 60 * 1000
-    msg = f"Expected volume of {expected_volume}, received {measurements.volume}"
-    assert measurements.volume == approx(expected_volume, rel=0.1), msg
+    msg = f"Expected volume of {expected_volume}, received {measurements.inspiration_volume}"
+    assert measurements.inspiration_volume == approx(expected_volume, rel=0.1), msg
 
 
 def test_sampler_alerts_when_volume_exceeds_minium(events, measurements, config, driver_factory):
