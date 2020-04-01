@@ -97,8 +97,9 @@ def main():
     # Initialize all drivers, or mocks if in simulation mode
     simulation = args.simulate or os.uname()[1] != 'raspberrypi'
     if simulation:
-        log.info("Running in simulation mode! simulating: "
-                 "flow, pressure sensors, and watchdog")
+        log.info("Running in simulation mode!")
+        log.info("Sensor Data Source: %s", args.data)
+        log.info("Error probability: %s", args.error)
     drivers = DriverFactory(
         simulation_mode=simulation, simulation_data=args.data,
         error_probability=args.error)
