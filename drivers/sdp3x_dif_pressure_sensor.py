@@ -166,7 +166,10 @@ class Sdp3(object):
 
     def read(self):
         dp_pascal = self.read_dp()
-        flow = (dp_pascal ** 0.5) * self.DP_FLOW_FACTOR
+        flow = (abs(dp_pascal) ** 0.5) * self.DP_FLOW_FACTOR
+        if dp_pascal < 0:
+            flow = -flow
+
         log.debug("flow value: {} C. CRC correct".format(flow))
         return flow
 
