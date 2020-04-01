@@ -54,6 +54,34 @@ def events():
 @pytest.mark.xfail(reason="Can't handle extreme errors from sensors in peep")
 @patch('time.time', time_mock)
 def test_slope_recognition_with_error_in_peep(events, measurements, config):
+    """Test error in peep don't hurt the state machine.
+
+    Flow:
+        * Run pig simulation with two errors in the peep stage
+            - One error higher value
+            - One error lower value
+        * Check The entry time to inhale wasn't changed.
+
+    Simulation graph:
+                                        Pig simulation pressure graph
+
+                                              XXXXXXXXXXXXXX
+                                          XXXXX            XXX
+             Check inhale entry         XXX                   XX
+             time wasn't changed      XX                       X
+                      |             XXX                        XX
+          X           |            XX                           X
+                      |          XX                             XX
+                      |        XX                                X
+                      |      XXX                                  X
+                      |   XXX                                     X
+                      vXXXX                                        X
+        XX XXXXXXX XXXXX                                            XXXXXXXXXXXX
+
+
+                  X
+
+    """
     this_dir = os.path.dirname(__file__)
     file_path = os.path.join(this_dir, SIMULATION_FOLDER,
                              "pig_sim_extreme_pressure_in_peep.csv")
@@ -77,6 +105,31 @@ def test_slope_recognition_with_error_in_peep(events, measurements, config):
 @pytest.mark.parametrize('scenario', ['low_error', 'high_error'])
 @patch('time.time', time_mock)
 def test_slope_recognition_with_error_in_inhale(events, measurements, config, scenario):
+    """Test error in inhale don't hurt the state machine.
+
+    Flow:
+        * Run pig simulation with two errors in the inhale stage
+            - One error higher value
+            - One error lower value
+        * Check The entry time to hold wasn't changed.
+
+    Simulation graph:
+                                Pig simulation pressure graph
+
+                    X                     XXXXXXXXXXXXXX
+     Check hold entry      +----------->XXX            XXX
+     time wasn't changed            XXX                   XX
+                                  XX                       X
+                                XXX                        XX
+                               XX                           X
+                             XX                             XX
+                           XX                                X
+                         XXX                                  X
+                      XXX                                     X
+                   X XX                                        X
+    XXXXXXXXXXXXXXXX                   X                        XXXXXXXXXXXX
+
+    """
     this_dir = os.path.dirname(__file__)
     file_path = os.path.join(this_dir, SIMULATION_FOLDER,
                              f"pig_sim_extreme_pressure_in_inhale_{scenario}.csv")
@@ -100,6 +153,33 @@ def test_slope_recognition_with_error_in_inhale(events, measurements, config, sc
 @pytest.mark.xfail(reason="Can't handle extreme errors from sensors in hold")
 @patch('time.time', time_mock)
 def test_slope_recognition_with_error_in_hold(events, measurements, config):
+    """Test error in hold don't hurt the state machine.
+
+    Flow:
+        * Run pig simulation with two errors in the hold stage
+            - One error higher value
+            - One error lower value
+        * Check The entry time to exhale wasn't changed.
+
+    Simulation graph:
+                                                     X
+
+                                Pig simulation pressure graph
+                                                                 Check exhale entry
+                                          XXX XXXXXXX XX         time wasn't changed
+                                       XXXX            XXX<-----+
+                                    XXX                   XX
+                                  XX                       X
+                                XXX                        XX
+                               XX                           X
+                             XX                             XX
+                           XX                                X
+                         XXX                                  X
+                      XXX                                     X
+                   XXXX                                        X
+    XXXXXXXXXXXXXXXX                         X                  XXXXXXXXXXXX
+
+    """
     this_dir = os.path.dirname(__file__)
     file_path = os.path.join(this_dir, SIMULATION_FOLDER,
                              "pig_sim_extreme_pressure_in_hold.csv")
@@ -123,6 +203,31 @@ def test_slope_recognition_with_error_in_hold(events, measurements, config):
 @pytest.mark.parametrize('scenario', ['low_error', 'high_error'])
 @patch('time.time', time_mock)
 def test_slope_recognition_with_error_in_exhale(events, measurements, config, scenario):
+    """Test error in exhale don't hurt the state machine.
+
+    Flow:
+        * Run pig simulation with two errors in the exhale stage
+            - One error higher value
+            - One error lower value
+        * Check The entry time to peep wasn't changed.
+
+    Simulation graph:
+                                Pig simulation pressure graph
+
+                                          XXXXXXXXXXXXXX       X
+                                       XXXX            XX
+                                    XXX                   XX
+                                  XX                       X
+                                XXX                        XX       Check peep entry
+                               XX                           X       time wasn't changed
+                             XX                             XX  +-->
+                           XX                                X  |
+                         XXX                                  X |
+                      XXX                                     X |
+                   XXXX                                         +
+    XXXXXXXXXXXXXXXX                                     X      XXXXXXXXXXXX
+
+    """
     this_dir = os.path.dirname(__file__)
     file_path = os.path.join(this_dir, SIMULATION_FOLDER,
                              f"pig_sim_extreme_pressure_in_exhale_{scenario}.csv")
