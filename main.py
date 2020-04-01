@@ -104,9 +104,8 @@ def main():
     drivers = DriverFactory(
         simulation_mode=simulation, simulation_data=args.data,
         error_probability=args.error)
-
-    pressure_sensor = drivers.get_driver("pressure")
-    with pressure_sensor():
+    try:
+        pressure_sensor = drivers.get_driver("pressure")
         flow_sensor = drivers.get_driver("flow")
         watchdog = drivers.get_driver("wd")
         oxygen_a2d = drivers.get_driver("oxygen_a2d")
@@ -124,6 +123,11 @@ def main():
         watchdog_task = WdTask(watchdog, arm_wd_event)
         watchdog_task.start()
         app.run()
+    except Exception as error:
+        if pressure_sensor:
+            pressure_sensor.close()
+        if oxygen_a2d:
+            oxygen_a2d.close()
 
 if __name__ == '__main__':
     main()
