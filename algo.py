@@ -276,6 +276,14 @@ class Sampler(object):
         self._measurements.peep_min_pressure = self.min_pressure
         self.min_pressure = sys.maxsize
 
+    def read_single_sensor(self, sensor, alert_code):
+        try:
+            return sensor.read()
+        except Exception as e:
+            self._events.alerts_queue.enqueue_alert(alert_code)
+            self.log.error(e)
+        return None
+
     def read_sensors(self):
         """
         Read the sensors and return the samples.
@@ -286,35 +294,16 @@ class Sampler(object):
         :return: Tuple of (flow, pressure, saturation) if there are no errors,
                 or None if an error occurred in any of the drivers.
         """
-        error = False
-        flow_slm = None
-        pressure_cmh2o = None
-        o2_saturation_percentage = None
-        try:
-            flow_slm = self._flow_sensor.read()
-        except Exception as e:
-            error = True
-            self._events.alerts_queue.enqueue_alert(AlertCodes.FLOW_SENSOR_ERROR)
-            self.log.error(e)
+        flow_slm = self.read_single_sensor(
+            self._flow_sensor, AlertCodes.FLOW_SENSOR_ERROR)
+        pressure_cmh2o = self.read_single_sensor(
+            self._pressure_sensor, AlertCodes.PRESSURE_SENSOR_ERROR)
+        o2_saturation_percentage = self.read_single_sensor(
+            self._oxygen_a2d, AlertCodes.SATURATION_SENSOR_ERROR)
 
-        try:
-            pressure_cmh2o = self._pressure_sensor.read()
-        except Exception as e:
-            error = True
-            self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_SENSOR_ERROR)
-            self.log.error(e)
-
-        try:
-            o2_saturation_percentage = self._oxygen_a2d.read()
-        except Exception as e:
-            error = True
-            self._events.alerts_queue.enqueue_alert(AlertCodes.SATURATION_SENSOR_ERROR)
-            self.log.error(e)
-
-        if error:
-            return None
-
-        return flow_slm, pressure_cmh2o, o2_saturation_percentage
+        data = (flow_slm, pressure_cmh2o, o2_saturation_percentage)
+        errors = [x is None for x in data]
+        return None if any(errors) else data
 
     def sampling_iteration(self):
         ts = time.time()
