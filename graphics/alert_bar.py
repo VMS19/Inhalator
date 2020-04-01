@@ -3,8 +3,7 @@ from tkinter import *
 
 
 from graphics.themes import Theme
-from data import alerts, events, configurations
-from drivers.driver_factory import DriverFactory
+from data import alerts
 from data.configurations import Configurations
 
 

@@ -1,6 +1,7 @@
 import sys
 import time
 import logging
+import threading
 from enum import Enum
 from statistics import mean
 from collections import deque
@@ -282,18 +283,49 @@ class Sampler(object):
         self._measurements.peep_min_pressure = self.min_pressure
         self.min_pressure = sys.maxsize
 
+    def read_single_sensor(self, sensor, alert_code):
+        try:
+            return sensor.read()
+        except Exception as e:
+            self._events.alerts_queue.enqueue_alert(alert_code)
+            self.log.error(e)
+        return None
+
+    def read_sensors(self):
+        """
+        Read the sensors and return the samples.
+
+        We try to read all of the sensors even in case of error in order to
+        better understand the nature of the problem - Is it a single sensor that
+        failed, or maybe something wrong with out bus for example.
+        :return: Tuple of (flow, pressure, saturation) if there are no errors,
+                or None if an error occurred in any of the drivers.
+        """
+        flow_slm = self.read_single_sensor(
+            self._flow_sensor, AlertCodes.FLOW_SENSOR_ERROR)
+        pressure_cmh2o = self.read_single_sensor(
+            self._pressure_sensor, AlertCodes.PRESSURE_SENSOR_ERROR)
+        o2_saturation_percentage = self.read_single_sensor(
+            self._oxygen_a2d, AlertCodes.SATURATION_SENSOR_ERROR)
+
+        data = (flow_slm, pressure_cmh2o, o2_saturation_percentage)
+        errors = [x is None for x in data]
+        return None if any(errors) else data
+
     def sampling_iteration(self):
         ts = time.time()
 
         seconds_from_last_breath = ts - self.inhale_handler.last_breath_timestamp
         if seconds_from_last_breath >= 12:
-            self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH)
+            self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH, ts)
             self.log.warning("No breath detected for the last 12 seconds")
 
         # Read from sensors
-        flow_slm = self._flow_sensor.read()
-        pressure_cmh2o = self._pressure_sensor.read()
-        o2_saturation_percentage = self._oxygen_a2d.read()
+        result = self.read_sensors()
+        if result is None:
+            return
+
+        flow_slm, pressure_cmh2o, o2_saturation_percentage = result
 
         # WARNING! These log messages are useful for debugging sensors but
         # might spam you since they are printed on every sample. In order to see

@@ -4,17 +4,12 @@ The use of this driver requires pigpio deamon:
 'sudo pigpiod'
 (sudo apt-get install pigpio)
 """
+import pigpio
 from time import sleep
 import logging
 
-import pigpio
-
-from errors import PiGPIOInitError
-from errors import I2CDeviceNotFoundError
-from errors import I2CReadError
-from errors import I2CWriteError
-from errors import FlowSensorCRCError
-
+from errors import PiGPIOInitError, I2CDeviceNotFoundError, \
+                I2CReadError, I2CWriteError, FlowSensorCRCError
 log = logging.getLogger(__name__)
 
 
@@ -94,7 +89,7 @@ class Sfm3200(object):
                     raise FlowSensorCRCError("CRC mismatch")
 
             else:
-                log.error(f"Too much data recieved, "
+                log.error(f"Too much data received, "
                           "got {len(data)} expected 3. data: {data}")
                 raise I2CReadError("Too much data read, invalid state")
 
