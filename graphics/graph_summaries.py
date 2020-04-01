@@ -19,17 +19,17 @@ class GraphSummary(object):
         self.frame = Frame(master=self.root,
                            borderwidth=1)
         self.value_label = Label(master=self.frame, text="HELLO",
-                                 font=("Roboto", 18),
-                                 bg=self.color(),
-                                 fg=Theme.active().TXT_ON_SURFACE)
+                                 font=("Roboto", 24),
+                                 bg=Theme.active().BACKGROUND,
+                                 fg=self.color())
         self.units_label = Label(master=self.frame, text="HELLO",
                                  font=("Roboto", 8),
-                                 bg=self.color(),
-                                 fg=Theme.active().TXT_ON_SURFACE)
+                                 bg=Theme.active().BACKGROUND,
+                                 fg=self.color())
         self.name_label = Label(master=self.frame, text="HELLO",
-                                font=("Roboto", 15),
-                                bg=self.color(),
-                                fg=Theme.active().TXT_ON_SURFACE)
+                                font=("Roboto", 13),
+                                bg=Theme.active().BACKGROUND,
+                                fg=self.color())
 
     def units(self):
         pass
@@ -38,6 +38,9 @@ class GraphSummary(object):
         pass
 
     def value(self):
+        pass
+
+    def color(self):
         pass
 
     def render(self):
@@ -78,7 +81,7 @@ class VolumeSummary(GraphSummary):
         return "{:.0f}".format(self.measurements.volume)
 
     def name(self):
-        return "Volume"
+        return "Vte"
 
     def units(self):
         return "ml"
@@ -111,9 +114,7 @@ class BPMSummary(GraphSummary):
 
 class O2SaturationSummary(GraphSummary):
     def value(self):
-        # Round to nearest half
-        return "{:.2f}".format(
-            round(self.measurements.o2_saturation_percentage * 2) / 2)
+        return round(self.measurements.o2_saturation_percentage)
 
     def name(self):
         return "FiO2"
@@ -122,7 +123,7 @@ class O2SaturationSummary(GraphSummary):
         return "%"
 
     def color(self):
-        return "green"
+        return Theme.active().WHITE
 
     def render(self):
         self.frame.place(relx=0, rely=(3/4), relheight=(1/4), relwidth=1)
