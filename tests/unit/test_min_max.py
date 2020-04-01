@@ -182,17 +182,17 @@ def test_sampler_pig_min_max(events, measurements, config):
     for i in range(DATA_SIZE):
         sampler.sampling_iteration()
 
-    expected_min_pressure = 0.240899428
+    expected_min_pressure = approx(0.240899428, rel=0.01)
     min_pressure_msg = f"Expected min pressure of {expected_min_pressure}, " \
                        f"received {measurements.peep_min_pressure}"
     assert measurements.peep_min_pressure == expected_min_pressure, min_pressure_msg
 
-    expected_max_pressure = 20.40648936
+    expected_max_pressure = approx(20.40648936, rel=0.1)
     max_pressure_msg = f"Expected max pressure of {expected_max_pressure}, " \
                        f"received {measurements.intake_peak_pressure}"
     assert measurements.intake_peak_pressure == expected_max_pressure, max_pressure_msg
 
-    expected_max_flow = 36.90266823
+    expected_max_flow = approx(36.90266823, rel=0.1)
     max_flow_msg = f"Expected max flow of {expected_max_flow}, " \
                    f"received {measurements.intake_peak_flow}"
     assert measurements.intake_peak_flow == expected_max_flow, max_flow_msg
