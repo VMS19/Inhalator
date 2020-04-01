@@ -13,6 +13,8 @@ from data.thresholds import (FlowRange, PressureRange,
                              RespiratoryRateRange, VolumeRange)
 from drivers.driver_factory import DriverFactory
 
+# logging use time.time, which cause the time mock not work as intended
+# Since logs are not required for the UT, they are disabled
 logging.disable(logging.DEBUG)
 logging.disable(logging.DEBUG - 1)
 logging.disable(logging.WARNING)

@@ -16,7 +16,8 @@ from data.thresholds import (FlowRange, PressureRange,
                              RespiratoryRateRange, VolumeRange)
 from drivers.driver_factory import DriverFactory
 
-
+# logging use time.time, which cause the time mock not work as intended
+# Since logs are not required for the UT, they are disabled
 logging.disable(logging.DEBUG)
 logging.disable(logging.DEBUG - 1)
 logging.disable(logging.WARNING)
@@ -92,7 +93,7 @@ def test_sampler_sinus_min_max(events, measurements, config):
         * check max pressure ~ PRESSURE_AMPLITUDE
         * check max flow ~ FLOW_AMPLITUDE
     """
-    driver_factory = DriverFactory(simulation_mode=True, simulation_data="dead")
+    driver_factory = DriverFactory(simulation_mode=True, simulation_data="noiseless_sinus")
     flow_sensor = driver_factory.get_driver("flow")
     pressure_sensor = driver_factory.get_driver("pressure")
     oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
@@ -103,37 +104,30 @@ def test_sampler_sinus_min_max(events, measurements, config):
         time.sleep(MICROSECOND)
         sampler.sampling_iteration()
 
-    noise_mistake = 2.0  # the probability for noise bigger then 2 is almost 0
-
-    min_pressure_msg = f"Expected min pressure in range [{-noise_mistake}," \
-                       f"{noise_mistake}], received {measurements.peep_min_pressure}"
-    assert measurements.peep_min_pressure == approx(0, rel=noise_mistake), min_pressure_msg
+    expected_min_pressure = driver_factory.MOCK_PEEP
+    min_pressure_msg = f"Expected min pressure be {expected_min_pressure}, " \
+                       f"received {measurements.peep_min_pressure}"
+    assert measurements.peep_min_pressure == expected_min_pressure, min_pressure_msg
 
     expected_pressure = driver_factory.MOCK_PRESSURE_AMPLITUDE
-    max_pressure_msg = f"Expected max pressure in range " \
-                       f"[{expected_pressure - noise_mistake}," \
-                       f" {expected_pressure + noise_mistake}], " \
+    max_pressure_msg = f"Expected max pressure be {expected_pressure}, " \
                        f"received {measurements.intake_peak_pressure}"
-    assert measurements.intake_peak_pressure == approx(expected_pressure,
-                                                       rel=noise_mistake), max_pressure_msg
+    assert measurements.intake_peak_pressure == expected_pressure, max_pressure_msg
 
     expected_flow = driver_factory.MOCK_AIRFLOW_AMPLITUDE
-    max_flow_msg = f"Expected max flow in range " \
-                       f"[{expected_flow - noise_mistake}," \
-                       f" {expected_flow + noise_mistake}], " \
+    max_flow_msg = f"Expected max flow be {expected_flow}, " \
                        f"received {measurements.intake_peak_flow}"
-    assert measurements.intake_peak_flow == approx(expected_flow,
-                                                   rel=noise_mistake), max_flow_msg
+    assert measurements.intake_peak_flow == expected_flow, max_flow_msg
 
 
 this_dir = os.path.dirname(__file__)
 with open(os.path.join(this_dir, SIMULATION_FOLDER,
                        "pig_sim_sin_flow.csv"), "r") as f:
-    data = list(csv.reader(f))
-timestamps = [float(d[0]) for d in data[1:]]
-timestamps = timestamps[
-             :1] + timestamps  # first timestamp for InhaleStateHandler init
-DATA_SIZE = len(data) - 1
+    reader = csv.DictReader(f)
+    timestamps = [float(row['timestamp']) for row in reader]
+
+DATA_SIZE = len(timestamps)
+timestamps = timestamps[:1] + timestamps  # first timestamp for InhaleStateHandler init
 
 time_mock = Mock()
 time_mock.side_effect = cycle(timestamps)
@@ -143,7 +137,9 @@ time_mock.side_effect = cycle(timestamps)
 def test_sampler_pig_min_max(events, measurements, config):
     """Test volume calculation working correctly.
     Flow:
-        * Run pig simulation with sinus flow in range (0,40).
+        * Run pig simulation with sinus flow in range (0,40) i.e:
+            Using pressure graph from pig simulation and creating a sinus
+            graph for flow with minimum value of 0 and maximum of 40.
         * Validate min & max for pressure and flow.
 
     Note:
@@ -157,7 +153,7 @@ def test_sampler_pig_min_max(events, measurements, config):
                                           XXXXX            XXX<------------+
                                         XXX                   XX
                                       XX                       X
-         read minium pressure       XXX                        XX
+         read minimum pressure      XXX                        XX
                       +            XX                           X
                       |          XX                             XX
                       |        XX                                X

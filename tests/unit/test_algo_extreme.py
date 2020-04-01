@@ -14,6 +14,8 @@ from data.thresholds import FlowRange, PressureRange, RespiratoryRateRange, \
     VolumeRange
 from drivers.driver_factory import DriverFactory
 
+# logging use time.time, which cause the time mock not work as intended
+# Since logs are not required for the UT, they are disabled
 logging.disable(logging.DEBUG)
 logging.disable(logging.DEBUG - 1)
 logging.disable(logging.WARNING)
@@ -64,7 +66,7 @@ def events():
 @pytest.mark.xfail(reason="Can't handle extreme errors from sensors in peep")
 @patch('time.time', time_mock)
 def test_slope_recognition_with_error_in_peep(events, measurements, config):
-    """Test error in peep don't hurt the state machine.
+    """Test error in peep doesn't cause the state machine change too early.
 
     Flow:
         * Run pig simulation with two errors in the peep stage
@@ -115,7 +117,7 @@ def test_slope_recognition_with_error_in_peep(events, measurements, config):
 @pytest.mark.parametrize('scenario', ['low_error', 'high_error'])
 @patch('time.time', time_mock)
 def test_slope_recognition_with_error_in_inhale(events, measurements, config, scenario):
-    """Test error in inhale don't hurt the state machine.
+    """Test error in inhale doesn't cause the state machine change too early.
 
     Flow:
         * Run pig simulation with two errors in the inhale stage
@@ -163,7 +165,7 @@ def test_slope_recognition_with_error_in_inhale(events, measurements, config, sc
 @pytest.mark.xfail(reason="Can't handle extreme errors from sensors in hold")
 @patch('time.time', time_mock)
 def test_slope_recognition_with_error_in_hold(events, measurements, config):
-    """Test error in hold don't hurt the state machine.
+    """Test error in hold doesn't cause the state machine change too early.
 
     Flow:
         * Run pig simulation with two errors in the hold stage
@@ -213,7 +215,7 @@ def test_slope_recognition_with_error_in_hold(events, measurements, config):
 @pytest.mark.parametrize('scenario', ['low_error', 'high_error'])
 @patch('time.time', time_mock)
 def test_slope_recognition_with_error_in_exhale(events, measurements, config, scenario):
-    """Test error in exhale don't hurt the state machine.
+    """Test error in exhale doesn't cause the state machine change too early.
 
     Flow:
         * Run pig simulation with two errors in the exhale stage
