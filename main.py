@@ -87,44 +87,47 @@ def handle_sigterm(signum, frame):
 
 
 def main():
-    measurements = Measurements()
-    events = Events()
-    signal.signal(signal.SIGTERM, handle_sigterm)
-    args = parse_args()
-    arm_wd_event = Event()
-    log = configure_logging(args.verbose)
+    try:
+        measurements = Measurements()
+        events = Events()
+        signal.signal(signal.SIGTERM, handle_sigterm)
+        args = parse_args()
+        arm_wd_event = Event()
+        log = configure_logging(args.verbose)
 
-    # Initialize all drivers, or mocks if in simulation mode
-    simulation = args.simulate or os.uname()[1] != 'raspberrypi'
-    if simulation:
-        log.info("Running in simulation mode!")
-        log.info("Sensor Data Source: %s", args.data)
-        log.info("Error probability: %s", args.error)
-    drivers = DriverFactory(
-        simulation_mode=simulation, simulation_data=args.data,
-        error_probability=args.error)
+        # Initialize all drivers, or mocks if in simulation mode
+        simulation = args.simulate or os.uname()[1] != 'raspberrypi'
+        if simulation:
+            log.info("Running in simulation mode!")
+            log.info("Sensor Data Source: %s", args.data)
+            log.info("Error probability: %s", args.error)
+        drivers = DriverFactory(
+            simulation_mode=simulation, simulation_data=args.data,
+            error_probability=args.error)
 
-    pressure_sensor = drivers.get_driver("pressure")
-    flow_sensor = drivers.get_driver("flow")
+        pressure_sensor = drivers.get_driver("pressure")
+        flow_sensor = drivers.get_driver("flow")
 
-    watchdog = drivers.get_driver("wd")
-    oxygen_a2d = drivers.get_driver("oxygen_a2d")
+        watchdog = drivers.get_driver("wd")
+        oxygen_a2d = drivers.get_driver("oxygen_a2d")
 
-    sampler = Sampler(measurements=measurements, events=events,
-                      flow_sensor=flow_sensor, pressure_sensor=pressure_sensor,
-                      oxygen_a2d=oxygen_a2d)
+        sampler = Sampler(measurements=measurements, events=events,
+                        flow_sensor=flow_sensor, pressure_sensor=pressure_sensor,
+                        oxygen_a2d=oxygen_a2d)
 
-    app = Application(measurements=measurements,
-                      events=events,
-                      arm_wd_event=arm_wd_event,
-                      drivers=drivers,
-                      sampler=sampler)
+        app = Application(measurements=measurements,
+                        events=events,
+                        arm_wd_event=arm_wd_event,
+                        drivers=drivers,
+                        sampler=sampler)
 
-    watchdog_task = WdTask(watchdog, arm_wd_event)
-    watchdog_task.start()
+        watchdog_task = WdTask(watchdog, arm_wd_event)
+        watchdog_task.start()
+        app.run()
 
-    app.run()
-
+    except Exception as identifier:
+        oxygen_a2d.close()
+        pressure_sensor.close()
 
 if __name__ == '__main__':
     main()
