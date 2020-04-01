@@ -101,7 +101,7 @@ class DriverFactory(object):
     @staticmethod
     def get_pressure_driver():
         from drivers.abp_pressure_sensor import AbpPressureSensor
-        return AbpPressureSensor()
+        return AbpPressureSensor
 
     @staticmethod
     def get_flow_driver():

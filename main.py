@@ -87,27 +87,27 @@ def handle_sigterm(signum, frame):
 
 
 def main():
-    try:
-        measurements = Measurements()
-        events = Events()
-        signal.signal(signal.SIGTERM, handle_sigterm)
-        args = parse_args()
-        arm_wd_event = Event()
-        log = configure_logging(args.verbose)
 
-        # Initialize all drivers, or mocks if in simulation mode
-        simulation = args.simulate or os.uname()[1] != 'raspberrypi'
-        if simulation:
-            log.info("Running in simulation mode!")
-            log.info("Sensor Data Source: %s", args.data)
-            log.info("Error probability: %s", args.error)
-        drivers = DriverFactory(
-            simulation_mode=simulation, simulation_data=args.data,
-            error_probability=args.error)
+    measurements = Measurements()
+    events = Events()
+    signal.signal(signal.SIGTERM, handle_sigterm)
+    args = parse_args()
+    arm_wd_event = Event()
+    log = configure_logging(args.verbose)
 
-        pressure_sensor = drivers.get_driver("pressure")
+    # Initialize all drivers, or mocks if in simulation mode
+    simulation = args.simulate or os.uname()[1] != 'raspberrypi'
+    if simulation:
+        log.info("Running in simulation mode!")
+        log.info("Sensor Data Source: %s", args.data)
+        log.info("Error probability: %s", args.error)
+    drivers = DriverFactory(
+        simulation_mode=simulation, simulation_data=args.data,
+        error_probability=args.error)
+
+    pressure_sensor = drivers.get_driver("pressure")
+    with pressure_sensor():
         flow_sensor = drivers.get_driver("flow")
-
         watchdog = drivers.get_driver("wd")
         oxygen_a2d = drivers.get_driver("oxygen_a2d")
 
@@ -119,15 +119,11 @@ def main():
                         events=events,
                         arm_wd_event=arm_wd_event,
                         drivers=drivers,
-                        sampler=sampler)
+                        samplaer=sampler)
 
         watchdog_task = WdTask(watchdog, arm_wd_event)
         watchdog_task.start()
         app.run()
-
-    except Exception as identifier:
-        oxygen_a2d.close()
-        pressure_sensor.close()
 
 if __name__ == '__main__':
     main()

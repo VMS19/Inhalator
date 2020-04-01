@@ -20,8 +20,8 @@ class AbpPressureSensor(I2cDriver):
         float(MAX_OUT_PRESSURE - MIN_OUT_PRESSURE)
     PSI_CMH2O_RATIO = 70.307
 
-    def __init__(self):
-        super().__init__(self)
+    def __enter__(self):
+        super().__enter__(self)
         log.info("ABP pressure sensor initialized")
 
     def _calculate_pressure(self, pressure_reading):
