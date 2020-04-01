@@ -25,7 +25,6 @@ class BroadcastHandler(logging.handlers.DatagramHandler):
     def send(self, s):
         try:
             super().send(s)
-
         except OSError as e:
             if e.errno != 101:
                 raise RuntimeError("Network is unreachable") from e
@@ -69,8 +68,13 @@ def configure_logging(level):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--verbose", "-v", action="count", default=0)
-    parser.add_argument("--simulate", "-s", action='store_true')
-    parser.add_argument("--data", '-d', default='sinus')
+    sim_options = parser.add_argument_group(
+        "simulation", "Options for data simulation")
+    sim_options.add_argument("--simulate", "-s", action='store_true')
+    sim_options.add_argument("--data", '-d', default='sinus')
+    sim_options.add_argument(
+        "--error", "-e", type=float,
+        help="The probability of error in each driver", default=0)
     args = parser.parse_args()
     args.verbose = max(0, logging.WARNING - (10 * args.verbose))
     return args
@@ -93,10 +97,12 @@ def main():
     # Initialize all drivers, or mocks if in simulation mode
     simulation = args.simulate or os.uname()[1] != 'raspberrypi'
     if simulation:
-        log.info("Running in simulation mode! simulating: "
-                 "flow, pressure sensors, and watchdog")
+        log.info("Running in simulation mode!")
+        log.info("Sensor Data Source: %s", args.data)
+        log.info("Error probability: %s", args.error)
     drivers = DriverFactory(
-        simulation_mode=simulation, simulation_data=args.data)
+        simulation_mode=simulation, simulation_data=args.data,
+        error_probability=args.error)
 
     pressure_sensor = drivers.get_driver("pressure")
     flow_sensor = drivers.get_driver("flow")

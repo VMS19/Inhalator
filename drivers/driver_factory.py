@@ -34,9 +34,10 @@ class DriverFactory(object):
     def instance(cls):
         return cls.__instance
 
-    def __init__(self, simulation_mode, simulation_data='sinus'):
+    def __init__(self, simulation_mode, simulation_data='sinus',  error_probability=0):
         self.mock = simulation_mode
         self.simulation_data = simulation_data  # can be either `sinus` or file path
+        self.error_probability = error_probability
         self.drivers_cache = {}
 
     def get_driver(self, driver_name):
@@ -131,7 +132,7 @@ class DriverFactory(object):
             data = self.generate_mock_pressure_data()
         else:
             data = generate_data_from_file('pressure', data_source)
-        return MockSensor(data)
+        return MockSensor(data, error_probability=self.error_probability)
 
     def get_mock_flow_driver(self):
         from drivers.mocks.sensor import MockSensor
@@ -142,7 +143,7 @@ class DriverFactory(object):
             data = self.generate_mock_air_flow_data()
         else:
             data = generate_data_from_file('flow', simulation_data)
-        return MockSensor(data)
+        return MockSensor(data, error_probability=self.error_probability)
 
     def get_mock_oxygen_a2d_driver(self):
         from drivers.mocks.sensor import MockSensor
@@ -153,7 +154,7 @@ class DriverFactory(object):
             data = self.generate_mock_oxygen_a2d_data()
         else:
             data = generate_data_from_file('oxygen', simulation_data)
-        return MockSensor(data)
+        return MockSensor(data, error_probability=self.error_probability)
 
     @staticmethod
     def get_mock_wd_driver():
