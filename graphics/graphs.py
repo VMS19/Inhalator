@@ -9,7 +9,6 @@ from graphics.themes import Theme
 
 if platform.python_version() < '3':
     from Tkinter import *
-
 else:
     from tkinter import *
 
