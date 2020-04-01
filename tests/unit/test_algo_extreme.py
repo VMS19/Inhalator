@@ -13,8 +13,11 @@ from data.thresholds import FlowRange, PressureRange, RespiratoryRateRange, \
     VolumeRange
 from drivers.driver_factory import DriverFactory
 
+SIMULATION_FOLDER = "simulation"
+
 this_dir = os.path.dirname(__file__)
-with open(os.path.join(this_dir, "pig_sim_extreme_pressure_in_peep.csv"), "r") as f:
+with open(os.path.join(this_dir, SIMULATION_FOLDER,
+                       "pig_sim_extreme_pressure_in_peep.csv"), "r") as f:
     data = list(csv.reader(f))
 timestamps = [float(d[0]) for d in data[1:]]
 timestamps = timestamps[
@@ -53,7 +56,7 @@ def events():
 @patch('time.time', time_mock)
 def test_slope_recognition_with_error(events, measurements, config):
     this_dir = os.path.dirname(__file__)
-    file_path = os.path.join(this_dir,
+    file_path = os.path.join(this_dir, SIMULATION_FOLDER,
                              "pig_sim_extreme_pressure_in_peep.csv")
     driver_factory = DriverFactory(simulation_mode=True,
                                    simulation_data=file_path)

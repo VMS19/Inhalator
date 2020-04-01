@@ -18,6 +18,7 @@ from drivers.driver_factory import DriverFactory
 
 MICROSECOND = 10 ** -6
 SIMULATION_LENGTH = 2  # seconds
+SIMULATION_FOLDER = "simulation"
 
 
 @pytest.fixture
@@ -104,7 +105,8 @@ def test_sampler_sinus_min_max(events, measurements, config):
 
 
 this_dir = os.path.dirname(__file__)
-with open(os.path.join(this_dir, "pig_sim_sin_flow.csv"), "r") as f:
+with open(os.path.join(this_dir, SIMULATION_FOLDER,
+                       "pig_sim_sin_flow.csv"), "r") as f:
     data = list(csv.reader(f))
 timestamps = [float(d[0]) for d in data[1:]]
 timestamps = timestamps[
@@ -127,7 +129,8 @@ def test_sampler_pig_min_max(events, measurements, config):
         Max values are read at the first hold exit at timestamp 6.075 (not including)
     """
     this_dir = os.path.dirname(__file__)
-    file_path = os.path.join(this_dir, "pig_sim_sin_flow.csv")
+    file_path = os.path.join(this_dir, SIMULATION_FOLDER,
+                             "pig_sim_sin_flow.csv")
     driver_factory = DriverFactory(simulation_mode=True,
                                    simulation_data=file_path)
 
