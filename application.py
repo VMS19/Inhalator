@@ -1,14 +1,16 @@
 import os
+import time
 from tkinter import *
 
 from graphics.panes import MasterFrame
-from graphics.themes import Theme, DarkTheme
+from graphics.themes import Theme
 from data.configurations import Configurations, ConfigurationState
-from data.alerts import Alert, AlertCodes
+from data.alerts import AlertCodes
 
 
 class Application(object):
     """The Inhalator application"""
+    FPS = 25
     TEXT_SIZE = 10
 
     __instance = None  # shared instance
@@ -61,10 +63,14 @@ class Application(object):
 
     def run(self):
         self.render()
+        last_gui_update_ts = time.time()
         while self.should_run:
             try:
                 self.sampler.sampling_iteration()
-                self.gui_update()
+                if time.time() - last_gui_update_ts >= (1 / self.FPS):
+                    self.gui_update()
+                    last_gui_update_ts = time.time()
+
                 self.arm_wd_event.set()
             except KeyboardInterrupt:
                 break
