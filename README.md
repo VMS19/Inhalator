@@ -5,7 +5,7 @@ Turning stupid BiPAP into full-scale inhalators.
 
 ## Getting Started
 Make sure to install all of the project's dependencies
-```shell script
+```shell scripta
 pip3 install -r requirements.txt
 ```
 
