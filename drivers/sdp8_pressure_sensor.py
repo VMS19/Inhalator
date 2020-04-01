@@ -45,8 +45,8 @@ class SdpPressureSensor(object):
             log.error("Could not open i2c connection to pressure sensor."
                       "Is it connected?")
             raise I2CDeviceNotFoundError("i2c connection open failed")
-            # self._pig.i2c_write_device(self._dev, self.CMD_STOP)
 
+        self._pig.i2c_write_device(self._dev, self.CMD_STOP)
         self._start_measure()
 
         log.info("SDP pressure sensor initialized")
@@ -97,8 +97,6 @@ class SdpPressureSensor(object):
     def read(self):
         """ Returns pressure as flow """
         try:
-            #self._pig.i2c_write_device(self._dev, self.CMD_TRIGGERED_DIFFERENTIAL_PRESSURE)
-            #time.sleep(0.1)
             read_size, pressure_raw =\
                 self._pig.i2c_read_device(self._dev, self.MEASURE_BYTE_COUNT)
 
