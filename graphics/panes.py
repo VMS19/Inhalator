@@ -58,7 +58,7 @@ class LeftPane(object):
         self.screen_width = self.root.winfo_screenwidth()
 
         self.height = self.screen_height * 0.85
-        self.width = self.screen_width * 0.2
+        self.width = self.screen_width * 0.15
 
         self.frame = Frame(master=self.root,
                            bg=Theme.active().SURFACE,
@@ -100,7 +100,7 @@ class CenterPane(object):
         self.screen_width = self.root.winfo_screenwidth()
 
         self.height = self.screen_height * 0.85
-        self.width = self.screen_width * 0.7
+        self.width = self.screen_width * 0.75
 
         self.frame = Frame(master=self.root, bg=Theme.active().SURFACE,
                            height=self.height, width=self.width)
