@@ -23,23 +23,24 @@ RESOURCES_DIRECTORY = os.path.join(os.path.dirname(THIS_DIRECTORY), "resources")
 
 
 class ClearAlertsButton(object):
-
-    PATH_TO_IMAGE = os.path.join(RESOURCES_DIRECTORY,
-                                 "baseline_delete_forever_white_24dp.png")
+    IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY,
+                              "baseline_history_white_48dp.png")
 
     def __init__(self, parent, events):
         self.parent = parent
         self.root = parent.element
         self.events = events
-        self.button = ImageButton(master=self.root,
-                             command=self.on_click,
-                             font=("Roboto", 10),
-                             relief="flat",
-                             bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
-                             fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
-                             activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
-                             activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,
-                             image_path=self.PATH_TO_IMAGE)
+        self.button = ImageButton(
+            master=self.root,
+            image_path=self.IMAGE_PATH,
+            command=self.on_click,
+            font=("Roboto", 10),
+            relief="flat",
+            bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
+            fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
+            activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
+            activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,
+        )
 
     def on_click(self):
         self.events.alerts_queue.clear_alerts()
@@ -54,9 +55,9 @@ class ClearAlertsButton(object):
 class MuteAlertsButton(object):
 
     PATH_TO_MUTED = os.path.join(RESOURCES_DIRECTORY,
-                                 "baseline_volume_off_white_24dp.png")
+                                 "baseline_volume_off_white_48dp.png")
     PATH_TO_UNMUTED = os.path.join(RESOURCES_DIRECTORY,
-                                   "baseline_volume_up_white_24dp.png")
+                                   "baseline_volume_up_white_48dp.png")
 
     def __init__(self, parent, events):
         self.parent = parent
@@ -64,15 +65,17 @@ class MuteAlertsButton(object):
         self.events = events
         self.muted = False
 
-        self.button = ImageButton(master=self.root,
-                                  command=self.on_click,
-                                  font=("Roboto", 10),
-                                  image_path=self.PATH_TO_UNMUTED,
-                                  relief="flat",
-                                  bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
-                                  fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
-                                  activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
-                                  activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,)
+        self.button = ImageButton(
+            master=self.root,
+            image_path=self.PATH_TO_UNMUTED,
+            command=self.on_click,
+            font=("Roboto", 10),
+            relief="flat",
+            bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
+            fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
+            activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
+            activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,
+        )
 
     def on_click(self):
         self.events.mute_alerts = not self.events.mute_alerts
@@ -93,18 +96,26 @@ class MuteAlertsButton(object):
 
 
 class LockThresholdsButton(object):
+
+    IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY,
+                              "baseline_lock_open_white_48dp.png")
+
     def __init__(self, parent):
         self.parent = parent
         self.root = parent.element
 
-        self.button = Button(master=self.root,
-                             command=self.on_click,
-                             text="Lock", relief="flat",
-                             font=("Roboto", 10),
-                             bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
-                             fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
-                             activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
-                             activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,)
+        self.button = ImageButton(
+            master=self.root,
+            image_path=self.IMAGE_PATH,
+            command=self.on_click,
+            text="Lock",
+            relief="flat",
+            font=("Roboto", 10),
+            bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
+            fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
+            activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
+            activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,
+        )
 
     def on_click(self):
         print("Not Implemented Yet")
@@ -117,19 +128,23 @@ class LockThresholdsButton(object):
 
 
 class OpenConfigureAlertsScreenButton(object):
+    IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY,
+                              "baseline_settings_white_48dp.png")
+
     def __init__(self, parent):
         self.parent = parent
         self.root = parent.element
 
-        self.button = Button(master=self.root,
-                             text="Alerts",
-                             command=self.on_click,
-                             font=("Roboto", 10),
-                             relief="flat",
-                             bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
-                             fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
-                             activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
-                             activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,
+        self.button = ImageButton(
+            master=self.root,
+            image_path=self.IMAGE_PATH,
+            command=self.on_click,
+            font=("Roboto", 10),
+            relief="flat",
+            bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
+            fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
+            activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
+            activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,
         )
 
     def on_click(self):
