@@ -3,8 +3,7 @@ from tkinter import *
 
 
 from graphics.themes import Theme
-from data import alerts, events, configurations
-from drivers.driver_factory import DriverFactory
+from data import alerts
 from data.configurations import Configurations
 
 
@@ -21,6 +20,7 @@ class IndicatorAlertBar(object):
 
         self.bar = Frame(self.root, bg=Theme.active().ALERT_BAR_OK,
                          height=self.height, width=self.width)
+
         self.message_label = Label(master=self.bar,
                                    font=("Roboto", 34),
                                    text="OK",

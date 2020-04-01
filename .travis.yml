@@ -4,6 +4,7 @@ language: python
 
 before_install:
   - pip install tox
+  - sudo apt-get install xvfb  # Virtual Display for GUI tests
 
 script:
   - tox

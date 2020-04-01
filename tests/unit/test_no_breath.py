@@ -82,6 +82,7 @@ def test_sinus_alerts_when_no_breath(events, measurements, config):
     assert alert == alerts.AlertCodes.NO_BREATH
 
 
+@pytest.mark.xfail(reason="logging time.time() is mocked")
 @patch('time.time', dead_no_breath_time_mock)
 def test_dead_man_alerts_when_no_breath(events, measurements, config):
     """Test that no-breath alert is sent after time without breathing

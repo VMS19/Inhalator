@@ -16,10 +16,14 @@ class AlertCodes(IntEnum):
     PEEP_TOO_LOW = 1 << 5
     NO_BREATH = 1 << 6
     NO_CONFIGURATION_FILE = 1 << 7
+    FLOW_SENSOR_ERROR = 1 << 8
+    PRESSURE_SENSOR_ERROR = 1 << 9
+    SATURATION_SENSOR_ERROR = 1 << 10
 
     @classmethod
     def is_valid(cls, alert_code):
         return alert_code in map(int, cls)
+
 
 class Alert(object):
     ALERT_CODE_TO_MESSAGE = {
@@ -30,7 +34,10 @@ class Alert(object):
         AlertCodes.NO_BREATH: "No Breathing",
         AlertCodes.PEEP_TOO_HIGH: "High PEEP",
         AlertCodes.PEEP_TOO_LOW: "Low PEEP",
-        AlertCodes.NO_CONFIGURATION_FILE: "Configuration Error"
+        AlertCodes.NO_CONFIGURATION_FILE: "Configuration Error",
+        AlertCodes.FLOW_SENSOR_ERROR: "Flow Sensor Error",
+        AlertCodes.PRESSURE_SENSOR_ERROR: "Pressure Sensor Error",
+        AlertCodes.SATURATION_SENSOR_ERROR: "Saturation Sensor Error",
     }
 
     def __init__(self, alert_code, timestamp=None):
