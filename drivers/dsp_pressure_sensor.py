@@ -46,8 +46,6 @@ class DspPressureSensor(object):
         log.info("ABP pressure sensor initialized")
 
     def _calculate_pressure(self, pressure_reading):
-        differential_psi_pressure = pressure_reading #/ (1 / 60)
-
         differential_psi_pressure = pressure_reading / (self.SCALE_FACTOR_PASCAL)
         differential_cmh2o_pressure = psi_pressure * (1 / self.CMH20_PASCAL_RATIO)
         return (differential_cmh2o_pressure)
