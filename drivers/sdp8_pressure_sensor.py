@@ -18,6 +18,7 @@ class SdpPressureSensor(object):
     CRC_INIT_VALUE = 0xFF
     SCALE_FACTOR_PASCAL = 60
     CMH20_PASCAL_RATIO = 98.0665
+    SYSTEM_RATIO = 46.24
 
     def __init__(self):
         try:
@@ -52,7 +53,7 @@ class SdpPressureSensor(object):
         return (differential_cmh2o_pressure)
 
     def _pressure_to_flow(self, pressure):
-        flow = (abs(pressure) ** 0.5) * 50
+        flow = (abs(pressure) ** 0.5) * self.SYSTEM_RATIO
         if pressure < 0:
             flow = -flow
 
@@ -74,8 +75,8 @@ class SdpPressureSensor(object):
             if read_size >= self.MEASURE_BYTE_COUNT:
                 pressure_reading = (pressure_raw[0] << 8) | (pressure_raw[1])
                 pressure_reading = self.twos_complement(pressure_reading)
-                expected_crc = 0  # pressure_raw[2]
-                crc_calc = expected_crc  # self._crc8(pressure_reading)
+                expected_crc = pressure_raw[2]
+                crc_calc = self._crc8(pressure_reading)
                 if not crc_calc == expected_crc:
                     print('bad crc')
                 return (self._pressure_to_flow(self._calculate_pressure(pressure_reading)))
