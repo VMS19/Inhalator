@@ -154,5 +154,3 @@ def test_sampler_pig_min_max(events, measurements, config):
     max_flow_msg = f"Expected max flow of {expected_max_flow}, " \
                    f"received {measurements.intake_peak_flow}"
     assert measurements.intake_peak_flow == expected_max_flow, max_flow_msg
-
-
