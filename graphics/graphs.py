@@ -1,5 +1,6 @@
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
+from matplotlib import rcParams
 
 # Tkinter stuff
 import platform
@@ -114,6 +115,7 @@ class AirPressureGraph(object):
 
 class FlowGraph(object):
     def __init__(self, parent, measurements, blank):
+        rcParams.update({'figure.autolayout':True})
         self.parent = parent
         self.root = parent.element
         self.measurements = measurements
