@@ -1,4 +1,5 @@
 import csv
+from itertools import cycle
 
 from drivers.mocks.sinus import sinus, truncate, add_noise, zero
 
@@ -62,6 +63,11 @@ class DriverFactory(object):
             sample_rate=self.MOCK_SAMPLE_RATE_HZ,
             amplitude=self.MOCK_PRESSURE_AMPLITUDE,
             freq=self.MOCK_BPM / 60.0)
+
+    def generate_mock_noise(self):
+        samples = [10] * 1000
+        noise_samples = add_noise(samples, self.MOCK_NOISE_SIGMA)
+        return [9 * x for x in noise_samples]
 
     def generate_mock_pressure_data(self):
         samples = sinus(
@@ -129,6 +135,8 @@ class DriverFactory(object):
             data = self.generate_mock_dead_man()
         elif data_source == 'sinus':
             data = self.generate_mock_pressure_data()
+        elif data_source == "noise":
+            data = self.generate_mock_noise()
         else:
             data = generate_data_from_file('pressure', data_source)
         return MockSensor(data)
@@ -140,6 +148,8 @@ class DriverFactory(object):
             data = self.generate_mock_dead_man()
         elif simulation_data == 'sinus':
             data = self.generate_mock_air_flow_data()
+        elif simulation_data == "noise":
+            data = self.generate_mock_noise()
         else:
             data = generate_data_from_file('flow', simulation_data)
         return MockSensor(data)
@@ -151,6 +161,8 @@ class DriverFactory(object):
             data = self.generate_mock_dead_man()
         elif simulation_data == 'sinus':
             data = self.generate_mock_oxygen_a2d_data()
+        elif simulation_data == "noise":
+            data = self.generate_mock_noise()
         else:
             data = generate_data_from_file('oxygen', simulation_data)
         return MockSensor(data)
