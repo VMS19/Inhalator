@@ -3,7 +3,7 @@ import logging
 import time
 import sys
 
-from errors import PiGPIOInitError, I2CDeviceNotFoundError, I2CReadError
+from errors import PiGPIOInitError, I2CDeviceNotFoundError, I2CReadError, I2CWriteError
 
 log = logging.getLogger(__name__)
 
@@ -12,13 +12,12 @@ class SdpPressureSensor(object):
     """Driver class for SDP8XXX Pressure sensor."""
     I2C_BUS = 1
     I2C_ADDRESS = 0x25
-    MEASURE_BYTE_COUNT = 0x3
+    MEASURE_BYTE_COUNT = 0x9
     CMD_TRIGGERED_DIFFERENTIAL_PRESSURE = b"\x36\x2f"
     CMD_CONT_DIFFERENTIAL_PRESSURE = b"\x36\x1e"
     CMD_STOP = b"\x3F\xF9"
     CRC_POLYNOMIAL = 0x31
     CRC_INIT_VALUE = 0xFF
-    SCALE_FACTOR_PASCAL = 60
     CMH20_PASCAL_RATIO = 98.0665
     SYSTEM_RATIO = 46.24
     START_MEASURE_FLOW_CMD = b"\x36\x08"
@@ -60,15 +59,14 @@ class SdpPressureSensor(object):
             log.error("Could not write start_measure cmd to flow sensor. "
                       "Is the flow sensor connected?.")
             raise I2CWriteError("i2c write failed")
-        sleep(0.1)
+        time.sleep(0.1)
 
         log.info("Started flow sensor measurement")
 
-    def _calculate_pressure(self, pressure_reading):
-        differential_psi_pressure =\
-            pressure_reading / (self.SCALE_FACTOR_PASCAL)
+    def _calculate_pressure(self, pressure_reading, scale_factor):
+        differential_psi_pressure = float(pressure_reading / scale_factor)
         differential_cmh2o_pressure =\
-            differential_psi_pressure * (1 / self.CMH20_PASCAL_RATIO)
+            differential_psi_pressure * (1.0 / self.CMH20_PASCAL_RATIO)
         return differential_cmh2o_pressure
 
     def _pressure_to_flow(self, pressure):
@@ -81,7 +79,6 @@ class SdpPressureSensor(object):
     def twos_complement(self, number):
         b = number.to_bytes(2, byteorder=sys.byteorder, signed=False)
         return int.from_bytes(b, byteorder=sys.byteorder, signed=True)
-
 
     def _crc8(self, data):
         crc = self.CRC_INIT_VALUE
@@ -103,12 +100,22 @@ class SdpPressureSensor(object):
 
             if read_size >= self.MEASURE_BYTE_COUNT:
                 pressure_reading = (pressure_raw[0] << 8) | (pressure_raw[1])
+                pressure_expected_crc = pressure_raw[2]
+                pressure_crc = self._crc8(pressure_raw[:2])
                 pressure_reading = self.twos_complement(pressure_reading)
-                expected_crc = pressure_raw[2]
-                crc_calc = self._crc8(data[:2])
-                if not crc_calc == expected_crc:
+
+                scale_reading = (pressure_raw[6] << 8) | pressure_raw[7]
+                scale_expected_crc = pressure_raw[8]
+                scale_crc = self._crc8(pressure_raw[6:8])
+                scale_reading = self.twos_complement(scale_reading)
+
+                if not pressure_crc == pressure_expected_crc:
                     print('bad crc')
-                return (self._pressure_to_flow(self._calculate_pressure(pressure_reading)))
+
+                if not scale_crc == scale_expected_crc:
+                    print('bad crc')
+
+                return (self._pressure_to_flow(self._calculate_pressure(pressure_reading, scale_reading)))
             else:
                 log.error("Pressure sensor's measure data not ready")
                 raise I2CReadError("Pressure sensor measurement unavailable.")
