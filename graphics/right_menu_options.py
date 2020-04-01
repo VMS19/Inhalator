@@ -107,14 +107,14 @@ class LockThresholdsButton(object):
             fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
             activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
             activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,
+            state="disabled",
         )
 
     def on_click(self):
         print("Not Implemented Yet")
 
     def render(self):
-        # self.button.place(relx=0, rely=0.53, relwidth=0.8, relheight=0.2)
-        pass
+        self.button.place(relx=0, rely=0.53, relwidth=0.8, relheight=0.2)
 
     def update(self):
         pass
@@ -146,7 +146,7 @@ class OpenConfigureAlertsScreenButton(object):
         screen.show()
 
     def render(self):
-        self.button.place(relx=0, rely=0.53, relwidth=0.8, relheight=0.2)
+        self.button.place(relx=0, rely=0.79, relwidth=0.8, relheight=0.2)
 
     def update(self):
         pass
