@@ -7,7 +7,7 @@ def main():
     dsp = DspPressureSensor()
     while True:
         pressure = dsp.read()
-        print((pressure/60)/100)
+        print(pressure)
         time.sleep(0.2)
     #print('cmh20', pressure/100.0)
 
