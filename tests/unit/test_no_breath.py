@@ -67,7 +67,7 @@ def test_sinus_alerts_when_no_breath(events, measurements, config):
 
     assert len(events.alerts_queue) == 1
 
-    alert = list(events.alerts_queue.queue.queue)[0]
+    alert = events.alerts_queue.queue.get()
     assert alert == alerts.AlertCodes.NO_BREATH
 
 
