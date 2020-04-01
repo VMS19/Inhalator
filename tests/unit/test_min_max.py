@@ -46,6 +46,13 @@ def events():
 
 
 def test_sampler_dead_min_max(events, measurements, config):
+    """Test dead simulation results with min & max equal 0
+
+    Flow:
+        * Run dead simulation for SIMULATION_LENGTH
+        * check min & max pressure = 0
+        * check max flow = 0
+    """
     driver_factory = DriverFactory(simulation_mode=True, simulation_data="dead")
     flow_sensor = driver_factory.get_driver("flow")
     pressure_sensor = driver_factory.get_driver("pressure")
@@ -68,6 +75,14 @@ def test_sampler_dead_min_max(events, measurements, config):
 
 
 def test_sampler_sinus_min_max(events, measurements, config):
+    """Test sinus sim results in min & max approx the amplitude
+
+    Flow:
+        * start sinus simulation
+        * check min pressure ~ 0
+        * check max pressure ~ PRESSURE_AMPLITUDE
+        * check max flow ~ FLOW_AMPLITUDE
+    """
     driver_factory = DriverFactory(simulation_mode=True, simulation_data="dead")
     flow_sensor = driver_factory.get_driver("flow")
     pressure_sensor = driver_factory.get_driver("pressure")
@@ -102,8 +117,6 @@ def test_sampler_sinus_min_max(events, measurements, config):
                                                    rel=noise_mistake), max_flow_msg
 
 
-
-
 this_dir = os.path.dirname(__file__)
 with open(os.path.join(this_dir, SIMULATION_FOLDER,
                        "pig_sim_sin_flow.csv"), "r") as f:
@@ -127,6 +140,23 @@ def test_sampler_pig_min_max(events, measurements, config):
     Note:
         Min values are read at the first peep exit at timestamp 4.455 (not including)
         Max values are read at the first hold exit at timestamp 6.075 (not including)
+
+    Simulation graph:
+                                        Pig simulation pressure graph
+
+                                              XXXXXXXXXXXXXX    read maximum value
+                                          XXXXX            XXX<------------+
+                                        XXX                   XX
+                                      XX                       X
+         read minium pressure       XXX                        XX
+                      +            XX                           X
+                      |          XX                             XX
+                      |        XX                                X
+                      |      XXX                                  X
+                      |   XXX                                     X
+                      vXXXX                                        X
+        XXXXXXXXXXXXXXXX                                            XXXXXXXXXXXX
+
     """
     this_dir = os.path.dirname(__file__)
     file_path = os.path.join(this_dir, SIMULATION_FOLDER,
