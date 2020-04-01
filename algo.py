@@ -322,4 +322,7 @@ class Sampler(object):
         self.log.log(TRACE, 'oxygen: %s', o2_saturation_percentage)
 
         self.vsm.update(
-            pressure_cmh2o, flow_slm, o2_saturation_percentage, timestamp=ts)
+            pressure_cmh2o=pressure_cmh2o,
+            flow_slm=flow_slm,
+            o2_saturation_percentage=o2_saturation_percentage,
+            timestamp=ts)
