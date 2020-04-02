@@ -38,7 +38,7 @@ class SamplesStorage:
         self.logger.debug(','.join(row))
 
     def _time_diff(self, timestamp):
-        if self.last_ts in None:
+        if self.last_ts is None:
             self.last_ts = timestamp
         return (timestamp - self.last_ts).total_seconds()
 
