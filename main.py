@@ -71,7 +71,6 @@ def handle_sigterm(signum, frame):
 
 
 def main():
-
     signal.signal(signal.SIGTERM, handle_sigterm)
     events = Events()
     args = parse_args()
