@@ -66,9 +66,9 @@ class DriverFactory(object):
             if not ismock:
                 try:
                     driver.close()
-                    log.info("Closed {} driver.".format(driver_name))
+                    self.log.info("Closed {} driver.".format(driver_name))
                 except:
-                    log.exception("Error while closing driver {}"
+                    self.log.exception("Error while closing driver {}"
                                   .format(driver_name))
 
     def generate_mock_dead_man(self):

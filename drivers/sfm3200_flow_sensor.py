@@ -6,6 +6,7 @@ The use of this driver requires pigpio deamon:
 """
 from time import sleep
 import logging
+import pigpio
 
 from .i2c_driver import I2cDriver
 from errors import (I2CReadError,
