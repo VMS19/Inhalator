@@ -7,7 +7,7 @@ The use of this driver requires pigpio deamon:
 from time import sleep
 import logging
 
-from i2c_driver import I2cDriver
+from .i2c_driver import I2cDriver
 from errors import (I2CReadError,
                     I2CWriteError,
                     PiGPIOInitError,
@@ -27,7 +27,7 @@ class Sfm3200(I2cDriver):
     SOFT_RST_CMD = b"\x20\x00"
 
     def __init__(self):
-        super().__init__(self)
+        super().__init__()
         self._start_measure()
         sleep(0.1)
         # Dummy read - first read values are invalid

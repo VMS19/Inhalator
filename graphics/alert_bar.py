@@ -33,7 +33,7 @@ class IndicatorAlertBar(object):
                              fg=Theme.active().ALERT_BAR_OK_TXT,
                              bg=Theme.active().ALERT_BAR_OK)
 
-        self.sound_device = drivers.get_driver("aux")
+        self.sound_device = drivers.acquire_driver("aux")
 
     @property
     def element(self):

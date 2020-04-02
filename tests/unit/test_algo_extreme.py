@@ -101,9 +101,9 @@ def test_slope_recognition_with_error_in_peep(events, measurements, config):
     driver_factory = DriverFactory(simulation_mode=True,
                                    simulation_data=file_path)
 
-    flow_sensor = driver_factory.get_driver("flow")
-    pressure_sensor = driver_factory.get_driver("pressure")
-    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
+    flow_sensor = driver_factory.acquire_driver("flow")
+    pressure_sensor = driver_factory.acquire_driver("pressure")
+    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       oxygen_a2d)
 
@@ -149,9 +149,9 @@ def test_slope_recognition_with_error_in_inhale(events, measurements, config, sc
     driver_factory = DriverFactory(simulation_mode=True,
                                    simulation_data=file_path)
 
-    flow_sensor = driver_factory.get_driver("flow")
-    pressure_sensor = driver_factory.get_driver("pressure")
-    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
+    flow_sensor = driver_factory.acquire_driver("flow")
+    pressure_sensor = driver_factory.acquire_driver("pressure")
+    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       oxygen_a2d)
 
@@ -199,9 +199,9 @@ def test_slope_recognition_with_error_in_hold(events, measurements, config):
     driver_factory = DriverFactory(simulation_mode=True,
                                    simulation_data=file_path)
 
-    flow_sensor = driver_factory.get_driver("flow")
-    pressure_sensor = driver_factory.get_driver("pressure")
-    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
+    flow_sensor = driver_factory.acquire_driver("flow")
+    pressure_sensor = driver_factory.acquire_driver("pressure")
+    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       oxygen_a2d)
 
@@ -247,9 +247,9 @@ def test_slope_recognition_with_error_in_exhale(events, measurements, config, sc
     driver_factory = DriverFactory(simulation_mode=True,
                                    simulation_data=file_path)
 
-    flow_sensor = driver_factory.get_driver("flow")
-    pressure_sensor = driver_factory.get_driver("pressure")
-    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
+    flow_sensor = driver_factory.acquire_driver("flow")
+    pressure_sensor = driver_factory.acquire_driver("pressure")
+    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       oxygen_a2d)
 

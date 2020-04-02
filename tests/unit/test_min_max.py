@@ -64,9 +64,9 @@ def test_sampler_dead_min_max(events, measurements, config):
         * check max flow = 0
     """
     driver_factory = DriverFactory(simulation_mode=True, simulation_data="dead")
-    flow_sensor = driver_factory.get_driver("flow")
-    pressure_sensor = driver_factory.get_driver("pressure")
-    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
+    flow_sensor = driver_factory.acquire_driver("flow")
+    pressure_sensor = driver_factory.acquire_driver("pressure")
+    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor, oxygen_a2d)
 
     current_time = time.time()
@@ -94,9 +94,9 @@ def test_sampler_sinus_min_max(events, measurements, config):
         * check max flow ~ FLOW_AMPLITUDE
     """
     driver_factory = DriverFactory(simulation_mode=True, simulation_data="noiseless_sinus")
-    flow_sensor = driver_factory.get_driver("flow")
-    pressure_sensor = driver_factory.get_driver("pressure")
-    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
+    flow_sensor = driver_factory.acquire_driver("flow")
+    pressure_sensor = driver_factory.acquire_driver("pressure")
+    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor, oxygen_a2d)
 
     current_time = time.time()
@@ -169,9 +169,9 @@ def test_sampler_pig_min_max(events, measurements, config):
     driver_factory = DriverFactory(simulation_mode=True,
                                    simulation_data=file_path)
 
-    flow_sensor = driver_factory.get_driver("flow")
-    pressure_sensor = driver_factory.get_driver("pressure")
-    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
+    flow_sensor = driver_factory.acquire_driver("flow")
+    pressure_sensor = driver_factory.acquire_driver("pressure")
+    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       oxygen_a2d)
 

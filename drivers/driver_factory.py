@@ -1,5 +1,6 @@
 import csv
 from itertools import cycle
+import logging
 
 from drivers.mocks.sinus import sinus, truncate, add_noise, zero
 
@@ -40,8 +41,9 @@ class DriverFactory(object):
         self.simulation_data = simulation_data  # can be either `sinus` or file path
         self.error_probability = error_probability
         self.drivers_cache = {}
+        self.log = logging.getLogger(self.__class__.__name__)
 
-    def get_driver(self, driver_name):
+    def acquire_driver(self, driver_name):
         """
         Get a driver by its name. The drivers are lazily created and cached.
         :param driver_name: The driver name. E.g "aux", "wd", "pressure"
@@ -58,6 +60,16 @@ class DriverFactory(object):
         driver = method()
         self.drivers_cache[key] = driver
         return driver
+
+    def close_all_drivers(self):
+        for (driver_name, ismock), driver in self.drivers_cache.items():
+            if not ismock:
+                try:
+                    driver.close()
+                    log.info("Closed {} driver.".format(driver_name))
+                except:
+                    log.exception("Error while closing driver {}"
+                                  .format(driver_name))
 
     def generate_mock_dead_man(self):
         return zero(

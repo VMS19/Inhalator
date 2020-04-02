@@ -75,9 +75,9 @@ def test_sinus_alerts_when_no_breath(events, measurements, config):
         * Make sure a single no-breath alert was sent.
     """
     driver_factory = DriverFactory(simulation_mode=True, simulation_data="sinus")
-    flow_sensor = driver_factory.get_driver("flow")
-    pressure_sensor = driver_factory.get_driver("pressure")
-    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
+    flow_sensor = driver_factory.acquire_driver("flow")
+    pressure_sensor = driver_factory.acquire_driver("pressure")
+    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor, oxygen_a2d)
 
     a = []
@@ -103,9 +103,9 @@ def test_dead_man_alerts_when_no_breath(events, measurements, config):
         * Make sure at least one no-breath alert was sent.
     """
     driver_factory = DriverFactory(simulation_mode=True, simulation_data="dead")
-    flow_sensor = driver_factory.get_driver("flow")
-    pressure_sensor = driver_factory.get_driver("pressure")
-    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
+    flow_sensor = driver_factory.acquire_driver("flow")
+    pressure_sensor = driver_factory.acquire_driver("pressure")
+    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor, oxygen_a2d)
 
     for _ in range(len(NOISE_TIMESTAMPS) - 1):
@@ -126,9 +126,9 @@ def test_noise_alerts_when_no_breath(events, measurements, config):
         * Make sure at least one no-breath alert was sent.
     """
     driver_factory = DriverFactory(simulation_mode=True, simulation_data="noise")
-    flow_sensor = driver_factory.get_driver("flow")
-    pressure_sensor = driver_factory.get_driver("pressure")
-    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
+    flow_sensor = driver_factory.acquire_driver("flow")
+    pressure_sensor = driver_factory.acquire_driver("pressure")
+    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       oxygen_a2d)
 

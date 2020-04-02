@@ -93,4 +93,4 @@ class Application(object):
             except KeyboardInterrupt:
                 break
         self.exit()
-        self.drivers.get_driver("aux").stop()
+        self.drivers.acquire_driver("aux").stop()

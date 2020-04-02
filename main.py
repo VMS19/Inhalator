@@ -71,6 +71,7 @@ def handle_sigterm(signum, frame):
 
 
 def main():
+
     signal.signal(signal.SIGTERM, handle_sigterm)
     events = Events()
     args = parse_args()
@@ -84,33 +85,40 @@ def main():
         log.info("Running in simulation mode!")
         log.info("Sensor Data Source: %s", args.simulate)
         log.info("Error probability: %s", args.error)
-    drivers = DriverFactory(simulation_mode=simulation,
-                            simulation_data=args.simulate,
-                            error_probability=args.error)
 
-    pressure_sensor = drivers.get_driver("pressure")
-    flow_sensor = drivers.get_driver("differential_pressure")
+    drivers = None
+    try:
+        drivers = DriverFactory(simulation_mode=simulation,
+                                simulation_data=args.simulate,
+                                error_probability=args.error)
 
-    watchdog = drivers.get_driver("wd")
-    oxygen_a2d = drivers.get_driver("oxygen_a2d")
+        pressure_sensor = drivers.acquire_driver("pressure")
+        flow_sensor = drivers.acquire_driver("differential_pressure")
 
-    sampler = Sampler(measurements=measurements, events=events,
-                      flow_sensor=flow_sensor, pressure_sensor=pressure_sensor,
-                      oxygen_a2d=oxygen_a2d)
+        watchdog = drivers.acquire_driver("wd")
+        oxygen_a2d = drivers.acquire_driver("oxygen_a2d")
 
-    app = Application(measurements=measurements,
-                      events=events,
-                      arm_wd_event=arm_wd_event,
-                      drivers=drivers,
-                      sampler=sampler,
-                      simulation=simulation,
-                      fps=args.fps,
-                      sample_rate=args.sample_rate)
+        sampler = Sampler(measurements=measurements, events=events,
+                          flow_sensor=flow_sensor,
+                          pressure_sensor=pressure_sensor,
+                          oxygen_a2d=oxygen_a2d)
 
-    watchdog_task = WdTask(watchdog, arm_wd_event)
-    watchdog_task.start()
+        app = Application(measurements=measurements,
+                          events=events,
+                          arm_wd_event=arm_wd_event,
+                          drivers=drivers,
+                          sampler=sampler,
+                          simulation=simulation,
+                          fps=args.fps,
+                          sample_rate=args.sample_rate)
 
-    app.run()
+        watchdog_task = WdTask(watchdog, arm_wd_event)
+        watchdog_task.start()
+
+        app.run()
+    finally:
+        if drivers is not None:
+            drivers.close_all_drivers()
 
 
 if __name__ == '__main__':

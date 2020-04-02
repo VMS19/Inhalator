@@ -3,7 +3,7 @@ import logging
 
 from errors import PiGPIOInitError, I2CDeviceNotFoundError, I2CReadError
 
-from i2c_driver import I2cDriver
+from .i2c_driver import I2cDriver
 
 log = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class AbpPressureSensor(I2cDriver):
     PSI_CMH2O_RATIO = 70.307
 
     def __init__(self):
-        super().__init__(self)
+        super().__init__()
         log.info("ABP pressure sensor initialized")
 
     def _calculate_pressure(self, pressure_reading):
