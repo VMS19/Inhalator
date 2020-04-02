@@ -254,15 +254,15 @@ class VentilationStateMachine(object):
 
         # We track inhale and exhale volume separately. Positive flow means
         # inhale, and negative flow means exhale.
-        if flow_slm > 10:
+        if flow_slm > self._config.inhale_volume_threshold:
             accumulator = self.inspiration_volume
-        elif flow_slm < -10:
+        elif flow_slm < self._config.exhale_volume_threshold:
             accumulator = self.expiration_volume
         elif self.inspiration_volume.air_volume_liter > 0:
-            self.close_inhale_volume()
             accumulator = None
         elif self.expiration_volume.air_volume_liter > 0:
             self.close_exhale_volume()
+            self.close_inhale_volume()
             accumulator = None
         else:
             accumulator = None

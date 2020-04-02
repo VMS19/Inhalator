@@ -45,6 +45,8 @@ class Configurations(object):
         self.mute_time_limit = mute_time_limit
         self.flow_y_scale = flow_y_scale
         self.pressure_y_scale = pressure_y_scale
+        self.inhale_volume_threshold=8
+        self.exhale_volume_threshold = -20
 
     def __del__(self):
         self.save_to_file(self.CONFIG_FILE)
