@@ -25,7 +25,7 @@ class Application(object):
         return cls.__instance
 
     def __init__(self, measurements, events, arm_wd_event, drivers, sampler,
-                 simulation=False, fps=30, sample_rate=22):
+                 simulation=False, fps=25, sample_rate=22):
         self.should_run = True
         self.drivers = drivers
         self.arm_wd_event = arm_wd_event
