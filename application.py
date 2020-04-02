@@ -63,7 +63,7 @@ class Application(object):
 
     def run(self):
         self.render()
-        last_gui_update_ts = time.time()
+        last_gui_update_ts = 0
         while self.should_run:
             try:
                 self.sampler.sampling_iteration()
