@@ -42,8 +42,7 @@ class MuxI2C(object):
     
         try:
             # First, reset the switch
-            self._pig.i2c_write_device(self._dev, 0x00)
-            
+            self._pig.i2c_write_device(self._dev, "\x00")
             self._pig.i2c_write_device(self._dev, str(0b1 << int_port))
         except pigpio.error as e:
             log.error("Could not switch cmd to mux. "
