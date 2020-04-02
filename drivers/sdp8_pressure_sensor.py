@@ -55,7 +55,7 @@ class SdpPressureSensor(object):
 
     def _start_measure(self):
         try:
-            self._pig.i2c_write_device(self._dev, self.START_MEASURE_FLOW_AVG_CMD)
+            self._pig.i2c_write_device(self._dev, self.START_MEASURE_FLOW_CMD)
         except pigpio.error as e:
             log.error("Could not write start_measure cmd to flow sensor. "
                       "Is the flow sensor connected?.")

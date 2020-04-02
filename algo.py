@@ -14,6 +14,8 @@ from data.configurations import Configurations
 TRACE = logging.DEBUG - 1
 logging.addLevelName(TRACE, 'TRACE')
 
+max_flow = -1000
+min_flow = 1000
 
 class VolumeAccumulator(object):
     def __init__(self):
@@ -318,6 +320,7 @@ class Sampler(object):
         return None if any(errors) else data
 
     def sampling_iteration(self):
+        global min_flow, max_flow
         ts = time.time()
         # Read from sensors
         result = self.read_sensors()
@@ -325,6 +328,14 @@ class Sampler(object):
             return
 
         flow_slm, pressure_cmh2o, o2_saturation_percentage = result
+        flow_slm += 10
+        if flow_slm > max_flow:
+            max_flow = flow_slm
+            print("max flow:{}".format(max_flow))
+        if flow_slm < min_flow:
+            min_flow = flow_slm
+            print("min flow:{}".format(min_flow))
+
         # WARNING! These log messages are useful for debugging sensors but
         # might spam you since they are printed on every sample. In order to see
         # them run the application in maximum verbosity mode by passing `-vvv` to `main.py
