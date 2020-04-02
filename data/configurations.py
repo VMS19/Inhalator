@@ -150,9 +150,9 @@ class Configurations(object):
                     "step": self.pressure_range.step
                 },
                 "bpm": {
-                    "min": self.volume_range.min,
-                    "max": self.volume_range.max,
-                    "step": self.volume_range.step
+                    "min": self.resp_rate_range.min,
+                    "max": self.resp_rate_range.max,
+                    "step": self.resp_rate_range.step
                 },
                 "breathing_threshold": self.breathing_threshold
             },
