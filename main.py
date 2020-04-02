@@ -13,8 +13,6 @@ from application import Application
 from algo import Sampler
 from wd_task import WdTask
 
-BYTES_IN_GB = 2 ** 30
-
 
 def configure_logging(level):
     config = Configurations.instance()
@@ -23,8 +21,8 @@ def configure_logging(level):
     logger.setLevel(level)
     # create file handler which logs even debug messages
     file_handler = RotatingFileHandler('inhalator.log',
-                                       maxBytes=BYTES_IN_GB,
-                                       backupCount=7)
+                                       maxBytes=1024 ** 3,
+                                       backupCount=3)
     file_handler.setLevel(level)
     # create console handler
     steam_handler = logging.StreamHandler()
