@@ -5,17 +5,17 @@ from data.configurations import Configurations
 
 
 class Measurements(object):
-    def __init__(self, sample_rate):
+    def __init__(self, sample_rate=22):
         self.inspiration_volume = 0
         self.expiration_volume = 0
         self.flow_measurements = Queue(maxsize=40)  # TODO: Rename?
         self.pressure_measurements = Queue(maxsize=40)  # TODO: Rename?
+        self.sample_interval = 1 / sample_rate
         self.x_axis = range(0, self._amount_of_samples_in_graph)
         self.intake_peak_flow = 0
         self.intake_peak_pressure = 0
         self.peep_min_pressure = 0
         self.bpm = 0
-        self.sample_interval = 1 / sample_rate
         self.o2_saturation_percentage = 20
         self.lock = Lock()
 
