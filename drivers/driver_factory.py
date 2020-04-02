@@ -68,7 +68,7 @@ class DriverFactory(object):
     def generate_mock_noise(self):
         samples = [0] * 1000
         noise_samples = add_noise(samples, self.MOCK_NOISE_SIGMA)
-        return [10 + 5 * x for x in noise_samples]
+        return [10 + x for x in noise_samples]
 
     def generate_mock_pressure_data(self):
         samples = sinus(
