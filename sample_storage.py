@@ -35,7 +35,7 @@ class SamplesStorage:
         return logger
 
     def _write_row(self, row):
-        self.logger.debug(','.join(row))
+        self.logger.debug(','.join(str(item) for item in row))
 
     def _time_diff(self, timestamp):
         if self.last_ts is None:
