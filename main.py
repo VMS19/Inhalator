@@ -18,10 +18,11 @@ from application import Application
 from algo import Sampler
 from wd_task import WdTask
 
+BYTES_IN_MB = 2 ** 30
 BYTES_IN_GB = 2 ** 30
 
 
-def monitor(output_path, target, args):
+def monitor(target, args, output_path):
     worker_process = multiprocessing.Process(target=target, args=[args])
     worker_process.start()
     p = psutil.Process(worker_process.pid)
@@ -29,12 +30,12 @@ def monitor(output_path, target, args):
     # log memory usage of `worker_process` every second
     # save the data in MB units
     with open(output_path, 'w') as out:
-        out.write("timestamp, memory(MB)\n")
+        out.write("timestamp,memory usage [MB]\n")
 
     while worker_process.is_alive():
         with open(output_path, 'a') as out:
             timestamp = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-            out.write(f"{timestamp},{p.memory_info()[0]/2.**20}\n")
+            out.write(f"{timestamp},{p.memory_info().rss / BYTES_IN_MB}\n")
         time.sleep(10)
 
     worker_process.join()
@@ -83,7 +84,9 @@ def parse_args():
         "--fps", "-f",
         help="Frames-per-second for the application to render",
         type=int, default=25)
-    parser.add_argument("--monitor", "-m", help="Path to output csv file")
+    parser.add_argument("--memory-usage-output", "-m",
+                        help="To run memory usage analysis for application,"
+                             "give path to output csv file")
     args = parser.parse_args()
     args.verbose = max(0, logging.WARNING - (10 * args.verbose))
     return args
@@ -139,8 +142,8 @@ def start_app(args):
 
 def main():
     args = parse_args()
-    if args.monitor:
-        monitor(args.monitor, start_app, args)
+    if args.memory_usage_output:
+        monitor(start_app, args, args.memory_usage_output)
 
     else:
         start_app(args)
