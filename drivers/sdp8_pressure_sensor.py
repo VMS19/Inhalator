@@ -111,7 +111,7 @@ class SdpPressureSensor(object):
                 return (self._pressure_to_flow(self._calculate_pressure(pressure_reading)))
             else:
                 log.error("Pressure sensor's measure data not ready")
-                raise I2CReadError("Pressure sensor measurement unavailable.")
+
         except pigpio.error as e:
             log.error("Could not read from pressure sensor. "
                       "Is the pressure sensor connected?")
