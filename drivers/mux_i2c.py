@@ -1,18 +1,9 @@
-"""SFM3200 air flow sensor driver.
-
-The use of this driver requires pigpio deamon:
-'sudo pigpiod'
-(sudo apt-get install pigpio)
-"""
-from time import sleep
 import logging
 
 import pigpio
 
-from errors import (I2CReadError,
-                    I2CWriteError,
+from errors import (I2CWriteError,
                     PiGPIOInitError,
-                    FlowSensorCRCError,
                     I2CDeviceNotFoundError)
 
 log = logging.getLogger(__name__)
@@ -46,9 +37,15 @@ class MuxI2C(object):
             raise I2CDeviceNotFoundError("i2c connection open failed") from e
 
     def switch_port(self, port):
-
+        int_port = int(port)
+        if int_port > 4 or int_port < 0:
+            raise ValueError("Bad Port sent to switch.")
+    
         try:
-            self._pig.i2c_write_device(self._dev, 0b1 << port)
+            # First, reset the switch
+            self._pig.i2c_write_device(self._dev, 0x00)
+            
+            self._pig.i2c_write_device(self._dev, str(0b1 << int(port)))
         except pigpio.error as e:
             log.error("Could not switch cmd to mux. "
                       "Is the mux connected?.")
