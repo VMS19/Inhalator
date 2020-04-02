@@ -196,6 +196,9 @@ class VentilationStateMachine(object):
         self.reset_peaks()
 
     def enter_peep(self, timestamp):
+        pass
+
+    def close_inhale_volume(self):
         # Update final inspiration volume
         insp_volume_ml = self.inspiration_volume.air_volume_liter * 1000
         self.log.debug("TV insp: : %sml", insp_volume_ml)
@@ -212,6 +215,25 @@ class VentilationStateMachine(object):
             self.log.warning(
                 "volume too high %s, top threshold %s",
                 insp_volume_ml, self._config.volume_range.max)
+
+    def close_exhale_volume(self):
+        # Update final inspiration volume
+        exp_volume_ml = self.expiration_volume.air_volume_liter * 1000
+        self.log.debug("TV exp: : %sml", exp_volume_ml)
+        self._measurements.expiration_volume = exp_volume_ml
+        self.expiration_volume.reset()
+
+        if self._config.volume_range.below(exp_volume_ml):
+            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW)
+            self.log.warning(
+                "volume too low %s, bottom threshold %s",
+                exp_volume_ml, self._config.volume_range.min)
+        elif self._config.volume_range.over(exp_volume_ml):
+            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH)
+            self.log.warning(
+                "volume too high %s, top threshold %s",
+                exp_volume_ml, self._config.volume_range.max)
+
 
     def reset_peaks(self):
         self._measurements.intake_peak_pressure = self.peak_pressure
@@ -232,8 +254,22 @@ class VentilationStateMachine(object):
 
         # We track inhale and exhale volume separately. Positive flow means
         # inhale, and negative flow means exhale.
-        accumulator = self.inspiration_volume if flow_slm > 0 else self.expiration_volume
-        accumulator.accumulate(timestamp, abs(flow_slm))
+        if flow_slm > 10:
+            accumulator = self.inspiration_volume
+        elif flow_slm < -10:
+            accumulator = self.expiration_volume
+        elif self.inspiration_volume.air_volume_liter > 0:
+            self.close_inhale_volume()
+            accumulator = None
+        elif self.expiration_volume.air_volume_liter > 0:
+            self.close_exhale_volume()
+            accumulator = None
+        else:
+            accumulator = None
+
+        if accumulator is not None:
+            accumulator.accumulate(timestamp, abs(flow_slm))
+
         self._measurements.set_pressure_value(pressure_cmh2o)
         self._measurements.set_flow_value(flow_slm)
         self._measurements.set_saturation_percentage(o2_saturation_percentage)
