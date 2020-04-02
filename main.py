@@ -18,7 +18,7 @@ from application import Application
 from algo import Sampler
 from wd_task import WdTask
 
-BYTES_IN_MB = 2 ** 30
+BYTES_IN_MB = 2 ** 20
 BYTES_IN_GB = 2 ** 30
 
 
@@ -27,7 +27,7 @@ def monitor(target, args, output_path):
     worker_process.start()
     p = psutil.Process(worker_process.pid)
 
-    # log memory usage of `worker_process` every second
+    # log memory usage of `worker_process` every 10 seconds
     # save the data in MB units
     with open(output_path, 'w') as out:
         out.write("timestamp,memory usage [MB]\n")
