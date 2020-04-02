@@ -4,6 +4,7 @@ import argparse
 import logging
 import signal
 import time
+from datetime import datetime
 from logging.handlers import RotatingFileHandler
 from threading import Event
 
@@ -27,10 +28,14 @@ def monitor(output_path, target, args):
 
     # log memory usage of `worker_process` every second
     # save the data in MB units
+    with open(output_path, 'w') as out:
+        out.write("timestamp, memory(MB)\n")
+
     while worker_process.is_alive():
         with open(output_path, 'a') as out:
-            out.write(f"{p.memory_info()[0]/2.**20}\n")
-        time.sleep(1)
+            timestamp = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+            out.write(f"{timestamp},{p.memory_info()[0]/2.**20}\n")
+        time.sleep(10)
 
     worker_process.join()
 
@@ -78,7 +83,7 @@ def parse_args():
         "--fps", "-f",
         help="Frames-per-second for the application to render",
         type=int, default=25)
-    parser.add_argument("--monitor", "-m")
+    parser.add_argument("--monitor", "-m", help="Path to output csv file")
     args = parser.parse_args()
     args.verbose = max(0, logging.WARNING - (10 * args.verbose))
     return args
