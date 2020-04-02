@@ -41,7 +41,8 @@ class Range(object):
         self.max = other.max
 
     def increase_min(self):
-        self.min += self.step
+        if self.min + self.step <= self.max:
+            self.min += self.step
 
     def increase_max(self):
         self.max += self.step
@@ -50,7 +51,8 @@ class Range(object):
         self.min -= self.step
 
     def decrease_max(self):
-        self.max -= self.step
+        if self.max - self.step >= self.min:
+            self.max -= self.step
 
 
 class FlowRange(Range):

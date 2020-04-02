@@ -64,3 +64,30 @@ def test_pressing_the_same_range_makes_nothing_selected(screen: ConfigureAlarmsS
     screen.pressure_section.max_button.publish()
     screen.pressure_section.max_button.publish()
     assert screen.selected_threshold == None
+
+def test_minimum_cant_go_over_maximum(screen: ConfigureAlarmsScreen):
+    config = Configurations.instance()
+    config.pressure_range.min = 0
+    config.pressure_range.max = 0
+    screen.pressure_section.min_button.publish()  # Click the min button
+    screen.on_up_button_click()  # Raise it
+
+    assert config.pressure_range.min == 0
+
+    # Revert changes since Configurations is a Singleton and we don't
+    # want it to interact with other tests
+    screen.cancel()
+
+
+def test_maxmimum_cant_go_under_minimum(screen: ConfigureAlarmsScreen):
+    config = Configurations.instance()
+    config.pressure_range.min = 0
+    config.pressure_range.max = 0
+    screen.pressure_section.max_button.publish()  # Click the min button
+    screen.on_down_button_click()  # Lower it
+
+    assert config.pressure_range.max == 0
+
+    # Revert changes since Configurations is a Singleton and we don't
+    # want it to interact with other tests
+    screen.cancel()
