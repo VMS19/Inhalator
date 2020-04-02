@@ -46,7 +46,7 @@ def parse_args():
     parser.add_argument("--verbose", "-v", action="count", default=0)
     sim_options = parser.add_argument_group(
         "simulation", "Options for data simulation")
-    sim_options.add_argument("--simulate", "-s", default='sinus',
+    sim_options.add_argument("--simulate", "-s",nargs='?', type=str, const='sinus',
                              help="data simulation source. "
                                   "Can be either `sinus` (default), `dead`, or path to a CSV file.")
     sim_options.add_argument(
@@ -79,10 +79,10 @@ def main():
     log = configure_logging(args.verbose)
 
     # Initialize all drivers, or mocks if in simulation mode
-    simulation = args.simulate or os.uname()[1] != 'raspberrypi'
+    simulation = args.simulate is not None or os.uname()[1] != 'raspberrypi'
     if simulation:
         log.info("Running in simulation mode!")
-        log.info("Sensor Data Source: %s", args.simulation)
+        log.info("Sensor Data Source: %s", args.simulate)
         log.info("Error probability: %s", args.error)
     drivers = DriverFactory(simulation_mode=simulation,
                             simulation_data=args.simulate,
