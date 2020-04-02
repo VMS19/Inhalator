@@ -203,12 +203,12 @@ class VentilationStateMachine(object):
         self.inspiration_volume.reset()
 
         if self._config.volume_range.below(insp_volume_ml):
-            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW)
+            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW, timestamp)
             self.log.warning(
                 "volume too low %s, bottom threshold %s",
                 insp_volume_ml, self._config.volume_range.min)
         elif self._config.volume_range.over(insp_volume_ml):
-            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH)
+            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH, timestamp)
             self.log.warning(
                 "volume too high %s, top threshold %s",
                 insp_volume_ml, self._config.volume_range.max)
@@ -247,12 +247,12 @@ class VentilationStateMachine(object):
             self.log.warning(
                 "pressure too high %s, top threshold %s",
                 pressure_cmh2o, self._config.pressure_range.max)
-            self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_HIGH)
+            self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_HIGH, timestamp)
         elif self._config.pressure_range.below(pressure_cmh2o):
             self.log.warning(
                 "pressure too low %s, bottom threshold %s",
                 pressure_cmh2o, self._config.pressure_range.min)
-            self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW)
+            self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW, timestamp)
 
         self.check_transition(pressure_cmh2o, timestamp)
 
@@ -288,15 +288,15 @@ class Sampler(object):
         self._events = events
         self.vsm = VentilationStateMachine(measurements, events)
 
-    def read_single_sensor(self, sensor, alert_code):
+    def read_single_sensor(self, sensor, alert_code, timestamp):
         try:
             return sensor.read()
         except Exception as e:
-            self._events.alerts_queue.enqueue_alert(alert_code)
+            self._events.alerts_queue.enqueue_alert(alert_code, timestamp)
             self.log.error(e)
         return None
 
-    def read_sensors(self):
+    def read_sensors(self, timestamp):
         """
         Read the sensors and return the samples.
 
@@ -307,11 +307,11 @@ class Sampler(object):
                 or None if an error occurred in any of the drivers.
         """
         flow_slm = self.read_single_sensor(
-            self._flow_sensor, AlertCodes.FLOW_SENSOR_ERROR)
+            self._flow_sensor, AlertCodes.FLOW_SENSOR_ERROR, timestamp)
         pressure_cmh2o = self.read_single_sensor(
-            self._pressure_sensor, AlertCodes.PRESSURE_SENSOR_ERROR)
+            self._pressure_sensor, AlertCodes.PRESSURE_SENSOR_ERROR, timestamp)
         o2_saturation_percentage = self.read_single_sensor(
-            self._oxygen_a2d, AlertCodes.SATURATION_SENSOR_ERROR)
+            self._oxygen_a2d, AlertCodes.SATURATION_SENSOR_ERROR, timestamp)
 
         data = (flow_slm, pressure_cmh2o, o2_saturation_percentage)
         errors = [x is None for x in data]
@@ -320,7 +320,7 @@ class Sampler(object):
     def sampling_iteration(self):
         ts = time.time()
         # Read from sensors
-        result = self.read_sensors()
+        result = self.read_sensors(ts)
         if result is None:
             return
 
