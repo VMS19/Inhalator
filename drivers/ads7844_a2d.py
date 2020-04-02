@@ -80,3 +80,7 @@ class Ads7844A2D(object):
             sample_res.append(self._sample_a2d(channel, input_mode,
                               power_down_mode))
         return sample_res[0]
+
+    def close(self):
+        if self._spi is not None:
+            self._spi.close()

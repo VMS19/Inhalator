@@ -33,3 +33,6 @@ class WdDriver(object):
                                     self._pull_wd_down)
         self._pull_wd_up()
         refresh_delay_timer.start()
+
+    def close(self):
+        pass
