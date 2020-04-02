@@ -54,7 +54,8 @@ def parse_args():
         "--error", "-e", type=float,
         help="The probability of error in each driver", default=0)
     sim_options.add_argument(
-        "--data-sample-rate", "-r")
+        "--sample-rate", "-r", help="The sample rate of the simulation data",
+        type=float, default=22)
     parser.add_argument(
         "--fps", "-f",
         help="Frames-per-second for the application to render",
@@ -104,7 +105,8 @@ def main():
                       drivers=drivers,
                       sampler=sampler,
                       simulation=simulation,
-                      fps=args.fps)
+                      fps=args.fps,
+                      sample_rate=args.sample_rate)
 
     watchdog_task = WdTask(watchdog, arm_wd_event)
     watchdog_task.start()
