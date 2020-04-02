@@ -12,6 +12,7 @@ class Measurements(object):
         self.inspiration_volume = 0
         self.expiration_volume = 0
         self.flow_measurements = Queue(maxsize=40)  # TODO: Rename?
+        self.original_flow_measurements = Queue(maxsize=40)  # TODO: Rename?
         self.pressure_measurements = Queue(maxsize=40)  # TODO: Rename?
         self.x_axis = range(0, self._amount_of_samples_in_graph)
         self.intake_peak_flow = 0
@@ -20,6 +21,13 @@ class Measurements(object):
         self.bpm = 0
         self.o2_saturation_percentage = 20
         self.lock = Lock()
+
+    def set_original_flow_value(self, new_value):
+        with self.lock:
+            # pop last item if queue is full
+            if self.original_flow_measurements.full():
+                self.original_flow_measurements.get()
+            self.original_flow_measurements.put(new_value)
 
     def set_flow_value(self, new_value):
         with self.lock:
@@ -34,6 +42,10 @@ class Measurements(object):
             if self.pressure_measurements.full():
                 self.pressure_measurements.get()
             self.pressure_measurements.put(new_value)
+
+    def get_original_flow_value(self, new_value):
+        with self.lock:
+            self.original_flow_measurements.get(new_value)
 
     def get_flow_value(self, new_value):
         with self.lock:

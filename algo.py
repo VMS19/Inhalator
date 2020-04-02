@@ -150,6 +150,7 @@ class VentilationStateMachine(object):
     }
 
     def __init__(self, measurements, events):
+        self.previous_flow_value = None
         self._measurements = measurements
         self._events = events
         self.log = logging.getLogger(self.__class__.__name__)
@@ -224,6 +225,11 @@ class VentilationStateMachine(object):
         self.min_pressure = sys.maxsize
 
     def update(self, pressure_cmh2o, flow_slm, o2_saturation_percentage, timestamp):
+        original_flow_value = flow_slm
+        if self.previous_flow_value is not None:
+            self.previous_flow_value, flow_slm = \
+                flow_slm, (self.previous_flow_value + flow_slm) / 2
+
         # First - check how long it was since last breath
         seconds_from_last_breath = timestamp - self.last_breath_timestamp
         if seconds_from_last_breath >= self.NO_BREATH_ALERT_TIME_SECONDS:
@@ -237,6 +243,7 @@ class VentilationStateMachine(object):
         self._measurements.set_pressure_value(pressure_cmh2o)
         self._measurements.set_flow_value(flow_slm)
         self._measurements.set_saturation_percentage(o2_saturation_percentage)
+        self._measurements.set_original_flow_value(original_flow_value)
 
         # Update peak pressure/flow values
         self.peak_pressure = max(self.peak_pressure, pressure_cmh2o)
