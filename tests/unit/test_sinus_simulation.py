@@ -78,5 +78,5 @@ def test_correct_state_transitions(real_data):
             flow_slm=0,
             o2_saturation_percentage=0,
             timestamp=timestamp)
-        print("pressure:", list(vsm._measurements.pressure_measurements.queue)[0])
+        print("pressure measure:", list(vsm._measurements.pressure_measurements.queue)[-1])
         print("\tCurrent state:", vsm.current_state)
