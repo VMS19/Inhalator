@@ -50,9 +50,9 @@ def test_sampler_alerts_when_pressure_exceeds_maximum(events, measurements, conf
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor, oxygen_a2d)
 
     for _ in range(1000):
-        time.sleep(0.001)
+        time.sleep(0.05)
         sampler.sampling_iteration()
-        print("pressure:", list(measurements.pressure_measurements.queue)[0])
+        print("pressure:", list(measurements.pressure_measurements.queue)[-1])
         print("\tCurrent state:", sampler.vsm.current_state)
 
 
