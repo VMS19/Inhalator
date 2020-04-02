@@ -9,6 +9,7 @@ from graphics.right_menu_options import (MuteAlertsButton,
                                          LockThresholdsButton,
                                          OpenConfigureAlertsScreenButton, OpenAlertsHistoryScreenButton)
 from graphics.themes import Theme
+from graphics.version import __version__
 
 
 class MasterFrame(object):
@@ -99,6 +100,8 @@ class CenterPane(object):
         self.blank_graph = BlankGraph(self.frame)
         self.flow_graph = FlowGraph(self, self.measurements, blank=self.blank_graph)
         self.pressure_graph = AirPressureGraph(self, self.measurements, blank=self.blank_graph)
+        self.version = Label(master=self.root, text=__version__, fg="white",
+                             bg=Theme.active().SURFACE)
 
     def pop_queue_to_list(self, q, lst):
         # pops all queue values into list, returns if items appended to queue
@@ -121,6 +124,8 @@ class CenterPane(object):
 
         for graph in self.graphs:
             graph.render()
+
+        self.version.place(anchor="nw", relx=0.205, rely=0.975)
 
     def update(self):
         # Get measurments from peripherals
