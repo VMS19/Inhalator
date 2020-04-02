@@ -35,7 +35,8 @@ def test_bpm_calculation_const_rate(real_data):
         * Check BPM calculated correctly
     """
     timestamps, pressure_values = real_data
-    timestamps += [timestamps[-1] + t for t in timestamps]
+    timestamps += [timestamps[-1] + SAMPLE_TIME_DIFF * (i + 1)
+                   for i in range(len(timestamps) * 100)]
     vsm = VentilationStateMachine(Measurements(), Events())
     for timestamp, pressure in zip(timestamps, pressure_values):
         vsm.update(
@@ -46,7 +47,34 @@ def test_bpm_calculation_const_rate(real_data):
 
     samples_len = len(vsm.breathes_rate_meter.samples) - 1
     time_span_seconds = vsm.breathes_rate_meter.time_span_seconds
-    interval = TIME_FROM_BEAT_TO_SIM_END + TIME_FROM_SIM_START_TO_INHALE
+    interval = (TIME_FROM_BEAT_TO_SIM_END + TIME_FROM_SIM_START_TO_INHALE)
+    expected_bpm = samples_len * (time_span_seconds / interval)
+    assert vsm._measurements.bpm == approx(expected_bpm, rel=0.01)
+
+
+def test_bpm_calculation_const_rate_long_run(real_data):
+    """Test BPM calculated correctly with constant BPM simulation
+
+    Flow:
+        * Run pig simulation for 100 breath cycles
+        * Check BPM calculated correctly
+    """
+    timestamps, pressure_values = real_data
+    timestamps += [timestamps[-1] + SAMPLE_TIME_DIFF * (i + 1)
+                   for i in range(len(timestamps) * 100)]
+    vsm = VentilationStateMachine(Measurements(), Events())
+    for timestamp, pressure in zip(timestamps, pressure_values):
+        vsm.update(
+            pressure_cmh2o=pressure,
+            flow_slm=0,
+            o2_saturation_percentage=0,
+            timestamp=timestamp)
+
+    samples_len = len(vsm.breathes_rate_meter.samples) - 1
+    time_span_seconds = vsm.breathes_rate_meter.time_span_seconds
+    cycle_time = (TIME_FROM_BEAT_TO_SIM_END + TIME_FROM_SIM_START_TO_INHALE)
+    cycles_in_time_span = int(time_span_seconds / cycle_time)
+    interval = cycle_time * cycles_in_time_span
     expected_bpm = samples_len * (time_span_seconds / interval)
     assert vsm._measurements.bpm == approx(expected_bpm, rel=0.01)
 
