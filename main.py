@@ -46,7 +46,7 @@ def parse_args():
     parser.add_argument("--verbose", "-v", action="count", default=0)
     sim_options = parser.add_argument_group(
         "simulation", "Options for data simulation")
-    sim_options.add_argument("--simulate", "-s",nargs='?', type=str, const='sinus',
+    sim_options.add_argument("--simulate", "-s", nargs='?', type=str, const='sinus',
                              help="data simulation source. "
                                   "Can be either `sinus` (default), `dead`, or path to a CSV file.")
     sim_options.add_argument(

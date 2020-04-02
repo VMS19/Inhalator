@@ -10,7 +10,6 @@ from data.alerts import AlertCodes
 
 class Application(object):
     """The Inhalator application"""
-    FPS = 25
     TEXT_SIZE = 10
 
     __instance = None  # shared instance
