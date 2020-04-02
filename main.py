@@ -47,10 +47,18 @@ def parse_args():
     sim_options = parser.add_argument_group(
         "simulation", "Options for data simulation")
     sim_options.add_argument("--simulate", "-s", action='store_true')
-    sim_options.add_argument("--data", '-d', default='sinus')
+    sim_options.add_argument(
+        "--data", '-d', default='sinus',
+        help="A path to a CSV file containing the ")
     sim_options.add_argument(
         "--error", "-e", type=float,
         help="The probability of error in each driver", default=0)
+    sim_options.add_argument(
+        "--data-sample-rate", "-r")
+    parser.add_argument(
+        "--fps", "-f",
+        help="Frames-per-second for the application to render",
+        type=int, default=30)
     args = parser.parse_args()
     args.verbose = max(0, logging.WARNING - (10 * args.verbose))
     return args
@@ -94,7 +102,9 @@ def main():
                       events=events,
                       arm_wd_event=arm_wd_event,
                       drivers=drivers,
-                      sampler=sampler)
+                      sampler=sampler,
+                      simulation=simulation,
+                      fps=args.fps)
 
     watchdog_task = WdTask(watchdog, arm_wd_event)
     watchdog_task.start()
