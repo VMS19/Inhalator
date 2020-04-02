@@ -84,10 +84,7 @@ def test_sinus_alerts_when_no_breath(events, measurements, config):
     for _ in range(len(SIMULATION_TIMESTAMPS)):
         sampler.sampling_iteration()
         a.append(measurements.expiration_volume)
-
-    print(min(a), max(a))
-    print(events.alerts_queue.queue.get())
-
+        
     assert len(events.alerts_queue) == 0
     sampler.sampling_iteration()  # mock time simulates no breath time
 
