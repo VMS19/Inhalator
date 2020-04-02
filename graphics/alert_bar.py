@@ -5,6 +5,7 @@ from tkinter import *
 from graphics.themes import Theme
 from data import alerts
 from data.configurations import Configurations
+from graphics.version import __version__
 
 
 class IndicatorAlertBar(object):
@@ -20,11 +21,17 @@ class IndicatorAlertBar(object):
 
         self.bar = Frame(self.root, bg=Theme.active().ALERT_BAR_OK,
                          height=self.height, width=self.width)
+
         self.message_label = Label(master=self.bar,
                                    font=("Roboto", 34),
                                    text="OK",
                                    bg=Theme.active().ALERT_BAR_OK,
                                    fg=Theme.active().ALERT_BAR_OK_TXT,)
+
+        self.version = Label(master=self.root, font=("Roboto", 12),
+                             text="Ver. {}".format(__version__),
+                             fg=Theme.active().ALERT_BAR_OK_TXT,
+                             bg=Theme.active().ALERT_BAR_OK)
 
         self.sound_device = drivers.get_driver("aux")
 
@@ -35,6 +42,7 @@ class IndicatorAlertBar(object):
     def render(self):
         self.bar.place(relx=0, rely=0)
         self.message_label.place(anchor="nw", relx=0.03, rely=0.2)
+        self.version.place(anchor="nw", relx=0.8, rely=0.4)
 
     def update(self):
         # Check mute time limit
@@ -54,12 +62,16 @@ class IndicatorAlertBar(object):
         self.message_label.config(bg=Theme.active().ALERT_BAR_OK,
                                   fg=Theme.active().ALERT_BAR_OK_TXT,
                                   text="OK")
+        self.version.config(bg=Theme.active().ALERT_BAR_OK,
+                            fg=Theme.active().ALERT_BAR_OK_TXT)
         self.sound_device.stop()
 
     def set_alert(self, message):
         self.bar.config(bg=Theme.active().ERROR)
         self.message_label.config(bg=Theme.active().ERROR,
                                   fg=Theme.active().TXT_ON_ERROR, text=message)
+        self.version.config(bg=Theme.active().ERROR,
+                            fg=Theme.active().TXT_ON_ERROR)
         if self.events.mute_alerts:
             self.sound_device.stop()
 

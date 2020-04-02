@@ -29,13 +29,6 @@ class ThresholdButton(Button):
                        command=self.publish)
         self.subscribers = {}
 
-    def toggle(self):
-        if self.selected:
-            self.deselect()
-
-        else:
-            self.select()
-
     @property
     def selected(self):
         return self["bg"] == "#52475d"

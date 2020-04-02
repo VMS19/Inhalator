@@ -71,10 +71,13 @@ class PressurePeakSummary(GraphSummary):
 
 class VolumeSummary(GraphSummary):
     def value(self):
-        return "{:.0f}".format(self.measurements.volume)
+        #Todo: fix exhale volume calculation
+        return "{}/{}".format(
+            round(self.measurements.inspiration_volume), "-")
+            #round(self.measurements.expiration_volume))
 
     def name(self):
-        return "Vte"
+        return "TVinsp/TVexp"
 
     def units(self):
         return "ml"

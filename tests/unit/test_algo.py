@@ -5,6 +5,8 @@ import pytest
 from pytest import approx
 
 from algo import RunningSlope, VentilationStateMachine, VentilationState
+from data.events import Events
+from data.measurements import Measurements
 from drivers.mocks.sinus import add_noise
 
 
@@ -46,16 +48,20 @@ def real_data():
     return t, v
 
 
-def test_slope_recognition(real_data):
+def test_correct_state_transitions(real_data):
     t, v = real_data
-    vmt = VentilationStateMachine({})
-    for ti, vi in zip(t, v):
-        vmt.update(vi, 0, ti)
+    vsm = VentilationStateMachine(Measurements(), Events())
+    for timestamp, pressure in zip(t, v):
+        vsm.update(
+            pressure_cmh2o=pressure,
+            flow_slm=0,
+            o2_saturation_percentage=0,
+            timestamp=timestamp)
 
-    inhale_entry = vmt.entry_points_ts[VentilationState.Inhale][0]
-    hold_entry = vmt.entry_points_ts[VentilationState.Hold][0]
-    exhale_entry = vmt.entry_points_ts[VentilationState.Exhale][0]
-    peep_entry = vmt.entry_points_ts[VentilationState.PEEP][0]
+    inhale_entry = vsm.entry_points_ts[VentilationState.Inhale][0]
+    hold_entry = vsm.entry_points_ts[VentilationState.Hold][0]
+    exhale_entry = vsm.entry_points_ts[VentilationState.Exhale][0]
+    peep_entry = vsm.entry_points_ts[VentilationState.PEEP][0]
 
     assert inhale_entry == approx(4.41, rel=0.1)
     assert hold_entry == approx(4.95, rel=0.1)

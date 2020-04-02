@@ -1,14 +1,13 @@
-import time
 from threading import Timer, Lock
 
 import RPi.GPIO as GPIO
 
 
 class WdDriver(object):
-    WD_REFRESH_HZ = 2000
+    WD_REFRESH_HZ = 10.0
     WD_REFRESH_SIGNAL_SEC = (1 / WD_REFRESH_HZ)
     WD_GPIO = 5
-    FAULT_GPIO = 19
+    FAULT_GPIO = 13
 
     def __init__(self):
         self.arm_wd_lock = Lock()

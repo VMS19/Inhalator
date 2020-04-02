@@ -1,15 +1,18 @@
 import sys
 import time
 import logging
-import threading
 from enum import Enum
 from statistics import mean
 from collections import deque
+
 from scipy.stats import linregress
 
 from data.alerts import AlertCodes
 from data.measurements import Measurements
 from data.configurations import Configurations
+
+TRACE = logging.DEBUG - 1
+logging.addLevelName(TRACE, 'TRACE')
 
 
 class VolumeAccumulator(object):
@@ -43,14 +46,6 @@ class RunningAvg(object):
     def process(self, pressure):
         self.samples.append(pressure)
         return mean(self.samples)
-
-
-class VentilationState(Enum):
-    Calibration = 0  # State unknown yet
-    Inhale = 1  # Air is flowing to the lungs
-    Hold = 2  # PIP is maintained
-    Exhale = 3  # Pressure is relieved, air flowing out
-    PEEP = 4  # Positive low pressure is maintained until next cycle.
 
 
 class RateMeter(object):
@@ -98,62 +93,6 @@ class RateMeter(object):
         return rate
 
 
-class VentilationStateMachine(object):
-    PEEP_TO_INHALE_SLOPE = 8
-    INHALE_TO_HOLD_SLOPE = 4
-    HOLD_TO_EXHALE_SLOPE = -4
-    EXHALE_TO_PEEP_SLOPE = -4
-
-    # Transition table:
-    # The key is a given current state, and the value is a tuple of:
-    # 1. The compare func against the threshold (greater-than, less-than)
-    # 2. The threshold to compare against
-    # 3. The next state if the comparison evaluates to true.
-    #
-    # For each new sample we compute the current slope, and according to
-    # the current state we perform the appropriate comparison against the
-    # appropriate threshold. If the comparison returns True - we transition
-    # to the next state according to the table.
-    TRANSITION_TABLE = {
-        VentilationState.PEEP: (float.__gt__, PEEP_TO_INHALE_SLOPE, VentilationState.Inhale),
-        VentilationState.Inhale: (float.__lt__, INHALE_TO_HOLD_SLOPE, VentilationState.Hold),
-        VentilationState.Hold: (float.__lt__, HOLD_TO_EXHALE_SLOPE, VentilationState.Exhale),
-        VentilationState.Exhale: (float.__gt__, EXHALE_TO_PEEP_SLOPE, VentilationState.PEEP),
-    }
-
-    def __init__(self, state_handlers):
-        self.handlers = state_handlers
-        self.log = logging.getLogger(self.__class__.__name__)
-        self.rs = RunningSlope(num_samples=7)
-
-        self.current_state = VentilationState.PEEP
-        self.entry_points_ts = {
-            VentilationState.PEEP: deque(maxlen=100),
-            VentilationState.Inhale: deque(maxlen=100),
-            VentilationState.Hold: deque(maxlen=100),
-            VentilationState.Exhale: deque(maxlen=100)
-        }
-
-    def update(self, pressure_cmh2o, flow_slm, timestamp):
-        slope = self.rs.add_sample(pressure_cmh2o, timestamp)
-        if slope is None:
-            return
-        func, threshold, next_state = self.TRANSITION_TABLE.get(self.current_state)
-        current_state_handler = self.handlers.get(self.current_state, None)
-        if func(slope, threshold):
-            if current_state_handler is not None:
-                current_state_handler.exit(timestamp)
-            self.rs.reset()
-            self.log.debug("%s -> %s", self.current_state, next_state)
-            self.current_state = next_state
-            self.entry_points_ts[next_state].append(timestamp)
-            new_state_handler = self.handlers.get(next_state, None)
-            if new_state_handler is not None:
-                new_state_handler.enter(timestamp)
-        if current_state_handler is not None:
-            current_state_handler.process(pressure_cmh2o, flow_slm, timestamp)
-
-
 class RunningSlope(object):
 
     def __init__(self, num_samples=10, period_ms=100):
@@ -177,94 +116,102 @@ class RunningSlope(object):
         return slope
 
 
-class StateHandler(object):
+class VentilationState(Enum):
+    Calibration = 0  # State unknown yet
+    Inhale = 1  # Air is flowing to the lungs
+    Hold = 2  # PIP is maintained
+    Exhale = 3  # Pressure is relieved, air flowing out
+    PEEP = 4  # Positive low pressure is maintained until next cycle.
 
-    def __init__(self, machine, config, measurements, events):
-        self.machine = machine
-        self._config = config
+
+class VentilationStateMachine(object):
+
+    NO_BREATH_ALERT_TIME_SECONDS = 12
+    PEEP_TO_INHALE_SLOPE = 8
+    INHALE_TO_HOLD_SLOPE = 4
+    HOLD_TO_EXHALE_SLOPE = -4
+    EXHALE_TO_PEEP_SLOPE = -4
+
+    # Transition table:
+    # The key is a given current state, and the value is a tuple of:
+    # 1. The compare func against the threshold (greater-than, less-than)
+    # 2. The threshold to compare against
+    # 3. The next state if the comparison evaluates to true.
+    #
+    # For each new sample we compute the current slope, and according to
+    # the current state we perform the appropriate comparison against the
+    # appropriate threshold. If the comparison returns True - we transition
+    # to the next state according to the table.
+    TRANSITION_TABLE = {
+        VentilationState.PEEP: (float.__gt__, PEEP_TO_INHALE_SLOPE, VentilationState.Inhale),
+        VentilationState.Inhale: (float.__lt__, INHALE_TO_HOLD_SLOPE, VentilationState.Hold),
+        VentilationState.Hold: (float.__lt__, HOLD_TO_EXHALE_SLOPE, VentilationState.Exhale),
+        VentilationState.Exhale: (float.__gt__, EXHALE_TO_PEEP_SLOPE, VentilationState.PEEP),
+    }
+
+    def __init__(self, measurements, events):
         self._measurements = measurements
         self._events = events
         self.log = logging.getLogger(self.__class__.__name__)
-
-    def process(self, pressure_cmh2o, flow_slm, timestamp):
-        pass
-
-    def enter(self, timestamp):
-        pass
-
-    def exit(self, timestamp):
-        pass
-
-
-class InhaleStateHandler(StateHandler):
-
-    def __init__(self, *args, **kwargs):
-        super(InhaleStateHandler, self).__init__(*args, **kwargs)
-        self.breathes_rate_meter = RateMeter(time_span_seconds=60, max_samples=4)
-        self.last_breath_timestamp = time.time()
-
-    def enter(self, timestamp):
-        self.last_breath_timestamp = timestamp
-
-    def exit(self, timestamp):
-        self._measurements.bpm = self.breathes_rate_meter.beat(timestamp)
-
-
-class PEEPHandler(StateHandler):
-
-    def enter(self, timestamp):
-        volume_ml = self.machine.accumulator.air_volume_liter * 1000
-        self.log.info("Volume: %sml", volume_ml)
-        self._measurements.volume = volume_ml
-        # reset values of last intake
-        self.machine.accumulator.reset()
-
-        if self._config.volume_range.below(volume_ml):
-            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW)
-        elif self._config.volume_range.over(volume_ml):
-            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH)
-
-    def exit(self, timestamp):
-        self.machine.reset_min_values()
-
-
-class HoldStateHandler(StateHandler):
-    def exit(self, timestamp):
-        self.machine.reset_peaks()
-
-
-class Sampler(object):
-    SAMPLING_INTERVAL = 0.02  # sec
-    MS_IN_MIN = 60 * 1000
-    ML_IN_LITER = 1000
-
-    def __init__(self, measurements, events, flow_sensor, pressure_sensor, oxygen_a2d):
-        super(Sampler, self).__init__()
-        self.log = logging.getLogger(self.__class__.__name__)
-        self.daemon = True
-        self._measurements = measurements  # type: Measurements
-        self._flow_sensor = flow_sensor
-        self._pressure_sensor = pressure_sensor
-        self._oxygen_a2d = oxygen_a2d
+        self.rs = RunningSlope(num_samples=7)
         self._config = Configurations.instance()
-        self._events = events
+        self.last_breath_timestamp = time.time()
+        self.current_state = VentilationState.PEEP
+
+        # Data structure to record last 100 entry timestamp for each state.
+        # Useful for debugging and plotting.
+        self.entry_points_ts = {
+            VentilationState.PEEP: deque(maxlen=100),
+            VentilationState.Inhale: deque(maxlen=100),
+            VentilationState.Hold: deque(maxlen=100),
+            VentilationState.Exhale: deque(maxlen=100)
+        }
+
+        # Function to call when entering a state.
+        self.entry_handlers = {
+            VentilationState.Inhale: self.enter_inhale,
+            VentilationState.Exhale: self.enter_exhale,
+            VentilationState.PEEP: self.enter_peep
+        }
         self.peak_pressure = 0
         self.min_pressure = sys.maxsize
         self.peak_flow = 0
         # No good reason for 1000 max samples. Sounds enough.
         self.peep_avg_calculator = RunningAvg(max_samples=1000)
+        self.breathes_rate_meter = RateMeter(time_span_seconds=60, max_samples=4)
+        self.inspiration_volume = VolumeAccumulator()
+        self.expiration_volume = VolumeAccumulator()
 
-        self.accumulator = VolumeAccumulator()
-        self.inhale_handler = InhaleStateHandler(
-            self, self._config, self._measurements, self._events)
-        hold_handler = HoldStateHandler(
-            self, self._config, self._measurements, self._events)
-        peep_handler = PEEPHandler(
-            self, self._config, self._measurements, self._events)
-        self.vsm = VentilationStateMachine({
-            VentilationState.Inhale: self.inhale_handler,
-            VentilationState.Hold: hold_handler,
-            VentilationState.PEEP: peep_handler})
+    def enter_inhale(self, timestamp):
+        self.last_breath_timestamp = timestamp
+        self._measurements.bpm = self.breathes_rate_meter.beat(timestamp)
+        # Update final expiration volume
+        exp_volume_ml = self.expiration_volume.air_volume_liter * 1000
+        self.log.debug("TV exp: : %sml", exp_volume_ml)
+        self._measurements.expiration_volume = exp_volume_ml
+        self.expiration_volume.reset()
+        self.reset_min_values()
+
+    def enter_exhale(self, timestamp):
+        self.reset_peaks()
+
+    def enter_peep(self, timestamp):
+        # Update final inspiration volume
+        insp_volume_ml = self.inspiration_volume.air_volume_liter * 1000
+        self.log.debug("TV insp: : %sml", insp_volume_ml)
+        self._measurements.inspiration_volume = insp_volume_ml
+        self.inspiration_volume.reset()
+
+        if self._config.volume_range.below(insp_volume_ml):
+            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW, timestamp)
+            self.log.warning(
+                "volume too low %s, bottom threshold %s",
+                insp_volume_ml, self._config.volume_range.min)
+        elif self._config.volume_range.over(insp_volume_ml):
+            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH, timestamp)
+            self.log.warning(
+                "volume too high %s, top threshold %s",
+                insp_volume_ml, self._config.volume_range.max)
 
     def reset_peaks(self):
         self._measurements.intake_peak_pressure = self.peak_pressure
@@ -276,51 +223,17 @@ class Sampler(object):
         self._measurements.peep_min_pressure = self.min_pressure
         self.min_pressure = sys.maxsize
 
-    def read_single_sensor(self, sensor, alert_code):
-        try:
-            return sensor.read()
-        except Exception as e:
-            self._events.alerts_queue.enqueue_alert(alert_code)
-            self.log.error(e)
-        return None
+    def update(self, pressure_cmh2o, flow_slm, o2_saturation_percentage, timestamp):
+        # First - check how long it was since last breath
+        seconds_from_last_breath = timestamp - self.last_breath_timestamp
+        if seconds_from_last_breath >= self.NO_BREATH_ALERT_TIME_SECONDS:
+            self.log.warning("No breath detected for the last 12 seconds")
+            self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH, timestamp)
 
-    def read_sensors(self):
-        """
-        Read the sensors and return the samples.
-
-        We try to read all of the sensors even in case of error in order to
-        better understand the nature of the problem - Is it a single sensor that
-        failed, or maybe something wrong with out bus for example.
-        :return: Tuple of (flow, pressure, saturation) if there are no errors,
-                or None if an error occurred in any of the drivers.
-        """
-        flow_slm = self.read_single_sensor(
-            self._flow_sensor, AlertCodes.FLOW_SENSOR_ERROR)
-        pressure_cmh2o = self.read_single_sensor(
-            self._pressure_sensor, AlertCodes.PRESSURE_SENSOR_ERROR)
-        o2_saturation_percentage = self.read_single_sensor(
-            self._oxygen_a2d, AlertCodes.SATURATION_SENSOR_ERROR)
-
-        data = (flow_slm, pressure_cmh2o, o2_saturation_percentage)
-        errors = [x is None for x in data]
-        return None if any(errors) else data
-
-    def sampling_iteration(self):
-        ts = time.time()
-
-        seconds_from_last_breath = ts - self.inhale_handler.last_breath_timestamp
-        if seconds_from_last_breath >= 12:
-            self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH, ts)
-
-        # Read from sensors
-        result = self.read_sensors()
-        if result is None:
-            return
-
-        flow_slm, pressure_cmh2o, o2_saturation_percentage = result
-
-        self.vsm.update(pressure_cmh2o, flow_slm, timestamp=ts)
-        self.accumulator.accumulate(ts, flow_slm)
+        # We track inhale and exhale volume separately. Positive flow means
+        # inhale, and negative flow means exhale.
+        accumulator = self.inspiration_volume if flow_slm > 0 else self.expiration_volume
+        accumulator.accumulate(timestamp, abs(flow_slm))
         self._measurements.set_pressure_value(pressure_cmh2o)
         self._measurements.set_flow_value(flow_slm)
         self._measurements.set_saturation_percentage(o2_saturation_percentage)
@@ -331,8 +244,96 @@ class Sampler(object):
         self.peak_flow = max(self.peak_flow, flow_slm)
 
         if self._config.pressure_range.over(pressure_cmh2o):
-            # Above healthy lungs pressure
-            self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_HIGH)
+            self.log.warning(
+                "pressure too high %s, top threshold %s",
+                pressure_cmh2o, self._config.pressure_range.max)
+            self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_HIGH, timestamp)
         elif self._config.pressure_range.below(pressure_cmh2o):
-            # Below healthy lungs pressure
-            self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW)
+            self.log.warning(
+                "pressure too low %s, bottom threshold %s",
+                pressure_cmh2o, self._config.pressure_range.min)
+            self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW, timestamp)
+
+        self.check_transition(pressure_cmh2o, timestamp)
+
+    def check_transition(self, pressure_cmh2o, timestamp):
+        # Now, calculate the current slope of the pressure graph to see in which
+        # ventilation state we are.
+        slope = self.rs.add_sample(pressure_cmh2o, timestamp)
+        if slope is None:
+            return  # Not enough data
+
+        func, threshold, next_state = self.TRANSITION_TABLE.get(self.current_state)
+        if func(slope, threshold):
+            self.rs.reset()  # TODO: Rethink. Maybe not reset?
+            self.log.debug("%s -> %s", self.current_state, next_state)
+            self.current_state = next_state
+            self.entry_points_ts[next_state].append(timestamp)
+            entry_handler = self.entry_handlers.get(next_state, None)
+            if entry_handler is not None:
+                # noinspection PyArgumentList
+                entry_handler(timestamp)
+
+
+class Sampler(object):
+
+    def __init__(self, measurements, events, flow_sensor, pressure_sensor, oxygen_a2d):
+        super(Sampler, self).__init__()
+        self.log = logging.getLogger(self.__class__.__name__)
+        self._measurements = measurements  # type: Measurements
+        self._flow_sensor = flow_sensor
+        self._pressure_sensor = pressure_sensor
+        self._oxygen_a2d = oxygen_a2d
+        self._config = Configurations.instance()
+        self._events = events
+        self.vsm = VentilationStateMachine(measurements, events)
+
+    def read_single_sensor(self, sensor, alert_code, timestamp):
+        try:
+            return sensor.read()
+        except Exception as e:
+            self._events.alerts_queue.enqueue_alert(alert_code, timestamp)
+            self.log.error(e)
+        return None
+
+    def read_sensors(self, timestamp):
+        """
+        Read the sensors and return the samples.
+
+        We try to read all of the sensors even in case of error in order to
+        better understand the nature of the problem - Is it a single sensor that
+        failed, or maybe something wrong with out bus for example.
+        :return: Tuple of (flow, pressure, saturation) if there are no errors,
+                or None if an error occurred in any of the drivers.
+        """
+        flow_slm = self.read_single_sensor(
+            self._flow_sensor, AlertCodes.FLOW_SENSOR_ERROR, timestamp)
+        pressure_cmh2o = self.read_single_sensor(
+            self._pressure_sensor, AlertCodes.PRESSURE_SENSOR_ERROR, timestamp)
+        o2_saturation_percentage = self.read_single_sensor(
+            self._oxygen_a2d, AlertCodes.SATURATION_SENSOR_ERROR, timestamp)
+
+        data = (flow_slm, pressure_cmh2o, o2_saturation_percentage)
+        errors = [x is None for x in data]
+        return None if any(errors) else data
+
+    def sampling_iteration(self):
+        ts = time.time()
+        # Read from sensors
+        result = self.read_sensors(ts)
+        if result is None:
+            return
+
+        flow_slm, pressure_cmh2o, o2_saturation_percentage = result
+        # WARNING! These log messages are useful for debugging sensors but
+        # might spam you since they are printed on every sample. In order to see
+        # them run the application in maximum verbosity mode by passing `-vvv` to `main.py
+        self.log.log(TRACE, 'flow: %s', flow_slm)
+        self.log.log(TRACE, 'pressure: %s', pressure_cmh2o)
+        self.log.log(TRACE, 'oxygen: %s', o2_saturation_percentage)
+
+        self.vsm.update(
+            pressure_cmh2o=pressure_cmh2o,
+            flow_slm=flow_slm,
+            o2_saturation_percentage=o2_saturation_percentage,
+            timestamp=ts)
