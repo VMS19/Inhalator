@@ -31,19 +31,18 @@ class MuxI2C(object):
             raise PiGPIOInitError("pigpio library init error")
 
         except pigpio.error as e:
-            log.error("Could not open i2c connection to flow sensor."
-                      "Is it connected?")
+            log.error("Could not open i2c connection to flow sensor.")
             raise I2CDeviceNotFoundError("i2c connection open failed")
 
     def switch_port(self, port):
-        int_port = int(port)
-        if int_port > 4 or int_port < 0:
-            raise ValueError("Bad Port sent to switch.")
+        port = int(port)
+        if port not in range(5):
+            raise ValueError("Port should be between 0 and 4 - got {}.".format(port))
     
         try:
             # First, reset the switch
             self._pig.i2c_write_device(self._dev, "\x00")
-            self._pig.i2c_write_device(self._dev, str(0b1 << int_port))
+            self._pig.i2c_write_device(self._dev, str(0b1 << port))
         except pigpio.error as e:
             log.error("Could not switch cmd to mux. "
                       "Is the mux connected?.")
