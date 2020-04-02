@@ -1,7 +1,7 @@
 import pigpio
 import logging
-import time
 import sys
+from time import sleep
 
 from errors import PiGPIOInitError, I2CDeviceNotFoundError, I2CReadError
 
@@ -105,7 +105,7 @@ class SdpPressureSensor(object):
                 pressure_reading = (pressure_raw[0] << 8) | (pressure_raw[1])
                 pressure_reading = self.twos_complement(pressure_reading)
                 expected_crc = pressure_raw[2]
-                crc_calc = self._crc8(data[:2])
+                crc_calc = self._crc8(pressure_raw[:2])
                 if not crc_calc == expected_crc:
                     print('bad crc')
                 return (self._pressure_to_flow(self._calculate_pressure(pressure_reading)))
