@@ -5,9 +5,6 @@ from data.configurations import Configurations
 
 
 class Measurements(object):
-    SYSTEM_SAMPLE_INTERVAL = 50  # HZ
-    MS_TO_SEC = 1000
-
     def __init__(self, sample_rate):
         self.inspiration_volume = 0
         self.expiration_volume = 0

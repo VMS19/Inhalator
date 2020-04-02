@@ -11,6 +11,7 @@ from data.alerts import AlertCodes
 class Application(object):
     """The Inhalator application"""
     TEXT_SIZE = 10
+    HARDWARE_SAMPLE_RATE = 50  # HZ
 
     __instance = None  # shared instance
 
@@ -31,7 +32,7 @@ class Application(object):
         self.sampler = sampler
         self.simulation = simulation
         self.frame_interval = 1 / fps
-        self.sample_interval = 1 / sample_rate
+        self.sample_interval = 1 / (sample_rate if self.simulation else self.HARDWARE_SAMPLE_RATE)
         self.root = Tk()
         self.theme = Theme.toggle_theme()  # Set to dark mode, TODO: Make this configurable
         self.root.protocol("WM_DELETE_WINDOW", self.exit)  # Catches Alt-F4
