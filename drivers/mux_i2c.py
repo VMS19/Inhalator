@@ -35,6 +35,7 @@ class MuxI2C(object):
             raise I2CDeviceNotFoundError("i2c connection open failed")
 
     def switch_port(self, port):
+        # TODO: if drivers could run in parallel, we need to sync with mutex
         port = int(port)
         if port not in range(5):
             raise ValueError("Port should be between 0 and 4 - got {}.".format(port))
