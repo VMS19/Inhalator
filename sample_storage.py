@@ -1,5 +1,6 @@
 import datetime
 import logging
+import os
 from logging.handlers import RotatingFileHandler
 
 BYTES_IN_GB = 2 ** 30
@@ -21,7 +22,15 @@ class SamplesStorage:
         self.last_ts = None
         self.logger = self._configure_logger()
         # Write title row
-        self._write_row(self.COLUMNS)
+        if self.no_log_files_exists:
+            self._write_row(self.COLUMNS)
+
+    @property
+    def no_log_files_exists(self):
+        rotated_files = [item for item in os.listdir(os.path.dirname(self.file_name))
+                         if item.startswith(self.file_name)]
+        sizes = [os.path.getsize(log_file) for log_file in rotated_files]
+        return all(size == 0 for size in sizes)
 
     def _configure_logger(self):
         logger = logging.getLogger('samples_storage')
