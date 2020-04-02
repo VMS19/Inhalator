@@ -7,7 +7,6 @@ from errors import ConfigurationFileError
 from data.thresholds import (RespiratoryRateRange, PressureRange,
                              VolumeRange, FlowRange)
 
-
 THIS_DIRECTORY = os.path.dirname(__file__)
 log = logging.getLogger(__name__)
 
@@ -30,7 +29,7 @@ class Configurations(object):
 
     __instance = None
 
-    def __init__(self, flow_range, volume_range,pressure_range, resp_rate_range,
+    def __init__(self, flow_range, volume_range, pressure_range, resp_rate_range,
                  flow_y_scale, pressure_y_scale, graph_seconds,
                  breathing_threshold, log_enabled=True, debug_port=7777,
                  mute_time_limit=120):
@@ -45,9 +44,6 @@ class Configurations(object):
         self.mute_time_limit = mute_time_limit
         self.flow_y_scale = flow_y_scale
         self.pressure_y_scale = pressure_y_scale
-
-    def __del__(self):
-        self.save_to_file(self.CONFIG_FILE)
 
     @classmethod
     def instance(cls):
