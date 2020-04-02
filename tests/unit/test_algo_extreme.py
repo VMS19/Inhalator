@@ -30,10 +30,11 @@ SIMULATION_FOLDER = "simulation"
 this_dir = os.path.dirname(__file__)
 with open(os.path.join(this_dir, SIMULATION_FOLDER,
                        "pig_sim_extreme_pressure_in_peep.csv"), "r") as f:
-    data = list(csv.reader(f))
-timestamps = [float(d[0]) for d in data[1:]]
+    reader = csv.DictReader(f)
+    timestamps = [float(row['timestamp']) for row in reader]
+
+DATA_SIZE = len(timestamps)
 timestamps = timestamps[:1] + timestamps  # first timestamp for InhaleStateHandler init
-DATA_SIZE = len(data) - 1
 
 time_mock = Mock()
 time_mock.side_effect = cycle(timestamps)
