@@ -8,7 +8,7 @@ class Measurements(object):
     SYSTEM_SAMPLE_INTERVAL = 50  # HZ
     MS_TO_SEC = 1000
 
-    def __init__(self):
+    def __init__(self, sample_rate):
         self.inspiration_volume = 0
         self.expiration_volume = 0
         self.flow_measurements = Queue(maxsize=40)  # TODO: Rename?
@@ -18,6 +18,7 @@ class Measurements(object):
         self.intake_peak_pressure = 0
         self.peep_min_pressure = 0
         self.bpm = 0
+        self.sample_interval = 1 / sample_rate
         self.o2_saturation_percentage = 20
         self.lock = Lock()
 
@@ -54,4 +55,4 @@ class Measurements(object):
     @property
     def _amount_of_samples_in_graph(self):
         config = Configurations.instance()
-        return int((config.graph_seconds * self.MS_TO_SEC) / self.SYSTEM_SAMPLE_INTERVAL)
+        return int(config.graph_seconds / self.sample_interval)

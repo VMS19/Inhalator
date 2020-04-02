@@ -71,10 +71,10 @@ def handle_sigterm(signum, frame):
 
 
 def main():
-    measurements = Measurements()
-    events = Events()
     signal.signal(signal.SIGTERM, handle_sigterm)
+    events = Events()
     args = parse_args()
+    measurements = Measurements(args.sample_rate)
     arm_wd_event = Event()
     log = configure_logging(args.verbose)
 
