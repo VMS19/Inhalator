@@ -1,9 +1,13 @@
+import multiprocessing
 import os
 import argparse
 import logging
 import signal
+import time
 from logging.handlers import RotatingFileHandler
 from threading import Event
+
+import psutil
 
 from drivers.driver_factory import DriverFactory
 from data.configurations import Configurations
@@ -14,6 +18,21 @@ from algo import Sampler
 from wd_task import WdTask
 
 BYTES_IN_GB = 2 ** 30
+
+
+def monitor(output_path, target, args):
+    worker_process = multiprocessing.Process(target=target, args=[args])
+    worker_process.start()
+    p = psutil.Process(worker_process.pid)
+
+    # log memory usage of `worker_process` every second
+    # save the data in MB units
+    while worker_process.is_alive():
+        with open(output_path, 'a') as out:
+            out.write(f"{p.memory_info()[0]/2.**20}\n")
+        time.sleep(1)
+
+    worker_process.join()
 
 
 def configure_logging(level):
@@ -59,6 +78,7 @@ def parse_args():
         "--fps", "-f",
         help="Frames-per-second for the application to render",
         type=int, default=25)
+    parser.add_argument("--monitor", "-m")
     args = parser.parse_args()
     args.verbose = max(0, logging.WARNING - (10 * args.verbose))
     return args
@@ -70,10 +90,9 @@ def handle_sigterm(signum, frame):
     Application.instance().exit()
 
 
-def main():
+def start_app(args):
     signal.signal(signal.SIGTERM, handle_sigterm)
     events = Events()
-    args = parse_args()
     measurements = Measurements(args.sample_rate if args.simulate else Application.HARDWARE_SAMPLE_RATE)
     arm_wd_event = Event()
     log = configure_logging(args.verbose)
@@ -111,6 +130,15 @@ def main():
     watchdog_task.start()
 
     app.run()
+
+
+def main():
+    args = parse_args()
+    if args.monitor:
+        monitor(args.monitor, start_app, args)
+
+    else:
+        start_app(args)
 
 
 if __name__ == '__main__':
