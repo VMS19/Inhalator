@@ -32,7 +32,7 @@ class Application(object):
         self.sampler = sampler
         self.simulation = simulation
         self.frame_interval = 1 / fps
-        self.sample_interval = 1 / (sample_rate if self.simulation else self.HARDWARE_SAMPLE_RATE)
+        self.sample_interval = 1 / sample_rate
         self.root = Tk()
         self.theme = Theme.toggle_theme()  # Set to dark mode, TODO: Make this configurable
         self.root.protocol("WM_DELETE_WINDOW", self.exit)  # Catches Alt-F4
@@ -84,7 +84,7 @@ class Application(object):
         self.render()
         while self.should_run:
             try:
-                if self.simulation and self.next_sample > 0:
+                if self.next_sample > 0:
                     time.sleep(max(self.next_sample, 0))
                 self.sample()
                 if self.next_render <= 0:

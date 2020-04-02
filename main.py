@@ -74,7 +74,7 @@ def main():
     signal.signal(signal.SIGTERM, handle_sigterm)
     events = Events()
     args = parse_args()
-    measurements = Measurements(args.sample_rate)
+    measurements = Measurements(args.sample_rate if args.simulate else Application.HARDWARE_SAMPLE_RATE)
     arm_wd_event = Event()
     log = configure_logging(args.verbose)
 
