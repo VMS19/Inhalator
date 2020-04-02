@@ -77,7 +77,7 @@ class VolumeSummary(GraphSummary):
             #round(self.measurements.expiration_volume))
 
     def name(self):
-        return "TVinsp/TVexp"
+        return "TVinsp/exp"
 
     def units(self):
         return "ml"
