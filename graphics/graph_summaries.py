@@ -71,9 +71,10 @@ class PressurePeakSummary(GraphSummary):
 
 class VolumeSummary(GraphSummary):
     def value(self):
+        #Todo: fix exhale volume calculation
         return "{}/{}".format(
-            round(self.measurements.inspiration_volume),
-            round(self.measurements.expiration_volume))
+            round(self.measurements.inspiration_volume), "-")
+            #round(self.measurements.expiration_volume))
 
     def name(self):
         return "TVinsp/TVexp"
