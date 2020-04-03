@@ -44,11 +44,19 @@ def parse_args():
     parser.add_argument("--verbose", "-v", action="count", default=0)
     sim_options = parser.add_argument_group(
         "simulation", "Options for data simulation")
-    sim_options.add_argument("--simulate", "-s", action='store_true')
-    sim_options.add_argument("--data", '-d', default='sinus')
+    sim_options.add_argument("--simulate", "-s", nargs='?', type=str, const='sinus',
+                             help="data simulation source. "
+                                  "Can be either `sinus` (default), `dead`, or path to a CSV file.")
     sim_options.add_argument(
         "--error", "-e", type=float,
         help="The probability of error in each driver", default=0)
+    sim_options.add_argument(
+        "--sample-rate", "-r", help="The sample rate of the simulation data",
+        type=float, default=22)
+    parser.add_argument(
+        "--fps", "-f",
+        help="Frames-per-second for the application to render",
+        type=int, default=25)
     args = parser.parse_args()
     args.verbose = max(0, logging.WARNING - (10 * args.verbose))
     return args
@@ -61,22 +69,22 @@ def handle_sigterm(signum, frame):
 
 
 def main():
-    measurements = Measurements()
-    events = Events()
     signal.signal(signal.SIGTERM, handle_sigterm)
+    events = Events()
     args = parse_args()
+    measurements = Measurements(args.sample_rate if args.simulate else Application.HARDWARE_SAMPLE_RATE)
     arm_wd_event = Event()
     log = configure_logging(args.verbose)
 
     # Initialize all drivers, or mocks if in simulation mode
-    simulation = args.simulate or os.uname()[1] != 'raspberrypi'
+    simulation = args.simulate is not None or os.uname()[1] != 'raspberrypi'
     if simulation:
         log.info("Running in simulation mode!")
-        log.info("Sensor Data Source: %s", args.data)
+        log.info("Sensor Data Source: %s", args.simulate)
         log.info("Error probability: %s", args.error)
-    drivers = DriverFactory(
-        simulation_mode=simulation, simulation_data=args.data,
-        error_probability=args.error)
+    drivers = DriverFactory(simulation_mode=simulation,
+                            simulation_data=args.simulate,
+                            error_probability=args.error)
 
     pressure_sensor = drivers.get_driver("pressure")
     flow_sensor = drivers.get_driver("differential_pressure")
@@ -92,7 +100,10 @@ def main():
                       events=events,
                       arm_wd_event=arm_wd_event,
                       drivers=drivers,
-                      sampler=sampler)
+                      sampler=sampler,
+                      simulation=simulation,
+                      fps=args.fps,
+                      sample_rate=args.sample_rate)
 
     watchdog_task = WdTask(watchdog, arm_wd_event)
     watchdog_task.start()
