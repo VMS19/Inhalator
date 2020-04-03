@@ -16,7 +16,7 @@ from data.thresholds import (FlowRange, PressureRange,
                              RespiratoryRateRange, VolumeRange)
 from drivers.driver_factory import DriverFactory
 
-CYCLE_SAMPLES = 118
+SAMPLES_AMOUNT = 118
 SIMULATION_FOLDER = "simulation"
 
 
@@ -60,7 +60,7 @@ def test_sampler_dead_min_max(events, measurements, config):
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       oxygen_a2d, timer)
 
-    for _ in range(CYCLE_SAMPLES):
+    for _ in range(SAMPLES_AMOUNT):
         sampler.sampling_iteration()
 
     min_pressure_msg = f"Expected min pressure of 0, received {measurements.peep_min_pressure}"
@@ -90,7 +90,7 @@ def test_sampler_sinus_min_max(events, measurements, config):
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       oxygen_a2d, timer)
 
-    for _ in range(CYCLE_SAMPLES):
+    for _ in range(SAMPLES_AMOUNT):
         sampler.sampling_iteration()
 
     expected_min_pressure = driver_factory.MOCK_PEEP
@@ -151,7 +151,7 @@ def test_sampler_pig_min_max(events, measurements, config):
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       oxygen_a2d, timer)
 
-    for i in range(CYCLE_SAMPLES):
+    for i in range(SAMPLES_AMOUNT):
         sampler.sampling_iteration()
 
     expected_min_pressure = approx(0.240899428, rel=0.01)
