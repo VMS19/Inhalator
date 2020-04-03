@@ -26,7 +26,7 @@ $INHALATOR_PATH/rasp_init/install-as-service.sh
 
 # configure network
 echo -e "dtoverlay=disable-wifi\ndtoverlay=disable-bt" >> /boot/config.txt
-echo -e "interface eth0\nstatic ip_address=192.168.1.1/24" >> /etc/dhcpcd.conf
+echo -e "auto eth0\niface eth0 inet static\naddress 192.168.1.253/24\nnetmask 255.255.255.0" >> /etc/network/interfaces
 
 # set the wallpaper
 cp $INHALATOR_PATH/resources/wallpaper.png /usr/share/rpd-wallpaper/temple.jpg
