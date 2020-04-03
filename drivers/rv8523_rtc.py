@@ -114,7 +114,7 @@ class Rv8523Rtc(object):
         minutes = self._get_clock_unit(0x7F)
         hours = self._get_clock_unit(0x1F)
         days = self._get_clock_unit(0x1F)
-        months = self._get_clock_unit(0xF, self.REG_MONTHS)
+        months = self._get_clock_unit(0x1F, self.REG_MONTHS)
         years = self._get_clock_unit(0x7F) + self.REG_YEARS_OFFSET
         return datetime(years, months, days, hours, minutes, seconds)
 
