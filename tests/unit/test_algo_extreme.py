@@ -86,7 +86,7 @@ def test_slope_recognition_with_error_in_peep(events, measurements, config):
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       oxygen_a2d, timer)
 
-    for i in range(SAMPLES_AMOUNT):
+    for _ in range(SAMPLES_AMOUNT):
         sampler.sampling_iteration()
 
     inhale_entry = sampler.vsm.entry_points_ts[VentilationState.Inhale][0]
@@ -134,7 +134,7 @@ def test_slope_recognition_with_error_in_inhale(events, measurements, config, sc
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       oxygen_a2d, timer)
 
-    for i in range(SAMPLES_AMOUNT):
+    for _ in range(SAMPLES_AMOUNT):
         sampler.sampling_iteration()
 
     hold_entry = sampler.vsm.entry_points_ts[VentilationState.Hold][0]
@@ -184,7 +184,7 @@ def test_slope_recognition_with_error_in_hold(events, measurements, config):
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       oxygen_a2d, timer)
 
-    for i in range(SAMPLES_AMOUNT):
+    for _ in range(SAMPLES_AMOUNT):
         sampler.sampling_iteration()
 
     exhale_entry = sampler.vsm.entry_points_ts[VentilationState.Exhale][0]
@@ -232,7 +232,7 @@ def test_slope_recognition_with_error_in_exhale(events, measurements, config, sc
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       oxygen_a2d, timer)
 
-    for i in range(SAMPLES_AMOUNT):
+    for _ in range(SAMPLES_AMOUNT):
         sampler.sampling_iteration()
 
     peep_entry = sampler.vsm.entry_points_ts[VentilationState.PEEP][0]

@@ -151,7 +151,7 @@ def test_sampler_pig_min_max(events, measurements, config):
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       oxygen_a2d, timer)
 
-    for i in range(SAMPLES_AMOUNT):
+    for _ in range(SAMPLES_AMOUNT):
         sampler.sampling_iteration()
 
     expected_min_pressure = approx(0.240899428, rel=0.01)

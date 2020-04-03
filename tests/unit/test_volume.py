@@ -76,7 +76,7 @@ def test_sampler_volume_calculation(events, measurements, config):
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       oxygen_a2d, timer)
 
-    for i in range(SIMULATION_SAMPLES):
+    for _ in range(SIMULATION_SAMPLES):
         sampler.sampling_iteration()
 
     expected_volume = CYCLE_TIME / 60 * 1000
