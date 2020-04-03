@@ -15,23 +15,23 @@ TRACE = logging.DEBUG - 1
 logging.addLevelName(TRACE, 'TRACE')
 
 
-class VolumeAccumulator(object):
+class Accumulator(object):
     def __init__(self):
-        self.air_volume_liter = 0
+        self.integral = 0
         self.last_sample_ts = None
 
-    def accumulate(self, timestamp, air_flow):
+    def accumulate(self, timestamp, value):
         if self.last_sample_ts is not None:
-            elapsed_time_seconds = timestamp - self.last_sample_ts
-            elapsed_time_minutes = elapsed_time_seconds / 60
+            dt_sec = timestamp - self.last_sample_ts
+            dt_min = dt_sec / 60
             # flow is measured in Liter/minute, so we multiply the last read by
             # the time elapsed in minutes to calculate the accumulated volume
             # inhaled in this inhale.
-            self.air_volume_liter += air_flow * elapsed_time_minutes
+            self.integral += value * dt_min
         self.last_sample_ts = timestamp
 
     def reset(self):
-        self.air_volume_liter = 0
+        self.integral = 0
         self.last_sample_ts = None
 
 
@@ -153,7 +153,8 @@ class VentilationStateMachine(object):
         self._measurements = measurements
         self._events = events
         self.log = logging.getLogger(self.__class__.__name__)
-        self.rs = RunningSlope(num_samples=7)
+        self.flow_slope = RunningSlope(num_samples=7)
+        self.pressure_slope = RunningSlope(num_samples=7)
         self._config = Configurations.instance()
         self.last_breath_timestamp = time.time()
         self.current_state = VentilationState.PEEP
@@ -161,6 +162,7 @@ class VentilationStateMachine(object):
         # Data structure to record last 100 entry timestamp for each state.
         # Useful for debugging and plotting.
         self.entry_points_ts = {
+            VentilationState.Calibration: deque(maxlen=100),
             VentilationState.PEEP: deque(maxlen=100),
             VentilationState.Inhale: deque(maxlen=100),
             VentilationState.Hold: deque(maxlen=100),
@@ -179,25 +181,21 @@ class VentilationStateMachine(object):
         # No good reason for 1000 max samples. Sounds enough.
         self.peep_avg_calculator = RunningAvg(max_samples=1000)
         self.breathes_rate_meter = RateMeter(time_span_seconds=60, max_samples=4)
-        self.inspiration_volume = VolumeAccumulator()
-        self.expiration_volume = VolumeAccumulator()
+        self.inspiration_volume = Accumulator()
+        self.expiration_volume = Accumulator()
 
     def enter_inhale(self, timestamp):
         self.last_breath_timestamp = timestamp
         self._measurements.bpm = self.breathes_rate_meter.beat(timestamp)
+
         # Update final expiration volume
-        exp_volume_ml = self.expiration_volume.air_volume_liter * 1000
+        exp_volume_ml = self.expiration_volume.integral * 1000
         self.log.debug("TV exp: : %sml", exp_volume_ml)
         self._measurements.expiration_volume = exp_volume_ml
         self.expiration_volume.reset()
-        self.reset_min_values()
 
-    def enter_exhale(self, timestamp):
-        self.reset_peaks()
-
-    def enter_peep(self, timestamp):
         # Update final inspiration volume
-        insp_volume_ml = self.inspiration_volume.air_volume_liter * 1000
+        insp_volume_ml = self.inspiration_volume.integral * 1000
         self.log.debug("TV insp: : %sml", insp_volume_ml)
         self._measurements.inspiration_volume = insp_volume_ml
         self.inspiration_volume.reset()
@@ -212,6 +210,14 @@ class VentilationStateMachine(object):
             self.log.warning(
                 "volume too high %s, top threshold %s",
                 insp_volume_ml, self._config.volume_range.max)
+
+        self.reset_min_values()
+
+    def enter_exhale(self, timestamp):
+        self.reset_peaks()
+
+    def enter_peep(self, timestamp):
+        pass
 
     def reset_peaks(self):
         self._measurements.intake_peak_pressure = self.peak_pressure
@@ -254,18 +260,19 @@ class VentilationStateMachine(object):
                 pressure_cmh2o, self._config.pressure_range.min)
             self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW, timestamp)
 
-        self.check_transition(pressure_cmh2o, timestamp)
+        self.check_transition(
+            flow_slm=flow_slm,
+            pressure_cmh2o=pressure_cmh2o,
+            timestamp=timestamp)
 
-    def check_transition(self, pressure_cmh2o, timestamp):
-        # Now, calculate the current slope of the pressure graph to see in which
-        # ventilation state we are.
-        slope = self.rs.add_sample(pressure_cmh2o, timestamp)
-        if slope is None:
+    def check_transition(self, flow_slm, pressure_cmh2o, timestamp):
+        pressure_slope = self.pressure_slope.add_sample(pressure_cmh2o, timestamp)
+        flow_slop = self.flow_slope.add_sample(flow_slm, timestamp)
+        if flow_slop is None or pressure_slope is None:
             return  # Not enough data
 
-        func, threshold, next_state = self.TRANSITION_TABLE.get(self.current_state)
-        if func(slope, threshold):
-            self.rs.reset()  # TODO: Rethink. Maybe not reset?
+        next_state = self.infer_state(flow_slop, flow_slm, pressure_slope, pressure_cmh2o)
+        if next_state != self.current_state:
             self.log.debug("%s -> %s", self.current_state, next_state)
             self.current_state = next_state
             self.entry_points_ts[next_state].append(timestamp)
@@ -273,6 +280,17 @@ class VentilationStateMachine(object):
             if entry_handler is not None:
                 # noinspection PyArgumentList
                 entry_handler(timestamp)
+
+    def infer_state(self, flow_slope, flow_slm, pressure_slope, pressure_cmh2o):
+        flow_positive_increasing = flow_slope > 3 and flow_slm > 2
+        flow_negative_decreasing = flow_slope < -3 and flow_slm < -2
+
+        if flow_positive_increasing and pressure_slope > 0:
+            return VentilationState.Inhale
+
+        if flow_negative_decreasing:
+            return VentilationState.Exhale
+        return self.current_state
 
 
 class Sampler(object):
