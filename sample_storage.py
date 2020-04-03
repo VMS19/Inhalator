@@ -16,7 +16,7 @@ class SamplesStorage:
     HEADERS_FILE = 'headers.csv'
 
     def __init__(self, file_name_template='inhalator.csv',
-                 max_file_size=BYTES_IN_GB, max_files=3):
+                 max_file_size=BYTES_IN_GB, max_files=3):  # 3GB can store more than 2 weeks of data.
         self.max_files = max_files
         self.max_file_size = max_file_size
         self.file_name = file_name_template
