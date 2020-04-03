@@ -26,7 +26,7 @@ class Ads7844A2D(object):
     VOLTAGE_CALIBRATION = (VOLTAGE_REF / VOLTAGE_STEP_COUNT)
     FIRST_READING_BIT_SHIFT = 5
     SECOND_READING_BIT_SHIFT = 3
-    SAMPLE_CHANNELS = [0, 1]
+    SAMPLE_CHANNELS = [0, 1] # channels to sample, 0 = oxygen, 1 = battery
     CHANNEL_MAP = [0, 4, 1, 5, 2, 6, 3, 7]
 
     def __init__(self):
@@ -83,10 +83,3 @@ class Ads7844A2D(object):
                 for channel in self.SAMPLE_CHANNELS]
         return sample_res[0]
 
-
-if __name__ == "__main__":
-    import time
-    a2d = Ads7844A2D()
-    while True:
-        print(a2d.read())
-        time.sleep(1)
