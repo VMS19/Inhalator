@@ -1,6 +1,6 @@
 import pigpio
 import logging
-from datetime import date, datetime
+from datetime import datetime
 import subprocess
 
 from errors import PiGPIOInitError, I2CDeviceNotFoundError, \
@@ -89,13 +89,14 @@ class Rv8523Rtc(object):
 
     def int_to_bcd(self, number):
         units = (number % 10)
-        tens = (number / 10) << self.BCD_TENS_SHIFT
+        tens = int(number / 10) << self.BCD_TENS_SHIFT
         return (tens + units)
 
     def _set_clock_unit(self, value, reg=None):
         try:
             if reg is not None:
                 self._pig.i2c_write_device(self._dev, [reg])
+            value = self.int_to_bcd(value)
             self._pig.i2c_write_device(self._dev, [value])
         except pigpio.error as e:
             raise e
