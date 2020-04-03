@@ -156,7 +156,7 @@ class VentilationStateMachine(object):
         self.flow_slope = RunningSlope(num_samples=7)
         self.pressure_slope = RunningSlope(num_samples=7)
         self._config = Configurations.instance()
-        self.last_breath_timestamp = time.time()
+        self.last_breath_timestamp = None
         self.current_state = VentilationState.PEEP
 
         self.value_of_state = float("inf")
@@ -203,12 +203,12 @@ class VentilationStateMachine(object):
         self.inspiration_volume.reset()
 
         if self._config.volume_range.below(insp_volume_ml):
-            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW)
+            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW, timestamp)
             self.log.warning(
                 "volume too low %s, bottom threshold %s",
                 insp_volume_ml, self._config.volume_range.min)
         elif self._config.volume_range.over(insp_volume_ml):
-            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH)
+            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH, timestamp)
             self.log.warning(
                 "volume too high %s, top threshold %s",
                 insp_volume_ml, self._config.volume_range.max)
@@ -232,6 +232,10 @@ class VentilationStateMachine(object):
         self.min_pressure = sys.maxsize
 
     def update(self, pressure_cmh2o, flow_slm, o2_saturation_percentage, timestamp):
+        if self.last_breath_timestamp is None:
+            # First time initialization. Not done in __init__ to avoid reading
+            # the time in this class, which improves its testability.
+            self.last_breath_timestamp = timestamp
         # First - check how long it was since last breath
         seconds_from_last_breath = timestamp - self.last_breath_timestamp
         if seconds_from_last_breath >= self.NO_BREATH_ALERT_TIME_SECONDS:
@@ -264,12 +268,12 @@ class VentilationStateMachine(object):
             self.log.warning(
                 "pressure too high %s, top threshold %s",
                 pressure_cmh2o, self._config.pressure_range.max)
-            self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_HIGH)
+            self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_HIGH, timestamp)
         elif self._config.pressure_range.below(pressure_cmh2o):
             self.log.warning(
                 "pressure too low %s, bottom threshold %s",
                 pressure_cmh2o, self._config.pressure_range.min)
-            self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW)
+            self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW, timestamp)
 
         self.check_transition(
             flow_slm=flow_slm,
@@ -306,26 +310,28 @@ class VentilationStateMachine(object):
 
 class Sampler(object):
 
-    def __init__(self, measurements, events, flow_sensor, pressure_sensor, oxygen_a2d):
+    def __init__(self, measurements, events, flow_sensor, pressure_sensor,
+                 oxygen_a2d, timer):
         super(Sampler, self).__init__()
         self.log = logging.getLogger(self.__class__.__name__)
         self._measurements = measurements  # type: Measurements
         self._flow_sensor = flow_sensor
         self._pressure_sensor = pressure_sensor
         self._oxygen_a2d = oxygen_a2d
+        self._timer = timer
         self._config = Configurations.instance()
         self._events = events
         self.vsm = VentilationStateMachine(measurements, events)
 
-    def read_single_sensor(self, sensor, alert_code):
+    def read_single_sensor(self, sensor, alert_code, timestamp):
         try:
             return sensor.read()
         except Exception as e:
-            self._events.alerts_queue.enqueue_alert(alert_code)
+            self._events.alerts_queue.enqueue_alert(alert_code, timestamp)
             self.log.error(e)
         return None
 
-    def read_sensors(self):
+    def read_sensors(self, timestamp):
         """
         Read the sensors and return the samples.
 
@@ -336,20 +342,20 @@ class Sampler(object):
                 or None if an error occurred in any of the drivers.
         """
         flow_slm = self.read_single_sensor(
-            self._flow_sensor, AlertCodes.FLOW_SENSOR_ERROR)
+            self._flow_sensor, AlertCodes.FLOW_SENSOR_ERROR, timestamp)
         pressure_cmh2o = self.read_single_sensor(
-            self._pressure_sensor, AlertCodes.PRESSURE_SENSOR_ERROR)
+            self._pressure_sensor, AlertCodes.PRESSURE_SENSOR_ERROR, timestamp)
         o2_saturation_percentage = self.read_single_sensor(
-            self._oxygen_a2d, AlertCodes.SATURATION_SENSOR_ERROR)
+            self._oxygen_a2d, AlertCodes.SATURATION_SENSOR_ERROR, timestamp)
 
         data = (flow_slm, pressure_cmh2o, o2_saturation_percentage)
         errors = [x is None for x in data]
         return None if any(errors) else data
 
     def sampling_iteration(self):
-        ts = time.time()
+        ts = self._timer.get_time()
         # Read from sensors
-        result = self.read_sensors()
+        result = self.read_sensors(ts)
         if result is None:
             return
 

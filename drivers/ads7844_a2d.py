@@ -14,18 +14,20 @@ class Ads7844A2D(object):
     PERIPHERAL_MINIMAL_DELAY = 500  # 0.5 milli-sec = 500 micro-sec
     XFER_SPEED_HZ = 0  # Default to max supported speed
     INPUT_MODE_SHIFT = 0x2
-    CHANNEL_SELECT_SHIFT = 0x6
+    CHANNEL_SELECT_SHIFT = 0x4
     START_BIT_SHIFT = 0x7
     PD_ACTIVE = 0x0
     PD_DISABLED = 0x3
     MODE_DIF = 0x0
     MODE_SGL = 0x1
     DEFAULT_CTRL_BYTE = 0x1 << START_BIT_SHIFT
-    VOLTAGE_REF = 0.946
+    VOLTAGE_REF = 2.5
     VOLTAGE_STEP_COUNT = 2 ** 12
     VOLTAGE_CALIBRATION = (VOLTAGE_REF / VOLTAGE_STEP_COUNT)
     FIRST_READING_BIT_SHIFT = 5
-    SAMPLE_CHANNELS = [0]
+    SECOND_READING_BIT_SHIFT = 3
+    SAMPLE_CHANNELS = [0, 1] # channels to sample, 0 = oxygen, 1 = battery
+    CHANNEL_MAP = [0, 4, 1, 5, 2, 6, 3, 7]
 
     def __init__(self):
         self._spi = spidev.SpiDev()
@@ -59,14 +61,16 @@ class Ads7844A2D(object):
                     power_down_mode=PD_DISABLED):
         try:
             start_byte = self.DEFAULT_CTRL_BYTE |\
-                (channel << self.CHANNEL_SELECT_SHIFT) |\
+                (self.CHANNEL_MAP[channel] << self.CHANNEL_SELECT_SHIFT) |\
                 (input_mode << self.INPUT_MODE_SHIFT) |\
                 power_down_mode
             sample_raw = self._spi.xfer([start_byte, 0, 0],
                                         self.XFER_SPEED_HZ,
                                         self.PERIPHERAL_MINIMAL_DELAY)
-            sample_reading = (sample_raw[0] << self.FIRST_READING_BIT_SHIFT) |\
-                sample_raw[1]
+
+            sample_reading = ((sample_raw[1] & 0x7f) <<\
+                    self.FIRST_READING_BIT_SHIFT) |\
+                sample_raw[2] >> self.SECOND_READING_BIT_SHIFT
         except IOError as e:
             log.error("Failed to read ads7844."
                       "check if peripheral is initialized correctly")
@@ -75,8 +79,10 @@ class Ads7844A2D(object):
         return self._calibrate_a2d(sample_reading)
 
     def read(self, input_mode=MODE_SGL, power_down_mode=PD_DISABLED):
-        sample_res = []
-        for channel in self.SAMPLE_CHANNELS:
-            sample_res.append(self._sample_a2d(channel, input_mode,
-                              power_down_mode))
+        sample_res = [self._sample_a2d(channel, input_mode, power_down_mode)\
+                for channel in self.SAMPLE_CHANNELS]
         return sample_res[0]
+
+    def close(self):
+        if self._spi is not None:
+            self._spi.close()

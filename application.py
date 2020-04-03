@@ -10,8 +10,8 @@ from data.alerts import AlertCodes
 
 class Application(object):
     """The Inhalator application"""
-    FPS = 25
     TEXT_SIZE = 10
+    HARDWARE_SAMPLE_RATE = 33  # HZ
 
     __instance = None  # shared instance
 
@@ -25,7 +25,7 @@ class Application(object):
         return cls.__instance
 
     def __init__(self, measurements, events, arm_wd_event, drivers, sampler,
-                 simulation=False, fps=30, sample_rate=22):
+                 simulation=False, fps=25, sample_rate=22):
         self.should_run = True
         self.drivers = drivers
         self.arm_wd_event = arm_wd_event
@@ -49,6 +49,7 @@ class Application(object):
         # We want to alert that config.json is corrupted
         if Configurations.configuration_state() == ConfigurationState.CONFIG_CORRUPTED:
             events.alerts_queue.enqueue_alert(AlertCodes.NO_CONFIGURATION_FILE)
+            Configurations.instance().save_to_file()  # Create config file for future use.
 
         self.master_frame = MasterFrame(self.root,
                                         measurements=measurements,
@@ -84,7 +85,7 @@ class Application(object):
         self.render()
         while self.should_run:
             try:
-                if self.simulation and self.next_sample > 0:
+                if self.next_sample > 0:
                     time.sleep(max(self.next_sample, 0))
                 self.sample()
                 if self.next_render <= 0:
@@ -93,4 +94,4 @@ class Application(object):
             except KeyboardInterrupt:
                 break
         self.exit()
-        self.drivers.get_driver("aux").stop()
+        self.drivers.acquire_driver("aux").stop()

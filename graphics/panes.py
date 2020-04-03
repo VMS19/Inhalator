@@ -122,6 +122,7 @@ class CenterPane(object):
         for graph in self.graphs:
             graph.render()
 
+
     def update(self):
         # Get measurments from peripherals
 
