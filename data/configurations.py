@@ -71,9 +71,7 @@ class Configurations(object):
     def _load(cls):
         if not os.path.isfile(cls.CONFIG_FILE):
             # No config.json. Just load defaults. This is not an error.
-            default_config = cls._parse_config_file(cls.DEFAULT_CONFIG_FILE)
-            default_config.save_to_file(cls.CONFIG_FILE)  # Create non-default config file.
-            return default_config
+            return cls._parse_config_file(cls.DEFAULT_CONFIG_FILE)
 
         try:
             return cls._parse_config_file(cls.CONFIG_FILE)
