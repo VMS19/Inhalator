@@ -183,6 +183,10 @@ class VentilationStateMachine(object):
         self.breathes_rate_meter = RateMeter(time_span_seconds=60, max_samples=4)
         self.inspiration_volume = Accumulator()
         self.expiration_volume = Accumulator()
+        self.insp_volumes = deque(maxlen=100)
+        self.exp_volumes = deque(maxlen=100)
+        self.insp_flows = deque(maxlen=1000)
+        self.exp_flows = deque(maxlen=1000)
 
     def enter_inhale(self, timestamp):
         self.last_breath_timestamp = timestamp
@@ -193,12 +197,14 @@ class VentilationStateMachine(object):
         self.log.debug("TV exp: : %sml", exp_volume_ml)
         self._measurements.expiration_volume = exp_volume_ml
         self.expiration_volume.reset()
+        self.exp_volumes.append((timestamp, exp_volume_ml))
 
         # Update final inspiration volume
         insp_volume_ml = self.inspiration_volume.integral * 1000
         self.log.debug("TV insp: : %sml", insp_volume_ml)
         self._measurements.inspiration_volume = insp_volume_ml
         self.inspiration_volume.reset()
+        self.insp_volumes.append((timestamp, insp_volume_ml))
 
         if self._config.volume_range.below(insp_volume_ml):
             self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW, timestamp)
@@ -238,6 +244,8 @@ class VentilationStateMachine(object):
 
         # We track inhale and exhale volume separately. Positive flow means
         # inhale, and negative flow means exhale.
+        flow_recorder = self.insp_flows if flow_slm >= 0 else self.exp_flows
+        flow_recorder.append(timestamp)
         accumulator = self.inspiration_volume if flow_slm > 0 else self.expiration_volume
         accumulator.accumulate(timestamp, abs(flow_slm))
         self._measurements.set_pressure_value(pressure_cmh2o)
@@ -273,6 +281,8 @@ class VentilationStateMachine(object):
 
         next_state = self.infer_state(flow_slop, flow_slm, pressure_slope, pressure_cmh2o)
         if next_state != self.current_state:
+            self.pressure_slope.reset()
+            self.flow_slope.reset()
             self.log.debug("%s -> %s", self.current_state, next_state)
             self.current_state = next_state
             self.entry_points_ts[next_state].append(timestamp)
