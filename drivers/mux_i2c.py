@@ -18,7 +18,7 @@ class MuxI2C(I2cDriver):
     @classmethod
     def get_instance(cls):
         if cls.MUX_INSTANCE is None:
-            cls.MUX_INSTANCE = cls()
+            cls.MUX_INSTANCE = object.__new__(cls)
 
         return cls.MUX_INSTANCE
 
