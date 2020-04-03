@@ -57,6 +57,8 @@ class AirPressureGraph(object):
             linewidth=2,
             animated=True)
 
+        self.states_display_values = [0] * amount_of_xs
+
 
         # Scale y values
         self.pressure_graph.axes.set_ylim(*self.config.pressure_y_scale)
@@ -69,6 +71,13 @@ class AirPressureGraph(object):
                                     color=Theme.active().RED,
                                     animated=True,
                                     linewidth=3)
+
+        self.states_graph, = \
+            self.pressure_axis.plot(self.measurements.x_axis,
+                                    self.states_display_values,
+                                    color="#ffffff",
+                                    animated=True,
+                                    linewidth=1)
 
         self.pressure_min_threshold_graph, = \
             self.pressure_axis.plot(self.measurements.x_axis,
@@ -95,10 +104,12 @@ class AirPressureGraph(object):
                                                     len(self.measurements.x_axis))
         self.pressure_max_threshold_graph.set_ydata([self.config.pressure_range.max] *
                                                     len(self.measurements.x_axis))
+        self.states_graph.set_ydata(self.states_display_values)
 
         self.pressure_axis.draw_artist(self.pressure_graph)
         self.pressure_axis.draw_artist(self.pressure_min_threshold_graph)
         self.pressure_axis.draw_artist(self.pressure_max_threshold_graph)
+        self.pressure_axis.draw_artist(self.states_graph)
         self.pressure_figure.canvas.blit(self.pressure_axis.bbox)
         self.pressure_figure.canvas.flush_events()
 

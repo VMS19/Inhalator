@@ -243,6 +243,13 @@ class VentilationStateMachine(object):
         self._measurements.set_pressure_value(pressure_cmh2o)
         self._measurements.set_flow_value(flow_slm)
         self._measurements.set_saturation_percentage(o2_saturation_percentage)
+        if self.current_state == VentilationState.Inhale:
+            self._measurements.set_state_value(40)
+        elif self.current_state == VentilationState.Exhale:
+            self._measurements.set_state_value(-5)
+
+        else:
+            self._measurements.set_state_value(0)
 
         # Update peak pressure/flow values
         self.peak_pressure = max(self.peak_pressure, pressure_cmh2o)
