@@ -53,7 +53,10 @@ def parse_args():
         "--error", "-e", type=float,
         help="The probability of error in each driver", default=0)
     sim_options.add_argument(
-        "--sample-rate", "-r", help="The sample rate of the simulation data",
+        "--sample-rate", "-r",
+        help="The speed, in samples-per-seconds, in which the simulation will "
+             "be played at. Useful for slowing down the simulation to see what "
+             "is going on, or speeding up to run simulation faster",
         type=float, default=22)
     parser.add_argument(
         "--fps", "-f",
@@ -93,10 +96,11 @@ def main():
 
     watchdog = drivers.get_driver("wd")
     oxygen_a2d = drivers.get_driver("oxygen_a2d")
+    timer = drivers.get_driver("timer")
 
     sampler = Sampler(measurements=measurements, events=events,
                       flow_sensor=flow_sensor, pressure_sensor=pressure_sensor,
-                      oxygen_a2d=oxygen_a2d)
+                      oxygen_a2d=oxygen_a2d, timer=timer)
 
     app = Application(measurements=measurements,
                       events=events,
