@@ -92,12 +92,10 @@ class Rv8523Rtc(object):
         tens = int(number / 10) << self.BCD_TENS_SHIFT
         return (tens + units)
 
-    def _set_clock_unit(self, value, reg=None):
+    def _set_clock_unit(self, value, reg):
         try:
-            if reg is not None:
-                self._pig.i2c_write_device(self._dev, [reg])
             value = self.int_to_bcd(value)
-            self._pig.i2c_write_device(self._dev, [value])
+            self._pig.i2c_write_device(self._dev, [reg, value])
         except pigpio.error as e:
             raise e
 
@@ -113,9 +111,9 @@ class Rv8523Rtc(object):
 
     def _get_time(self):
         seconds = self._get_clock_unit(0x7F, self.REG_SECONDS)
-        minutes = self._get_clock_unit(0x7F)
-        hours = self._get_clock_unit(0x1F)
-        days = self._get_clock_unit(0x1F)
+        minutes = self._get_clock_unit(0x7F, self.REG_MINUTES)
+        hours = self._get_clock_unit(0x1F, self.REG_HOURS)
+        days = self._get_clock_unit(0x1F, self.REG_DAYS)
         months = self._get_clock_unit(0xF, self.REG_MONTHS)
         years = self._get_clock_unit(0x7F) + self.REG_YEARS_OFFSET
         return datetime(years, months, days, hours, minutes, seconds)
@@ -123,9 +121,9 @@ class Rv8523Rtc(object):
     def set_time(self, date):
         try:
             self._set_clock_unit(date.second, self.REG_SECONDS)
-            self._set_clock_unit(date.minute)
-            self._set_clock_unit(date.hour)
-            self._set_clock_unit(date.day)
+            self._set_clock_unit(date.minute, self.REG_MINUTES)
+            self._set_clock_unit(date.hour, self.REG_MONTHS)
+            self._set_clock_unit(date.day, self.REG_DAYS)
             self._set_clock_unit(date.month, self.REG_MONTHS)
             self._set_clock_unit(date.year - self.REG_YEARS_OFFSET)
         except pigpio.error as e:
