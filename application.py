@@ -11,7 +11,7 @@ from data.alerts import AlertCodes
 class Application(object):
     """The Inhalator application"""
     TEXT_SIZE = 10
-    HARDWARE_SAMPLE_RATE = 50  # HZ
+    HARDWARE_SAMPLE_RATE = 33  # HZ
 
     __instance = None  # shared instance
 
