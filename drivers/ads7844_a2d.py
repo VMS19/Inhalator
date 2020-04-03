@@ -81,4 +81,12 @@ class Ads7844A2D(object):
     def read(self, input_mode=MODE_SGL, power_down_mode=PD_DISABLED):
         sample_res = [self._sample_a2d(channel, input_mode, power_down_mode)\
                 for channel in self.SAMPLE_CHANNELS]
-        return tuple(sample_res)
+        return sample_res[0]
+
+
+if __name__ == "__main__":
+    import time
+    a2d = Ads7844A2D()
+    while True:
+        print(a2d.read())
+        time.sleep(1)
