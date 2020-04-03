@@ -8,6 +8,15 @@ from errors import PiGPIOInitError, I2CDeviceNotFoundError, \
 
 log = logging.getLogger(__name__)
 
+def set_system_time(dt):
+    second = str(dt.second)
+    minute = str(dt.minute)
+    hour = str(dt.hour)
+    day = str(dt.day)
+    month = str(dt.month)
+    year = str(dt.year)
+    subprocess.call("sudo date -s '{}-{}-{} {}:{}:{}' > /dev/null".
+        format(year, month, day, hour, minute, second), shell=True)
 
 class Rv8523Rtc(object):
     """Driver class for rv8523 rtc."""
@@ -43,7 +52,7 @@ class Rv8523Rtc(object):
             raise PiGPIOInitError("pigpio library init error")
 
         except pigpio.error:
-            log.error("Could not open i2c connection to rtc."
+            log.error("Could not open i2c connection to rtc"
                       "Is it connected?")
             raise I2CDeviceNotFoundError("i2c connection open failed")
 
@@ -65,10 +74,10 @@ class Rv8523Rtc(object):
             read_size, ctrl_1 = self._pig.i2c_read_device(self._dev, 1)
             if read_size != 1:
                 log.error("control 1 reg data not ready")
-                raise I2CReadError("rtc data unavailable.")
+                raise I2CReadError("rtc data unavailable")
         except pigpio.error as e:
-            log.error("Could not write control 1 reg to RTC. "
-                      "Is the RTC connected?.")
+            log.error("Could not write control 1 reg to RTC"
+                      "Is the RTC connected?")
             raise I2CWriteError("i2c write failed")
 
         # Disable stop bit
@@ -78,19 +87,19 @@ class Rv8523Rtc(object):
             self._pig.i2c_write_device(self._dev, [self.REG_CONTROL_1])
             self._pig.i2c_write_device(self._dev, ctrl_1)
         except pigpio.error as e:
-            log.error("Could not write control 1 reg to RTC. "
-                      "Is the RTC connected?.")
+            log.error("Could not write control 1 reg to RTC"
+                      "Is the RTC connected?")
             raise I2CWriteError("i2c write failed")
 
     def bcd_to_int(self, bcd):
         units = bcd & self.BCD_NIBBLE_MASK
         tens = (bcd >> self.BCD_TENS_SHIFT) & self.BCD_NIBBLE_MASK
-        return (tens * 10 + units)
+        return tens * 10 + units
 
     def int_to_bcd(self, number):
-        units = (number % 10)
+        units = number % 10
         tens = int(number / 10) << self.BCD_TENS_SHIFT
-        return (tens + units)
+        return tens + units
 
     def _set_clock_unit(self, value, reg):
         try:
@@ -128,8 +137,8 @@ class Rv8523Rtc(object):
             self._set_clock_unit(date.year - self.REG_YEARS_OFFSET,
                                  self.REG_YEARS)
         except pigpio.error as e:
-            log.error("Could not set RTC time. "
-                      "Is the RTC connected?.")
+            log.error("Could not set RTC time"
+                      "Is the RTC connected?")
             raise I2CWriteError("i2c write failed")
 
     def read(self):
@@ -140,20 +149,8 @@ class Rv8523Rtc(object):
                 return time
             else:
                 log.error("rtc read error")
-                raise I2CReadError("RTC get time unavailable.")
+                raise I2CReadError("RTC get time unavailable")
         except pigpio.error as e:
             log.error("Could not read from RTC. "
-                      "Is the RTC connected?.")
+                      "Is the RTC connected?")
             raise I2CReadError("i2c write failed")
-
-    @staticmethod
-    def set_system_time(dt):
-        second = str(dt.second)
-        minute = str(dt.minute)
-        hour = str(dt.hour)
-        day = str(dt.day)
-        month = str(dt.month)
-        year = str(dt.year)
-        subprocess.call("sudo date -s '" + year + "-" + month + "-" + day +
-                        " " + hour + ":" + minute + ":" + second +
-                        "' > /dev/null", shell=True)
