@@ -238,3 +238,79 @@ def test_slope_recognition_with_error_in_exhale(events, measurements, config, sc
     peep_entry = sampler.vsm.entry_points_ts[VentilationState.PEEP][0]
 
     assert peep_entry == approx(6.615, rel=0.1)
+
+
+def test_detect_peep(events, measurements, config, ):
+    file_path = "kesef.csv"
+
+    driver_factory = DriverFactory(simulation_mode=True,
+                                   simulation_data=file_path)
+
+    flow_sensor = driver_factory.get_driver("flow")
+    pressure_sensor = driver_factory.get_driver("pressure")
+    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
+    timer = driver_factory.get_driver("timer")
+    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
+                      oxygen_a2d, timer)
+
+    for _ in range(717):
+        sampler.sampling_iteration()
+
+    assert sampler.vsm.current_state == VentilationState.PEEP
+
+
+def test_detect_inhale(events, measurements, config, ):
+    file_path = "kesef.csv"
+
+    driver_factory = DriverFactory(simulation_mode=True,
+                                   simulation_data=file_path)
+
+    flow_sensor = driver_factory.get_driver("flow")
+    pressure_sensor = driver_factory.get_driver("pressure")
+    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
+    timer = driver_factory.get_driver("timer")
+    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
+                      oxygen_a2d, timer)
+
+    for _ in range(506):
+        sampler.sampling_iteration()
+
+    assert sampler.vsm.current_state == VentilationState.Inhale
+
+
+def test_detect_exhale(events, measurements, config, ):
+    file_path = "kesef.csv"
+
+    driver_factory = DriverFactory(simulation_mode=True,
+                                   simulation_data=file_path)
+
+    flow_sensor = driver_factory.get_driver("flow")
+    pressure_sensor = driver_factory.get_driver("pressure")
+    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
+    timer = driver_factory.get_driver("timer")
+    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
+                      oxygen_a2d, timer)
+
+    for _ in range(97):
+        sampler.sampling_iteration()
+
+    assert sampler.vsm.current_state == VentilationState.Exhale
+
+
+def test_detect_pip(events, measurements, config, ):
+    file_path = "kesef.csv"
+
+    driver_factory = DriverFactory(simulation_mode=True,
+                                   simulation_data=file_path)
+
+    flow_sensor = driver_factory.get_driver("flow")
+    pressure_sensor = driver_factory.get_driver("pressure")
+    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
+    timer = driver_factory.get_driver("timer")
+    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
+                      oxygen_a2d, timer)
+
+    for _ in range(601):
+        sampler.sampling_iteration()
+
+    assert sampler.vsm.current_state == VentilationState.PEEP
