@@ -16,18 +16,7 @@ from data.thresholds import (FlowRange, PressureRange,
                              RespiratoryRateRange, VolumeRange)
 from drivers.driver_factory import DriverFactory
 
-# logging use time.time, which cause the time mock not work as intended
-# Since logs are not required for the UT, they are disabled
-logging.disable(logging.DEBUG)
-logging.disable(logging.DEBUG - 1)
-logging.disable(logging.WARNING)
-logging.disable(logging.INFO)
-logging.disable(logging.WARN)
-logging.disable(logging.FATAL)
-logging.disable(logging.CRITICAL)
-
-MICROSECOND = 10 ** -6
-SIMULATION_LENGTH = 2  # seconds
+CYCLE_SAMPLES = 118
 SIMULATION_FOLDER = "simulation"
 
 
@@ -67,11 +56,11 @@ def test_sampler_dead_min_max(events, measurements, config):
     flow_sensor = driver_factory.get_driver("flow")
     pressure_sensor = driver_factory.get_driver("pressure")
     oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor, oxygen_a2d)
+    timer = driver_factory.get_driver("timer")
+    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
+                      oxygen_a2d, timer)
 
-    current_time = time.time()
-    while time.time() - current_time < SIMULATION_LENGTH:
-        time.sleep(MICROSECOND)
+    for _ in range(CYCLE_SAMPLES):
         sampler.sampling_iteration()
 
     min_pressure_msg = f"Expected min pressure of 0, received {measurements.peep_min_pressure}"
@@ -97,11 +86,11 @@ def test_sampler_sinus_min_max(events, measurements, config):
     flow_sensor = driver_factory.get_driver("flow")
     pressure_sensor = driver_factory.get_driver("pressure")
     oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor, oxygen_a2d)
+    timer = driver_factory.get_driver("timer")
+    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
+                      oxygen_a2d, timer)
 
-    current_time = time.time()
-    while time.time() - current_time < SIMULATION_LENGTH:
-        time.sleep(MICROSECOND)
+    for _ in range(CYCLE_SAMPLES):
         sampler.sampling_iteration()
 
     expected_min_pressure = driver_factory.MOCK_PEEP
@@ -120,20 +109,6 @@ def test_sampler_sinus_min_max(events, measurements, config):
     assert measurements.intake_peak_flow == expected_flow, max_flow_msg
 
 
-this_dir = os.path.dirname(__file__)
-with open(os.path.join(this_dir, SIMULATION_FOLDER,
-                       "pig_sim_sin_flow.csv"), "r") as f:
-    reader = csv.DictReader(f)
-    timestamps = [float(row['timestamp']) for row in reader]
-
-DATA_SIZE = len(timestamps)
-timestamps = timestamps[:1] + timestamps  # first timestamp for InhaleStateHandler init
-
-time_mock = Mock()
-time_mock.side_effect = cycle(timestamps)
-
-
-@patch('time.time', time_mock)
 def test_sampler_pig_min_max(events, measurements, config):
     """Test volume calculation working correctly.
     Flow:
@@ -172,10 +147,11 @@ def test_sampler_pig_min_max(events, measurements, config):
     flow_sensor = driver_factory.get_driver("flow")
     pressure_sensor = driver_factory.get_driver("pressure")
     oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
+    timer = driver_factory.get_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      oxygen_a2d)
+                      oxygen_a2d, timer)
 
-    for i in range(DATA_SIZE):
+    for i in range(CYCLE_SAMPLES):
         sampler.sampling_iteration()
 
     expected_min_pressure = approx(0.240899428, rel=0.01)
