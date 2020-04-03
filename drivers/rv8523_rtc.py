@@ -1,6 +1,7 @@
 import pigpio
 import logging
 from datetime import date
+import subprocess
 
 from errors import PiGPIOInitError, I2CDeviceNotFoundError, \
                 I2CReadError, I2CWriteError
@@ -91,45 +92,57 @@ class Rv8523Rtc(object):
         tens = (number / 10) << self.BCD_TENS_SHIFT
         return (tens + units)
 
-    def _set_clock_unit(self, reg, value):
+    def _set_clock_unit(self, value, reg):
         try:
-            self._pig.i2c_write_device(self._dev, [reg])
+            if reg is not None:
+                self._pig.i2c_write_device(self._dev, [reg])
             self._pig.i2c_write_device(self._dev, [value])
         except pigpio.error as e:
             raise e
 
-    def _get_clock_unit(self, reg):
-        self._pig.i2c_write_device(self._dev, [reg])
+    def _get_clock_unit(self, mask, reg=None):
+        if reg is not None:
+            self._pig.i2c_write_device(self._dev, [reg])
         read_size, clock_unit_bcd = self._pig.i2c_read_device(self._dev, 1)
 
         if read_size == 1:
-            return self.bcd_to_int(clock_unit_bcd)
+            return self.bcd_to_int(clock_unit_bcd & mask)
 
         return self.ERR_FAIL
 
     def _get_time(self):
-        seconds = self._get_clock_unit(self.REG_SECONDS)
-        minutes = self._get_clock_unit(self.REG_MINUTES)
-        hours = self._get_clock_unit(self.REG_HOURS)
-        days = self._get_clock_unit(self.REG_DAYS)
-        months = self._get_clock_unit(self.REG_MONTHS)
-        years = self._get_clock_unit(self.REG_YEARS) + self.REG_YEARS_OFFSET
+        seconds = self._get_clock_unit(0x7F, self.REG_SECONDS)
+        minutes = self._get_clock_unit(0x7F)
+        hours = self._get_clock_unit(0x1F)
+        days = self._get_clock_unit(0x1F)
+        months = self._get_clock_unit(0xF, self.REG_MONTHS)
+        years = self._get_clock_unit(0x7F) + self.REG_YEARS_OFFSET
         return seconds
-        return date(years, months, days)
+        return date(years, months, days, hours, minutes, seconds)
 
     def set_time(self, date):
         try:
-            self._set_clock_unit(self.REG_SECONDS, date.second)
-            self._set_clock_unit(self.REG_MINUTES, date.minute)
-            self._set_clock_unit(self.REG_HOURS, date.hour)
-            self._set_clock_unit(self.REG_DAYS, date.day)
-            self._set_clock_unit(self.REG_MONTHS, date.month)
-            self._set_clock_unit(self.REG_YEARS,
-                                 date.year - self.REG_YEARS_OFFSET)
+            self._set_clock_unit(date.second, self.REG_SECONDS)
+            self._set_clock_unit(date.minute)
+            self._set_clock_unit(date.hour)
+            self._set_clock_unit(date.day)
+            self._set_clock_unit(date.month, self.REG_MONTHS)
+            self._set_clock_unit(date.year - self.REG_YEARS_OFFSET)
         except pigpio.error as e:
             log.error("Could not set RTC time. "
                       "Is the RTC connected?.")
             raise I2CWriteError("i2c write failed")
+
+    def set_system_time(dt):
+        second = str(dt.second)
+        minute = str(dt.minute)
+        hour = str(dt.hour)
+        day = str(dt.day)
+        month = str(dt.month)
+        year = str(dt.year)
+        subprocess.call("sudo date -s '" + year + "-" + month + "-" + day +
+                        " " + hour + ":" + minute + ":" + second +
+                        "' > /dev/null", shell=True)
 
     def read(self):
         """ Returns date years to seconds """
