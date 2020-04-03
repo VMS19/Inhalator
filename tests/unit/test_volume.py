@@ -130,3 +130,31 @@ def test_sampler_alerts_when_volume_exceeds_maximum(events, measurements, config
 
     all_alerts = list(events.alerts_queue.queue.queue)
     assert all(alert == alerts.AlertCodes.VOLUME_HIGH for alert in all_alerts)
+
+
+def test_volume_similiar_to_monitor(events, measurements, config):
+    """Test volume calculation working correctly.
+    We compare experiment data to what the monitor showed.
+    """
+    this_dir = os.path.dirname(__file__)
+    file_path = os.path.join(this_dir, "bad_volume_accumulation_samples.csv")
+    driver_factory = DriverFactory(simulation_mode=True,
+                                   simulation_data=file_path)
+
+    flow_sensor = driver_factory.get_driver("flow")
+    pressure_sensor = driver_factory.get_driver("pressure")
+    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
+    timer = driver_factory.get_driver("timer")
+    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
+                      oxygen_a2d, timer)
+
+    for _ in range(600):
+        sampler.sampling_iteration()
+
+    inspiration_according_to_monitor = 333
+    expiration_according_to_monitor = 311
+    assert measurements.inspiration_volume == approx(inspiration_according_to_monitor,
+                                                     rel=10)
+
+    assert measurements.expiration_volume == approx(expiration_according_to_monitor,
+                                                    rel=10)
