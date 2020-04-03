@@ -1,6 +1,6 @@
 import pigpio
 import logging
-from datetime import date
+from datetime import date, datetime
 import subprocess
 
 from errors import PiGPIOInitError, I2CDeviceNotFoundError, \
@@ -83,8 +83,8 @@ class Rv8523Rtc(object):
             raise I2CWriteError("i2c write failed")
 
     def bcd_to_int(self, bcd):
-        units = bcd[0] & self.BCD_NIBBLE_MASK
-        tens = (bcd[0] >> self.BCD_TENS_SHIFT) & self.BCD_NIBBLE_MASK
+        units = bcd & self.BCD_NIBBLE_MASK
+        tens = (bcd >> self.BCD_TENS_SHIFT) & self.BCD_NIBBLE_MASK
         return (tens * 10 + units)
 
     def int_to_bcd(self, number):
@@ -92,7 +92,7 @@ class Rv8523Rtc(object):
         tens = (number / 10) << self.BCD_TENS_SHIFT
         return (tens + units)
 
-    def _set_clock_unit(self, value, reg):
+    def _set_clock_unit(self, value, reg=None):
         try:
             if reg is not None:
                 self._pig.i2c_write_device(self._dev, [reg])
@@ -106,7 +106,7 @@ class Rv8523Rtc(object):
         read_size, clock_unit_bcd = self._pig.i2c_read_device(self._dev, 1)
 
         if read_size == 1:
-            return self.bcd_to_int(clock_unit_bcd & mask)
+            return self.bcd_to_int(clock_unit_bcd[0] & mask)
 
         return self.ERR_FAIL
 
@@ -117,8 +117,7 @@ class Rv8523Rtc(object):
         days = self._get_clock_unit(0x1F)
         months = self._get_clock_unit(0xF, self.REG_MONTHS)
         years = self._get_clock_unit(0x7F) + self.REG_YEARS_OFFSET
-        return seconds
-        return date(years, months, days, hours, minutes, seconds)
+        return datetime(years, months, days, hours, minutes, seconds)
 
     def set_time(self, date):
         try:
@@ -133,17 +132,6 @@ class Rv8523Rtc(object):
                       "Is the RTC connected?.")
             raise I2CWriteError("i2c write failed")
 
-    def set_system_time(dt):
-        second = str(dt.second)
-        minute = str(dt.minute)
-        hour = str(dt.hour)
-        day = str(dt.day)
-        month = str(dt.month)
-        year = str(dt.year)
-        subprocess.call("sudo date -s '" + year + "-" + month + "-" + day +
-                        " " + hour + ":" + minute + ":" + second +
-                        "' > /dev/null", shell=True)
-
     def read(self):
         """ Returns date years to seconds """
         try:
@@ -157,3 +145,15 @@ class Rv8523Rtc(object):
             log.error("Could not read from RTC. "
                       "Is the RTC connected?.")
             raise I2CReadError("i2c write failed")
+
+    @staticmethod
+    def set_system_time(dt):
+        second = str(dt.second)
+        minute = str(dt.minute)
+        hour = str(dt.hour)
+        day = str(dt.day)
+        month = str(dt.month)
+        year = str(dt.year)
+        subprocess.call("sudo date -s '" + year + "-" + month + "-" + day +
+                        " " + hour + ":" + minute + ":" + second +
+                        "' > /dev/null", shell=True)
