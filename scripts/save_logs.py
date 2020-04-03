@@ -1,5 +1,6 @@
 """Copy log files from the raspberry to a local CSV file."""
 import ftplib
+import io
 import logging
 import argparse
 
@@ -27,6 +28,7 @@ def parse_cli_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--csv_output', default=CSV_FILE_OUTPUT)
     parser.add_argument('-i', '--ip', default=RPI_IP)
+    parser.add_argument('-d', '--delete', action='store_true')
     return parser.parse_args()
 
 
@@ -55,12 +57,35 @@ def copy_log_files(output_file, ftp, logger):
             ftp.retrbinary(f'RETR {log_file}', out_file.write)
 
 
+def delete_log_files(ftp):
+    bio = io.BytesIO(b'')
+    for log_file in remote_log_files(ftp):
+        ftp.storbinary(f'STOR {log_file}', bio)
+
+
 def main():
-    # TODO delete files
     cli_args = parse_cli_args()
     logger = configure_logger()
 
     with ftplib.FTP(cli_args.ip, user='pi', passwd='raspberry') as ftp:
+        if cli_args.delete:
+            logger.warning('You are about to delete all the sensor data in the Raspberry pi(%s) '
+                           'Are you sure? (y/n)', cli_args.ip)
+            while True:
+                answer = input()
+                if answer != 'x' and answer != 'y':
+                    logger.info('Please enter `y` or `n`')
+
+                else:
+                    break
+
+            if answer == 'y':
+                logger.info('Deleting Raspberry sensor data')
+                delete_log_files(ftp)
+                logger.info("Raspberry sensor data deleted !")
+
+            return
+
         # Copy files from RPi to local storage.
         logger.info(f"Copying log files from Raspberry(%s) to %s", cli_args.ip, cli_args.csv_output)
         copy_log_files(cli_args.csv_output, ftp, logger)

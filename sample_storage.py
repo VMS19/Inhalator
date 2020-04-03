@@ -15,11 +15,11 @@ class SamplesStorage:
                'oxygen']
 
     def __init__(self, file_name_template='inhalator.csv',
-                 max_file_size=BYTES_IN_GB, max_files=7):
+                 max_file_size=BYTES_IN_GB * 7, max_files=1):
         self.max_files = max_files
         self.max_file_size = max_file_size
         self.file_name = file_name_template
-        self.last_ts = None
+        self.first_ts = None
         self.logger = self._configure_logger()
         # Write title row
         if self.no_log_files_exists:
@@ -31,9 +31,6 @@ class SamplesStorage:
         rotated_files = [item for item in Path(self.file_name).parent.iterdir()
                          if item.name.startswith(self.file_name)]
         sizes = [log_file.stat().st_size for log_file in rotated_files]
-        print(sizes)
-        if len(sizes) == 0:
-            return True
         return all(size == 0 for size in sizes)
 
     def _configure_logger(self):
@@ -44,16 +41,15 @@ class SamplesStorage:
                                            backupCount=self.max_files)
         file_handler.setLevel(logging.DEBUG)
         logger.addHandler(file_handler)
-        # Send header
         return logger
 
     def _write_row(self, row):
         self.logger.debug(','.join(str(item) for item in row))
 
     def _time_diff(self, timestamp):
-        if self.last_ts is None:
-            self.last_ts = timestamp
-        return (timestamp - self.last_ts).total_seconds()
+        if self.first_ts is None:
+            self.first_ts = timestamp
+        return (timestamp - self.first_ts).total_seconds()
 
     def write(self, flow, pressure, oxygen):
         timestamp = datetime.datetime.now()
