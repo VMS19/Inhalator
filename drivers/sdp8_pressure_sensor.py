@@ -26,10 +26,10 @@ class SdpPressureSensor(I2cDriver):
     START_MEASURE_DIFF_PRESSURE_AVG_CMD = b"\x36\x15"
 
     def __init__(self):
+        self.log = logging.getLogger(self.__class__.__name__)
         super().__init__()
         self._pig.i2c_write_device(self._dev, self.CMD_STOP)
         self._start_measure()
-        self.log = logging.getLogger(self.__class__.__name__)
         self.log.info("SDP pressure sensor initialized")
 
     def _start_measure(self):

@@ -81,7 +81,6 @@ class Sfm3200(I2cDriver):
             # Measurement not ready
             if not retries:
                 log.error("Flow sensor's measure data consistently not ready")
-                raise I2CReadError("Flow sensor measurement unavailable.")
 
             elif retries == 1:
                 log.warning("Flow sensor read returns NA."
