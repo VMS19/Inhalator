@@ -329,9 +329,7 @@ class Sampler(object):
 
         flow_slm, pressure_cmh2o, o2_saturation_percentage = result
 
-        x = time.time()
         self.storage_handler.write(flow_slm, pressure_cmh2o, o2_saturation_percentage)
-        print(f'storage write time={time.time() - x}')
 
         self.vsm.update(
             pressure_cmh2o=pressure_cmh2o,

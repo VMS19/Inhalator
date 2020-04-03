@@ -1,7 +1,7 @@
+import csv
 import datetime
 import logging
 from logging.handlers import RotatingFileHandler
-from pathlib import Path
 
 BYTES_IN_GB = 2 ** 30
 
@@ -13,25 +13,21 @@ class SamplesStorage:
                'flow',
                'pressure',
                'oxygen']
+    HEADERS_FILE = 'headers.csv'
 
     def __init__(self, file_name_template='inhalator.csv',
-                 max_file_size=BYTES_IN_GB * 7, max_files=1):
+                 max_file_size=BYTES_IN_GB, max_files=7):
         self.max_files = max_files
         self.max_file_size = max_file_size
         self.file_name = file_name_template
         self.first_ts = None
         self.logger = self._configure_logger()
         # Write title row
-        if self.no_log_files_exists:
-            self._write_row(self.COLUMNS)
+        self._write_headers_file()
 
-    @property
-    def no_log_files_exists(self):
-        Path().stat()
-        rotated_files = [item for item in Path(self.file_name).parent.iterdir()
-                         if item.name.startswith(self.file_name)]
-        sizes = [log_file.stat().st_size for log_file in rotated_files]
-        return all(size == 0 for size in sizes)
+    def _write_headers_file(self):
+        with open(self.HEADERS_FILE, 'w') as f:
+            csv.writer(f).writerow(self.COLUMNS)
 
     def _configure_logger(self):
         logger = logging.getLogger('samples_storage')

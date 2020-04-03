@@ -37,6 +37,10 @@ def remote_log_files(ftp):
     return sorted(log_files, reverse=True)
 
 
+def get_headers_file():
+    return 'Inhalator/headers.csv'
+
+
 def copy_log_files(output_file, ftp, logger):
     """Copy log file from the Raspberry pi using FTP.
 
@@ -52,7 +56,7 @@ def copy_log_files(output_file, ftp, logger):
     with open(output_file, 'ab') as out_file:
         log_files = remote_log_files(ftp)
         amount = len(log_files)
-        for i, log_file in enumerate(log_files):
+        for i, log_file in enumerate([get_headers_file()] + log_files):
             logger.info("Copying %s / %s", i + 1, amount)
             ftp.retrbinary(f'RETR {log_file}', out_file.write)
 
