@@ -69,10 +69,10 @@ def test_sampler_volume_calculation(events, measurements, config):
     driver_factory = DriverFactory(simulation_mode=True,
                                    simulation_data=file_path)
 
-    flow_sensor = driver_factory.get_driver("flow")
-    pressure_sensor = driver_factory.get_driver("pressure")
-    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
-    timer = driver_factory.get_driver("timer")
+    flow_sensor = driver_factory.acquire_driver("flow")
+    pressure_sensor = driver_factory.acquire_driver("pressure")
+    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
+    timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       oxygen_a2d, timer)
 
@@ -85,10 +85,10 @@ def test_sampler_volume_calculation(events, measurements, config):
 
 
 def test_sampler_alerts_when_volume_exceeds_minium(events, measurements, config, driver_factory):
-    flow_sensor = driver_factory.get_driver("flow")
-    pressure_sensor = driver_factory.get_driver("pressure")
-    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
-    timer = driver_factory.get_driver("timer")
+    flow_sensor = driver_factory.acquire_driver("flow")
+    pressure_sensor = driver_factory.acquire_driver("pressure")
+    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
+    timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       oxygen_a2d, timer)
     assert len(events.alerts_queue) == 0
@@ -109,10 +109,10 @@ def test_sampler_alerts_when_volume_exceeds_minium(events, measurements, config,
 
 
 def test_sampler_alerts_when_volume_exceeds_maximum(events, measurements, config, driver_factory):
-    flow_sensor = driver_factory.get_driver("flow")
-    pressure_sensor = driver_factory.get_driver("pressure")
-    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
-    timer = driver_factory.get_driver("timer")
+    flow_sensor = driver_factory.acquire_driver("flow")
+    pressure_sensor = driver_factory.acquire_driver("pressure")
+    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
+    timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       oxygen_a2d, timer)
     assert len(events.alerts_queue) == 0
