@@ -159,6 +159,8 @@ class VentilationStateMachine(object):
         self.last_breath_timestamp = time.time()
         self.current_state = VentilationState.PEEP
 
+        self.value_of_state = float("inf")
+
         # Data structure to record last 100 entry timestamp for each state.
         # Useful for debugging and plotting.
         self.entry_points_ts = {
@@ -243,13 +245,13 @@ class VentilationStateMachine(object):
         self._measurements.set_pressure_value(pressure_cmh2o)
         self._measurements.set_flow_value(flow_slm)
         self._measurements.set_saturation_percentage(o2_saturation_percentage)
-        if self.current_state == VentilationState.Inhale:
-            self._measurements.set_state_value(40)
-        elif self.current_state == VentilationState.Exhale:
-            self._measurements.set_state_value(-5)
 
-        else:
-            self._measurements.set_state_value(0)
+        if self.current_state == VentilationState.Inhale:
+            self.value_of_state = 600
+        elif self.current_state == VentilationState.Exhale:
+            self.value_of_state = -600
+
+        self._measurements.set_state_value(self.value_of_state)
 
         # Update peak pressure/flow values
         self.peak_pressure = max(self.peak_pressure, pressure_cmh2o)
