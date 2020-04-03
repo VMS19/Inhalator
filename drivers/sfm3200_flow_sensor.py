@@ -8,6 +8,7 @@ from time import sleep
 import logging
 import pigpio
 
+from drivers.mux_i2c import MuxI2C
 from .i2c_driver import I2cDriver
 from errors import (I2CReadError,
                     I2CWriteError,
@@ -17,11 +18,14 @@ from errors import (I2CReadError,
 
 log = logging.getLogger(__name__)
 
+mux = MuxI2C.get_instance()
+
 
 class Sfm3200(I2cDriver):
     """Driver class for SFM3200 Flow sensor."""
     CRC_POLYNOMIAL = 0x131
     I2C_ADDRESS = 0x40
+    MUX_PORT = 2
     SCALE_FACTOR_FLOW = 120
     OFFSET_FLOW = 0x8000
     START_MEASURE_CMD = b"\x10\x00"
@@ -31,8 +35,10 @@ class Sfm3200(I2cDriver):
         super().__init__()
         self._start_measure()
         sleep(0.1)
-        # Dummy read - first read values are invalid
-        read_size, dummy = self._pig.i2c_read_device(self._dev, 3)
+        with mux.lock(self.MUX_PORT):
+            # Dummy read - first read values are invalid
+            read_size, dummy = self._pig.i2c_read_device(self._dev, 3)
+
         if read_size == pigpio.PI_I2C_READ_FAILED:
             log.error("Could not read first data from flow sensor."
                       "Is it connected?")
@@ -44,7 +50,8 @@ class Sfm3200(I2cDriver):
 
     def _start_measure(self):
         try:
-            self._pig.i2c_write_device(self._dev, self.START_MEASURE_CMD)
+            with mux.lock(self.MUX_PORT):
+                self._pig.i2c_write_device(self._dev, self.START_MEASURE_CMD)
         except pigpio.error as e:
             log.error("Could not write start_measure cmd to flow sensor. "
                       "Is the flow sensor connected?.")
@@ -54,13 +61,16 @@ class Sfm3200(I2cDriver):
 
     def soft_reset(self):
         try:
-            self._pig.i2c_write_device(self._dev, self.SOFT_RST_CMD)
+            with mux.lock(self.MUX_PORT):
+                self._pig.i2c_write_device(self._dev, self.SOFT_RST_CMD)
         except pigpio.error as e:
             log.error("Could not write soft reset cmd to flow sensor.")
             raise I2CWriteError("i2c write failed") from e
 
     def read(self, retries=2):
-        read_size, data = self._pig.i2c_read_device(self._dev, 3)
+        with mux.lock(self.MUX_PORT):
+            read_size, data = self._pig.i2c_read_device(self._dev, 3)
+
         if read_size >= 2:
             raw_value = data[0] << 8 | data[1]
 
@@ -93,11 +103,11 @@ class Sfm3200(I2cDriver):
                             "Retrying read after a short delay")
 
             sleep(0.1)
-            flow = self.read_flow_slm(retries=retries - 1)
+            flow = self.read(retries=retries - 1)
             log.info("Flow Sensor successfully read data, after failed attempt")
             return flow
 
-        elif read_size == pigpio.PI_raw_valueI2C_READ_FAILED:
+        elif read_size == pigpio.PI_I2C_READ_FAILED:
             log.error("Could not read data from flow sensor."
                       "Is it connected?")
             raise I2CReadError("i2c read failed")

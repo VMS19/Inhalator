@@ -4,13 +4,17 @@ import logging
 from errors import PiGPIOInitError, I2CDeviceNotFoundError, I2CReadError
 
 from .i2c_driver import I2cDriver
+from .mux_i2c import MuxI2C
 
 log = logging.getLogger(__name__)
+
+mux = MuxI2C.get_instance()
 
 
 class AbpPressureSensor(I2cDriver):
     """Driver class for ABPMAND001PG2A3 Flow sensor."""
     I2C_ADDRESS = 0x28
+    MUX_PORT = 0
     MEASURE_BYTE_COUNT = 0x2
     MAX_RANGE_PRESSURE = 0x1  # 1 psi
     MIN_RANGE_PRESSURE = 0x00  # 0 psi
@@ -33,7 +37,9 @@ class AbpPressureSensor(I2cDriver):
     def read(self):
         """ Returns pressure as cmh2o """
         try:
-            read_size, pressure_raw = self._pig.i2c_read_device(self._dev, self.MEASURE_BYTE_COUNT)
+            with mux.lock(self.MUX_PORT):
+                read_size, pressure_raw = self._pig.i2c_read_device(self._dev, self.MEASURE_BYTE_COUNT)
+
             if read_size >= self.MEASURE_BYTE_COUNT:
                 pressure_reading = ((pressure_raw[0] & 0x3F) << 8) | (pressure_raw[1])
                 return (self._calculate_pressure(pressure_reading))

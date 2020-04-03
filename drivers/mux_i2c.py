@@ -1,4 +1,5 @@
 import logging
+from contextlib import contextmanager
 
 import pigpio
 
@@ -11,6 +12,19 @@ log = logging.getLogger(__name__)
 
 
 class MuxI2C(I2cDriver):
+
+    MUX_INSTANCE = None
+
+    @classmethod
+    def get_instance(cls):
+        if cls.MUX_INSTANCE is None:
+            cls.MUX_INSTANCE = cls()
+
+        return cls.MUX_INSTANCE
+
+    def __new__(cls, *args, **kwargs):
+        return cls.get_instance()
+
     I2C_ADDRESS = 0x70
 
     def __init__(self):
@@ -31,3 +45,8 @@ class MuxI2C(I2cDriver):
             raise I2CWriteError("i2c write failed")
 
         log.info("Switch to port {}".format(port))
+
+    @contextmanager
+    def lock(self, port):
+        self.switch_port(port)
+        yield
