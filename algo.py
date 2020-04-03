@@ -282,13 +282,13 @@ class VentilationStateMachine(object):
 class Sampler(object):
 
     def __init__(self, measurements, events, flow_sensor, pressure_sensor,
-                 oxygen_a2d, timer):
+                 a2d, timer):
         super(Sampler, self).__init__()
         self.log = logging.getLogger(self.__class__.__name__)
         self._measurements = measurements  # type: Measurements
         self._flow_sensor = flow_sensor
         self._pressure_sensor = pressure_sensor
-        self._oxygen_a2d = oxygen_a2d
+        self._a2d = a2d
         self._timer = timer
         self._config = Configurations.instance()
         self._events = events
@@ -316,10 +316,10 @@ class Sampler(object):
             self._flow_sensor, AlertCodes.FLOW_SENSOR_ERROR, timestamp)
         pressure_cmh2o = self.read_single_sensor(
             self._pressure_sensor, AlertCodes.PRESSURE_SENSOR_ERROR, timestamp)
-        o2_saturation_percentage = self.read_single_sensor(
-            self._oxygen_a2d, AlertCodes.SATURATION_SENSOR_ERROR, timestamp)
+        a2d_reading = self.read_single_sensor(
+            self._a2d, AlertCodes.SATURATION_SENSOR_ERROR, timestamp)
 
-        data = (flow_slm, pressure_cmh2o, o2_saturation_percentage)
+        data = (flow_slm, pressure_cmh2o, a2d_reading)
         errors = [x is None for x in data]
         return None if any(errors) else data
 
@@ -330,7 +330,12 @@ class Sampler(object):
         if result is None:
             return
 
-        flow_slm, pressure_cmh2o, o2_saturation_percentage = result
+        flow_slm, pressure_cmh2o, a2d_reading = result
+
+        # Convert a2d readings to oxygen and battery
+        o2_saturation_percentage = self._a2d.a2d_to_oxygen(a2d_reading[0])
+        battery_percentage = self._a2d.a2d_to_battery(a2d_reading[1])
+
         # WARNING! These log messages are useful for debugging sensors but
         # might spam you since they are printed on every sample. In order to see
         # them run the application in maximum verbosity mode by passing `-vvv` to `main.py

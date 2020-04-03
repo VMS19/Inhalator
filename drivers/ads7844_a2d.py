@@ -28,6 +28,8 @@ class Ads7844A2D(object):
     SECOND_READING_BIT_SHIFT = 3
     SAMPLE_CHANNELS = [0, 1] # channels to sample, 0 = oxygen, 1 = battery
     CHANNEL_MAP = [0, 4, 1, 5, 2, 6, 3, 7]
+    A2D_OXYGEN_RATIO = 38.4
+    A2D_BATTERY_RATIO = 29.64197
 
     def __init__(self):
         self._spi = spidev.SpiDev()
@@ -81,5 +83,12 @@ class Ads7844A2D(object):
     def read(self, input_mode=MODE_SGL, power_down_mode=PD_DISABLED):
         sample_res = [self._sample_a2d(channel, input_mode, power_down_mode)\
                 for channel in self.SAMPLE_CHANNELS]
-        return sample_res[0]
+        return tuple(sample_res)
 
+    @staticmethod
+    def a2d_to_oxygen(a2d_sample):
+        return a2d_sample * Ads7844A2D.A2D_OXYGEN_RATIO
+
+    @staticmethod
+    def a2d_to_battery(a2d_sample):
+        return a2d_sample * Ads7844A2D.A2D_BATTERY_RATIO

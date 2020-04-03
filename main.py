@@ -95,12 +95,12 @@ def main():
     flow_sensor = drivers.get_driver("differential_pressure")
 
     watchdog = drivers.get_driver("wd")
-    oxygen_a2d = drivers.get_driver("oxygen_a2d")
+    a2d = drivers.get_driver("a2d")
     timer = drivers.get_driver("timer")
 
     sampler = Sampler(measurements=measurements, events=events,
                       flow_sensor=flow_sensor, pressure_sensor=pressure_sensor,
-                      oxygen_a2d=oxygen_a2d, timer=timer)
+                      a2d=a2d, timer=timer)
 
     app = Application(measurements=measurements,
                       events=events,
