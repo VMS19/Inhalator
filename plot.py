@@ -30,9 +30,9 @@ def plot_file(file_path):
 
     mng = plt.get_current_fig_manager()
     if hasattr(mng, "window"):
-        window = mng.window
+        window = getattr(mng, "window")
         if hasattr(window, "showMaximized"):
-            window.showMaximized()
+            getattr(window, "showMaximized")()
 
     plt.show()
 
