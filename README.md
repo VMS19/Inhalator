@@ -7,6 +7,7 @@ Turning stupid BiPAP into full-scale inhalators.
 Make sure to install all of the project's dependencies
 ```shell script
 pip3 install -r requirements.txt
+
 ```
 
 Configure your `Raspberry Pi` using the the shell scripts found under the `rasp_init` directory.
