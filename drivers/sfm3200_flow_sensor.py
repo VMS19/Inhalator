@@ -4,12 +4,17 @@ The use of this driver requires pigpio deamon:
 'sudo pigpiod'
 (sudo apt-get install pigpio)
 """
-import pigpio
 from time import sleep
 import logging
 
-from errors import PiGPIOInitError, I2CDeviceNotFoundError, \
-                I2CReadError, I2CWriteError, FlowSensorCRCError
+import pigpio
+
+from errors import (I2CReadError,
+                    I2CWriteError,
+                    PiGPIOInitError,
+                    FlowSensorCRCError,
+                    I2CDeviceNotFoundError)
+
 log = logging.getLogger(__name__)
 
 
@@ -28,7 +33,7 @@ class Sfm3200(object):
             self._pig = pigpio.pi()
         except pigpio.error as e:
             log.error("Could not init pigpio lib. Did you run 'sudo pigpiod'?")
-            raise PiGPIOInitError("pigpio library init error")
+            raise PiGPIOInitError("pigpio library init error") from e
 
         if self._pig is None:
             log.error("Could not init pigpio lib. Did you run 'sudo pigpiod'?")
@@ -36,14 +41,14 @@ class Sfm3200(object):
 
         try:
             self._dev = self._pig.i2c_open(self.I2C_BUS, self.I2C_ADDRESS)
-        except AttributeError:
+        except AttributeError as e:
             log.error("Could not init pigpio lib. Did you run 'sudo pigpiod'?")
-            raise PiGPIOInitError("pigpio library init error")
+            raise PiGPIOInitError("pigpio library init error") from e
 
-        except pigpio.error:
+        except pigpio.error as e:
             log.error("Could not open i2c connection to flow sensor."
                       "Is it connected?")
-            raise I2CDeviceNotFoundError("i2c connection open failed")
+            raise I2CDeviceNotFoundError("i2c connection open failed") from e
 
         self._start_measure()
         sleep(0.1)
@@ -54,8 +59,7 @@ class Sfm3200(object):
                       "Is it connected?")
             raise I2CDeviceNotFoundError("i2c read failed")
 
-        log.debug("Flow sensor: Successfully read dummy values: {}"
-                  .format(dummy))
+        log.debug(f"Flow sensor: Successfully read dummy values: {dummy}")
 
     # Todo: Implement read serial number command
 
@@ -65,7 +69,7 @@ class Sfm3200(object):
         except pigpio.error as e:
             log.error("Could not write start_measure cmd to flow sensor. "
                       "Is the flow sensor connected?.")
-            raise I2CWriteError("i2c write failed")
+            raise I2CWriteError("i2c write failed") from e
 
         log.info("Started flow sensor measurement")
 
@@ -74,7 +78,7 @@ class Sfm3200(object):
             self._pig.i2c_write_device(self._dev, self.SOFT_RST_CMD)
         except pigpio.error as e:
             log.error("Could not write soft reset cmd to flow sensor.")
-            raise I2CWriteError("i2c write failed")
+            raise I2CWriteError("i2c write failed") from e
 
     def read(self, retries=2):
         read_size, data = self._pig.i2c_read_device(self._dev, 3)
@@ -85,13 +89,13 @@ class Sfm3200(object):
                 expected_crc = data[2]
                 crc_calc = self._crc8(data[:2])
                 if not crc_calc == expected_crc:
-                    log.error("CRC mismatch while reading data from flow sensor."
-                              "{} - expected {}".format(crc_calc, expected_crc))
+                    log.error(f"CRC mismatch while reading data from flow sensor."
+                              "{crc_calc} - expected {expected_crc}")
                     raise FlowSensorCRCError("CRC mismatch")
 
             else:
-                log.error("Too much data recieved, "
-                          "got {} expected 3. data: {}".format(len(data), data))
+                log.error(f"Too much data received, "
+                          "got {len(data)} expected 3. data: {data}")
                 raise I2CReadError("Too much data read, invalid state")
 
         elif read_size == 0:
@@ -122,7 +126,6 @@ class Sfm3200(object):
 
         # Normalize flow to slm units
         flow = float(raw_value - self.OFFSET_FLOW) / self.SCALE_FACTOR_FLOW
-        log.debug("Flow sensor value: {} slm. CRC correct".format(flow))
         return flow
 
     def _crc8(self, data):

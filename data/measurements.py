@@ -5,16 +5,16 @@ from data.configurations import Configurations
 
 
 class Measurements(object):
-    SYSTEM_SAMPLE_INTERVAL = 22  # KHZ
-    MS_TO_SEC = 1000
-
-    def __init__(self):
-        self.volume = 0
+    def __init__(self, sample_rate=22):
+        self.inspiration_volume = 0
+        self.expiration_volume = 0
         self.flow_measurements = Queue(maxsize=40)  # TODO: Rename?
-        self.pressure_measurements = Queue(maxsize=40) # TODO: Rename?
+        self.pressure_measurements = Queue(maxsize=40)  # TODO: Rename?
+        self.sample_interval = 1 / sample_rate
         self.x_axis = range(0, self._amount_of_samples_in_graph)
         self.intake_peak_flow = 0
         self.intake_peak_pressure = 0
+        self.peep_min_pressure = 0
         self.bpm = 0
         self.o2_saturation_percentage = 20
         self.lock = Lock()
@@ -44,7 +44,7 @@ class Measurements(object):
     def set_intake_peaks(self, flow, pressure, volume):
         self.intake_peak_flow = flow
         self.intake_peak_pressure = pressure
-        self.volume = volume
+        self.inspiration_volume = volume
 
     def set_saturation_percentage(self, o2_saturation_percentage):
         self.o2_saturation_percentage = o2_saturation_percentage
@@ -52,4 +52,4 @@ class Measurements(object):
     @property
     def _amount_of_samples_in_graph(self):
         config = Configurations.instance()
-        return int((config.graph_seconds * self.MS_TO_SEC) / self.SYSTEM_SAMPLE_INTERVAL)
+        return int(config.graph_seconds / self.sample_interval)

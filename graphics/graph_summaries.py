@@ -1,13 +1,6 @@
-# Tkinter stuff
-import platform
-
 from graphics.themes import Theme
 
-if platform.python_version() < '3':
-    from Tkinter import *
-
-else:
-    from tkinter import *
+from tkinter import *
 
 
 class GraphSummary(object):
@@ -16,19 +9,20 @@ class GraphSummary(object):
         self.root = parent.element
         self.measurements = measurements
 
-        self.frame = Frame(master=self.root, borderwidth=1)
+        self.frame = Frame(master=self.root,
+                           borderwidth=1)
         self.value_label = Label(master=self.frame, text="HELLO",
-                                 font=("Roboto", 18),
+                                 font=("Roboto", 24),
                                  bg=Theme.active().BACKGROUND,
-                                 fg=Theme.active().TXT_ON_SURFACE)
+                                 fg=self.color())
         self.units_label = Label(master=self.frame, text="HELLO",
                                  font=("Roboto", 8),
                                  bg=Theme.active().BACKGROUND,
-                                 fg=Theme.active().TXT_ON_SURFACE)
+                                 fg=self.color())
         self.name_label = Label(master=self.frame, text="HELLO",
-                                font=("Roboto", 15),
+                                font=("Roboto", 13),
                                 bg=Theme.active().BACKGROUND,
-                                fg=Theme.active().TXT_ON_SURFACE)
+                                fg=self.color())
 
     def units(self):
         pass
@@ -37,6 +31,9 @@ class GraphSummary(object):
         pass
 
     def value(self):
+        pass
+
+    def color(self):
         pass
 
     def render(self):
@@ -54,13 +51,18 @@ class GraphSummary(object):
 
 class PressurePeakSummary(GraphSummary):
     def value(self):
-        return "{:.0f}".format(self.measurements.intake_peak_pressure)
+        return "{}/{}".format(
+            round(self.measurements.intake_peak_pressure),
+            round(self.measurements.peep_min_pressure))
 
     def name(self):
-        return "pPeak"
+        return "PIP/PEEP"
 
     def units(self):
         return "cmH2O"
+
+    def color(self):
+        return Theme.active().YELLOW
 
     def render(self):
         self.frame.place(relx=0, rely=0, relheight=(1/4), relwidth=1)
@@ -69,13 +71,19 @@ class PressurePeakSummary(GraphSummary):
 
 class VolumeSummary(GraphSummary):
     def value(self):
-        return "{:.0f}".format(self.measurements.volume)
+        #Todo: fix exhale volume calculation
+        return "{}/{}".format(
+            round(self.measurements.inspiration_volume), "-")
+            #round(self.measurements.expiration_volume))
 
     def name(self):
-        return "Volume"
+        return "TVinsp/exp"
 
     def units(self):
         return "ml"
+
+    def color(self):
+        return Theme.active().LIGHT_BLUE
 
     def render(self):
         self.frame.place(relx=0, rely=(1/4), relheight=(1/4), relwidth=1)
@@ -92,6 +100,9 @@ class BPMSummary(GraphSummary):
     def units(self):
         return "bpm"
 
+    def color(self):
+        return Theme.active().LIGHT_BLUE
+
     def render(self):
         self.frame.place(relx=0, rely=(2/4), relheight=(1/4), relwidth=1)
         super(BPMSummary, self).render()
@@ -99,15 +110,16 @@ class BPMSummary(GraphSummary):
 
 class O2SaturationSummary(GraphSummary):
     def value(self):
-        # Round to nearest half
-        return "{:.2f}".format(
-            round(self.measurements.o2_saturation_percentage * 2) / 2)
+        return round(self.measurements.o2_saturation_percentage)
 
     def name(self):
         return "FiO2"
 
     def units(self):
         return "%"
+
+    def color(self):
+        return Theme.active().WHITE
 
     def render(self):
         self.frame.place(relx=0, rely=(3/4), relheight=(1/4), relwidth=1)

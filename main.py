@@ -2,36 +2,18 @@ import os
 import argparse
 import logging
 import signal
-import socket
 from logging.handlers import RotatingFileHandler
+from threading import Event
 
 from drivers.driver_factory import DriverFactory
-from data.configurations import Configurations, ConfigurationState
+from data.configurations import Configurations
 from data.measurements import Measurements
 from data.events import Events
 from application import Application
 from algo import Sampler
+from wd_task import WdTask
 
-
-
-class BroadcastHandler(logging.handlers.DatagramHandler):
-    '''
-    A handler for the python logging system which is able to broadcast packets.
-    '''
-
-    def send(self, s):
-        try:
-            super().send(s)
-
-        except OSError as e:
-            if e.errno != 101:  # Network is unreachable
-                raise e
-
-    def makeSocket(self):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        return sock
+BYTES_IN_GB = 2 ** 30
 
 
 def configure_logging(level):
@@ -40,24 +22,21 @@ def configure_logging(level):
     logger = logging.getLogger()
     logger.setLevel(level)
     # create file handler which logs even debug messages
-    fh = RotatingFileHandler('inhalator.log', maxBytes=1024 * 100, backupCount=3)
-    fh.setLevel(logging.DEBUG)
-    # create console handler with a higher log level
-    ch = logging.StreamHandler()
-    ch.setLevel(level)
-    # create socket handler to broadcast logs
-    sh = BroadcastHandler('255.255.255.255', config.debug_port)
-    sh.setLevel(level)
+    file_handler = RotatingFileHandler('inhalator.log',
+                                       maxBytes=BYTES_IN_GB,
+                                       backupCount=7)
+    file_handler.setLevel(level)
+    # create console handler
+    steam_handler = logging.StreamHandler()
+    steam_handler.setLevel(level)
     # create formatter and add it to the handlers
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    fh.setFormatter(formatter)
-    ch.setFormatter(formatter)
-    sh.setFormatter(formatter)
+    file_handler.setFormatter(formatter)
+    steam_handler.setFormatter(formatter)
     # add the handlers to the logger
-    logger.addHandler(fh)
-    logger.addHandler(ch)
-    logger.addHandler(sh)
+    logger.addHandler(file_handler)
+    logger.addHandler(steam_handler)
     logger.disabled = not config.log_enabled
     return logger
 
@@ -65,8 +44,21 @@ def configure_logging(level):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--verbose", "-v", action="count", default=0)
-    parser.add_argument("--simulate", "-s", action='store_true')
-    parser.add_argument("--data", '-d', default='sinus')
+    sim_options = parser.add_argument_group(
+        "simulation", "Options for data simulation")
+    sim_options.add_argument("--simulate", "-s", nargs='?', type=str, const='sinus',
+                             help="data simulation source. "
+                                  "Can be either `sinus` (default), `dead`, or path to a CSV file.")
+    sim_options.add_argument(
+        "--error", "-e", type=float,
+        help="The probability of error in each driver", default=0)
+    sim_options.add_argument(
+        "--sample-rate", "-r", help="The sample rate of the simulation data",
+        type=float, default=22)
+    parser.add_argument(
+        "--fps", "-f",
+        help="Frames-per-second for the application to render",
+        type=int, default=25)
     args = parser.parse_args()
     args.verbose = max(0, logging.WARNING - (10 * args.verbose))
     return args
@@ -79,22 +71,26 @@ def handle_sigterm(signum, frame):
 
 
 def main():
-    measurements = Measurements()
-    events = Events()
     signal.signal(signal.SIGTERM, handle_sigterm)
+    events = Events()
     args = parse_args()
+    measurements = Measurements(args.sample_rate if args.simulate else Application.HARDWARE_SAMPLE_RATE)
+    arm_wd_event = Event()
     log = configure_logging(args.verbose)
 
     # Initialize all drivers, or mocks if in simulation mode
-    simulation = args.simulate or os.uname()[1] != 'raspberrypi'
+    simulation = args.simulate is not None or os.uname()[1] != 'raspberrypi'
     if simulation:
-        log.info("Running in simulation mode! simulating: "
-                 "flow, pressure sensors, and watchdog")
-    drivers = DriverFactory(
-        simulation_mode=simulation, simulation_data=args.data)
+        log.info("Running in simulation mode!")
+        log.info("Sensor Data Source: %s", args.simulate)
+        log.info("Error probability: %s", args.error)
+    drivers = DriverFactory(simulation_mode=simulation,
+                            simulation_data=args.simulate,
+                            error_probability=args.error)
 
     pressure_sensor = drivers.get_driver("pressure")
-    flow_sensor = drivers.get_driver("flow")
+    flow_sensor = drivers.get_driver("differential_pressure")
+
     watchdog = drivers.get_driver("wd")
     oxygen_a2d = drivers.get_driver("oxygen_a2d")
 
@@ -104,9 +100,15 @@ def main():
 
     app = Application(measurements=measurements,
                       events=events,
-                      watchdog=watchdog,
+                      arm_wd_event=arm_wd_event,
                       drivers=drivers,
-                      sampler=sampler)
+                      sampler=sampler,
+                      simulation=simulation,
+                      fps=args.fps,
+                      sample_rate=args.sample_rate)
+
+    watchdog_task = WdTask(watchdog, arm_wd_event)
+    watchdog_task.start()
 
     app.run()
 

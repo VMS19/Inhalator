@@ -1,20 +1,11 @@
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-
-# Tkinter stuff
-import platform
+from matplotlib import rcParams
 
 from data.configurations import Configurations
 from graphics.themes import Theme
 
-if platform.python_version() < '3':
-    from Tkinter import *
-
-else:
-    from tkinter import *
-
-MIN_TRHLD_COLOR = "green"
-MAX_TRHLD_COLOR = "red"
+from tkinter import *
 
 
 class BlankGraph(object):
@@ -30,8 +21,6 @@ class BlankGraph(object):
 
 
 class AirPressureGraph(object):
-    MIN_Y, MAX_Y = (0, 50)
-
     def __init__(self, parent, measurements, blank):
         self.parent = parent
         self.root = parent.element
@@ -63,25 +52,29 @@ class AirPressureGraph(object):
         self.pressure_display_values = [0] * amount_of_xs
         self.pressure_graph, = self.pressure_axis.plot(
             self.measurements.x_axis,
-            self.pressure_display_values, linewidth=2, animated=True)
+            self.pressure_display_values,
+            color=Theme.active().YELLOW,  # yellow
+            linewidth=2,
+            animated=True)
+
 
         # Scale y values
-        self.pressure_graph.axes.set_ylim(self.MIN_Y, self.MAX_Y)
+        self.pressure_graph.axes.set_ylim(*self.config.pressure_y_scale)
 
         # Thresholds
         self.pressure_max_threshold_graph, = \
             self.pressure_axis.plot(self.measurements.x_axis,
-                                    [self.config.pressure_threshold.max] *
+                                    [self.config.pressure_range.max] *
                                     len(self.measurements.x_axis),
-                                    color=MAX_TRHLD_COLOR,
+                                    color=Theme.active().RED,
                                     animated=True,
                                     linewidth=3)
 
         self.pressure_min_threshold_graph, = \
             self.pressure_axis.plot(self.measurements.x_axis,
-                                    [self.config.pressure_threshold.min] *
+                                    [self.config.pressure_range.min] *
                                     len(self.measurements.x_axis),
-                                    color=MIN_TRHLD_COLOR,
+                                    color=Theme.active().RED,
                                     animated=True,
                                     linewidth=3)
 
@@ -98,9 +91,9 @@ class AirPressureGraph(object):
 
         self.pressure_graph.set_ydata(self.pressure_display_values)
         # Update threshold lines
-        self.pressure_min_threshold_graph.set_ydata([self.config.pressure_threshold.min] *
+        self.pressure_min_threshold_graph.set_ydata([self.config.pressure_range.min] *
                                                     len(self.measurements.x_axis))
-        self.pressure_max_threshold_graph.set_ydata([self.config.pressure_threshold.max] *
+        self.pressure_max_threshold_graph.set_ydata([self.config.pressure_range.max] *
                                                     len(self.measurements.x_axis))
 
         self.pressure_axis.draw_artist(self.pressure_graph)
@@ -115,9 +108,8 @@ class AirPressureGraph(object):
 
 
 class FlowGraph(object):
-    MIN_Y, MAX_Y = (0, 80)
-
     def __init__(self, parent, measurements, blank):
+        rcParams.update({'figure.autolayout':True})
         self.parent = parent
         self.root = parent.element
         self.measurements = measurements
@@ -136,22 +128,24 @@ class FlowGraph(object):
         # Calibrate x-axis
         amount_of_xs = self.measurements._amount_of_samples_in_graph
         self.flow_axis.set_xticks(
-            range(0, (amount_of_xs + 1),
+            range(0, amount_of_xs + 1,
                   int(amount_of_xs / self.config.graph_seconds)))
 
-        labels = range(0, int(self.config.graph_seconds + 1))
+        labels = range(int(self.config.graph_seconds + 1))
         self.flow_axis.set_xticklabels(labels)
 
         self.flow_display_values = [0] * self.measurements._amount_of_samples_in_graph
-        self.flow_graph, = self.flow_axis.plot(self.measurements.x_axis,
-                                               self.flow_display_values,
-                                               linewidth=2, animated=True)
+        self.flow_graph, = self.flow_axis.plot(
+            self.measurements.x_axis,
+            self.flow_display_values,
+            color=Theme.active().LIGHT_BLUE,  # blue
+            linewidth=2,
+            animated=True)
 
         self.flow_canvas = FigureCanvasTkAgg(self.flow_figure, master=self.root)
 
         # Scale y values
-        self.flow_graph.axes.set_ylim(self.MIN_Y, self.MAX_Y)
-
+        self.flow_graph.axes.set_ylim(*self.config.flow_y_scale)
 
     def render(self):
         self.flow_canvas.draw()

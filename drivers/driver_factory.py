@@ -1,4 +1,5 @@
 import csv
+from itertools import cycle
 
 from drivers.mocks.sinus import sinus, truncate, add_noise, zero
 
@@ -34,9 +35,10 @@ class DriverFactory(object):
     def instance(cls):
         return cls.__instance
 
-    def __init__(self, simulation_mode, simulation_data='sinus'):
+    def __init__(self, simulation_mode, simulation_data='sinus',  error_probability=0):
         self.mock = simulation_mode
         self.simulation_data = simulation_data  # can be either `sinus` or file path
+        self.error_probability = error_probability
         self.drivers_cache = {}
 
     def get_driver(self, driver_name):
@@ -49,19 +51,24 @@ class DriverFactory(object):
         driver = self.drivers_cache.get(key)
         if driver is not None:
             return driver
-        method_name = "get{}_{}_driver".format(("_mock" if self.mock else ""), driver_name)
+        method_name = f"get{'_mock' if self.mock else ''}_{driver_name}_driver"
         method = getattr(self, method_name, None)
         if method is None:
-            raise ValueError("Unsupported driver {}".format(driver_name))
+            raise ValueError(f"Unsupported driver {driver_name}")
         driver = method()
         self.drivers_cache[key] = driver
         return driver
 
     def generate_mock_dead_man(self):
         return zero(
-            sample_rate = self.MOCK_SAMPLE_RATE_HZ,
-            amplitude = self.MOCK_PRESSURE_AMPLITUDE,
-            freq = self.MOCK_BPM / 60.0)
+            sample_rate=self.MOCK_SAMPLE_RATE_HZ,
+            amplitude=self.MOCK_PRESSURE_AMPLITUDE,
+            freq=self.MOCK_BPM / 60.0)
+
+    def generate_mock_noise(self):
+        samples = [0] * 1000
+        noise_samples = add_noise(samples, self.MOCK_NOISE_SIGMA)
+        return [10 + x for x in noise_samples]
 
     def generate_mock_pressure_data(self):
         samples = sinus(
@@ -78,6 +85,20 @@ class DriverFactory(object):
         samples = [s + self.MOCK_PEEP for s in samples]
         return add_noise(samples, self.MOCK_NOISE_SIGMA)
 
+    def generate_mock_pressure_data_noiseless(self):
+        samples = sinus(
+            sample_rate=self.MOCK_SAMPLE_RATE_HZ,
+            amplitude=self.MOCK_PRESSURE_AMPLITUDE,
+            freq=self.MOCK_BPM / 60.0)
+
+        # upper limit is `PIP - PEEP` and not simply PIP because we will raise
+        # the entire signal by PEEP later
+        samples = truncate(
+            samples, lower_limit=0, upper_limit=self.MOCK_PIP - self.MOCK_PEEP)
+
+        # Raise by PEEP so it will be the baseline
+        return [s + self.MOCK_PEEP for s in samples]
+
     def generate_mock_air_flow_data(self):
         samples = sinus(
             self.MOCK_SAMPLE_RATE_HZ,
@@ -86,6 +107,15 @@ class DriverFactory(object):
         samples = truncate(
             samples, lower_limit=0, upper_limit=self.MOCK_AIRFLOW_AMPLITUDE)
         return add_noise(samples, self.MOCK_NOISE_SIGMA)
+
+    def generate_mock_air_flow_data_noiseless(self):
+        samples = sinus(
+            self.MOCK_SAMPLE_RATE_HZ,
+            self.MOCK_AIRFLOW_AMPLITUDE,
+            self.MOCK_BPM / 60)
+        samples = truncate(
+            samples, lower_limit=0, upper_limit=self.MOCK_AIRFLOW_AMPLITUDE)
+        return samples
 
     def generate_mock_oxygen_a2d_data(self):
         samples = sinus(
@@ -96,6 +126,16 @@ class DriverFactory(object):
             samples, lower_limit=self.MOCK_O2_SATURATION_LOWER_LIMIT,
             upper_limit=self.MOCK_O2_SATURATION_AMPLITUDE)
         return add_noise(samples, self.MOCK_NOISE_SIGMA)
+
+    def generate_mock_oxygen_a2d_data_noiseless(self):
+        samples = sinus(
+            self.MOCK_SAMPLE_RATE_HZ,
+            self.MOCK_O2_SATURATION_AMPLITUDE,
+            self.MOCK_BPM / 60)
+        samples = truncate(
+            samples, lower_limit=self.MOCK_O2_SATURATION_LOWER_LIMIT,
+            upper_limit=self.MOCK_O2_SATURATION_AMPLITUDE)
+        return samples
 
     @staticmethod
     def get_pressure_driver():
@@ -122,18 +162,12 @@ class DriverFactory(object):
         from drivers.aux_sound import SoundViaAux
         return SoundViaAux.instance()
 
-    def get_mock_pressure_driver(self):
-        from drivers.mocks.sensor import MockSensor
-        data_source = self.simulation_data
-        if data_source == 'dead':
-            data = self.generate_mock_dead_man()
-        elif data_source == 'sinus':
-            data = self.generate_mock_pressure_data()
-        else:
-            data = generate_data_from_file('pressure', data_source)
-        return MockSensor(data)
+    @staticmethod
+    def get_differential_pressure_driver():
+        from drivers.sdp8_pressure_sensor import SdpPressureSensor
+        return SdpPressureSensor()
 
-    def get_mock_flow_driver(self):
+    def get_mock_differential_pressure_driver(self):
         from drivers.mocks.sensor import MockSensor
         simulation_data = self.simulation_data
         if simulation_data == 'dead':
@@ -144,14 +178,50 @@ class DriverFactory(object):
             data = generate_data_from_file('flow', simulation_data)
         return MockSensor(data)
 
+    def get_mock_pressure_driver(self):
+        from drivers.mocks.sensor import MockSensor
+        data_source = self.simulation_data
+        if data_source == 'dead':
+            data = self.generate_mock_dead_man()
+        elif data_source == 'sinus':
+            data = self.generate_mock_pressure_data()
+        elif data_source == 'noiseless_sinus':
+            data = self.generate_mock_pressure_data_noiseless()
+        elif data_source == "noise":
+            data = self.generate_mock_noise()
+        else:
+            data = generate_data_from_file('pressure', data_source)
+        return MockSensor(data, error_probability=self.error_probability)
+
+    def get_mock_flow_driver(self):
+        from drivers.mocks.sensor import MockSensor
+        simulation_data = self.simulation_data
+        if simulation_data == 'dead':
+            data = self.generate_mock_dead_man()
+        elif simulation_data == 'sinus':
+            data = self.generate_mock_air_flow_data()
+        elif simulation_data == 'noiseless_sinus':
+            data = self.generate_mock_air_flow_data_noiseless()
+        elif simulation_data == "noise":
+            data = self.generate_mock_noise()
+        else:
+            data = generate_data_from_file('flow', simulation_data)
+        return MockSensor(data, error_probability=self.error_probability)
+
     def get_mock_oxygen_a2d_driver(self):
         from drivers.mocks.sensor import MockSensor
         simulation_data = self.simulation_data
-        if simulation_data == 'sinus':
+        if simulation_data == 'dead':
+            data = self.generate_mock_dead_man()
+        elif simulation_data == 'sinus':
             data = self.generate_mock_oxygen_a2d_data()
+        elif simulation_data == 'noiseless_sinus':
+            data = self.generate_mock_oxygen_a2d_data_noiseless()
+        elif simulation_data == "noise":
+            data = self.generate_mock_noise()
         else:
             data = generate_data_from_file('oxygen', simulation_data)
-        return MockSensor(data)
+        return MockSensor(data, error_probability=self.error_probability)
 
     @staticmethod
     def get_mock_wd_driver():

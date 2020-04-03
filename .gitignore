@@ -5,3 +5,6 @@ __pycache__/*
 *.log*
 *.service
 config.json
+.coverage
+.tox
+htmlcov

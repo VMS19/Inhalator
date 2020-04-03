@@ -3,8 +3,8 @@ sudo: required
 language: python
 
 before_install:
-  - pip install -r requirements.txt
+  - pip install tox
+  - sudo apt-get install xvfb  # Virtual Display for GUI tests
 
 script:
-  - pytest --ignore "tests/unit/drivers/"
-  
+  - tox
