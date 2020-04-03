@@ -14,30 +14,9 @@ from data.thresholds import FlowRange, PressureRange, RespiratoryRateRange, \
     VolumeRange
 from drivers.driver_factory import DriverFactory
 
-# logging use time.time, which cause the time mock not work as intended
-# Since logs are not required for the UT, they are disabled
-logging.disable(logging.DEBUG)
-logging.disable(logging.DEBUG - 1)
-logging.disable(logging.WARNING)
-logging.disable(logging.INFO)
-logging.disable(logging.WARN)
-logging.disable(logging.FATAL)
-logging.disable(logging.CRITICAL)
 
-
+SAMPLES_AMOUNT = 118
 SIMULATION_FOLDER = "simulation"
-
-this_dir = os.path.dirname(__file__)
-with open(os.path.join(this_dir, SIMULATION_FOLDER,
-                       "pig_sim_extreme_pressure_in_peep.csv"), "r") as f:
-    reader = csv.DictReader(f)
-    timestamps = [float(row['timestamp']) for row in reader]
-
-DATA_SIZE = len(timestamps)
-timestamps = timestamps[:1] + timestamps  # first timestamp for InhaleStateHandler init
-
-time_mock = Mock()
-time_mock.side_effect = cycle(timestamps)
 
 
 @pytest.fixture
@@ -65,7 +44,6 @@ def events():
 
 
 @pytest.mark.xfail(reason="Can't handle extreme errors from sensors in peep")
-@patch('time.time', time_mock)
 def test_slope_recognition_with_error_in_peep(events, measurements, config):
     """Test error in peep doesn't cause the state machine change too early.
 
@@ -104,10 +82,11 @@ def test_slope_recognition_with_error_in_peep(events, measurements, config):
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
     oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
+    timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      oxygen_a2d)
+                      oxygen_a2d, timer)
 
-    for i in range(DATA_SIZE):
+    for _ in range(SAMPLES_AMOUNT):
         sampler.sampling_iteration()
 
     inhale_entry = sampler.vsm.entry_points_ts[VentilationState.Inhale][0]
@@ -116,7 +95,6 @@ def test_slope_recognition_with_error_in_peep(events, measurements, config):
 
 
 @pytest.mark.parametrize('scenario', ['low_error', 'high_error'])
-@patch('time.time', time_mock)
 def test_slope_recognition_with_error_in_inhale(events, measurements, config, scenario):
     """Test error in inhale doesn't cause the state machine change too early.
 
@@ -152,10 +130,11 @@ def test_slope_recognition_with_error_in_inhale(events, measurements, config, sc
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
     oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
+    timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      oxygen_a2d)
+                      oxygen_a2d, timer)
 
-    for i in range(DATA_SIZE):
+    for _ in range(SAMPLES_AMOUNT):
         sampler.sampling_iteration()
 
     hold_entry = sampler.vsm.entry_points_ts[VentilationState.Hold][0]
@@ -164,7 +143,6 @@ def test_slope_recognition_with_error_in_inhale(events, measurements, config, sc
 
 
 @pytest.mark.xfail(reason="Can't handle extreme errors from sensors in hold")
-@patch('time.time', time_mock)
 def test_slope_recognition_with_error_in_hold(events, measurements, config):
     """Test error in hold doesn't cause the state machine change too early.
 
@@ -202,10 +180,11 @@ def test_slope_recognition_with_error_in_hold(events, measurements, config):
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
     oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
+    timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      oxygen_a2d)
+                      oxygen_a2d, timer)
 
-    for i in range(DATA_SIZE):
+    for _ in range(SAMPLES_AMOUNT):
         sampler.sampling_iteration()
 
     exhale_entry = sampler.vsm.entry_points_ts[VentilationState.Exhale][0]
@@ -214,7 +193,6 @@ def test_slope_recognition_with_error_in_hold(events, measurements, config):
 
 
 @pytest.mark.parametrize('scenario', ['low_error', 'high_error'])
-@patch('time.time', time_mock)
 def test_slope_recognition_with_error_in_exhale(events, measurements, config, scenario):
     """Test error in exhale doesn't cause the state machine change too early.
 
@@ -250,10 +228,11 @@ def test_slope_recognition_with_error_in_exhale(events, measurements, config, sc
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
     oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
+    timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      oxygen_a2d)
+                      oxygen_a2d, timer)
 
-    for i in range(DATA_SIZE):
+    for _ in range(SAMPLES_AMOUNT):
         sampler.sampling_iteration()
 
     peep_entry = sampler.vsm.entry_points_ts[VentilationState.PEEP][0]

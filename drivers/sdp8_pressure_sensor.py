@@ -3,7 +3,8 @@ import logging
 import sys
 from time import sleep
 
-from errors import PiGPIOInitError, I2CDeviceNotFoundError, I2CReadError
+from errors import PiGPIOInitError, I2CDeviceNotFoundError,\
+    I2CReadError, I2CWriteError
 from .i2c_driver import I2cDriver
 
 
@@ -33,7 +34,8 @@ class SdpPressureSensor(I2cDriver):
 
     def _start_measure(self):
         try:
-            self._pig.i2c_write_device(self._dev, self.START_MEASURE_FLOW_AVG_CMD)
+            self._pig.i2c_write_device(self._dev,
+                                       self.START_MEASURE_FLOW_AVG_CMD)
         except pigpio.error as e:
             self.log.error("Could not write start_measure cmd to flow sensor. "
                            "Is the flow sensor connected?.")
@@ -60,7 +62,6 @@ class SdpPressureSensor(I2cDriver):
         b = number.to_bytes(2, byteorder=sys.byteorder, signed=False)
         return int.from_bytes(b, byteorder=sys.byteorder, signed=True)
 
-
     def _crc8(self, data):
         crc = self.CRC_INIT_VALUE
 
@@ -86,7 +87,8 @@ class SdpPressureSensor(I2cDriver):
                 crc_calc = self._crc8(pressure_raw[:2])
                 if not crc_calc == expected_crc:
                     print('bad crc')
-                return (self._pressure_to_flow(self._calculate_pressure(pressure_reading)))
+                return (self._pressure_to_flow(
+                    self._calculate_pressure(pressure_reading)))
             else:
                 self.log.error("Pressure sensor's measure data not ready")
 

@@ -1,5 +1,5 @@
 import csv
-from itertools import cycle
+
 import logging
 
 from drivers.mocks.sinus import sinus, truncate, add_noise, zero
@@ -24,6 +24,7 @@ class DriverFactory(object):
     OFFSET_O2_SATURATION = 3
     MOCK_O2_SATURATION_AMPLITUDE = BASE_O2_SATURATION + OFFSET_O2_SATURATION
     MOCK_O2_SATURATION_LOWER_LIMIT = BASE_O2_SATURATION - OFFSET_O2_SATURATION
+    VALID_SLOPE_INTERVALS = 0.05
 
     __instance = None
 
@@ -148,6 +149,22 @@ class DriverFactory(object):
             samples, lower_limit=self.MOCK_O2_SATURATION_LOWER_LIMIT,
             upper_limit=self.MOCK_O2_SATURATION_AMPLITUDE)
         return samples
+
+    @staticmethod
+    def get_timer_driver():
+        from drivers.timer import Timer
+        return Timer()
+
+    def get_mock_timer_driver(self):
+        from drivers.mocks.timer import MockTimer
+        if self.simulation_data == "sinus" or self.simulation_data == "dead" \
+                or self.simulation_data == "noiseless_sinus":
+            time_series = [0, 1 / self.MOCK_SAMPLE_RATE_HZ]
+        elif self.simulation_data == "noise":
+            time_series = [0, self.VALID_SLOPE_INTERVALS]
+        else:
+            time_series = generate_data_from_file("time elapsed (seconds)", self.simulation_data)
+        return MockTimer(time_series=time_series)
 
     @staticmethod
     def get_pressure_driver():

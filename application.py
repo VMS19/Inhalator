@@ -11,7 +11,7 @@ from data.alerts import AlertCodes
 class Application(object):
     """The Inhalator application"""
     TEXT_SIZE = 10
-    HARDWARE_SAMPLE_RATE = 50  # HZ
+    HARDWARE_SAMPLE_RATE = 33  # HZ
 
     __instance = None  # shared instance
 
@@ -49,6 +49,7 @@ class Application(object):
         # We want to alert that config.json is corrupted
         if Configurations.configuration_state() == ConfigurationState.CONFIG_CORRUPTED:
             events.alerts_queue.enqueue_alert(AlertCodes.NO_CONFIGURATION_FILE)
+            Configurations.instance().save_to_file()  # Create config file for future use.
 
         self.master_frame = MasterFrame(self.root,
                                         measurements=measurements,
