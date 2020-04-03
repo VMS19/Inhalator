@@ -21,8 +21,8 @@ def configure_logging(level):
     logger.setLevel(level)
     # create file handler which logs even debug messages
     file_handler = RotatingFileHandler('inhalator.log',
-                                       maxBytes=1024 ** 3,
-                                       backupCount=3)
+                                       maxBytes=2 ** 30,
+                                       backupCount=1)
     file_handler.setLevel(level)
     # create console handler
     steam_handler = logging.StreamHandler()

@@ -8,3 +8,4 @@ config.json
 .coverage
 .tox
 htmlcov
+*.csv*
