@@ -161,6 +161,14 @@ class FlowGraph(object):
                                     animated=True,
                                     linewidth=1)
 
+        self.x_axis_display_values = [0] * amount_of_xs
+        self.x_axis_graph, = \
+            self.flow_axis.plot(self.measurements.x_axis,
+                                self.x_axis_display_values,
+                                color="#ffffff",
+                                animated=True,
+                                linewidth=1)
+
         self.flow_canvas = FigureCanvasTkAgg(self.flow_figure, master=self.root)
 
         # Scale y values
@@ -179,8 +187,10 @@ class FlowGraph(object):
 
         self.flow_graph.set_ydata(self.flow_display_values)
         self.states_graph.set_ydata(self.states_display_values)
+        self.x_axis_graph.set_ydata(self.x_axis_display_values)
         self.flow_axis.draw_artist(self.flow_graph)
         self.flow_axis.draw_artist(self.states_graph)
+        self.flow_axis.draw_artist(self.x_axis_graph)
         self.flow_figure.canvas.blit(self.flow_axis.bbox)
         self.flow_figure.canvas.flush_events()
 

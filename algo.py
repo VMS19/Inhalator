@@ -246,10 +246,10 @@ class VentilationStateMachine(object):
         self._measurements.set_flow_value(flow_slm)
         self._measurements.set_saturation_percentage(o2_saturation_percentage)
 
-        if self.current_state == VentilationState.Inhale:
-            self.value_of_state = 50
-        elif self.current_state == VentilationState.Exhale:
-            self.value_of_state = -40
+        if accumulator is self.inspiration_volume:
+            self.value_of_state = 48
+        elif accumulator is self.expiration_volume:
+            self.value_of_state = -38
         else:
             self.value_of_state = 0
 
