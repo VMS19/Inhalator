@@ -247,9 +247,11 @@ class VentilationStateMachine(object):
         self._measurements.set_saturation_percentage(o2_saturation_percentage)
 
         if self.current_state == VentilationState.Inhale:
-            self.value_of_state = 600
+            self.value_of_state = 50
         elif self.current_state == VentilationState.Exhale:
-            self.value_of_state = -600
+            self.value_of_state = -40
+        else:
+            self.value_of_state = 0
 
         self._measurements.set_state_value(self.value_of_state)
 
