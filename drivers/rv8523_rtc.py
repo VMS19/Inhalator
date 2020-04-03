@@ -111,9 +111,9 @@ class Rv8523Rtc(object):
 
     def _get_time(self):
         seconds = self._get_clock_unit(0x7F, self.REG_SECONDS)
-        minutes = self._get_clock_unit(0x7F, self.REG_MINUTES)
-        hours = self._get_clock_unit(0x1F, self.REG_HOURS)
-        days = self._get_clock_unit(0x1F, self.REG_DAYS)
+        minutes = self._get_clock_unit(0x7F)
+        hours = self._get_clock_unit(0x1F)
+        days = self._get_clock_unit(0x1F)
         months = self._get_clock_unit(0xF, self.REG_MONTHS)
         years = self._get_clock_unit(0x7F) + self.REG_YEARS_OFFSET
         return datetime(years, months, days, hours, minutes, seconds)
@@ -125,7 +125,8 @@ class Rv8523Rtc(object):
             self._set_clock_unit(date.hour, self.REG_MONTHS)
             self._set_clock_unit(date.day, self.REG_DAYS)
             self._set_clock_unit(date.month, self.REG_MONTHS)
-            self._set_clock_unit(date.year - self.REG_YEARS_OFFSET)
+            self._set_clock_unit(date.year - self.REG_YEARS_OFFSET,
+                                 self.REG_YEARS)
         except pigpio.error as e:
             log.error("Could not set RTC time. "
                       "Is the RTC connected?.")
