@@ -14,14 +14,14 @@ class VolumeAccumulator(object):
         self.air_volume_liter = 0
         self.last_sample_ts = None
 
-    def accumulate(self, timestamp, air_flow):
+    def accumulate(self, timestamp, air_flow, air_flow_prev):
         if self.last_sample_ts is not None:
             elapsed_time_seconds = timestamp - self.last_sample_ts
             elapsed_time_minutes = elapsed_time_seconds / 60
             # flow is measured in Liter/minute, so we multiply the last read by
             # the time elapsed in minutes to calculate the accumulated volume
             # inhaled in this inhale.
-            self.air_volume_liter += air_flow * elapsed_time_minutes
+            self.air_volume_liter += (air_flow + air_flow_prev) / 2 * elapsed_time_minutes
         self.last_sample_ts = timestamp
 
     def reset(self):

@@ -96,7 +96,8 @@ class VentilationStateMachine(object):
         # We track inhale and exhale volume separately. Positive flow means
         # inhale, and negative flow means exhale.
         accumulator = self.inspiration_volume if flow_slm > 0 else self.expiration_volume
-        accumulator.accumulate(timestamp, abs(flow_slm))
+        accumulator.accumulate(timestamp, abs(flow_slm),
+                               abs(self.last_flow_sample))
 
         self._measurements.set_pressure_value(pressure_cmh2o)
         self._measurements.set_flow_value(flow_slm)
