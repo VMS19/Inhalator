@@ -57,9 +57,9 @@ class Rv8523Rtc(I2cDriver):
 
         # Set 24 hr mode
         ctrl_1[0] &= 0xF7
+        #|
         try:
-            self._pig.i2c_write_device(self._dev, [self.REG_CONTROL_1])
-            self._pig.i2c_write_device(self._dev, ctrl_1)
+            self._pig.i2c_write_device(self._dev, [self.REG_CONTROL_1, ctrl_1[0]])
         except pigpio.error as e:
             log.error("Could not write control 1 reg to RTC"
                       "Is the RTC connected?")
