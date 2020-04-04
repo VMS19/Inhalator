@@ -5,6 +5,7 @@ from enum import Enum
 from statistics import mean
 from collections import deque
 
+from numpy import trapz
 from scipy.stats import linregress
 
 from data.alerts import AlertCodes
@@ -17,22 +18,21 @@ logging.addLevelName(TRACE, 'TRACE')
 
 class Accumulator(object):
     def __init__(self):
-        self.integral = 0
-        self.last_sample_ts = None
+        self.samples = deque()
+        self.timestamps = deque()
 
-    def accumulate(self, timestamp, value):
-        if self.last_sample_ts is not None:
-            dt_sec = timestamp - self.last_sample_ts
-            dt_min = dt_sec / 60
-            # flow is measured in Liter/minute, so we multiply the last read by
-            # the time elapsed in minutes to calculate the accumulated volume
-            # inhaled in this inhale.
-            self.integral += value * dt_min
-        self.last_sample_ts = timestamp
+    def add_sample(self, timestamp, value):
+        # flow is measured in Liter/minute, so we convert it to liter/seconds
+        # because this is our time unit
+        self.samples.append(value / 60)
+        self.timestamps.append(timestamp)
+
+    def integrate(self):
+        return trapz(self.samples, x=self.timestamps)
 
     def reset(self):
-        self.integral = 0
-        self.last_sample_ts = None
+        self.samples.clear()
+        self.timestamps.clear()
 
 
 class RunningAvg(object):
@@ -183,22 +183,31 @@ class VentilationStateMachine(object):
         self.breathes_rate_meter = RateMeter(time_span_seconds=60, max_samples=4)
         self.inspiration_volume = Accumulator()
         self.expiration_volume = Accumulator()
+        self.insp_volumes = deque(maxlen=100)
+        self.exp_volumes = deque(maxlen=100)
+        self.insp_flows = deque(maxlen=1000)
+        self.exp_flows = deque(maxlen=1000)
 
     def enter_inhale(self, timestamp):
         self.last_breath_timestamp = timestamp
         self._measurements.bpm = self.breathes_rate_meter.beat(timestamp)
 
         # Update final expiration volume
-        exp_volume_ml = self.expiration_volume.integral * 1000
+        exp_volume_ml = abs(self.expiration_volume.integrate()) * 1000
         self.log.debug("TV exp: : %sml", exp_volume_ml)
         self._measurements.expiration_volume = exp_volume_ml
         self.expiration_volume.reset()
+        self.exp_volumes.append((timestamp, exp_volume_ml))
 
+        self.reset_min_values()
+
+    def enter_exhale(self, timestamp):
         # Update final inspiration volume
-        insp_volume_ml = self.inspiration_volume.integral * 1000
+        insp_volume_ml = self.inspiration_volume.integrate() * 1000
         self.log.debug("TV insp: : %sml", insp_volume_ml)
         self._measurements.inspiration_volume = insp_volume_ml
         self.inspiration_volume.reset()
+        self.insp_volumes.append((timestamp, insp_volume_ml))
 
         if self._config.volume_range.below(insp_volume_ml):
             self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW, timestamp)
@@ -210,10 +219,6 @@ class VentilationStateMachine(object):
             self.log.warning(
                 "volume too high %s, top threshold %s",
                 insp_volume_ml, self._config.volume_range.max)
-
-        self.reset_min_values()
-
-    def enter_exhale(self, timestamp):
         self.reset_peaks()
 
     def enter_peep(self, timestamp):
@@ -242,8 +247,10 @@ class VentilationStateMachine(object):
 
         # We track inhale and exhale volume separately. Positive flow means
         # inhale, and negative flow means exhale.
+        flow_recorder = self.insp_flows if flow_slm >= 0 else self.exp_flows
+        flow_recorder.append(timestamp)
         accumulator = self.inspiration_volume if flow_slm > 0 else self.expiration_volume
-        accumulator.accumulate(timestamp, abs(flow_slm))
+        accumulator.add_sample(timestamp, flow_slm)
         self._measurements.set_pressure_value(pressure_cmh2o)
         self._measurements.set_flow_value(flow_slm)
         self._measurements.set_saturation_percentage(o2_saturation_percentage)
@@ -277,6 +284,8 @@ class VentilationStateMachine(object):
 
         next_state = self.infer_state(flow_slop, flow_slm, pressure_slope, pressure_cmh2o)
         if next_state != self.current_state:
+            self.pressure_slope.reset()
+            self.flow_slope.reset()
             self.log.debug("%s -> %s", self.current_state, next_state)
             self.current_state = next_state
             self.entry_points_ts[next_state].append(timestamp)
