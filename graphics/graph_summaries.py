@@ -71,7 +71,6 @@ class PressurePeakSummary(GraphSummary):
 
 class VolumeSummary(GraphSummary):
     def value(self):
-        #Todo: fix exhale volume calculation
         return "{}/{}".format(
             round(self.measurements.inspiration_volume),
             round(self.measurements.expiration_volume))
@@ -92,7 +91,7 @@ class VolumeSummary(GraphSummary):
 
 class BPMSummary(GraphSummary):
     def value(self):
-        return "{:.0f}".format(self.measurements.bpm)
+        return f"{round(self.measurements.bpm)}"
 
     def name(self):
         return "Rate"

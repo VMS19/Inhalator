@@ -130,6 +130,8 @@ class CenterPane(object):
             self.pressure_graph.pressure_display_values)
         had_flow_change = self.pop_queue_to_list(self.measurements.flow_measurements,
             self.flow_graph.flow_display_values)
+        self.pop_queue_to_list(self.measurements.states,
+                               self.flow_graph.states_display_values)
 
         for graph in self.graphs:
             graph.update()

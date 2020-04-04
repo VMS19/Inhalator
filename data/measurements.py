@@ -19,6 +19,8 @@ class Measurements(object):
         self.o2_saturation_percentage = 20
         self.lock = Lock()
 
+        self.states = Queue(maxsize=40)
+
     def set_flow_value(self, new_value):
         with self.lock:
             # pop last item if queue is full
@@ -32,6 +34,13 @@ class Measurements(object):
             if self.pressure_measurements.full():
                 self.pressure_measurements.get()
             self.pressure_measurements.put(new_value)
+
+    def set_state_value(self, new_value):
+        with self.lock:
+            # pop last item if queue is full
+            if self.states.full():
+                self.states.get()
+            self.states.put(new_value)
 
     def get_flow_value(self, new_value):
         with self.lock:

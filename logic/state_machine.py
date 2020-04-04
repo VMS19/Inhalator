@@ -120,4 +120,7 @@ class VentilationStateMachine(object):
 
         if self.is_breath_cycle_finished():
             self.finish_breath_cycle(timestamp)
+            self._measurements.set_state_value(40)
+        else:
+            self._measurements.set_state_value(-40)
 

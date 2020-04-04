@@ -67,6 +67,7 @@ class DarkTheme(Theme):
     LIGHT_BLUE = "#2ec4b6"
     RED = "#e71d36"
     YELLOW = "#ff9f1c"
+    ORANGE = "#ffa500"
 
     BACKGROUND = "#191919"
     SURFACE = "#232323"
