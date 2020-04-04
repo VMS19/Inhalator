@@ -8,7 +8,7 @@ from .mux_i2c import MuxI2C
 
 log = logging.getLogger(__name__)
 
-mux = MuxI2C.get_instance()
+mux = MuxI2C()
 
 
 class AbpPressureSensor(I2cDriver):

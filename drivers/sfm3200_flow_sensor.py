@@ -18,7 +18,7 @@ from errors import (I2CReadError,
 
 log = logging.getLogger(__name__)
 
-mux = MuxI2C.get_instance()
+mux = MuxI2C()
 
 
 class Sfm3200(I2cDriver):
