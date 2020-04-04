@@ -1,4 +1,4 @@
-name: Running tests
+name: build
 
 on:
   push:
