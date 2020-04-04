@@ -65,6 +65,9 @@ class Sampler(object):
         self.log.log(TRACE, 'pressure: %s', pressure_cmh2o)
         self.log.log(TRACE, 'oxygen: %s', o2_saturation_percentage)
 
+
+
+
         self.vsm.update(
             pressure_cmh2o=pressure_cmh2o,
             flow_slm=flow_slm,
