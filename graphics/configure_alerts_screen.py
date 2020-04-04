@@ -7,7 +7,7 @@ from data.configurations import Configurations
 from tkinter import *
 
 from data.thresholds import (VolumeRange, PressureRange,
-                             RespiratoryRateRange, FlowRange)
+                             RespiratoryRateRange, O2Range)
 
 from graphics.imagebutton import ImageButton
 from graphics.themes import Theme
@@ -117,15 +117,15 @@ class Section(object):
         self.min_button.configure(text=f"MIN\n{self.range.min}")
 
 
-class VTISection(Section):
+class O2Section(Section):
     INDEX = 0
 
     @property
     def range(self):
-        return self.config.flow_range
+        return self.config.o2_range
 
 
-class MVISection(Section):
+class VolumeSection(Section):
     INDEX = 1
 
     @property
@@ -218,8 +218,8 @@ class ConfigureAlarmsScreen(object):
         self.configure_alerts_screen = Frame(master=self.root)
 
         # Sections
-        self.flow_section = VTISection(self, self.configure_alerts_screen)
-        self.volume_section = MVISection(self, self.configure_alerts_screen)
+        self.flow_section = O2Section(self, self.configure_alerts_screen)
+        self.volume_section = VolumeSection(self, self.configure_alerts_screen)
         self.pressure_section = PressureSection(self, self.configure_alerts_screen)
         self.resp_rate_section = RespRateSection(self, self.configure_alerts_screen)
 

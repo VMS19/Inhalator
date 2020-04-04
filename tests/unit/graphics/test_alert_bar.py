@@ -162,3 +162,19 @@ def test_timestamp_label_resets_on_new_alert(alert_bar: IndicatorAlertBar):
 def test_version_label(alert_bar: IndicatorAlertBar):
     from graphics.version import __version__
     assert __version__ in alert_bar.version_label["text"]
+
+
+def test_alert_on_high_oxygen(alert_bar: IndicatorAlertBar):
+    alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.OXYGEN_HIGH,
+                                                     alert_bar.drivers.acquire_driver("timer").get_time())
+    alert_bar.update()
+
+    assert alert_bar.message_label["text"] == "Oxygen Too High"
+
+
+def test_alert_on_low_oxygen(alert_bar: IndicatorAlertBar):
+    alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.OXYGEN_LOW,
+                                                     alert_bar.drivers.acquire_driver("timer").get_time())
+    alert_bar.update()
+
+    assert alert_bar.message_label["text"] == "Oxygen Too Low"

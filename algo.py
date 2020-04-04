@@ -234,7 +234,7 @@ class VentilationStateMachine(object):
         self._measurements.peep_min_pressure = self.min_pressure
         self.min_pressure = sys.maxsize
 
-    def update(self, pressure_cmh2o, flow_slm, o2_saturation_percentage, timestamp):
+    def update(self, pressure_cmh2o, flow_slm, o2_percentage, timestamp):
         if self.last_breath_timestamp is None:
             # First time initialization. Not done in __init__ to avoid reading
             # the time in this class, which improves its testability.
@@ -253,13 +253,14 @@ class VentilationStateMachine(object):
         accumulator.add_sample(timestamp, flow_slm)
         self._measurements.set_pressure_value(pressure_cmh2o)
         self._measurements.set_flow_value(flow_slm)
-        self._measurements.set_saturation_percentage(o2_saturation_percentage)
+        self._measurements.set_saturation_percentage(o2_percentage)
 
         # Update peak pressure/flow values
         self.peak_pressure = max(self.peak_pressure, pressure_cmh2o)
         self.min_pressure = min(self.min_pressure, pressure_cmh2o)
         self.peak_flow = max(self.peak_flow, flow_slm)
 
+        # Publish alerts for Pressure
         if self._config.pressure_range.over(pressure_cmh2o):
             self.log.warning(
                 "pressure too high %s, top threshold %s",
@@ -270,6 +271,23 @@ class VentilationStateMachine(object):
                 "pressure too low %s, bottom threshold %s",
                 pressure_cmh2o, self._config.pressure_range.min)
             self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW, timestamp)
+
+        # Publish alerts for Oxygen
+            # Oxygen too high
+        if self._config.o2_range.over(o2_percentage):
+            self.log.warning(
+                f"Oxygen percentage too high "
+                f"({o2_percentage}% > {self._config.o2_range.max}%)")
+            self._events.alerts_queue.enqueue_alert(
+                AlertCodes.OXYGEN_HIGH, timestamp)
+
+            # Oxygen too low
+        elif self._config.o2_range.below(o2_percentage):
+            self.log.warning(
+                f"Oxygen percentage too low "
+                f"({o2_percentage}% < {self._config.o2_range.min}%)")
+            self._events.alerts_queue.enqueue_alert(
+                AlertCodes.OXYGEN_LOW, timestamp)
 
         self.check_transition(
             flow_slm=flow_slm,
@@ -368,5 +386,5 @@ class Sampler(object):
         self.vsm.update(
             pressure_cmh2o=pressure_cmh2o,
             flow_slm=flow_slm,
-            o2_saturation_percentage=o2_saturation_percentage,
+            o2_percentage=o2_saturation_percentage,
             timestamp=ts)
