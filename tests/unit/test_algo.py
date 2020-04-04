@@ -1,13 +1,18 @@
 import csv
 import os
+import time
 
 import pytest
+import freezegun
 from pytest import approx
+
 
 from algo import RunningSlope, VentilationStateMachine, VentilationState
 from data.events import Events
 from data.measurements import Measurements
 from drivers.mocks.sinus import add_noise
+
+from tests.utils import SamplesCSVParser
 
 
 def test_slope_finder_sanity():
@@ -38,32 +43,20 @@ def test_slope_straight_line_with_noise():
             assert (sigma / 2) >= slope >= -(sigma / 2)
 
 
-@pytest.fixture
-def real_data():
-    this_dir = os.path.dirname(__file__)
-    with open(os.path.join(this_dir, "pressure_data_pig.csv"), "r") as f:
-        data = list(csv.reader(f))
-    t = [float(d[0]) for d in data]
-    v = [float(d[1]) for d in data]
-    return t, v
-
-
-def test_correct_state_transitions(real_data):
-    t, v = real_data
+@freezegun.freeze_time("2000-02-12")
+def test_correct_state_transitions():
+    parser = SamplesCSVParser()
     vsm = VentilationStateMachine(Measurements(), Events())
-    for timestamp, pressure in zip(t, v):
+    for t, p, f, o in parser.samples(start=0, end=200):
         vsm.update(
-            pressure_cmh2o=pressure,
-            flow_slm=0,
-            o2_saturation_percentage=0,
-            timestamp=timestamp)
+            pressure_cmh2o=p,
+            flow_slm=f,
+            o2_saturation_percentage=o,
+            timestamp=t)
 
     inhale_entry = vsm.entry_points_ts[VentilationState.Inhale][0]
-    hold_entry = vsm.entry_points_ts[VentilationState.Hold][0]
     exhale_entry = vsm.entry_points_ts[VentilationState.Exhale][0]
-    peep_entry = vsm.entry_points_ts[VentilationState.PEEP][0]
 
-    assert inhale_entry == approx(4.41, rel=0.1)
-    assert hold_entry == approx(4.95, rel=0.1)
-    assert exhale_entry == approx(6.07, rel=0.1)
-    assert peep_entry == approx(6.615, rel=0.1)
+    assert inhale_entry == approx(time.time() + 0.721782319877363, rel=0.1)
+    assert exhale_entry == approx(time.time() + 4.64647368421053, rel=0.1)
+
