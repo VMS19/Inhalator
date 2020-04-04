@@ -137,6 +137,3 @@ class Rv8523Rtc(I2cDriver):
             log.error("Could not read from RTC. "
                       "Is the RTC connected?")
             raise I2CReadError("i2c write failed")
-
-    def close(self):
-        super().close()
