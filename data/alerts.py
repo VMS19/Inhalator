@@ -42,7 +42,11 @@ class Alert(object):
 
     def __init__(self, alert_code, timestamp=None):
         self.code = alert_code
-        self.timestamp = timestamp
+        if timestamp is None:
+            self.timestamp = time.time()
+
+        else:
+            self.timestamp = timestamp
 
     def __eq__(self, other):
         return self.code == other
