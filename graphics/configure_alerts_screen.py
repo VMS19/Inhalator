@@ -160,6 +160,7 @@ class UpOrDownSection(object):
         self.frame = Frame(master=root, bd=0, bg="red",)
         self.up_button = ImageButton(master=self.frame,
                                      image_path=self.UP_IMAGE_PATH,
+                                     repeatdelay=500, repeatinterval=100,
                                      compound="center",
                                      bg=Theme.active().SURFACE,
                                      activebackground="#514959",
@@ -168,6 +169,7 @@ class UpOrDownSection(object):
         self.down_button = ImageButton(master=self.frame,
                                        image_path=self.DOWN_IMAGE_PATH,
                                        compound="center",
+                                       repeatdelay=500, repeatinterval=100,
                                        bg=Theme.active().SURFACE,
                                        activebackground="#514959",
                                        command=self.parent.on_down_button_click)
@@ -256,7 +258,6 @@ class ConfigureAlarmsScreen(object):
 
         for section in self.threshold_sections:
             section.update()
-
 
     def on_down_button_click(self):
         if self.selected_threshold is None:  # Dummy-proof GUI
