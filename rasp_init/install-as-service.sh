@@ -20,7 +20,7 @@ echo "enabling pigpiod"
 sudo systemctl enable pigpiod
 echo "done!"
 
-echo "disable NTP time, get RTC time"
+echo "disable NTP time, use time from RTC"
 sudo timedatectl set-ntp false
 echo "done!"
 

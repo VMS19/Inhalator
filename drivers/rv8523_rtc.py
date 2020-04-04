@@ -29,15 +29,9 @@ class Rv8523Rtc(I2cDriver):
         super().__init__()
 
         # Start RTC
-        try:
-            self._rtc_start()
-        except pigpio.error as e:
-            raise e
+        self._rtc_start()
 
         log.debug("rtc initialized")
-
-    def set_24h_mode(self):
-        pass
 
     def _rtc_start(self):
 
@@ -59,7 +53,8 @@ class Rv8523Rtc(I2cDriver):
         ctrl_1[0] &= 0xF7
 
         try:
-            self._pig.i2c_write_device(self._dev, [self.REG_CONTROL_1, ctrl_1[0]])
+            self._pig.i2c_write_device(self._dev,
+                                       [self.REG_CONTROL_1, ctrl_1[0]])
         except pigpio.error as e:
             log.error("Could not write control 1 reg to RTC"
                       "Is the RTC connected?")
@@ -76,11 +71,8 @@ class Rv8523Rtc(I2cDriver):
         return tens + units
 
     def _set_clock_unit(self, value, reg):
-        try:
-            value = self.int_to_bcd(value)
-            self._pig.i2c_write_device(self._dev, [reg, value])
-        except pigpio.error as e:
-            raise e
+        value = self.int_to_bcd(value)
+        self._pig.i2c_write_device(self._dev, [reg, value])
 
     def _get_clock_unit(self, mask, reg=None):
         if reg is not None:
@@ -145,3 +137,6 @@ class Rv8523Rtc(I2cDriver):
             log.error("Could not read from RTC. "
                       "Is the RTC connected?")
             raise I2CReadError("i2c write failed")
+
+    def close(self):
+        super().close()
