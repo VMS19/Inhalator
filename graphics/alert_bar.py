@@ -25,7 +25,7 @@ class IndicatorAlertBar(object):
                          height=self.height, width=self.width)
 
         self.message_label = Label(master=self.bar,
-                                   font=("Roboto", 34),
+                                   font=("Roboto", 32),
                                    text="OK",
                                    bg=Theme.active().ALERT_BAR_OK,
                                    fg=Theme.active().ALERT_BAR_OK_TXT,)
@@ -50,7 +50,7 @@ class IndicatorAlertBar(object):
 
     def render(self):
         self.bar.place(relx=0, rely=0)
-        self.message_label.place(anchor="nw", relx=0.03, rely=0)
+        self.message_label.place(anchor="nw", relx=0.03, rely=0.05)
         self.timestamp_label.place(anchor="nw", relx=0.04, rely=0.7)
         self.version_label.place(anchor="nw", relx=0.8, rely=0.4)
 
