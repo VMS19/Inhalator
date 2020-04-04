@@ -156,7 +156,7 @@ class VentilationStateMachine(object):
         self.flow_slope = RunningSlope(num_samples=7)
         self.pressure_slope = RunningSlope(num_samples=7)
         self._config = Configurations.instance()
-        self.last_breath_timestamp = time.time()
+        self.last_breath_timestamp = None
         self.current_state = VentilationState.PEEP
 
         # Data structure to record last 100 entry timestamp for each state.
@@ -235,6 +235,10 @@ class VentilationStateMachine(object):
         self.min_pressure = sys.maxsize
 
     def update(self, pressure_cmh2o, flow_slm, o2_saturation_percentage, timestamp):
+        if self.last_breath_timestamp is None:
+            # First time initialization. Not done in __init__ to avoid reading
+            # the time in this class, which improves its testability.
+            self.last_breath_timestamp = timestamp
         # First - check how long it was since last breath
         seconds_from_last_breath = timestamp - self.last_breath_timestamp
         if seconds_from_last_breath >= self.NO_BREATH_ALERT_TIME_SECONDS:
@@ -304,13 +308,15 @@ class VentilationStateMachine(object):
 
 class Sampler(object):
 
-    def __init__(self, measurements, events, flow_sensor, pressure_sensor, oxygen_a2d):
+    def __init__(self, measurements, events, flow_sensor, pressure_sensor,
+                 oxygen_a2d, timer):
         super(Sampler, self).__init__()
         self.log = logging.getLogger(self.__class__.__name__)
         self._measurements = measurements  # type: Measurements
         self._flow_sensor = flow_sensor
         self._pressure_sensor = pressure_sensor
         self._oxygen_a2d = oxygen_a2d
+        self._timer = timer
         self._config = Configurations.instance()
         self._events = events
         self.vsm = VentilationStateMachine(measurements, events)
@@ -345,7 +351,7 @@ class Sampler(object):
         return None if any(errors) else data
 
     def sampling_iteration(self):
-        ts = time.time()
+        ts = self._timer.get_time()
         # Read from sensors
         result = self.read_sensors(ts)
         if result is None:

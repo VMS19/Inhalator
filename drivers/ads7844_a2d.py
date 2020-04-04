@@ -69,8 +69,8 @@ class Ads7844A2D(object):
                                         self.XFER_SPEED_HZ,
                                         self.PERIPHERAL_MINIMAL_DELAY)
 
-            sample_reading = ((sample_raw[1] & 0x7f) <<\
-                    self.FIRST_READING_BIT_SHIFT) |\
+            sample_reading = ((sample_raw[1] & 0x7f) <<
+                              self.FIRST_READING_BIT_SHIFT) |\
                 sample_raw[2] >> self.SECOND_READING_BIT_SHIFT
         except IOError as e:
             log.error("Failed to read ads7844."
@@ -80,6 +80,10 @@ class Ads7844A2D(object):
         return self._calibrate_a2d(sample_reading)
 
     def read(self, input_mode=MODE_SGL, power_down_mode=PD_DISABLED):
-        sample_res = [self._sample_a2d(channel, input_mode, power_down_mode)\
-                for channel in self.SAMPLE_CHANNELS]
+        sample_res = [self._sample_a2d(channel, input_mode, power_down_mode)
+                      for channel in self.SAMPLE_CHANNELS]
         return sample_res[0] * self.VOLTAGE_FACTOR
+
+    def close(self):
+        if self._spi is not None:
+            self._spi.close()
