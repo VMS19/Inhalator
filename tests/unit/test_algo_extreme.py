@@ -43,17 +43,18 @@ def events():
     return Events()
 
 
-@pytest.mark.xfail(reason="Can't handle extreme errors from sensors in peep")
-def test_slope_recognition_with_error_in_peep(events, measurements, config):
-    """Test error in peep doesn't cause the state machine change too early.
+@pytest.mark.parametrize("scenario", ['pressure', 'flow',
+                                      pytest.param('both',marks=pytest.mark.xfail(reason="Can't handle simultaneous error in pressure and flow"))])
+def test_slope_recognition_with_error_in_exhale(events, measurements, config, scenario):
+    """Test error in exhale doesn't cause the state machine change too early.
 
     Flow:
-        * Run pig simulation with two errors in the peep stage
-            - One error higher value
-            - One error lower value
+        * Run pig simulation with two errors in the peep exhale
+            - One error higher value (pressure, flow or together)
+            - One error lower value (pressure, flow or together)
         * Check The entry time to inhale wasn't changed.
 
-    Simulation graph:
+    Simulation graphs:
                                         Pig simulation pressure graph
 
                                               XXXXXXXXXXXXXX
@@ -72,10 +73,27 @@ def test_slope_recognition_with_error_in_peep(events, measurements, config):
 
                   X
 
+                               Pig simulation flow graph
+
+                                         X
+                                       XXXX
+               Check inhale entry     XX  X
+               time wasn't changed   XX   X
+                                    XX     X
+                         +         XX      XXX
+           X             |       XXX         XX
+                         |     XXX            XXX
+                         |    XX                XXXXX
+                         |   XX                     XXXXXXX
+                         | XXX                             XXXXXXX
+                         vXX                                     XXXXXX
+        XXX XXXXXXXX XXXXX                                            XXXXXXXXXX
+
+                    X
     """
     this_dir = os.path.dirname(__file__)
     file_path = os.path.join(this_dir, SIMULATION_FOLDER,
-                             "pig_sim_extreme_pressure_in_peep.csv")
+                             f"pig_sim_extreme_in_exhale_{scenario}.csv")
     driver_factory = DriverFactory(simulation_mode=True,
                                    simulation_data=file_path)
 
@@ -94,134 +112,41 @@ def test_slope_recognition_with_error_in_peep(events, measurements, config):
     assert inhale_entry == approx(4.41, rel=0.1)
 
 
-@pytest.mark.parametrize('scenario', ['low_error', 'high_error'])
+# pytest.mark.xfail("Can't handle error of drop in flow below threshold")
+@pytest.mark.parametrize("scenario", ['below',
+                                      pytest.param('pass', marks=pytest.mark.xfail(reason="Can't handle error of drop in flow below threshold"))])
 def test_slope_recognition_with_error_in_inhale(events, measurements, config, scenario):
     """Test error in inhale doesn't cause the state machine change too early.
 
     Flow:
         * Run pig simulation with two errors in the inhale stage
-            - One error higher value
-            - One error lower value
-        * Check The entry time to hold wasn't changed.
-
-    Simulation graph:
-                                Pig simulation pressure graph
-
-                    X                     XXXXXXXXXXXXXX
-     Check hold entry      +----------->XXX            XXX
-     time wasn't changed            XXX                   XX
-                                  XX                       X
-                                XXX                        XX
-                               XX                           X
-                             XX                             XX
-                           XX                                X
-                         XXX                                  X
-                      XXX                                     X
-                   X XX                                        X
-    XXXXXXXXXXXXXXXX                   X                        XXXXXXXXXXXX
-
-    """
-    this_dir = os.path.dirname(__file__)
-    file_path = os.path.join(this_dir, SIMULATION_FOLDER,
-                             f"pig_sim_extreme_pressure_in_inhale_{scenario}.csv")
-    driver_factory = DriverFactory(simulation_mode=True,
-                                   simulation_data=file_path)
-
-    flow_sensor = driver_factory.acquire_driver("flow")
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      oxygen_a2d, timer)
-
-    for _ in range(SAMPLES_AMOUNT):
-        sampler.sampling_iteration()
-
-    hold_entry = sampler.vsm.entry_points_ts[VentilationState.Hold][0]
-
-    assert hold_entry == approx(4.95, rel=0.1)
-
-
-@pytest.mark.xfail(reason="Can't handle extreme errors from sensors in hold")
-def test_slope_recognition_with_error_in_hold(events, measurements, config):
-    """Test error in hold doesn't cause the state machine change too early.
-
-    Flow:
-        * Run pig simulation with two errors in the hold stage
-            - One error higher value
-            - One error lower value
-        * Check The entry time to exhale wasn't changed.
-
-    Simulation graph:
-                                                     X
-
-                                Pig simulation pressure graph
-                                                                 Check exhale entry
-                                          XXX XXXXXXX XX         time wasn't changed
-                                       XXXX            XXX<-----+
-                                    XXX                   XX
-                                  XX                       X
-                                XXX                        XX
-                               XX                           X
-                             XX                             XX
-                           XX                                X
-                         XXX                                  X
-                      XXX                                     X
-                   XXXX                                        X
-    XXXXXXXXXXXXXXXX                         X                  XXXXXXXXXXXX
-
-    """
-    this_dir = os.path.dirname(__file__)
-    file_path = os.path.join(this_dir, SIMULATION_FOLDER,
-                             "pig_sim_extreme_pressure_in_hold.csv")
-    driver_factory = DriverFactory(simulation_mode=True,
-                                   simulation_data=file_path)
-
-    flow_sensor = driver_factory.acquire_driver("flow")
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      oxygen_a2d, timer)
-
-    for _ in range(SAMPLES_AMOUNT):
-        sampler.sampling_iteration()
-
-    exhale_entry = sampler.vsm.entry_points_ts[VentilationState.Exhale][0]
-
-    assert exhale_entry == approx(6.07, rel=0.1)
-
-
-@pytest.mark.parametrize('scenario', ['low_error', 'high_error'])
-def test_slope_recognition_with_error_in_exhale(events, measurements, config, scenario):
-    """Test error in exhale doesn't cause the state machine change too early.
-
-    Flow:
-        * Run pig simulation with two errors in the exhale stage
-            - One error higher value
-            - One error lower value
+            - One error low value while increasing
+            - One error low value while decreasing
+            * Each of the errors once passing -2 threshold, and once not.
         * Check The entry time to peep wasn't changed.
 
     Simulation graph:
-                                Pig simulation pressure graph
+                               Pig simulation flow graph
 
-                                          XXXXXXXXXXXXXX       X
-                                       XXXX            XX
-                                    XXX                   XX
-                                  XX                       X
-                                XXX                        XX       Check peep entry
-                               XX                           X       time wasn't changed
-                             XX                             XX  +-->
-                           XX                                X  |
-                         XXX                                  X |
-                      XXX                                     X |
-                   XXXX                                         +
-    XXXXXXXXXXXXXXXX                                     X      XXXXXXXXXXXX
+                                         X
+                                       XXXX
+                                      XX  X
+                                     XX   X                Check exhale entry
+                                    XX     X               time wasn't changed
+                                   XX      XXX
+                                  XX         XX                        +
+                               XX             XXX                      |
+                              XX                XXX X                  |
+                             XX                     XXXXXXX            |
+                           XXX                             XXXXXXX     |
+                          XX     Xbelow            Xbelow        XXXXXXv
+        XXXXXXXXXXXXXXXXXX                                            XXXXXXXXXX
 
+                                 Xpass             Xpass
     """
     this_dir = os.path.dirname(__file__)
     file_path = os.path.join(this_dir, SIMULATION_FOLDER,
-                             f"pig_sim_extreme_pressure_in_exhale_{scenario}.csv")
+                             f"pig_sim_extreme_in_inhale_{scenario}_threshold.csv")
     driver_factory = DriverFactory(simulation_mode=True,
                                    simulation_data=file_path)
 
@@ -235,6 +160,6 @@ def test_slope_recognition_with_error_in_exhale(events, measurements, config, sc
     for _ in range(SAMPLES_AMOUNT):
         sampler.sampling_iteration()
 
-    peep_entry = sampler.vsm.entry_points_ts[VentilationState.PEEP][0]
+    peep_entry = sampler.vsm.entry_points_ts[VentilationState.Exhale][0]
 
-    assert peep_entry == approx(6.615, rel=0.1)
+    assert peep_entry == approx(6.09, rel=0.1)
