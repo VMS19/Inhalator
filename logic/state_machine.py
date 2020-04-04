@@ -67,7 +67,6 @@ class VentilationStateMachine(object):
         self._measurements.inspiration_volume = insp_volume_ml
         self.expiration_volume.reset()
         self.inspiration_volume.reset()
-        self.reset_min_values()
 
         self.check_volume_thresholds(timestamp)
         self.reset_peaks()
