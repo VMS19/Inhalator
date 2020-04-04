@@ -11,7 +11,7 @@ from data.events import Events
 from data.measurements import Measurements
 from drivers.driver_factory import DriverFactory
 from logic.sampler import Sampler
-from logic.wd_task import WdTask
+from wd_task import WdTask
 
 BYTES_IN_GB = 2 ** 30
 
