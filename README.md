@@ -1,5 +1,5 @@
 # Breathing Air
-![](https://github.com/Reznic/Inhalator/workflows/Running%20Tests/badge.svg)
+![](https://github.com/Reznic/Inhalator/workflows/build/badge.svg)
 
 
 Turning stupid BiPAP into full-scale inhalators. 
