@@ -1,4 +1,4 @@
-timestamp,pressure,flow,oxygen
+time elapsed (seconds),pressure,flow,oxygen
 2.79,1.641287617,15.90110328,1
 2.835,1.267850767,14.85051628,1
 2.88,1.267850767,13.81494152,1
