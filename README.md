@@ -1,5 +1,6 @@
 # Breathing Air
-[![Build Status](https://travis-ci.org/Reznic/Inhalator.svg?branch=master)](https://travis-ci.org/Reznic/Inhalator)
+[![Build Status](https://github.com/reznic/Inhalator/workflows/build/badge.svg)]
+
 
 Turning stupid BiPAP into full-scale inhalators. 
 
