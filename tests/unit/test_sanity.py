@@ -1,13 +1,13 @@
 import pytest
 
-from algo import Sampler
-from data.measurements import Measurements
-from data.events import Events
 from data.configurations import Configurations
+from data.events import Events
+from data.measurements import Measurements
 from data.thresholds import (FlowRange, PressureRange,
                              RespiratoryRateRange, VolumeRange)
 from drivers.driver_factory import DriverFactory
 from drivers.mocks.sensor import MockSensor
+from logic.sampler import Sampler
 
 
 @pytest.fixture

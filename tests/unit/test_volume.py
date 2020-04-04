@@ -1,22 +1,18 @@
-import csv
-import logging
 import os
-from itertools import product, cycle
+import os
 import time
-from unittest.mock import patch, Mock
 
 import pytest
 from pytest import approx
 
-from algo import Sampler
 from data import alerts
-from data.measurements import Measurements
-from data.events import Events
 from data.configurations import Configurations
+from data.events import Events
+from data.measurements import Measurements
 from data.thresholds import (FlowRange, PressureRange,
                              RespiratoryRateRange, VolumeRange)
 from drivers.driver_factory import DriverFactory
-
+from logic.sampler import Sampler
 
 MICROSECOND = 10 ** -6
 SIMULATION_LENGTH = 1  # seconds

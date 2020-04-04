@@ -4,10 +4,11 @@ import os
 import pytest
 from pytest import approx
 
-from algo import RunningSlope, VentilationStateMachine, VentilationState
 from data.events import Events
 from data.measurements import Measurements
 from drivers.mocks.sinus import add_noise
+from logic.state_machine import VentilationStateMachine, VentilationState
+from logic.utils import RunningSlope
 
 
 def test_slope_finder_sanity():

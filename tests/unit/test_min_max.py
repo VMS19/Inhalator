@@ -1,20 +1,15 @@
-import csv
-import logging
 import os
-import time
-from itertools import cycle
-from unittest.mock import Mock, patch
 
 import pytest
 from pytest import approx
 
-from algo import Sampler
-from data.measurements import Measurements
-from data.events import Events
 from data.configurations import Configurations
+from data.events import Events
+from data.measurements import Measurements
 from data.thresholds import (FlowRange, PressureRange,
                              RespiratoryRateRange, VolumeRange)
 from drivers.driver_factory import DriverFactory
+from logic.sampler import Sampler
 
 SAMPLES_AMOUNT = 118
 SIMULATION_FOLDER = "simulation"

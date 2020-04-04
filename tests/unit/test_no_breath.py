@@ -1,17 +1,13 @@
-import logging
-from itertools import cycle
-from unittest.mock import Mock, patch
-
 import pytest
 
-from algo import Sampler
 from data import alerts
-from data.measurements import Measurements
-from data.events import Events
 from data.configurations import Configurations
+from data.events import Events
+from data.measurements import Measurements
 from data.thresholds import (FlowRange, PressureRange,
                              RespiratoryRateRange, VolumeRange)
 from drivers.driver_factory import DriverFactory
+from logic.sampler import Sampler
 
 SIMULATION_SAMPLES = 1000
 NO_BREATH_TIME = 13  # seconds
