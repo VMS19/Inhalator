@@ -83,3 +83,6 @@ class Ads7844A2D(object):
                 for channel in self.SAMPLE_CHANNELS]
         return sample_res[0]
 
+    def close(self):
+        if self._spi is not None:
+            self._spi.close()
