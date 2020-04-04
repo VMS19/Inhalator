@@ -53,8 +53,10 @@ class Rv8523Rtc(I2cDriver):
             raise I2CWriteError("i2c write failed")
 
         # Disable stop bit
-        ctrl_1[0] |= 0x20
+        ctrl_1[0] &= 0xDF
 
+        # Set 24 hr mode
+        ctrl_1[0] &= 0xF7
         try:
             self._pig.i2c_write_device(self._dev, [self.REG_CONTROL_1])
             self._pig.i2c_write_device(self._dev, ctrl_1)
@@ -103,7 +105,7 @@ class Rv8523Rtc(I2cDriver):
         try:
             self._set_clock_unit(date.second, self.REG_SECONDS)
             self._set_clock_unit(date.minute, self.REG_MINUTES)
-            self._set_clock_unit(date.hour, self.REG_MONTHS)
+            self._set_clock_unit(date.hour, self.REG_HOURS)
             self._set_clock_unit(date.day, self.REG_DAYS)
             self._set_clock_unit(date.month, self.REG_MONTHS)
             self._set_clock_unit(date.year - self.REG_YEARS_OFFSET,
