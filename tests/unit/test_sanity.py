@@ -4,7 +4,7 @@ from algo import Sampler
 from data.measurements import Measurements
 from data.events import Events
 from data.configurations import Configurations
-from data.thresholds import (FlowRange, PressureRange,
+from data.thresholds import (O2Range, PressureRange,
                              RespiratoryRateRange, VolumeRange)
 from drivers.driver_factory import DriverFactory
 from drivers.mocks.sensor import MockSensor
@@ -18,7 +18,7 @@ def driver_factory():
 @pytest.fixture
 def config():
     c = Configurations.instance()
-    c.flow_range = FlowRange(min=0, max=30)
+    c.o2_range = O2Range(min=0, max=100)
     c.pressure_range = PressureRange(min=0, max=30)
     c.resp_rate_range = RespiratoryRateRange(min=0, max=30)
     c.volume_range = VolumeRange(min=0, max=30)
