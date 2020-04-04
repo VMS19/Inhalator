@@ -100,6 +100,7 @@ def main():
         watchdog = drivers.acquire_driver("wd")
         oxygen_a2d = drivers.acquire_driver("oxygen_a2d")
         timer = drivers.acquire_driver("timer")
+        alert_control = drivers.acquire_driver("alert_control")
 
         sampler = Sampler(measurements=measurements, events=events,
                           flow_sensor=flow_sensor,
@@ -121,6 +122,7 @@ def main():
         app.run()
 
     finally:
+        alert_control.alert_system_fault_on()
         if drivers is not None:
             drivers.close_all_drivers()
 
