@@ -3,22 +3,13 @@ import logging
 from datetime import datetime
 import subprocess
 
-from errors import PiGPIOInitError, I2CDeviceNotFoundError, \
-                I2CReadError, I2CWriteError
+from errors import I2CReadError, I2CWriteError
+from .i2c_driver import I2cDriver
 
 log = logging.getLogger(__name__)
 
-def set_system_time(dt):
-    second = str(dt.second)
-    minute = str(dt.minute)
-    hour = str(dt.hour)
-    day = str(dt.day)
-    month = str(dt.month)
-    year = str(dt.year)
-    subprocess.call("sudo date -s '{}-{}-{} {}:{}:{}' > /dev/null".
-        format(year, month, day, hour, minute, second), shell=True)
 
-class Rv8523Rtc(object):
+class Rv8523Rtc(I2cDriver):
     """Driver class for rv8523 rtc."""
     I2C_BUS = 1
     I2C_ADDRESS = 0x68
@@ -35,26 +26,7 @@ class Rv8523Rtc(object):
     REG_YEARS_OFFSET = 2000
 
     def __init__(self):
-        try:
-            self._pig = pigpio.pi()
-        except pigpio.error as e:
-            log.error("Could not init pigpio lib. Did you run 'sudo pigpiod'?")
-            raise PiGPIOInitError("pigpio library init error")
-
-        if self._pig is None:
-            log.error("Could not init pigpio lib. Did you run 'sudo pigpiod'?")
-            raise PiGPIOInitError("pigpio library init error")
-
-        try:
-            self._dev = self._pig.i2c_open(self.I2C_BUS, self.I2C_ADDRESS)
-        except AttributeError:
-            log.error("Could not init pigpio lib. Did you run 'sudo pigpiod'?")
-            raise PiGPIOInitError("pigpio library init error")
-
-        except pigpio.error:
-            log.error("Could not open i2c connection to rtc"
-                      "Is it connected?")
-            raise I2CDeviceNotFoundError("i2c connection open failed")
+        super().__init__()
 
         # Start RTC
         try:
@@ -62,7 +34,7 @@ class Rv8523Rtc(object):
         except pigpio.error as e:
             raise e
 
-        log.info("rtc initialized")
+        log.debug("rtc initialized")
 
     def set_24h_mode(self):
         pass
@@ -140,6 +112,23 @@ class Rv8523Rtc(object):
             log.error("Could not set RTC time"
                       "Is the RTC connected?")
             raise I2CWriteError("i2c write failed")
+
+    def set_system_time(self):
+        ''' Read RTC and set as system time '''
+        try:
+            dt = self.read()
+        except Exception as e:
+            raise e
+
+        second = str(dt.second)
+        minute = str(dt.minute)
+        hour = str(dt.hour)
+        day = str(dt.day)
+        month = str(dt.month)
+        year = str(dt.year)
+        subprocess.call("sudo date -s '{}-{}-{} {}:{}:{}' > /dev/null".
+                        format(year, month, day, hour, minute, second),
+                        shell=True)
 
     def read(self):
         """ Returns date years to seconds """
