@@ -31,7 +31,7 @@ class IndicatorAlertBar(object):
                                    fg=Theme.active().ALERT_BAR_OK_TXT,)
 
         self.timestamp_label = Label(master=self.root, font=("Roboto", 12),
-                                     text="Lorem ipsum dolor sit amet",
+                                     text="",
                                      fg=Theme.active().ALERT_BAR_OK_TXT,
                                      bg=Theme.active().ALERT_BAR_OK)
 
@@ -50,8 +50,8 @@ class IndicatorAlertBar(object):
 
     def render(self):
         self.bar.place(relx=0, rely=0)
-        self.message_label.place(anchor="nw", relx=0.03, rely=0.2)
-        self.timestamp_label.place(anchor="nw", relx=0.03, rely=0.8)
+        self.message_label.place(anchor="nw", relx=0.03, rely=0)
+        self.timestamp_label.place(anchor="nw", relx=0.04, rely=0.7)
         self.version_label.place(anchor="nw", relx=0.8, rely=0.4)
 
     def update(self):
@@ -122,4 +122,4 @@ class IndicatorAlertBar(object):
         then_dt = datetime.datetime.fromtimestamp(then)
 
         # This display a '2 minutes ago' text
-        self.timestamp_label.configure(text=timeago.format(now_dt - then_dt))
+        self.timestamp_label.configure(text=f"{(timeago.format(now_dt - then_dt))}")
