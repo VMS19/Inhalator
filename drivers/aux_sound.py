@@ -32,6 +32,9 @@ class SoundViaAux(object):
         self.is_playing = False
         os.system(self.SET_AUX_CMD)
 
+    def close(self):
+        self.stop()
+
     def __del__(self):
         self.stop()
 
