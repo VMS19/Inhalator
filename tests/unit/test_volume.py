@@ -18,12 +18,13 @@ from data.thresholds import (FlowRange, PressureRange,
 from drivers.driver_factory import DriverFactory
 
 
+SIMULATION_FOLDER = "simulation"
+
 MICROSECOND = 10 ** -6
 SIMULATION_LENGTH = 1  # seconds
 LOW_THRESHOLD = -50000
 HIGH_THRESHOLD = 50000
 
-CYCLE_TIME = 5.265
 SIMULATION_SAMPLES = 1000
 
 
@@ -36,9 +37,9 @@ def driver_factory():
 def config():
     c = Configurations.instance()
     c.flow_range = FlowRange(min=0, max=30)
-    c.pressure_range = PressureRange(min=0, max=30)
+    c.pressure_range = PressureRange(min=-1, max=30)
     c.resp_rate_range = RespiratoryRateRange(min=0, max=30)
-    c.volume_range = VolumeRange(min=0, max=30)
+    c.volume_range = VolumeRange(min=100, max=600)
     c.graph_seconds = 12
     c.debug_port = 7777
     c.breathing_threshold = 3.5
@@ -65,7 +66,8 @@ def test_sampler_volume_calculation(events, measurements, config):
         * Validate expected volume.
     """
     this_dir = os.path.dirname(__file__)
-    file_path = os.path.join(this_dir, "pig_sim.csv")
+    file_path = os.path.join(this_dir, SIMULATION_FOLDER,
+                             "pig_sim_cycle.csv")
     driver_factory = DriverFactory(simulation_mode=True,
                                    simulation_data=file_path)
 
@@ -79,7 +81,7 @@ def test_sampler_volume_calculation(events, measurements, config):
     for _ in range(SIMULATION_SAMPLES):
         sampler.sampling_iteration()
 
-    expected_volume = CYCLE_TIME / 60 * 1000
+    expected_volume = 332
     msg = f"Expected volume of {expected_volume}, received {measurements.inspiration_volume}"
     assert measurements.inspiration_volume == approx(expected_volume, rel=0.1), msg
 
