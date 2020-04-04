@@ -20,6 +20,10 @@ echo "enabling pigpiod"
 sudo systemctl enable pigpiod
 echo "done!"
 
+echo "disable NTP time, get RTC time"
+sudo timedatectl set-ntp false
+echo "done!"
+
 echo "removing annoying ssh prompt"
 sudo rm -f /etc/profile.d/sshpwd.sh /etc/profile.d/sshpasswd.sh /etc/xdg/lxsession/LXDE-pi/sshpwd.sh
 echo "done!"
