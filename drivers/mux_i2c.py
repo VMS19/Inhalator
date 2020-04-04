@@ -17,13 +17,13 @@ class MuxI2C(I2cDriver):
 
     @classmethod
     def get_instance(cls):
+        return cls.MUX_INSTANCE
+
+    def __new__(cls, *args, **kwargs):
         if cls.MUX_INSTANCE is None:
             cls.MUX_INSTANCE = object.__new__(cls)
 
         return cls.MUX_INSTANCE
-
-    def __new__(cls, *args, **kwargs):
-        return cls.get_instance()
 
     I2C_ADDRESS = 0x70
 
