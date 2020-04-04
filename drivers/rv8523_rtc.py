@@ -57,7 +57,7 @@ class Rv8523Rtc(I2cDriver):
 
         # Set 24 hr mode
         ctrl_1[0] &= 0xF7
-        #|
+
         try:
             self._pig.i2c_write_device(self._dev, [self.REG_CONTROL_1, ctrl_1[0]])
         except pigpio.error as e:
@@ -95,7 +95,7 @@ class Rv8523Rtc(I2cDriver):
     def _get_time(self):
         seconds = self._get_clock_unit(0x7F, self.REG_SECONDS)
         minutes = self._get_clock_unit(0x7F)
-        hours = self._get_clock_unit(0x1F)
+        hours = self._get_clock_unit(0x3F)
         days = self._get_clock_unit(0x1F)
         months = self._get_clock_unit(0x1F, self.REG_MONTHS)
         years = self._get_clock_unit(0x7F) + self.REG_YEARS_OFFSET
