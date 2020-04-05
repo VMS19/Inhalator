@@ -127,6 +127,9 @@ def start_app(args):
         watchdog = drivers.acquire_driver("wd")
         oxygen_a2d = drivers.acquire_driver("oxygen_a2d")
         timer = drivers.acquire_driver("timer")
+        rtc = drivers.acquire_driver("rtc")
+
+        rtc.set_system_time()
 
         sampler = Sampler(measurements=measurements, events=events,
                           flow_sensor=flow_sensor,
