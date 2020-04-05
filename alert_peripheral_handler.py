@@ -11,8 +11,8 @@ class AlertPeripheralHandler(object):
         self.alert_driver = drivers.acquire_driver("alert")
 
     def on_new_alert(self, alert):
-        self.alert_driver.set_medical_condition_alert(alert != AlertCodes.OK)
+        self.alert_driver.set_medical_condition_alert(alert == AlertCodes.OK)
 
     def on_mute(self, mute):
-        self.alert_driver.set_system_fault_alert(
-            not (mute or self.events.alerts_queue.last_alert != AlertCodes.OK))
+        self.alert_driver.set_buzzer(mute or
+            self.events.alerts_queue.last_alert == AlertCodes.OK)
