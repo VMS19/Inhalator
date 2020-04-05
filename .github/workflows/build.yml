@@ -25,7 +25,7 @@ jobs:
         pip install tox
     - name: Run ${{ matrix.tox-environment }}
       run: tox -e ${{ matrix.tox-environment }}
-    - name: Calculate coverage
+    - name: Send coverage to coveralls
       run: |
         pip install coveralls
         coveralls
