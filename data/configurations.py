@@ -171,3 +171,4 @@ class Configurations(object):
         with open(config_path, "w") as config_file:
             json.dump(config, config_file, indent=4)
             config_file.flush()
+            os.fsync(config_file.fileno())
