@@ -91,7 +91,7 @@ def parse_args():
                         help="To run memory usage analysis for application,"
                              "give path to output csv file")
     parser.add_argument(
-        "--output", "-o",
+        "--debug", "-d",
         help="Whether to save the sensor values to a CSV file (inhalator.csv)",
         action='store_true')
     args = parser.parse_args()
@@ -119,9 +119,6 @@ def start_app(args):
         log.info("Sensor Data Source: %s", args.simulate)
         log.info("Error probability: %s", args.error)
 
-    if not args.output:
-        log.warning("Saving sensor values is DISABLED")
-
     drivers = None
     try:
         drivers = DriverFactory(simulation_mode=simulation,
@@ -143,7 +140,7 @@ def start_app(args):
                           pressure_sensor=pressure_sensor,
                           oxygen_a2d=oxygen_a2d,
                           timer=timer,
-                          save_sensor_values=args.output)
+                          save_sensor_values=args.debug)
 
         app = Application(measurements=measurements,
                           events=events,
