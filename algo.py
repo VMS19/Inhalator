@@ -374,9 +374,26 @@ class Sampler(object):
         pressure_cmh2o = self.read_single_sensor(
             self._pressure_sensor, AlertCodes.PRESSURE_SENSOR_ERROR, timestamp)
 
-        o2_saturation_percentage = self._a2d.read_oxygen()
-        battery_percentage = self._a2d.read_battery_percentage()
-        battery_exists = self._a2d.read_battery_existence()
+        try:
+            o2_saturation_percentage = self._a2d.read_oxygen()
+        except Exception as e:
+            self._events.alerts_queue.enqueue_alert(AlertCodes.OXYGEN_SENSOR_ERROR)
+            self.log.error(e)
+            o2_saturation_percentage = 0
+
+        try:
+            battery_exists = self._a2d.read_battery_existence()
+        except Exception as e:
+            self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BATTERY)
+            self.log.error(e)
+            battery_exists = False
+
+        try:
+            battery_percentage = self._a2d.read_battery_percentage()
+        except Exception as e:
+            self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BATTERY)
+            self.log.error(e)
+            battery_percentage = 0
 
         data = (flow_slm, pressure_cmh2o, o2_saturation_percentage,
                 battery_percentage, battery_exists)
