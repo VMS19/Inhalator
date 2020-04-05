@@ -26,7 +26,6 @@ jobs:
     - name: Run ${{ matrix.tox-environment }}
       run: tox -e ${{ matrix.tox-environment }}
     - name: Calculate coverage
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: ./.coverage
+      run: |
+        pip install coveralls
+        coveralls
