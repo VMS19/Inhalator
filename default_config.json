@@ -34,5 +34,6 @@
   },
   "log_enabled": true,
   "graph_seconds": 12.0,
+  "low_battery_percentage": 15,
   "mute_time_limit" : 120
 }

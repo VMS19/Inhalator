@@ -128,7 +128,7 @@ class DriverFactory(object):
             samples, lower_limit=0, upper_limit=self.MOCK_AIRFLOW_AMPLITUDE)
         return samples
 
-    def generate_mock_oxygen_a2d_data(self):
+    def generate_mock_a2d_data(self):
         samples = sinus(
             self.MOCK_SAMPLE_RATE_HZ,
             self.MOCK_O2_SATURATION_AMPLITUDE,
@@ -138,7 +138,7 @@ class DriverFactory(object):
             upper_limit=self.MOCK_O2_SATURATION_AMPLITUDE)
         return add_noise(samples, self.MOCK_NOISE_SIGMA)
 
-    def generate_mock_oxygen_a2d_data_noiseless(self):
+    def generate_mock_a2d_data_noiseless(self):
         samples = sinus(
             self.MOCK_SAMPLE_RATE_HZ,
             self.MOCK_O2_SATURATION_AMPLITUDE,
@@ -175,7 +175,7 @@ class DriverFactory(object):
         return Sfm3200()
 
     @staticmethod
-    def get_oxygen_a2d_driver():
+    def get_a2d_driver():
         from drivers.ads7844_a2d import Ads7844A2D
         return Ads7844A2D()
 
@@ -240,20 +240,9 @@ class DriverFactory(object):
             data = generate_data_from_file('flow', simulation_data)
         return MockSensor(data, error_probability=self.error_probability)
 
-    def get_mock_oxygen_a2d_driver(self):
-        from drivers.mocks.sensor import MockSensor
-        simulation_data = self.simulation_data
-        if simulation_data == 'dead':
-            data = self.generate_mock_dead_man()
-        elif simulation_data == 'sinus':
-            data = self.generate_mock_oxygen_a2d_data()
-        elif simulation_data == 'noiseless_sinus':
-            data = self.generate_mock_oxygen_a2d_data_noiseless()
-        elif simulation_data == "noise":
-            data = self.generate_mock_noise()
-        else:
-            data = generate_data_from_file('oxygen', simulation_data)
-        return MockSensor(data, error_probability=self.error_probability)
+    def get_mock_a2d_driver(self):
+        from drivers.mocks.a2d_mock import MockA2D
+        return MockA2D()
 
     @staticmethod
     def get_mock_wd_driver():
