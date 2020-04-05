@@ -86,7 +86,7 @@ class AlertsQueue(object):
     def __init__(self):
         self.queue = Queue(maxsize=self.MAXIMUM_ALERTS_AMOUNT)
         self.last_alert = Alert(AlertCodes.OK)
-        self.pubsub = Observable()
+        self.observer = Observable()
 
     def __len__(self):
         return self.queue.qsize()
@@ -100,14 +100,14 @@ class AlertsQueue(object):
 
         self.last_alert = alert
 
-        self.pubsub.publish(self.last_alert)
+        self.observer.publish(self.last_alert)
         self.queue.put(alert)
 
     def dequeue_alert(self):
         alert = self.queue.get()
         self.last_alert = self.queue.queue[0]
 
-        self.pubsub.publish(self.last_alert)
+        self.observer.publish(self.last_alert)
         return alert
 
     def clear_alerts(self):
@@ -115,12 +115,12 @@ class AlertsQueue(object):
         self.queue.queue.clear()
 
         self.last_alert = Alert(AlertCodes.OK)
-        self.pubsub.publish(self.last_alert)
+        self.observer.publish(self.last_alert)
 
 class MuteAlerts(object):
 
     def __init__(self):
-        self.pubsub = Observable()
+        self.observer = Observable()
         self._alerts_muted = False
         self.mute_time = None
 
@@ -130,7 +130,7 @@ class MuteAlerts(object):
         else:
             self._alerts_muted = not self._alerts_muted
 
-        self.pubsub.publish(self._alerts_muted)
+        self.observer.publish(self._alerts_muted)
 
         if self._alerts_muted:
             self.mute_time = time.time()
