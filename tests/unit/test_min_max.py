@@ -12,7 +12,7 @@ from algo import Sampler
 from data.measurements import Measurements
 from data.events import Events
 from data.configurations import Configurations
-from data.thresholds import (FlowRange, PressureRange,
+from data.thresholds import (O2Range, PressureRange,
                              RespiratoryRateRange, VolumeRange)
 from drivers.driver_factory import DriverFactory
 
@@ -23,7 +23,7 @@ SIMULATION_FOLDER = "simulation"
 @pytest.fixture
 def config():
     c = Configurations.instance()
-    c.flow_range = FlowRange(min=0, max=30)
+    c.o2_range = O2Range(min=0, max=100)
     c.pressure_range = PressureRange(min=0, max=30)
     c.resp_rate_range = RespiratoryRateRange(min=0, max=30)
     c.volume_range = VolumeRange(min=0, max=30)
@@ -63,14 +63,14 @@ def test_sampler_dead_min_max(events, measurements, config):
     for _ in range(SAMPLES_AMOUNT):
         sampler.sampling_iteration()
 
-    min_pressure_msg = f"Expected min pressure of 0, received {measurements.peep_min_pressure}"
-    assert measurements.peep_min_pressure == 0, min_pressure_msg
+    min_pressure_msg = f"Expected min pressure of 0, received {sampler.vsm.min_pressure}"
+    assert sampler.vsm.min_pressure == 0, min_pressure_msg
 
-    max_pressure_msg = f"Expected max pressure of 0, received {measurements.intake_peak_pressure}"
-    assert measurements.intake_peak_pressure == 0, max_pressure_msg
+    max_pressure_msg = f"Expected max pressure of 0, received {sampler.vsm.peak_pressure}"
+    assert sampler.vsm.peak_pressure == 0, max_pressure_msg
 
-    max_flow_msg = f"Expected max flow of 0, received {measurements.intake_peak_flow}"
-    assert measurements.intake_peak_flow == 0, max_flow_msg
+    max_flow_msg = f"Expected max flow of 0, received {sampler.vsm.peak_flow}"
+    assert sampler.vsm.peak_flow == 0, max_flow_msg
 
 
 def test_sampler_sinus_min_max(events, measurements, config):
@@ -95,18 +95,18 @@ def test_sampler_sinus_min_max(events, measurements, config):
 
     expected_min_pressure = driver_factory.MOCK_PEEP
     min_pressure_msg = f"Expected min pressure be {expected_min_pressure}, " \
-                       f"received {measurements.peep_min_pressure}"
-    assert measurements.peep_min_pressure == expected_min_pressure, min_pressure_msg
+                       f"received {sampler.vsm.min_pressure}"
+    assert sampler.vsm.min_pressure == expected_min_pressure, min_pressure_msg
 
     expected_pressure = driver_factory.MOCK_PRESSURE_AMPLITUDE
     max_pressure_msg = f"Expected max pressure be {expected_pressure}, " \
-                       f"received {measurements.intake_peak_pressure}"
-    assert measurements.intake_peak_pressure == expected_pressure, max_pressure_msg
+                       f"received {sampler.vsm.peak_pressure}"
+    assert sampler.vsm.peak_pressure == expected_pressure, max_pressure_msg
 
     expected_flow = driver_factory.MOCK_AIRFLOW_AMPLITUDE
     max_flow_msg = f"Expected max flow be {expected_flow}, " \
-                       f"received {measurements.intake_peak_flow}"
-    assert measurements.intake_peak_flow == expected_flow, max_flow_msg
+                       f"received {sampler.vsm.peak_flow}"
+    assert sampler.vsm.peak_flow == expected_flow, max_flow_msg
 
 
 def test_sampler_pig_min_max(events, measurements, config):
@@ -140,7 +140,7 @@ def test_sampler_pig_min_max(events, measurements, config):
     """
     this_dir = os.path.dirname(__file__)
     file_path = os.path.join(this_dir, SIMULATION_FOLDER,
-                             "pig_sim_sin_flow.csv")
+                             "pig_sim_cycle.csv")
     driver_factory = DriverFactory(simulation_mode=True,
                                    simulation_data=file_path)
 
@@ -154,17 +154,17 @@ def test_sampler_pig_min_max(events, measurements, config):
     for _ in range(SAMPLES_AMOUNT):
         sampler.sampling_iteration()
 
-    expected_min_pressure = approx(0.240899428, rel=0.01)
+    expected_min_pressure = approx(-0.132537423, rel=0.01)
     min_pressure_msg = f"Expected min pressure of {expected_min_pressure}, " \
-                       f"received {measurements.peep_min_pressure}"
-    assert measurements.peep_min_pressure == expected_min_pressure, min_pressure_msg
+                       f"received {sampler.vsm.min_pressure}"
+    assert sampler.vsm.min_pressure == expected_min_pressure, min_pressure_msg
 
-    expected_max_pressure = approx(20.40648936, rel=0.1)
+    expected_max_pressure = approx(17.51235377, rel=0.1)
     max_pressure_msg = f"Expected max pressure of {expected_max_pressure}, " \
-                       f"received {measurements.intake_peak_pressure}"
-    assert measurements.intake_peak_pressure == expected_max_pressure, max_pressure_msg
+                       f"received {sampler.vsm.peak_pressure}"
+    assert sampler.vsm.peak_pressure == expected_max_pressure, max_pressure_msg
 
-    expected_max_flow = approx(36.90266823, rel=0.1)
+    expected_max_flow = approx(1.2, rel=0.1)
     max_flow_msg = f"Expected max flow of {expected_max_flow}, " \
-                   f"received {measurements.intake_peak_flow}"
-    assert measurements.intake_peak_flow == expected_max_flow, max_flow_msg
+                   f"received {sampler.vsm.peak_flow}"
+    assert sampler.vsm.peak_flow == expected_max_flow, max_flow_msg
