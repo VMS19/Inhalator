@@ -21,6 +21,7 @@ class AlertCodes(IntEnum):
     SATURATION_SENSOR_ERROR = 1 << 10
     OXYGEN_LOW = 1 << 11
     OXYGEN_HIGH = 1 << 12
+    NO_BATTERY = 1 << 14
 
     @classmethod
     def is_valid(cls, alert_code):
@@ -42,6 +43,7 @@ class Alert(object):
         AlertCodes.FLOW_SENSOR_ERROR: "Flow Sensor Error",
         AlertCodes.PRESSURE_SENSOR_ERROR: "Pressure Sensor Error",
         AlertCodes.SATURATION_SENSOR_ERROR: "Saturation Sensor Error",
+        AlertCodes.NO_BATTERY: "No Battery",
     }
 
     def __init__(self, alert_code, timestamp=None):
@@ -63,10 +65,13 @@ class Alert(object):
         # relevant error message
         errors = []
         for code, message in self.ALERT_CODE_TO_MESSAGE.items():
-            if self.code & code:
+            if self.contains(code):
                 errors.append(message)
 
         return " | ".join(errors)
+
+    def contains(self, code):
+        return self.code & code != 0
 
     def date(self):
         return datetime.datetime.fromtimestamp(self.timestamp).strftime("%A %X")

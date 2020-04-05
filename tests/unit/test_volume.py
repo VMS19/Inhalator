@@ -72,10 +72,10 @@ def test_sampler_volume_calculation(events, measurements, config):
 
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
-    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
+    a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      oxygen_a2d, timer)
+                      a2d, timer)
 
     for _ in range(SIMULATION_SAMPLES):
         sampler.sampling_iteration()
@@ -88,10 +88,10 @@ def test_sampler_volume_calculation(events, measurements, config):
 def test_sampler_alerts_when_volume_exceeds_minium(events, measurements, config, driver_factory):
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
-    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
+    a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      oxygen_a2d, timer)
+                      a2d, timer)
     assert len(events.alerts_queue) == 0
     sampler.sampling_iteration()
     assert len(events.alerts_queue) == 0
@@ -112,10 +112,10 @@ def test_sampler_alerts_when_volume_exceeds_minium(events, measurements, config,
 def test_sampler_alerts_when_volume_exceeds_maximum(events, measurements, config, driver_factory):
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
-    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
+    a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      oxygen_a2d, timer)
+                      a2d, timer)
     assert len(events.alerts_queue) == 0
     sampler.sampling_iteration()
     assert len(events.alerts_queue) == 0

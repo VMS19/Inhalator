@@ -57,6 +57,8 @@ def test_correct_state_transitions():
             pressure_cmh2o=p,
             flow_slm=f,
             o2_percentage=o,
+            battery_exists=True,
+            battery_percentage=94,
             timestamp=t)
 
     inhale_entry = vsm.entry_points_ts[VentilationState.Inhale][0]
@@ -73,17 +75,16 @@ def test_alert_is_published_on_high_o2():
 
     flow = drivers.acquire_driver('flow')
     pressure = drivers.acquire_driver('pressure')
-    oxygen_a2d = drivers.acquire_driver('oxygen_a2d')
+    a2d = drivers.acquire_driver('a2d')
     timer = drivers.acquire_driver('timer')
 
-    oxygen_a2d = MagicMock()
-    oxygen_a2d.read = MagicMock(return_value=600)
+    a2d.read_oxygen = MagicMock(return_value=600)
 
     Configurations.instance().o2_range.max = 99
 
     sampler = Sampler(measurements=measurements, events=events,
-                      flow_sensor=flow, pressure_sensor=pressure,
-                      oxygen_a2d=oxygen_a2d, timer=timer)
+                      flow_sensor=flow, pressure_sensor=pressure, a2d=a2d,
+                      timer=timer)
 
     assert len(events.alerts_queue) == 0
 
@@ -91,28 +92,52 @@ def test_alert_is_published_on_high_o2():
 
     assert any(alert == AlertCodes.OXYGEN_HIGH for alert in events.alerts_queue.queue.queue)
 
-
-def test_alert_is_published_on_high_o2():
     measurements = Measurements()
     events = Events()
     drivers = DriverFactory(simulation_mode=True, simulation_data='sinus')
 
     flow = drivers.acquire_driver('flow')
     pressure = drivers.acquire_driver('pressure')
-    oxygen_a2d = drivers.acquire_driver('oxygen_a2d')
+    a2d = drivers.acquire_driver('a2d')
     timer = drivers.acquire_driver('timer')
 
-    oxygen_a2d = MagicMock()
-    oxygen_a2d.read = MagicMock(return_value=0)
+    a2d.read_oxygen = MagicMock(return_value=600)
 
-    Configurations.instance().o2_range.min = 20
+    Configurations.instance().o2_range.max = 99
 
     sampler = Sampler(measurements=measurements, events=events,
-                      flow_sensor=flow, pressure_sensor=pressure,
-                      oxygen_a2d=oxygen_a2d, timer=timer)
+                      flow_sensor=flow, pressure_sensor=pressure, a2d=a2d,
+                      timer=timer)
 
     assert len(events.alerts_queue) == 0
 
     sampler.sampling_iteration()
 
-    assert any(alert == AlertCodes.OXYGEN_LOW for alert in events.alerts_queue.queue.queue)
+    assert any(alert == AlertCodes.OXYGEN_HIGH for alert in
+               events.alerts_queue.queue.queue)
+
+
+def test_alert_is_published_on_low_o2():
+    measurements = Measurements()
+    events = Events()
+    drivers = DriverFactory(simulation_mode=True, simulation_data='sinus')
+
+    flow = drivers.acquire_driver('flow')
+    pressure = drivers.acquire_driver('pressure')
+    a2d = drivers.acquire_driver('a2d')
+    timer = drivers.acquire_driver('timer')
+
+    a2d.read_oxygen = MagicMock(return_value=0)
+
+    Configurations.instance().o2_range.min = 20
+
+    sampler = Sampler(measurements=measurements, events=events,
+                      flow_sensor=flow, pressure_sensor=pressure, a2d=a2d,
+                      timer=timer)
+
+    assert len(events.alerts_queue) == 0
+
+    sampler.sampling_iteration()
+
+    assert any(alert == AlertCodes.OXYGEN_LOW for alert in
+               events.alerts_queue.queue.queue)
