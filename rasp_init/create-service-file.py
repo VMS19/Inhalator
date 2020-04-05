@@ -31,7 +31,7 @@ def generate(output_file, python):
 
     contents = template.format(
         main_path=main_path,
-        python3_executable="/home/pi/Inhalator/bin/python3",
+        python3_executable="/home/pi/Inhalator/.inhalator_env/bin/python3",
         main_dir=main_dir,
         xauthority=os.environ["XAUTHORITY"],
         display=os.environ["DISPLAY"]
