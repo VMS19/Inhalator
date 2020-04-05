@@ -5,8 +5,7 @@ from enum import Enum
 
 from data.alerts import AlertCodes
 from data.configurations import Configurations
-from logic.utils import RunningSlope, RunningAvg, RateMeter, \
-    VolumeAccumulator
+from logic.utils import RunningAvg, RateMeter, VolumeAccumulator
 
 class VentilationStateMachine(object):
 
