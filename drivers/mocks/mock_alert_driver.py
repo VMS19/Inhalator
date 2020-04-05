@@ -3,27 +3,11 @@ class MockAlertDriver(object):
     def __init__(self):
         pass
 
-    def alert_system_fault_on(self):
-        pass
+    def set_system_fault_alert(self, value: bool):
+        self.set_buzzer(value)
 
-    def alert_system_fault_off(self):
-        pass
+    def set_medical_condition_alert(self, value: bool):
+        self.set_buzzer(value)
 
-    def alert_medical_condition_on(self):
-        print("medical_condition led on")
-        self.alert_buzzer_on()
+    def set_buzzer(self, value: bool):
         pass
-
-    def alert_medical_condition_off(self):
-        print("medical_condition led off")
-        self.alert_buzzer_off()
-        pass
-
-    def alert_buzzer_off(self):
-        print("buzzer off")
-        pass
-
-    def alert_buzzer_on(self):
-        print("buzzer on")
-        pass
-

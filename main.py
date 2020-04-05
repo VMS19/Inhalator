@@ -174,7 +174,7 @@ def start_app(args):
         app.run()
     finally:
         alert_driver = drivers.acquire_driver("alert")
-        alert_driver.alert_system_fault_on()
+        alert_driver.set_system_fault_alert(False)
 
         if drivers is not None:
             drivers.close_all_drivers()

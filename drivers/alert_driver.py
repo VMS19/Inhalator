@@ -29,24 +29,25 @@ class AlertDriver(object):
         GPIO.setup(self.RESERVED_GPIO, GPIO.OUT)
         GPIO.output(self.RESERVED_GPIO, self.LED_GREEN)
 
-    def alert_system_fault_on(self):
-        self.alert_buzzer_on()
-        GPIO.output(self.SYSTEM_FAULT_GPIO, self.LED_RED)
+    def set_system_fault_alert(self, value: bool):
+        led = self.LED_GREEN
+        if not value:
+            led = self.LED_RED
 
-    def alert_system_fault_off(self):
-        self.alert_buzzer_off()
-        GPIO.output(self.SYSTEM_FAULT_GPIO, self.LED_GREEN)
+        GPIO.output(self.SYSTEM_FAULT_GPIO, value)
+        self.set_buzzer(value)
 
-    def alert_medical_condition_on(self):
-        self.alert_buzzer_on()
-        GPIO.output(self.MEDICAL_CONTITION_GPIO, self.LED_RED)
+    def set_medical_condition_alert(self, value: bool):
+        led = self.LED_GREEN
+        if not value:
+            led = self.LED_RED
 
-    def alert_medical_condition_off(self):
-        self.alert_buzzer_off()
-        GPIO.output(self.MEDICAL_CONTITION_GPIO, self.LED_GREEN)
+        GPIO.output(self.MEDICAL_CONTITION_GPIO, value)
+        self.set_buzzer(value)
 
-    def alert_buzzer_on(self):
-        GPIO.output(self.FAULT_BUZZER_GPIO, GPIO.LOW)
+    def set_buzzer(self, value: bool):
+        gpio_state = GPIO.LOW
+        if not value:
+            gpio_state  = GPIO.HIGH
 
-    def alert_buzzer_off(self):
-        GPIO.output(self.FAULT_BUZZER_GPIO, GPIO.HIGH)
+        GPIO.output(self.FAULT_BUZZER_GPIO, gpio_state)

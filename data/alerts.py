@@ -4,7 +4,7 @@ from collections import deque
 from enum import IntEnum
 from queue import Queue
 from functools import lru_cache
-from data.publisher_subscriber import PublishSubscriber
+from data.observable import Observable
 
 
 class AlertCodes(IntEnum):
@@ -86,7 +86,7 @@ class AlertsQueue(object):
     def __init__(self):
         self.queue = Queue(maxsize=self.MAXIMUM_ALERTS_AMOUNT)
         self.last_alert = Alert(AlertCodes.OK)
-        self.pubsub = PublishSubscriber()
+        self.pubsub = Observable()
 
     def __len__(self):
         return self.queue.qsize()
@@ -120,7 +120,7 @@ class AlertsQueue(object):
 class MuteAlerts(object):
 
     def __init__(self):
-        self.pubsub = PublishSubscriber()
+        self.pubsub = Observable()
         self._alerts_muted = False
         self.mute_time = None
 
