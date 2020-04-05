@@ -50,7 +50,7 @@ def configure_logging(level):
     # create file handler which logs even debug messages
     file_handler = RotatingFileHandler('inhalator.log',
                                        maxBytes=BYTES_IN_GB,
-                                       backupCount=7)
+                                       backupCount=1)
     file_handler.setLevel(level)
     # create console handler
     steam_handler = logging.StreamHandler()
@@ -91,6 +91,10 @@ def parse_args():
     parser.add_argument("--memory-usage-output", "-m",
                         help="To run memory usage analysis for application,"
                              "give path to output csv file")
+    parser.add_argument(
+        "--debug", "-d",
+        help="Whether to save the sensor values to a CSV file (inhalator.csv)",
+        action='store_true')
     args = parser.parse_args()
     args.verbose = max(0, logging.WARNING - (10 * args.verbose))
     return args
@@ -148,7 +152,9 @@ def start_app(args):
         sampler = Sampler(measurements=measurements, events=events,
                           flow_sensor=flow_sensor,
                           pressure_sensor=pressure_sensor,
-                          oxygen_a2d=oxygen_a2d, timer=timer)
+                          oxygen_a2d=oxygen_a2d,
+                          timer=timer,
+                          save_sensor_values=args.debug)
 
         app = Application(measurements=measurements,
                           events=events,

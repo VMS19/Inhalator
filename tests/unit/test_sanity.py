@@ -23,7 +23,6 @@ def config():
     c.resp_rate_range = RespiratoryRateRange(min=0, max=30)
     c.volume_range = VolumeRange(min=0, max=30)
     c.graph_seconds = 12
-    c.debug_port = 7777
     c.breathing_threshold = 3.5
     c.log_enabled = False
     return c

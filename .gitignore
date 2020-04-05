@@ -8,3 +8,5 @@ config.json
 .coverage
 .tox
 htmlcov
+inhalator.csv*
+headers.csv
