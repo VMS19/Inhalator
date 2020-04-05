@@ -117,8 +117,6 @@ class DriverFactory(object):
             self.MOCK_SAMPLE_RATE_HZ,
             self.MOCK_AIRFLOW_AMPLITUDE,
             self.MOCK_BPM / 60)
-        samples = truncate(
-            samples, lower_limit=0, upper_limit=self.MOCK_AIRFLOW_AMPLITUDE)
         return add_noise(samples, self.MOCK_NOISE_SIGMA)
 
     def generate_mock_air_flow_data_noiseless(self):

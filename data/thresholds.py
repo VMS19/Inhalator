@@ -55,9 +55,9 @@ class Range(object):
             self.max -= self.step
 
 
-class FlowRange(Range):
-    NAME = "Flow"
-    UNIT = "L/min"
+class O2Range(Range):
+    NAME = "O2"
+    UNIT = "%"
 
 
 class VolumeRange(Range):

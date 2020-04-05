@@ -19,6 +19,8 @@ class AlertCodes(IntEnum):
     FLOW_SENSOR_ERROR = 1 << 8
     PRESSURE_SENSOR_ERROR = 1 << 9
     SATURATION_SENSOR_ERROR = 1 << 10
+    OXYGEN_LOW = 1 << 11
+    OXYGEN_HIGH = 1 << 12
 
     @classmethod
     def is_valid(cls, alert_code):
@@ -34,6 +36,8 @@ class Alert(object):
         AlertCodes.NO_BREATH: "No Breathing",
         AlertCodes.PEEP_TOO_HIGH: "High PEEP",
         AlertCodes.PEEP_TOO_LOW: "Low PEEP",
+        AlertCodes.OXYGEN_HIGH: "Oxygen Too High",
+        AlertCodes.OXYGEN_LOW: "Oxygen Too Low",
         AlertCodes.NO_CONFIGURATION_FILE: "Configuration Error",
         AlertCodes.FLOW_SENSOR_ERROR: "Flow Sensor Error",
         AlertCodes.PRESSURE_SENSOR_ERROR: "Pressure Sensor Error",
@@ -42,7 +46,11 @@ class Alert(object):
 
     def __init__(self, alert_code, timestamp=None):
         self.code = alert_code
-        self.timestamp = timestamp
+        if timestamp is None:
+            self.timestamp = time.time()
+
+        else:
+            self.timestamp = timestamp
 
     def __eq__(self, other):
         return self.code == other
