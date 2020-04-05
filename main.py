@@ -17,6 +17,7 @@ from data.events import Events
 from application import Application
 from algo import Sampler
 from wd_task import WdTask
+import errors
 
 BYTES_IN_MB = 2 ** 20
 BYTES_IN_GB = 2 ** 30
@@ -121,15 +122,28 @@ def start_app(args):
                                 simulation_data=args.simulate,
                                 error_probability=args.error)
 
-        pressure_sensor = drivers.acquire_driver("pressure")
-        flow_sensor = drivers.acquire_driver("differential_pressure")
+        try:
+            pressure_sensor = drivers.acquire_driver("pressure")
+        except errors.I2CDeviceNotFoundError:
+            pressure_sensor = drivers.acquire_driver("null")
+
+        try:
+            flow_sensor = drivers.acquire_driver("differential_pressure")
+        except errors.I2CDeviceNotFoundError:
+            flow_sensor = drivers.acquire_driver("null")
 
         watchdog = drivers.acquire_driver("wd")
-        oxygen_a2d = drivers.acquire_driver("oxygen_a2d")
+        try:
+            oxygen_a2d = drivers.acquire_driver("oxygen_a2d")
+        except errors.SPIDriverInitError:
+            oxygen_a2d = drivers.acquire_driver("null")
         timer = drivers.acquire_driver("timer")
-        rtc = drivers.acquire_driver("rtc")
+        try:
+            rtc = drivers.acquire_driver("rtc")
+            rtc.set_system_time()
+        except errors.InhalatorError:
+            rtc = drivers.acquire_driver("null")
 
-        rtc.set_system_time()
 
         sampler = Sampler(measurements=measurements, events=events,
                           flow_sensor=flow_sensor,

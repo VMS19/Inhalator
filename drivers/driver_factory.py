@@ -266,6 +266,11 @@ class DriverFactory(object):
         return SoundViaAux.instance()
 
     @staticmethod
+    def get_null_driver():
+        from drivers.null_driver import NullDriver
+        return NullDriver()
+
+    @staticmethod
     def get_mock_rtc_driver():
         from drivers.mocks.mock_rv8523_rtc_driver import MockRv8523Rtc
         return MockRv8523Rtc()

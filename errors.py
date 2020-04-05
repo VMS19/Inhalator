@@ -1,7 +1,7 @@
 """Errors module."""
 
 
-class InhalatorError(BaseException):
+class InhalatorError(Exception):
     pass
 
 
