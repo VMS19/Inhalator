@@ -18,6 +18,7 @@ from application import Application
 from algo import Sampler
 from wd_task import WdTask
 from alert_peripheral_handler import AlertPeripheralHandler
+import errors
 
 BYTES_IN_GB = 2 ** 30
 
@@ -49,7 +50,7 @@ def configure_logging(level):
     # create file handler which logs even debug messages
     file_handler = RotatingFileHandler('inhalator.log',
                                        maxBytes=BYTES_IN_GB,
-                                       backupCount=7)
+                                       backupCount=1)
     file_handler.setLevel(level)
     # create console handler
     steam_handler = logging.StreamHandler()
@@ -90,6 +91,10 @@ def parse_args():
     parser.add_argument("--memory-usage-output", "-m",
                         help="To run memory usage analysis for application,"
                              "give path to output csv file")
+    parser.add_argument(
+        "--debug", "-d",
+        help="Whether to save the sensor values to a CSV file (inhalator.csv)",
+        action='store_true')
     args = parser.parse_args()
     args.verbose = max(0, logging.WARNING - (10 * args.verbose))
     return args
@@ -120,22 +125,39 @@ def start_app(args):
         drivers = DriverFactory(simulation_mode=simulation,
                                 simulation_data=args.simulate,
                                 error_probability=args.error)
-        pressure_sensor = drivers.acquire_driver("pressure")
-        flow_sensor = drivers.acquire_driver("differential_pressure")
+
+        try:
+            pressure_sensor = drivers.acquire_driver("pressure")
+        except errors.I2CDeviceNotFoundError:
+            pressure_sensor = drivers.acquire_driver("null")
+
+        try:
+            flow_sensor = drivers.acquire_driver("differential_pressure")
+        except errors.I2CDeviceNotFoundError:
+            flow_sensor = drivers.acquire_driver("null")
 
         watchdog = drivers.acquire_driver("wd")
-        oxygen_a2d = drivers.acquire_driver("oxygen_a2d")
+        try:
+            oxygen_a2d = drivers.acquire_driver("oxygen_a2d")
+        except errors.SPIDriverInitError:
+            oxygen_a2d = drivers.acquire_driver("null")
         timer = drivers.acquire_driver("timer")
-        alert_driver = drivers.acquire_driver("alert")
-        rtc = drivers.acquire_driver("rtc")
 
-        rtc.set_system_time()
+        try:
+            rtc = drivers.acquire_driver("rtc")
+            rtc.set_system_time()
+        except errors.InhalatorError:
+            rtc = drivers.acquire_driver("null")
+
+        alert_driver = drivers.acquire_driver("alert")
 
         alerts_handler = AlertPeripheralHandler(events, drivers)
         sampler = Sampler(measurements=measurements, events=events,
                           flow_sensor=flow_sensor,
                           pressure_sensor=pressure_sensor,
-                          oxygen_a2d=oxygen_a2d, timer=timer)
+                          oxygen_a2d=oxygen_a2d,
+                          timer=timer,
+                          save_sensor_values=args.debug)
 
         app = Application(measurements=measurements,
                           events=events,
