@@ -11,9 +11,12 @@ from scipy.stats import linregress
 from data.alerts import AlertCodes
 from data.measurements import Measurements
 from data.configurations import Configurations
+from sample_storage import SamplesStorage
 
 TRACE = logging.DEBUG - 1
 logging.addLevelName(TRACE, 'TRACE')
+
+BYTES_IN_GB = 2 ** 30
 
 
 class Accumulator(object):
@@ -125,7 +128,6 @@ class VentilationState(Enum):
 
 
 class VentilationStateMachine(object):
-
     NO_BREATH_ALERT_TIME_SECONDS = 12
     PEEP_TO_INHALE_SLOPE = 8
     INHALE_TO_HOLD_SLOPE = 4
@@ -275,7 +277,7 @@ class VentilationStateMachine(object):
             self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW, timestamp)
 
         # Publish alerts for Oxygen
-            # Oxygen too high
+        # Oxygen too high
         if self._config.o2_range.over(o2_percentage):
             self.log.warning(
                 f"Oxygen percentage too high "
@@ -335,7 +337,7 @@ class VentilationStateMachine(object):
 class Sampler(object):
 
     def __init__(self, measurements, events, flow_sensor, pressure_sensor,
-                 a2d, timer):
+                 a2d, timer, save_sensor_values=False):
         super(Sampler, self).__init__()
         self.log = logging.getLogger(self.__class__.__name__)
         self._measurements = measurements  # type: Measurements
@@ -346,6 +348,8 @@ class Sampler(object):
         self._config = Configurations.instance()
         self._events = events
         self.vsm = VentilationStateMachine(measurements, events)
+        self.storage_handler = SamplesStorage()
+        self.save_sensor_values = save_sensor_values
 
     def read_single_sensor(self, sensor, alert_code, timestamp):
         try:
@@ -376,28 +380,19 @@ class Sampler(object):
 
         data = (flow_slm, pressure_cmh2o, o2_saturation_percentage,
                 battery_percentage, battery_exists)
-
-        errors = [x is None for x in data]
-        return None if any(errors) else data
+        return [x if x is not None else 0 for x in data]
 
     def sampling_iteration(self):
         ts = self._timer.get_time()
+
         # Read from sensors
         result = self.read_sensors(ts)
-        if result is None:
-            return
 
         flow_slm, pressure_cmh2o, o2_saturation_percentage, \
         battery_percentage, battery_exists = result
 
-        # Convert a2d readings to oxygen and battery
-
-        # WARNING! These log messages are useful for debugging sensors but
-        # might spam you since they are printed on every sample. In order to see
-        # them run the application in maximum verbosity mode by passing `-vvv` to `main.py
-        self.log.log(TRACE, 'flow: %s', flow_slm)
-        self.log.log(TRACE, 'pressure: %s', pressure_cmh2o)
-        self.log.log(TRACE, 'oxygen: %s', o2_saturation_percentage)
+        if self.save_sensor_values:
+            self.storage_handler.write(flow_slm, pressure_cmh2o, o2_saturation_percentage)
 
         self.vsm.update(
             pressure_cmh2o=pressure_cmh2o,

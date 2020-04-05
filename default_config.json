@@ -34,7 +34,6 @@
   },
   "log_enabled": true,
   "graph_seconds": 12.0,
-  "debug_port": 7777,
-  "mute_time_limit" : 10,
-  "low_battery_percentage": 15
+  "low_battery_percentage": 15,
+  "mute_time_limit" : 120
 }

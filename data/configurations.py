@@ -31,7 +31,7 @@ class Configurations(object):
 
     def __init__(self, o2_range, volume_range, pressure_range, resp_rate_range,
                  flow_y_scale, pressure_y_scale, graph_seconds,
-                 breathing_threshold, log_enabled=True, debug_port=7777,
+                 breathing_threshold, log_enabled=True,
                  mute_time_limit=120, low_battery_percentage=15):
         self.o2_range = o2_range
         self.volume_range = volume_range
@@ -40,7 +40,6 @@ class Configurations(object):
         self.graph_seconds = graph_seconds
         self.breathing_threshold = breathing_threshold
         self.log_enabled = log_enabled
-        self.debug_port = debug_port
         self.mute_time_limit = mute_time_limit
         self.flow_y_scale = flow_y_scale
         self.pressure_y_scale = pressure_y_scale
@@ -112,7 +111,6 @@ class Configurations(object):
             graph_seconds = config["graph_seconds"]
             breathing_threshold = config["threshold"]["breathing_threshold"]
             log_enabled = config["log_enabled"]
-            debug_port = config["debug_port"]
             mute_time_limit = config["mute_time_limit"]
             low_battery_percentage = config["low_battery_percentage"]
 
@@ -123,7 +121,6 @@ class Configurations(object):
                        graph_seconds=graph_seconds,
                        breathing_threshold=breathing_threshold,
                        log_enabled=log_enabled,
-                       debug_port=debug_port,
                        mute_time_limit=mute_time_limit,
                        flow_y_scale=flow_y_scale,
                        pressure_y_scale=pressure_y_scale,
@@ -171,7 +168,6 @@ class Configurations(object):
             },
             "log_enabled": self.log_enabled,
             "graph_seconds": self.graph_seconds,
-            "debug_port": self.debug_port,
             "mute_time_limit": self.mute_time_limit,
             "low_battery_percentage": self.low_battery_percentage,
         }

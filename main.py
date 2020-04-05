@@ -1,9 +1,14 @@
+import multiprocessing
 import os
 import argparse
 import logging
 import signal
+import time
+from datetime import datetime
 from logging.handlers import RotatingFileHandler
 from threading import Event
+
+import psutil
 
 from drivers.driver_factory import DriverFactory
 from data.configurations import Configurations
@@ -12,8 +17,29 @@ from data.events import Events
 from application import Application
 from algo import Sampler
 from wd_task import WdTask
+import errors
 
+BYTES_IN_MB = 2 ** 20
 BYTES_IN_GB = 2 ** 30
+
+
+def monitor(target, args, output_path):
+    worker_process = multiprocessing.Process(target=target, args=[args])
+    worker_process.start()
+    p = psutil.Process(worker_process.pid)
+
+    # log memory usage of `worker_process` every 10 seconds
+    # save the data in MB units
+    with open(output_path, 'w') as out:
+        out.write("timestamp,memory usage [MB]\n")
+
+    while worker_process.is_alive():
+        with open(output_path, 'a') as out:
+            timestamp = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+            out.write(f"{timestamp},{p.memory_info().rss / BYTES_IN_MB}\n")
+        time.sleep(10)
+
+    worker_process.join()
 
 
 def configure_logging(level):
@@ -24,7 +50,7 @@ def configure_logging(level):
     # create file handler which logs even debug messages
     file_handler = RotatingFileHandler('inhalator.log',
                                        maxBytes=BYTES_IN_GB,
-                                       backupCount=7)
+                                       backupCount=1)
     file_handler.setLevel(level)
     # create console handler
     steam_handler = logging.StreamHandler()
@@ -62,6 +88,13 @@ def parse_args():
         "--fps", "-f",
         help="Frames-per-second for the application to render",
         type=int, default=25)
+    parser.add_argument("--memory-usage-output", "-m",
+                        help="To run memory usage analysis for application,"
+                             "give path to output csv file")
+    parser.add_argument(
+        "--debug", "-d",
+        help="Whether to save the sensor values to a CSV file (inhalator.csv)",
+        action='store_true')
     args = parser.parse_args()
     args.verbose = max(0, logging.WARNING - (10 * args.verbose))
     return args
@@ -73,10 +106,9 @@ def handle_sigterm(signum, frame):
     Application.instance().exit()
 
 
-def main():
+def start_app(args):
     signal.signal(signal.SIGTERM, handle_sigterm)
     events = Events()
-    args = parse_args()
     measurements = Measurements(args.sample_rate if args.simulate else Application.HARDWARE_SAMPLE_RATE)
     arm_wd_event = Event()
     log = configure_logging(args.verbose)
@@ -94,17 +126,34 @@ def main():
                                 simulation_data=args.simulate,
                                 error_probability=args.error)
 
-        pressure_sensor = drivers.acquire_driver("pressure")
-        flow_sensor = drivers.acquire_driver("differential_pressure")
+        try:
+            pressure_sensor = drivers.acquire_driver("pressure")
+        except errors.I2CDeviceNotFoundError:
+            pressure_sensor = drivers.acquire_driver("null")
+
+        try:
+            flow_sensor = drivers.acquire_driver("differential_pressure")
+        except errors.I2CDeviceNotFoundError:
+            flow_sensor = drivers.acquire_driver("null")
 
         watchdog = drivers.acquire_driver("wd")
-        oxygen_a2d = drivers.acquire_driver("a2d")
+        try:
+            a2d = drivers.acquire_driver("a2d")
+        except errors.SPIDriverInitError:
+            a2d = drivers.acquire_driver("null")
+
         timer = drivers.acquire_driver("timer")
+        try:
+            rtc = drivers.acquire_driver("rtc")
+            rtc.set_system_time()
+        except errors.InhalatorError:
+            rtc = drivers.acquire_driver("null")
 
         sampler = Sampler(measurements=measurements, events=events,
                           flow_sensor=flow_sensor,
                           pressure_sensor=pressure_sensor,
-                          a2d=oxygen_a2d, timer=timer)
+                          a2d=a2d, timer=timer,
+                          save_sensor_values=args.debug)
 
         app = Application(measurements=measurements,
                           events=events,
@@ -122,6 +171,15 @@ def main():
     finally:
         if drivers is not None:
             drivers.close_all_drivers()
+
+
+def main():
+    args = parse_args()
+    if args.memory_usage_output:
+        monitor(start_app, args, args.memory_usage_output)
+
+    else:
+        start_app(args)
 
 
 if __name__ == '__main__':
