@@ -78,7 +78,7 @@ class MuteAlertsButton(object):
         self.button.place(relx=0, rely=0.27, relwidth=0.8, relheight=0.2)
 
     def update(self):
-        if self.events.mute_alerts:
+        if self.events.mute_alerts._alerts_muted:
             self.button.set_image(self.PATH_TO_MUTED)
 
         else:
