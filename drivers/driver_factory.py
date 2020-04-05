@@ -37,8 +37,10 @@ class DriverFactory(object):
     def instance(cls):
         return cls.__instance
 
-    def __init__(self, simulation_mode, simulation_data='sinus',  error_probability=0):
+    def __init__(self, simulation_mode, simulation_data=None,  error_probability=0):
         self.mock = simulation_mode
+        if simulation_data is None:
+            simulation_data = 'sinus'
         self.simulation_data = simulation_data  # can be either `sinus` or file path
         self.error_probability = error_probability
         self.drivers_cache = {}
