@@ -46,8 +46,8 @@ class AlertDriver(object):
         self.set_buzzer(value)
 
     def set_buzzer(self, value: bool):
-        gpio_state = GPIO.LOW
+        gpio_state  = GPIO.HIGH
         if not value:
-            gpio_state  = GPIO.HIGH
+            gpio_state = GPIO.LOW
 
         GPIO.output(self.FAULT_BUZZER_GPIO, gpio_state)
