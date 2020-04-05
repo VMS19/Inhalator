@@ -18,7 +18,7 @@ class WdTask(Thread):
 
     def run(self):
         self.log.info(
-            f"WD Task started. Waiting {self.GRACE_TIME} seconds for"
+            f"WD Task started. Waiting {self.GRACE_TIME} seconds for "
             f"application to start")
         # Let the application the opportunity to start.
         time.sleep(self.GRACE_TIME)
