@@ -128,7 +128,6 @@ class VentilationState(Enum):
 
 
 class VentilationStateMachine(object):
-
     NO_BREATH_ALERT_TIME_SECONDS = 12
     PEEP_TO_INHALE_SLOPE = 8
     INHALE_TO_HOLD_SLOPE = 4
@@ -276,7 +275,7 @@ class VentilationStateMachine(object):
             self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW, timestamp)
 
         # Publish alerts for Oxygen
-            # Oxygen too high
+        # Oxygen too high
         if self._config.o2_range.over(o2_percentage):
             self.log.warning(
                 f"Oxygen percentage too high "
@@ -330,7 +329,7 @@ class VentilationStateMachine(object):
 class Sampler(object):
 
     def __init__(self, measurements, events, flow_sensor, pressure_sensor,
-                 oxygen_a2d, timer):
+                 oxygen_a2d, timer, save_sensor_values=False):
         super(Sampler, self).__init__()
         self.log = logging.getLogger(self.__class__.__name__)
         self._measurements = measurements  # type: Measurements
@@ -342,6 +341,7 @@ class Sampler(object):
         self._events = events
         self.vsm = VentilationStateMachine(measurements, events)
         self.storage_handler = SamplesStorage()
+        self.save_sensor_values = save_sensor_values
 
     def read_single_sensor(self, sensor, alert_code, timestamp):
         try:
@@ -381,7 +381,8 @@ class Sampler(object):
 
         flow_slm, pressure_cmh2o, o2_saturation_percentage = result
 
-        self.storage_handler.write(flow_slm, pressure_cmh2o, o2_saturation_percentage)
+        if self.save_sensor_values:
+            self.storage_handler.write(flow_slm, pressure_cmh2o, o2_saturation_percentage)
 
         self.vsm.update(
             pressure_cmh2o=pressure_cmh2o,

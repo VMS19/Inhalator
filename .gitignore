@@ -9,4 +9,4 @@ config.json
 .tox
 htmlcov
 inhalator.csv*
-header.csv
+headers.csv

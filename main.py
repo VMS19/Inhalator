@@ -13,6 +13,8 @@ from application import Application
 from algo import Sampler
 from wd_task import WdTask
 
+BYTES_IN_GB = 2 ** 30
+
 
 def configure_logging(level):
     config = Configurations.instance()
@@ -21,7 +23,7 @@ def configure_logging(level):
     logger.setLevel(level)
     # create file handler which logs even debug messages
     file_handler = RotatingFileHandler('inhalator.log',
-                                       maxBytes=2 ** 30,
+                                       maxBytes=BYTES_IN_GB,
                                        backupCount=1)
     file_handler.setLevel(level)
     # create console handler
@@ -60,6 +62,10 @@ def parse_args():
         "--fps", "-f",
         help="Frames-per-second for the application to render",
         type=int, default=25)
+    parser.add_argument(
+        "--output", "-o",
+        help="Whether to save the sensor values to a CSV file (inhalator.csv)",
+        action='store_true')
     args = parser.parse_args()
     args.verbose = max(0, logging.WARNING - (10 * args.verbose))
     return args
@@ -86,6 +92,9 @@ def main():
         log.info("Sensor Data Source: %s", args.simulate)
         log.info("Error probability: %s", args.error)
 
+    if not args.output:
+        log.warning("Saving sensor values is DISABLED")
+
     drivers = None
     try:
         drivers = DriverFactory(simulation_mode=simulation,
@@ -102,7 +111,9 @@ def main():
         sampler = Sampler(measurements=measurements, events=events,
                           flow_sensor=flow_sensor,
                           pressure_sensor=pressure_sensor,
-                          oxygen_a2d=oxygen_a2d, timer=timer)
+                          oxygen_a2d=oxygen_a2d,
+                          timer=timer,
+                          save_sensor_values=args.output)
 
         app = Application(measurements=measurements,
                           events=events,
