@@ -7,7 +7,7 @@ class AlertDriver(object):
     FAULT_BUZZER_GPIO = 13
     RESERVED_GPIO = 20
 
-    def __init__(self, events):
+    def __init__(self):
         GPIO.setmode(GPIO.BCM)
 
         # Set System fault GPIO
