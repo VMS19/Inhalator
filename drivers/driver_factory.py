@@ -259,3 +259,8 @@ class DriverFactory(object):
     def get_mock_aux_driver():
         from drivers.aux_sound import SoundViaAux
         return SoundViaAux.instance()
+
+    @staticmethod
+    def get_null_driver():
+        from drivers.null_driver import NullDriver
+        return NullDriver()
