@@ -157,7 +157,7 @@ class VentilationStateMachine(object):
         self.pressure_slope = RunningSlope(num_samples=7)
         self._config = Configurations.instance()
         self.last_breath_timestamp = None
-        self.current_state = VentilationState.Exhale
+        self.current_state = VentilationState.PEEP
 
         # Data structure to record last 100 entry timestamp for each state.
         # Useful for debugging and plotting.
@@ -200,7 +200,7 @@ class VentilationStateMachine(object):
         self.expiration_volume.reset()
 
         # Restart state machine
-        self.current_state = VentilationState.Exhale
+        self.current_state = VentilationState.PEEP
 
     def enter_inhale(self, timestamp):
         self.last_breath_timestamp = timestamp
