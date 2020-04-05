@@ -74,8 +74,17 @@ class VentilationStateMachine(object):
     def is_breath_cycle_finished(self):
         minimal_insp_volume = self.inspiration_volume.air_volume_liter > self.EPSILON
         minimal_exp_volume = self.expiration_volume.air_volume_liter > self.EPSILON
+        flow_transition_to_insp = self.last_flow_sample <= 0 < self.flow_sample
+        flow_transition_to_exp = self.flow_sample < 0 <= self.last_flow_sample
+
+        if flow_transition_to_exp and not minimal_insp_volume:
+            self.inspiration_volume.reset()
+
+        if flow_transition_to_insp and not minimal_exp_volume:
+            self.expiration_volume.reset()
+
         return (minimal_insp_volume and minimal_exp_volume and
-                        self.last_flow_sample <= 0 < self.flow_sample)
+                flow_transition_to_insp)
 
     def update(self, pressure_cmh2o, flow_slm, o2_saturation_percentage, timestamp):
         self.last_flow_sample = self.flow_sample
