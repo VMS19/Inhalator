@@ -12,7 +12,7 @@ class AlertPeripheralHandler(object):
         self.sound_device = drivers.acquire_driver("aux")
 
     def on_new_alert(self, alert):
-        if alert is not AlertCodes.OK:
+        if alert != AlertCodes.OK:
             self.alert_driver.alert_medical_condition_on()
         else:
             self.alert_driver.alert_medical_condition_off()
@@ -22,6 +22,6 @@ class AlertPeripheralHandler(object):
         if mute:
             self.alert_driver.alert_buzzer_off()
             self.sound_device.stop()
-        else:
+        elif self.events.alerts_queue.last_alert != AlertCodes.OK :
             self.alert_driver.alert_buzzer_on()
             self.sound_device.start()

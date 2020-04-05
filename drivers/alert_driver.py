@@ -12,7 +12,7 @@ class AlertDriver(object):
 
         # Set System fault GPIO
         GPIO.setup(self.SYSTEM_FAULT_GPIO, GPIO.OUT)
-        GPIO.output(self.MEDICAL_CONTITION_GPIO, GPIO.LOW)
+        GPIO.output(self.SYSTEM_FAULT_GPIO, GPIO.LOW)
 
         # Set medical contition GPIO
         GPIO.setup(self.MEDICAL_CONTITION_GPIO, GPIO.OUT)
