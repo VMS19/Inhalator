@@ -366,7 +366,7 @@ class Sampler(object):
         pressure_cmh2o = self.read_single_sensor(
             self._pressure_sensor, AlertCodes.PRESSURE_SENSOR_ERROR, timestamp)
         o2_saturation_percentage = self.read_single_sensor(
-            self._oxygen_a2d, AlertCodes.SATURATION_SENSOR_ERROR, timestamp)
+            self._oxygen_a2d, AlertCodes.OXYGEN_SENSOR_ERROR, timestamp)
 
         data = (flow_slm, pressure_cmh2o, o2_saturation_percentage)
         return [x if x is not None else 0 for x in data]

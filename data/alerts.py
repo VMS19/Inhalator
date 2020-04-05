@@ -1,9 +1,7 @@
 import time
 import datetime
-from collections import deque
 from enum import IntEnum
 from queue import Queue
-from functools import lru_cache
 
 
 class AlertCodes(IntEnum):
@@ -18,7 +16,7 @@ class AlertCodes(IntEnum):
     NO_CONFIGURATION_FILE = 1 << 7
     FLOW_SENSOR_ERROR = 1 << 8
     PRESSURE_SENSOR_ERROR = 1 << 9
-    SATURATION_SENSOR_ERROR = 1 << 10
+    OXYGEN_SENSOR_ERROR = 1 << 10
     OXYGEN_LOW = 1 << 11
     OXYGEN_HIGH = 1 << 12
 
@@ -41,7 +39,7 @@ class Alert(object):
         AlertCodes.NO_CONFIGURATION_FILE: "Configuration Error",
         AlertCodes.FLOW_SENSOR_ERROR: "Flow Sensor Error",
         AlertCodes.PRESSURE_SENSOR_ERROR: "Pressure Sensor Error",
-        AlertCodes.SATURATION_SENSOR_ERROR: "Saturation Sensor Error",
+        AlertCodes.OXYGEN_SENSOR_ERROR: "Oxygen Sensor Error",
     }
 
     def __init__(self, alert_code, timestamp=None):
