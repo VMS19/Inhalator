@@ -90,7 +90,8 @@ class Ads7844A2D(object):
 
     def read_battery_percentage(self):
         raw_battery_value = self._sample_a2d(self.BATTERY_PERCENTAGE_CHANNEL)
-        return raw_battery_value / self.A2D_BATTERY_RATIO
+        battery_value = raw_battery_value / self.A2D_BATTERY_RATIO
+        return min(100, int(battery_value * 100 / 6.024644649924462))
 
     def read_battery_existence(self):
         # According to what the hardware team said, if the battery existence
