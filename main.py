@@ -1,9 +1,14 @@
+import multiprocessing
 import os
 import argparse
 import logging
 import signal
+import time
+from datetime import datetime
 from logging.handlers import RotatingFileHandler
 from threading import Event
+
+import psutil
 
 from drivers.driver_factory import DriverFactory
 from data.configurations import Configurations
@@ -12,8 +17,32 @@ from data.events import Events
 from application import Application
 from algo import Sampler
 from wd_task import WdTask
+<<<<<<< HEAD
 from alert_peripheral_handler import AlertPeripheralHandler
+=======
+
+BYTES_IN_MB = 2 ** 20
+>>>>>>> master
 BYTES_IN_GB = 2 ** 30
+
+
+def monitor(target, args, output_path):
+    worker_process = multiprocessing.Process(target=target, args=[args])
+    worker_process.start()
+    p = psutil.Process(worker_process.pid)
+
+    # log memory usage of `worker_process` every 10 seconds
+    # save the data in MB units
+    with open(output_path, 'w') as out:
+        out.write("timestamp,memory usage [MB]\n")
+
+    while worker_process.is_alive():
+        with open(output_path, 'a') as out:
+            timestamp = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+            out.write(f"{timestamp},{p.memory_info().rss / BYTES_IN_MB}\n")
+        time.sleep(10)
+
+    worker_process.join()
 
 
 def configure_logging(level):
@@ -62,6 +91,9 @@ def parse_args():
         "--fps", "-f",
         help="Frames-per-second for the application to render",
         type=int, default=25)
+    parser.add_argument("--memory-usage-output", "-m",
+                        help="To run memory usage analysis for application,"
+                             "give path to output csv file")
     args = parser.parse_args()
     args.verbose = max(0, logging.WARNING - (10 * args.verbose))
     return args
@@ -73,10 +105,9 @@ def handle_sigterm(signum, frame):
     Application.instance().exit()
 
 
-def main():
+def start_app(args):
     signal.signal(signal.SIGTERM, handle_sigterm)
     events = Events()
-    args = parse_args()
     measurements = Measurements(args.sample_rate if args.simulate else Application.HARDWARE_SAMPLE_RATE)
     arm_wd_event = Event()
     log = configure_logging(args.verbose)
@@ -100,6 +131,9 @@ def main():
         oxygen_a2d = drivers.acquire_driver("oxygen_a2d")
         timer = drivers.acquire_driver("timer")
         alert_driver = drivers.acquire_driver("alert")
+        rtc = drivers.acquire_driver("rtc")
+
+        rtc.set_system_time()
 
         alerts_handler = AlertPeripheralHandler(events, drivers)
         sampler = Sampler(measurements=measurements, events=events,
@@ -122,9 +156,20 @@ def main():
         app.run()
 
     finally:
+        alert_driver = drivers.acquire_driver("alert")
         alert_driver.alert_system_fault_on()
+
         if drivers is not None:
             drivers.close_all_drivers()
+
+
+def main():
+    args = parse_args()
+    if args.memory_usage_output:
+        monitor(start_app, args, args.memory_usage_output)
+
+    else:
+        start_app(args)
 
 
 if __name__ == '__main__':
