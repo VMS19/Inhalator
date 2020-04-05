@@ -178,14 +178,16 @@ class IndicatorAlertBar(object):
         then_dt = datetime.datetime.fromtimestamp(then)
 
         # This display a '2 minutes ago' text
-        self.timestamp_label.configure(text=f"{(timeago.format(now_dt - then_dt))}")
+        time_ago = (timeago.format(now_dt - then_dt))
+        self.timestamp_label.configure(text=f"{time_ago}")
 
     def update_battery(self):
-        battery_is_low = self.current_alert.contains(AlertCodes.LOW_BATTERY)
+        current_battery = self.measurements.battery_percentage
+        battery_is_low = current_battery < self.configs.low_battery_percentage
         battry_is_missing = self.current_alert.contains(AlertCodes.NO_BATTERY)
 
         if battry_is_missing:
-          self.battery_icon.configure(image=self.battery_missing_image)
+            self.battery_icon.configure(image=self.battery_missing_image)
 
         else:
             if battery_is_low:
@@ -194,4 +196,4 @@ class IndicatorAlertBar(object):
             else:
                 self.battery_icon.configure(image=self.battery_ok_image)
 
-            self.battery_label.configure(text=f"{self.measurements.battery_percentage}%")
+            self.battery_label.configure(text=f"{current_battery}%")

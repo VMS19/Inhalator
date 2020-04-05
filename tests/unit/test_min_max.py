@@ -55,10 +55,10 @@ def test_sampler_dead_min_max(events, measurements, config):
     driver_factory = DriverFactory(simulation_mode=True, simulation_data="dead")
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
-    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
+    a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      oxygen_a2d, timer)
+                      a2d, timer)
 
     for _ in range(SAMPLES_AMOUNT):
         sampler.sampling_iteration()
@@ -85,10 +85,10 @@ def test_sampler_sinus_min_max(events, measurements, config):
     driver_factory = DriverFactory(simulation_mode=True, simulation_data="noiseless_sinus")
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
-    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
+    a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      oxygen_a2d, timer)
+                      a2d, timer)
 
     for _ in range(SAMPLES_AMOUNT):
         sampler.sampling_iteration()
@@ -146,10 +146,10 @@ def test_sampler_pig_min_max(events, measurements, config):
 
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
-    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
+    a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      oxygen_a2d, timer)
+                      a2d, timer)
 
     for _ in range(SAMPLES_AMOUNT):
         sampler.sampling_iteration()

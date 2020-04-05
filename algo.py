@@ -234,7 +234,8 @@ class VentilationStateMachine(object):
         self._measurements.peep_min_pressure = self.min_pressure
         self.min_pressure = sys.maxsize
 
-    def update(self, pressure_cmh2o, flow_slm, o2_percentage, timestamp):
+    def update(self, pressure_cmh2o, flow_slm, o2_percentage, timestamp,
+               battery_percentage, battery_exists):
         if self.last_breath_timestamp is None:
             # First time initialization. Not done in __init__ to avoid reading
             # the time in this class, which improves its testability.
@@ -254,6 +255,7 @@ class VentilationStateMachine(object):
         self._measurements.set_pressure_value(pressure_cmh2o)
         self._measurements.set_flow_value(flow_slm)
         self._measurements.set_saturation_percentage(o2_percentage)
+        self._measurements.set_battery_percentage(battery_percentage)
 
         # Update peak pressure/flow values
         self.peak_pressure = max(self.peak_pressure, pressure_cmh2o)
@@ -288,6 +290,12 @@ class VentilationStateMachine(object):
                 f"({o2_percentage}% < {self._config.o2_range.min}%)")
             self._events.alerts_queue.enqueue_alert(
                 AlertCodes.OXYGEN_LOW, timestamp)
+
+        # Publish alerts for battery
+        if not battery_exists:
+            self._events.alerts_queue.enqueue_alert(
+                AlertCodes.NO_BATTERY, timestamp
+            )
 
         self.check_transition(
             flow_slm=flow_slm,
@@ -327,13 +335,13 @@ class VentilationStateMachine(object):
 class Sampler(object):
 
     def __init__(self, measurements, events, flow_sensor, pressure_sensor,
-                 oxygen_a2d, timer):
+                 a2d, timer):
         super(Sampler, self).__init__()
         self.log = logging.getLogger(self.__class__.__name__)
         self._measurements = measurements  # type: Measurements
         self._flow_sensor = flow_sensor
         self._pressure_sensor = pressure_sensor
-        self._oxygen_a2d = oxygen_a2d
+        self._a2d = a2d
         self._timer = timer
         self._config = Configurations.instance()
         self._events = events
@@ -361,10 +369,14 @@ class Sampler(object):
             self._flow_sensor, AlertCodes.FLOW_SENSOR_ERROR, timestamp)
         pressure_cmh2o = self.read_single_sensor(
             self._pressure_sensor, AlertCodes.PRESSURE_SENSOR_ERROR, timestamp)
-        o2_saturation_percentage = self.read_single_sensor(
-            self._oxygen_a2d, AlertCodes.SATURATION_SENSOR_ERROR, timestamp)
 
-        data = (flow_slm, pressure_cmh2o, o2_saturation_percentage)
+        o2_saturation_percentage = self._a2d.read_oxygen()
+        battery_percentage = self._a2d.read_battery_percentage()
+        battery_exists = self._a2d.read_battery_existence()
+
+        data = (flow_slm, pressure_cmh2o, o2_saturation_percentage,
+                battery_percentage, battery_exists)
+
         errors = [x is None for x in data]
         return None if any(errors) else data
 
@@ -375,7 +387,11 @@ class Sampler(object):
         if result is None:
             return
 
-        flow_slm, pressure_cmh2o, o2_saturation_percentage = result
+        flow_slm, pressure_cmh2o, o2_saturation_percentage, \
+        battery_percentage, battery_exists = result
+
+        # Convert a2d readings to oxygen and battery
+
         # WARNING! These log messages are useful for debugging sensors but
         # might spam you since they are printed on every sample. In order to see
         # them run the application in maximum verbosity mode by passing `-vvv` to `main.py
@@ -387,4 +403,7 @@ class Sampler(object):
             pressure_cmh2o=pressure_cmh2o,
             flow_slm=flow_slm,
             o2_percentage=o2_saturation_percentage,
-            timestamp=ts)
+            timestamp=ts,
+            battery_percentage=battery_percentage,
+            battery_exists=battery_exists
+        )

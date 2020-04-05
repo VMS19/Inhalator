@@ -50,6 +50,9 @@ class Measurements(object):
     def set_saturation_percentage(self, o2_saturation_percentage):
         self.o2_saturation_percentage = o2_saturation_percentage
 
+    def set_battery_percentage(self, percentage):
+        self.battery_percentage = percentage
+
     @property
     def _amount_of_samples_in_graph(self):
         config = Configurations.instance()

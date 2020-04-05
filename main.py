@@ -87,7 +87,7 @@ def main():
         log.info("Running in simulation mode!")
         log.info("Sensor Data Source: %s", args.simulate)
         log.info("Error probability: %s", args.error)
-
+    
     drivers = None
     try:
         drivers = DriverFactory(simulation_mode=simulation,
@@ -98,13 +98,13 @@ def main():
         flow_sensor = drivers.acquire_driver("differential_pressure")
 
         watchdog = drivers.acquire_driver("wd")
-        oxygen_a2d = drivers.acquire_driver("oxygen_a2d")
+        oxygen_a2d = drivers.acquire_driver("a2d")
         timer = drivers.acquire_driver("timer")
 
         sampler = Sampler(measurements=measurements, events=events,
                           flow_sensor=flow_sensor,
                           pressure_sensor=pressure_sensor,
-                          oxygen_a2d=oxygen_a2d, timer=timer)
+                          a2d=oxygen_a2d, timer=timer)
 
         app = Application(measurements=measurements,
                           events=events,
@@ -119,7 +119,6 @@ def main():
         watchdog_task.start()
 
         app.run()
-
     finally:
         if drivers is not None:
             drivers.close_all_drivers()

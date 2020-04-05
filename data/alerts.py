@@ -21,7 +21,6 @@ class AlertCodes(IntEnum):
     SATURATION_SENSOR_ERROR = 1 << 10
     OXYGEN_LOW = 1 << 11
     OXYGEN_HIGH = 1 << 12
-    LOW_BATTERY = 1 << 13
     NO_BATTERY = 1 << 14
 
     @classmethod
@@ -45,7 +44,6 @@ class Alert(object):
         AlertCodes.PRESSURE_SENSOR_ERROR: "Pressure Sensor Error",
         AlertCodes.SATURATION_SENSOR_ERROR: "Saturation Sensor Error",
         AlertCodes.NO_BATTERY: "No Battery",
-        AlertCodes.LOW_BATTERY: "Low Battery",
     }
 
     def __init__(self, alert_code, timestamp=None):

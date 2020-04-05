@@ -21,8 +21,12 @@ def alert_bar() -> IndicatorAlertBar:
     events.mute_alerts = False
     measurements = MagicMock()
 
-    return IndicatorAlertBar(parent=parent, events=events,
-                             drivers=drivers, measurements=measurements)
+    bar = IndicatorAlertBar(parent=parent, events=events, drivers=drivers,
+                            measurements=measurements)
+
+    bar.configs.low_battery_percentage = 15
+    measurements.battery_percentage = 90
+    return bar
 
 
 def test_starts_with_ok(alert_bar: IndicatorAlertBar):
@@ -198,7 +202,8 @@ def test_alert_on_low_oxygen(alert_bar: IndicatorAlertBar):
 
 
 def test_on_low_battery(alert_bar: IndicatorAlertBar):
-    alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.LOW_BATTERY)
+    alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.OK)
+    alert_bar.configs.low_battery_percentage = 15
     alert_bar.measurements.battery_percentage = 4
     alert_bar.update()
 

@@ -32,7 +32,7 @@ class Configurations(object):
     def __init__(self, o2_range, volume_range, pressure_range, resp_rate_range,
                  flow_y_scale, pressure_y_scale, graph_seconds,
                  breathing_threshold, log_enabled=True, debug_port=7777,
-                 mute_time_limit=120):
+                 mute_time_limit=120, low_battery_percentage=15):
         self.o2_range = o2_range
         self.volume_range = volume_range
         self.pressure_range = pressure_range
@@ -44,6 +44,7 @@ class Configurations(object):
         self.mute_time_limit = mute_time_limit
         self.flow_y_scale = flow_y_scale
         self.pressure_y_scale = pressure_y_scale
+        self.low_battery_percentage = low_battery_percentage
 
     @classmethod
     def instance(cls):
@@ -113,6 +114,7 @@ class Configurations(object):
             log_enabled = config["log_enabled"]
             debug_port = config["debug_port"]
             mute_time_limit = config["mute_time_limit"]
+            low_battery_percentage = config["low_battery_percentage"]
 
             return cls(o2_range=o2,
                        volume_range=volume,
@@ -124,7 +126,8 @@ class Configurations(object):
                        debug_port=debug_port,
                        mute_time_limit=mute_time_limit,
                        flow_y_scale=flow_y_scale,
-                       pressure_y_scale=pressure_y_scale)
+                       pressure_y_scale=pressure_y_scale,
+                       low_battery_percentage=low_battery_percentage)
 
         except Exception as e:
             raise ConfigurationFileError(f"Could not load "
@@ -170,6 +173,7 @@ class Configurations(object):
             "graph_seconds": self.graph_seconds,
             "debug_port": self.debug_port,
             "mute_time_limit": self.mute_time_limit,
+            "low_battery_percentage": self.low_battery_percentage,
         }
 
         with open(config_path, "w") as config_file:
