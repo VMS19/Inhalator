@@ -1,9 +1,5 @@
-import csv
-import logging
 import os
-from itertools import product, cycle
 import time
-from unittest.mock import patch, Mock
 
 import pytest
 from pytest import approx

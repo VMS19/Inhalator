@@ -7,7 +7,6 @@ from data.configurations import Configurations
 from data.thresholds import (O2Range, PressureRange,
                              RespiratoryRateRange, VolumeRange)
 from drivers.driver_factory import DriverFactory
-from drivers.mocks.sensor import MockSensor
 
 
 @pytest.fixture
@@ -81,42 +80,6 @@ def test_sampler_alerts_when_pressure_exceeds_minimum(events, measurements, conf
     assert len(events.alerts_queue) == 0
 
     config.pressure_range = PressureRange(0, -100)
-    sampler.sampling_iteration()
-
-    assert len(events.alerts_queue) == 1
-
-
-@pytest.mark.xfail(reason="Flow thresholds are not currently checked as per requirements")
-def test_sampler_alerts_when_flow_exceeds_maximum(events, measurements, config, driver_factory):
-    flow_sensor = MockSensor([1])
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    a2d = driver_factory.acquire_driver("a2d")
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
-    assert len(events.alerts_queue) == 0
-    sampler.sampling_iteration()
-    assert len(events.alerts_queue) == 0
-
-    config.flow_range = FlowRange(0, 0)
-    sampler.sampling_iteration()
-
-    assert len(events.alerts_queue) == 1
-
-
-@pytest.mark.xfail(reason="Flow thresholds are not currently checked as per requirements")
-def test_sampler_alerts_when_flow_exceeds_minimum(events, measurements, config, driver_factory):
-    flow_sensor = MockSensor([-1])
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    a2d = driver_factory.acquire_driver("a2d")
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
-    assert len(events.alerts_queue) == 0
-    sampler.sampling_iteration()
-    assert len(events.alerts_queue) == 0
-
-    config.flow_range = FlowRange(0, 100)
     sampler.sampling_iteration()
 
     assert len(events.alerts_queue) == 1
