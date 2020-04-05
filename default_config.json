@@ -1,7 +1,7 @@
 {
   "threshold": {
     "o2": {
-      "min": 0,
+      "min": 15,
       "max": 100,
       "step": 1
     },
@@ -11,13 +11,13 @@
       "step": 10
     },
     "pressure": {
-      "min": 0,
-      "max": 26.5,
+      "min": 2,
+      "max": 50,
       "step": 0.5
     },
     "bpm": {
       "min": 0,
-      "max": 26.5,
+      "max": 40,
       "step": 0.5
     },
     "breathing_threshold": 3.5
