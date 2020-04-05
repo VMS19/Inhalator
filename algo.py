@@ -157,7 +157,7 @@ class VentilationStateMachine(object):
         self.pressure_slope = RunningSlope(num_samples=7)
         self._config = Configurations.instance()
         self.last_breath_timestamp = None
-        self.current_state = VentilationState.PEEP
+        self.current_state = VentilationState.Exhale
 
         # Data structure to record last 100 entry timestamp for each state.
         # Useful for debugging and plotting.
@@ -187,6 +187,20 @@ class VentilationStateMachine(object):
         self.exp_volumes = deque(maxlen=100)
         self.insp_flows = deque(maxlen=1000)
         self.exp_flows = deque(maxlen=1000)
+
+    def reset(self):
+        # Restart measurements
+        self._measurements.reset()
+        self.peak_pressure = 0
+        self.peak_flow = 0
+        self.min_pressure = sys.maxsize
+
+        # Restart volume calculation
+        self.inspiration_volume.reset()
+        self.expiration_volume.reset()
+
+        # Restart state machine
+        self.current_state = VentilationState.Exhale
 
     def enter_inhale(self, timestamp):
         self.last_breath_timestamp = timestamp
@@ -244,6 +258,7 @@ class VentilationStateMachine(object):
         if seconds_from_last_breath >= self.NO_BREATH_ALERT_TIME_SECONDS:
             self.log.warning("No breath detected for the last 12 seconds")
             self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH, timestamp)
+            self.reset()
 
         # We track inhale and exhale volume separately. Positive flow means
         # inhale, and negative flow means exhale.
