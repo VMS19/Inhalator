@@ -130,7 +130,7 @@ class MuteAlerts(object):
         else:
             self._alerts_muted = not self._alerts_muted
 
-        self.observer.publish(self._alerts_muted)
-
         if self._alerts_muted:
             self.mute_time = time.time()
+
+        self.observer.publish(self._alerts_muted)
