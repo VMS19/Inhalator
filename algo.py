@@ -369,18 +369,12 @@ class Sampler(object):
             self._oxygen_a2d, AlertCodes.SATURATION_SENSOR_ERROR, timestamp)
 
         data = (flow_slm, pressure_cmh2o, o2_saturation_percentage)
-        errors = [x is None for x in data]
-        return None if any(errors) else data
+        return [x if x is not None else 0 for x in data]
 
     def sampling_iteration(self):
         ts = self._timer.get_time()
         # Read from sensors
-        result = self.read_sensors(ts)
-        if result is None:
-            return
-
-        flow_slm, pressure_cmh2o, o2_saturation_percentage = result
-
+        flow_slm, pressure_cmh2o, o2_saturation_percentage = self.read_sensors(ts)
         if self.save_sensor_values:
             self.storage_handler.write(flow_slm, pressure_cmh2o, o2_saturation_percentage)
 
