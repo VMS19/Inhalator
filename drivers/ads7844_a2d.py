@@ -95,7 +95,7 @@ class Ads7844A2D(object):
         return min(100, int(battery_value * 100 / self.FULL_BATTERY))
 
     def read_battery_existence(self):
-        # According to what the hardware team said, if the battery existence
+        # According to what the hardware team said, if the battery exists
         # the read value should be around 1.6
         raw_existence_value = self._sample_a2d(self.BATTERY_EXISTENCE_CHANNEL)
         return 1.7 >= raw_existence_value >= 1.5
