@@ -1,4 +1,4 @@
-from threading import Timer, Lock
+import time
 
 import RPi.GPIO as GPIO
 
@@ -10,7 +10,6 @@ class WdDriver(object):
     FAULT_GPIO = 13
 
     def __init__(self):
-        self.arm_wd_lock = Lock()
         # Set WD GPIO
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.WD_GPIO, GPIO.OUT)
@@ -24,14 +23,11 @@ class WdDriver(object):
 
     def _pull_wd_down(self):
         GPIO.output(self.WD_GPIO, GPIO.LOW)
-        self.arm_wd_lock.release()
 
-    def arm_wd(self):
-        self.arm_wd_lock.acquire()
-        refresh_delay_timer = Timer(self.WD_REFRESH_SIGNAL_SEC,
-                                    self._pull_wd_down)
+    def arm(self):
         self._pull_wd_up()
-        refresh_delay_timer.start()
+        time.sleep(self.WD_REFRESH_SIGNAL_SEC)
+        self._pull_wd_down()
 
     def close(self):
         pass
