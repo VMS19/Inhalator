@@ -194,6 +194,11 @@ class DriverFactory(object):
         from drivers.sdp8_pressure_sensor import SdpPressureSensor
         return SdpPressureSensor()
 
+    @staticmethod
+    def get_rtc_driver():
+        from drivers.rv8523_rtc import Rv8523Rtc
+        return Rv8523Rtc()
+
     def get_mock_differential_pressure_driver(self):
         from drivers.mocks.sensor import MockSensor
         simulation_data = self.simulation_data
@@ -264,3 +269,8 @@ class DriverFactory(object):
     def get_null_driver():
         from drivers.null_driver import NullDriver
         return NullDriver()
+
+    @staticmethod
+    def get_mock_rtc_driver():
+        from drivers.mocks.mock_rv8523_rtc_driver import MockRv8523Rtc
+        return MockRv8523Rtc()
