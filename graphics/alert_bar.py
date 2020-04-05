@@ -178,7 +178,7 @@ class IndicatorAlertBar(object):
         then_dt = datetime.datetime.fromtimestamp(then)
 
         # This display a '2 minutes ago' text
-        time_ago = (timeago.format(now_dt - then_dt))
+        time_ago = timeago.format(now_dt - then_dt)
         self.timestamp_label.configure(text=f"{time_ago}")
 
     def update_battery(self):
