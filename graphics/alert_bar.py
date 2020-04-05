@@ -74,8 +74,6 @@ class IndicatorAlertBar(object):
                                    fg=Theme.active().ALERT_BAR_OK_TXT,
                                    bg=Theme.active().ALERT_BAR_OK)
 
-        self.sound_device = drivers.acquire_driver("aux")
-
         self.current_alert = Alert(AlertCodes.OK)
 
     @property

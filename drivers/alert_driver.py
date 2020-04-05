@@ -34,7 +34,7 @@ class AlertDriver(object):
         if not value:
             led = self.LED_RED
 
-        GPIO.output(self.SYSTEM_FAULT_GPIO, value)
+        GPIO.output(self.SYSTEM_FAULT_GPIO, led)
         self.set_buzzer(value)
 
     def set_medical_condition_alert(self, value: bool):
@@ -42,7 +42,7 @@ class AlertDriver(object):
         if not value:
             led = self.LED_RED
 
-        GPIO.output(self.MEDICAL_CONTITION_GPIO, value)
+        GPIO.output(self.MEDICAL_CONTITION_GPIO, led)
         self.set_buzzer(value)
 
     def set_buzzer(self, value: bool):
