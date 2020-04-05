@@ -25,3 +25,7 @@ jobs:
         pip install tox
     - name: Run ${{ matrix.tox-environment }}
       run: tox -e ${{ matrix.tox-environment }}
+    - name: Calculate coverage
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
