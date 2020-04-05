@@ -21,10 +21,18 @@ def real_data():
     this_dir = os.path.dirname(__file__)
     with open(os.path.join(this_dir, SIMULATION_FOLDER,
                            "pig_sim_cycle.csv"), "r") as f:
-        data = list(csv.reader(f))
-    timestamps = [float(d[0]) for d in data]
-    pressure_values = [float(d[1]) for d in data]
-    return timestamps, pressure_values
+        reader = csv.DictReader(f)
+        timestamps = []
+        pressure_values = []
+        flow_values = []
+        oxygen_values = []
+        for row in reader:
+            timestamps.append(float(row['time elapsed (seconds)']))
+            pressure_values.append(float(row['pressure']))
+            flow_values.append(float(row['flow']))
+            oxygen_values.append(float(row['oxygen']))
+
+    return timestamps, pressure_values, flow_values, oxygen_values
 
 
 def test_bpm_calculation_const_rate(real_data):
@@ -34,16 +42,17 @@ def test_bpm_calculation_const_rate(real_data):
         * Run pig simulation for entire breath cycle
         * Check BPM calculated correctly
     """
-    timestamps, pressure_values = real_data
+    timestamps, pressure_values, flow_values, oxygen_values = real_data
     timestamps += [timestamps[-1] + SAMPLE_TIME_DIFF * (i + 1)
-                   for i in range(len(timestamps) * 100)]
+                   for i in range(len(timestamps))]
     vsm = VentilationStateMachine(Measurements(), Events())
-    for timestamp, pressure in zip(timestamps, pressure_values * 2):
+    for t, p, f, o in zip(timestamps, pressure_values * 2,
+                          flow_values * 2, oxygen_values * 2):
         vsm.update(
-            pressure_cmh2o=pressure,
-            flow_slm=0,
-            o2_saturation_percentage=0,
-            timestamp=timestamp)
+            pressure_cmh2o=p,
+            flow_slm=f,
+            o2_percentage=o,
+            timestamp=t)
 
     samples_len = len(vsm.breathes_rate_meter.samples) - 1
     time_span_seconds = vsm.breathes_rate_meter.time_span_seconds
@@ -59,16 +68,17 @@ def test_bpm_calculation_const_rate_long_run(real_data):
         * Run pig simulation for 100 breath cycles
         * Check BPM calculated correctly
     """
-    timestamps, pressure_values = real_data
+    timestamps, pressure_values, flow_values, oxygen_values = real_data
     timestamps += [timestamps[-1] + SAMPLE_TIME_DIFF * (i + 1)
                    for i in range(len(timestamps) * 100)]
     vsm = VentilationStateMachine(Measurements(), Events())
-    for timestamp, pressure in zip(timestamps, pressure_values * 101):
+    for t, p, f, o in zip(timestamps, pressure_values * 101,
+                          flow_values * 101, oxygen_values * 101):
         vsm.update(
-            pressure_cmh2o=pressure,
-            flow_slm=0,
-            o2_saturation_percentage=0,
-            timestamp=timestamp)
+            pressure_cmh2o=p,
+            flow_slm=f,
+            o2_percentage=o,
+            timestamp=t)
 
     samples_len = len(vsm.breathes_rate_meter.samples) - 1
     time_span_seconds = vsm.breathes_rate_meter.time_span_seconds
@@ -89,16 +99,17 @@ def test_bpm_calculation_changing_rate(real_data, rate):
           middle changed to 0.045 * rate per sample
         * Check BPM calculated correctly
     """
-    timestamps, pressure_values = real_data
+    timestamps, pressure_values, flow_values, oxygen_values = real_data
     timestamps += [timestamps[-1] + rate * SAMPLE_TIME_DIFF * (i + 1)
                    for i in range(len(timestamps))]
     vsm = VentilationStateMachine(Measurements(), Events())
-    for timestamp, pressure in zip(timestamps, pressure_values * 2):
+    for t, p, f, o in zip(timestamps, pressure_values * 2,
+                          flow_values * 2, oxygen_values * 2):
         vsm.update(
-            pressure_cmh2o=pressure,
-            flow_slm=0,
-            o2_saturation_percentage=0,
-            timestamp=timestamp)
+            pressure_cmh2o=p,
+            flow_slm=f,
+            o2_percentage=o,
+            timestamp=t)
 
     samples_len = len(vsm.breathes_rate_meter.samples) - 1
     time_span_seconds = vsm.breathes_rate_meter.time_span_seconds
@@ -118,18 +129,19 @@ def test_bpm_calculation_changing_rate_twice(real_data, rates):
           change to 0.045 * rate 2 per sample
         * Check BPM calculated correctly
     """
-    timestamps, pressure_values = real_data
+    timestamps, pressure_values, flow_values, oxygen_values = real_data
     timestamps += [timestamps[-1] + rates[0] * SAMPLE_TIME_DIFF * (i + 1)
                    for i in range(len(pressure_values))]
     timestamps += [timestamps[-1] + rates[1] * SAMPLE_TIME_DIFF * (i + 1)
                    for i in range(len(pressure_values))]
     vsm = VentilationStateMachine(Measurements(), Events())
-    for timestamp, pressure in zip(timestamps, pressure_values * 3):
+    for t, p, f, o in zip(timestamps, pressure_values * 3,
+                          flow_values * 3, oxygen_values * 3):
         vsm.update(
-            pressure_cmh2o=pressure,
-            flow_slm=0,
-            o2_saturation_percentage=0,
-            timestamp=timestamp)
+            pressure_cmh2o=p,
+            flow_slm=f,
+            o2_percentage=o,
+            timestamp=t)
 
     samples_len = len(vsm.breathes_rate_meter.samples) - 1
     time_span_seconds = vsm.breathes_rate_meter.time_span_seconds
