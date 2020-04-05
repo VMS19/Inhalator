@@ -122,6 +122,7 @@ def main():
         app.run()
 
     finally:
+        alert_driver.alert_system_fault_on()
         if drivers is not None:
             drivers.close_all_drivers()
 
