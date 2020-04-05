@@ -17,12 +17,8 @@ from data.events import Events
 from application import Application
 from algo import Sampler
 from wd_task import WdTask
-<<<<<<< HEAD
 from alert_peripheral_handler import AlertPeripheralHandler
-=======
 
-BYTES_IN_MB = 2 ** 20
->>>>>>> master
 BYTES_IN_GB = 2 ** 30
 
 
