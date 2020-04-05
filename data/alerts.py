@@ -4,6 +4,7 @@ from collections import deque
 from enum import IntEnum
 from queue import Queue
 from functools import lru_cache
+from data.publisher_subscriber import PublishSubscriber
 
 
 class AlertCodes(IntEnum):
@@ -80,7 +81,7 @@ class AlertsQueue(object):
     def __init__(self):
         self.queue = Queue(maxsize=self.MAXIMUM_ALERTS_AMOUNT)
         self.last_alert = Alert(AlertCodes.OK)
-        self._subscribers = {}
+        self.pubsub = PublishSubscriber()
 
     def __len__(self):
         return self.queue.qsize()
@@ -94,14 +95,14 @@ class AlertsQueue(object):
 
         self.last_alert = alert
 
-        self.publish()
+        self.pubsub.publish(self.last_alert)
         self.queue.put(alert)
 
     def dequeue_alert(self):
         alert = self.queue.get()
         self.last_alert = self.queue.queue[0]
 
-        self.publish()
+        self.pubsub.publish(self.last_alert)
         return alert
 
     def clear_alerts(self):
@@ -109,14 +110,4 @@ class AlertsQueue(object):
         self.queue.queue.clear()
 
         self.last_alert = Alert(AlertCodes.OK)
-        self.publish()
-
-    def subscribe(self, object, callback):
-        self._subscribers[object] = callback
-
-    def unsubscribe(self, object):
-        del self._subscribers[object]
-
-    def publish(self):
-        for callback in self._subscribers.values():
-            callback(self.last_alert)
+        self.pubsub.publish(self.last_alert)

@@ -12,7 +12,7 @@ from data.events import Events
 from application import Application
 from algo import Sampler
 from wd_task import WdTask
-
+from alert_peripheral_handler import AlertPeripheralHandler
 BYTES_IN_GB = 2 ** 30
 
 
@@ -93,14 +93,15 @@ def main():
         drivers = DriverFactory(simulation_mode=simulation,
                                 simulation_data=args.simulate,
                                 error_probability=args.error)
-
         pressure_sensor = drivers.acquire_driver("pressure")
         flow_sensor = drivers.acquire_driver("differential_pressure")
 
         watchdog = drivers.acquire_driver("wd")
         oxygen_a2d = drivers.acquire_driver("oxygen_a2d")
         timer = drivers.acquire_driver("timer")
+        alert_driver = drivers.acquire_driver("alert")
 
+        alerts_handler = AlertPeripheralHandler(events, drivers)
         sampler = Sampler(measurements=measurements, events=events,
                           flow_sensor=flow_sensor,
                           pressure_sensor=pressure_sensor,
