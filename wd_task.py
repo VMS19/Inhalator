@@ -1,13 +1,12 @@
 from threading import Thread, Timer
 import logging
-import time
 
 log = logging.getLogger(__name__)
 
 
 class WdTask(Thread):
-    WD_TIMEOUT = 0.2  # 200 msec
-    START_TIMEOUT_SEC = 5
+    WD_TIMEOUT = 0.3  # 300 msec
+    START_TIMEOUT_SEC = 4
 
     def __init__(self, wd, arm_wd_event):
         super(WdTask, self).__init__()

@@ -122,6 +122,7 @@ class CenterPane(object):
         for graph in self.graphs:
             graph.render()
 
+
     def update(self):
         # Get measurments from peripherals
 
@@ -153,14 +154,14 @@ class RightPane(object):
         self.clear_alerts_btn = ClearAlertsButton(parent=self, events=self.events)
         self.lock_thresholds_btn = LockThresholdsButton(parent=self)
         self.configure_alerts_btn = OpenConfigureAlertsScreenButton(self)
-        self.alerts_history_btn = OpenAlertsHistoryScreenButton(self, events=self.events)
+        # self.alerts_history_btn = OpenAlertsHistoryScreenButton(self, events=self.events)
 
     @property
     def buttons(self):
         return (self.mute_alerts_btn,
                 self.clear_alerts_btn,
                 self.configure_alerts_btn,
-                self.alerts_history_btn,
+                # self.alerts_history_btn,
                 self.lock_thresholds_btn)
 
     @property

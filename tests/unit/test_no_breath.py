@@ -1,3 +1,4 @@
+import logging
 from itertools import cycle
 from unittest.mock import Mock, patch
 
@@ -8,32 +9,21 @@ from data import alerts
 from data.measurements import Measurements
 from data.events import Events
 from data.configurations import Configurations
-from data.thresholds import (FlowRange, PressureRange,
+from data.thresholds import (O2Range, PressureRange,
                              RespiratoryRateRange, VolumeRange)
 from drivers.driver_factory import DriverFactory
 
-
-MICROSECOND = 10 ** -6
+SIMULATION_SAMPLES = 1000
 NO_BREATH_TIME = 13  # seconds
-SIMULATION_TIMESTAMPS = [0.00045 * i for i in range(1, 7000)]
-SIMULATION_NO_BREATH_TIMESTAMP = [SIMULATION_TIMESTAMPS[-1] + NO_BREATH_TIME]
-# adding timestamp 0 for inhaleStateHandler init
-MOCK_TIME_STAMPS = [0] + SIMULATION_TIMESTAMPS + SIMULATION_NO_BREATH_TIMESTAMP
-
-
-simulation_no_breath_time_mock = Mock()
-simulation_no_breath_time_mock.side_effect = MOCK_TIME_STAMPS
-dead_no_breath_time_mock = Mock()
-dead_no_breath_time_mock.side_effect = MOCK_TIME_STAMPS
 
 
 @pytest.fixture
 def config():
     c = Configurations.instance()
-    c.flow_range = FlowRange(min=0, max=30)
+    c.o2_range = O2Range(min=0, max=100)
     c.pressure_range = PressureRange(min=0, max=30)
     c.resp_rate_range = RespiratoryRateRange(min=0, max=30)
-    c.volume_range = VolumeRange(min=0, max=30)
+    c.volume_range = VolumeRange(min=0, max=600)
     c.graph_seconds = 12
     c.debug_port = 7777
     c.breathing_threshold = 3.5
@@ -51,8 +41,6 @@ def events():
     return Events()
 
 
-@pytest.mark.xfail(reason="Receiving alerts on negative volume")
-@patch('time.time', simulation_no_breath_time_mock)
 def test_sinus_alerts_when_no_breath(events, measurements, config):
     """Test that no-breath alert is sent after time without breathing
 
@@ -62,16 +50,25 @@ def test_sinus_alerts_when_no_breath(events, measurements, config):
         * Make sure a single no-breath alert was sent.
     """
     driver_factory = DriverFactory(simulation_mode=True, simulation_data="sinus")
-    flow_sensor = driver_factory.get_driver("flow")
-    pressure_sensor = driver_factory.get_driver("pressure")
-    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor, oxygen_a2d)
+    flow_sensor = driver_factory.acquire_driver("flow")
+    pressure_sensor = driver_factory.acquire_driver("pressure")
+    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
+    timer = driver_factory.acquire_driver("timer")
+    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
+                      oxygen_a2d, timer)
 
-    for _ in range(len(SIMULATION_TIMESTAMPS)):
+    for _ in range(SIMULATION_SAMPLES):
         sampler.sampling_iteration()
 
     assert len(events.alerts_queue) == 0
-    sampler.sampling_iteration()  # mock time simulates no breath time
+
+    # mocking time continue for no breath time.
+    intervals = 1 / driver_factory.MOCK_SAMPLE_RATE_HZ
+    num_of_samples = int(NO_BREATH_TIME / intervals)
+    for _ in range(num_of_samples):
+        sampler._timer.get_time()
+
+    sampler.sampling_iteration()
 
     assert len(events.alerts_queue) == 1
 
@@ -79,7 +76,6 @@ def test_sinus_alerts_when_no_breath(events, measurements, config):
     assert alert == alerts.AlertCodes.NO_BREATH
 
 
-@patch('time.time', dead_no_breath_time_mock)
 def test_dead_man_alerts_when_no_breath(events, measurements, config):
     """Test that no-breath alert is sent after time without breathing
 
@@ -88,12 +84,42 @@ def test_dead_man_alerts_when_no_breath(events, measurements, config):
         * Make sure at least one no-breath alert was sent.
     """
     driver_factory = DriverFactory(simulation_mode=True, simulation_data="dead")
-    flow_sensor = driver_factory.get_driver("flow")
-    pressure_sensor = driver_factory.get_driver("pressure")
-    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor, oxygen_a2d)
+    flow_sensor = driver_factory.acquire_driver("flow")
+    pressure_sensor = driver_factory.acquire_driver("pressure")
+    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
+    timer = driver_factory.acquire_driver("timer")
+    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
+                      oxygen_a2d, timer)
 
-    for _ in range(len(SIMULATION_TIMESTAMPS) + 1):
+    time_intervals = 1 / driver_factory.MOCK_SAMPLE_RATE_HZ
+    num_of_samples = int(NO_BREATH_TIME / time_intervals)
+    for _ in range(num_of_samples):
+        sampler.sampling_iteration()
+
+    assert len(events.alerts_queue) >= 1
+
+    all_alerts = list(events.alerts_queue.queue.queue)
+    assert all(alert == alerts.AlertCodes.NO_BREATH for alert in all_alerts)
+
+
+def test_noise_alerts_when_no_breath(events, measurements, config):
+    """Test that no-breath alert is sent after time without breathing
+
+    Flow:
+        * Run noise simulation for no-breath time.
+        * Make sure at least one no-breath alert was sent.
+    """
+    driver_factory = DriverFactory(simulation_mode=True, simulation_data="noise")
+    flow_sensor = driver_factory.acquire_driver("flow")
+    pressure_sensor = driver_factory.acquire_driver("pressure")
+    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
+    timer = driver_factory.acquire_driver("timer")
+    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
+                      oxygen_a2d, timer)
+
+    time_intervals = 1 / driver_factory.MOCK_SAMPLE_RATE_HZ
+    num_of_samples = int(NO_BREATH_TIME / time_intervals)
+    for _ in range(num_of_samples):
         sampler.sampling_iteration()
 
     assert len(events.alerts_queue) >= 1

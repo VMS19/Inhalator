@@ -1,11 +1,23 @@
 import csv
 import os
+import time
+from unittest.mock import MagicMock
 
 import pytest
+import freezegun
 from pytest import approx
 
-from algo import RunningSlope, VentilationStateMachine, VentilationState
+
+from algo import RunningSlope, VentilationStateMachine, VentilationState, \
+    Sampler
+from data.alerts import AlertCodes
+from data.configurations import Configurations
+from data.events import Events
+from data.measurements import Measurements
+from drivers.driver_factory import DriverFactory
 from drivers.mocks.sinus import add_noise
+
+from tests.utils import SamplesCSVParser
 
 
 def test_slope_finder_sanity():
@@ -36,28 +48,71 @@ def test_slope_straight_line_with_noise():
             assert (sigma / 2) >= slope >= -(sigma / 2)
 
 
-@pytest.fixture
-def real_data():
-    this_dir = os.path.dirname(__file__)
-    with open(os.path.join(this_dir, "pressure_data_pig.csv"), "r") as f:
-        data = list(csv.reader(f))
-    t = [float(d[0]) for d in data]
-    v = [float(d[1]) for d in data]
-    return t, v
+@freezegun.freeze_time("2000-02-12")
+def test_correct_state_transitions():
+    parser = SamplesCSVParser()
+    vsm = VentilationStateMachine(Measurements(), Events())
+    for t, p, f, o in parser.samples(start=0, end=200):
+        vsm.update(
+            pressure_cmh2o=p,
+            flow_slm=f,
+            o2_percentage=o,
+            timestamp=t)
+
+    inhale_entry = vsm.entry_points_ts[VentilationState.Inhale][0]
+    exhale_entry = vsm.entry_points_ts[VentilationState.Exhale][0]
+
+    assert inhale_entry == approx(time.time() + 0.721782319877363, rel=0.1)
+    assert exhale_entry == approx(time.time() + 4.64647368421053, rel=0.1)
 
 
-def test_slope_recognition(real_data):
-    t, v = real_data
-    vmt = VentilationStateMachine({})
-    for ti, vi in zip(t, v):
-        vmt.update(vi, 0, ti)
+def test_alert_is_published_on_high_o2():
+    measurements = Measurements()
+    events = Events()
+    drivers = DriverFactory(simulation_mode=True, simulation_data='sinus')
 
-    inhale_entry = vmt.entry_points_ts[VentilationState.Inhale][0]
-    hold_entry = vmt.entry_points_ts[VentilationState.Hold][0]
-    exhale_entry = vmt.entry_points_ts[VentilationState.Exhale][0]
-    peep_entry = vmt.entry_points_ts[VentilationState.PEEP][0]
+    flow = drivers.acquire_driver('flow')
+    pressure = drivers.acquire_driver('pressure')
+    oxygen_a2d = drivers.acquire_driver('oxygen_a2d')
+    timer = drivers.acquire_driver('timer')
 
-    assert inhale_entry == approx(4.41, rel=0.1)
-    assert hold_entry == approx(4.95, rel=0.1)
-    assert exhale_entry == approx(6.07, rel=0.1)
-    assert peep_entry == approx(6.615, rel=0.1)
+    oxygen_a2d = MagicMock()
+    oxygen_a2d.read = MagicMock(return_value=600)
+
+    Configurations.instance().o2_range.max = 99
+
+    sampler = Sampler(measurements=measurements, events=events,
+                      flow_sensor=flow, pressure_sensor=pressure,
+                      oxygen_a2d=oxygen_a2d, timer=timer)
+
+    assert len(events.alerts_queue) == 0
+
+    sampler.sampling_iteration()
+
+    assert any(alert == AlertCodes.OXYGEN_HIGH for alert in events.alerts_queue.queue.queue)
+
+
+def test_alert_is_published_on_high_o2():
+    measurements = Measurements()
+    events = Events()
+    drivers = DriverFactory(simulation_mode=True, simulation_data='sinus')
+
+    flow = drivers.acquire_driver('flow')
+    pressure = drivers.acquire_driver('pressure')
+    oxygen_a2d = drivers.acquire_driver('oxygen_a2d')
+    timer = drivers.acquire_driver('timer')
+
+    oxygen_a2d = MagicMock()
+    oxygen_a2d.read = MagicMock(return_value=0)
+
+    Configurations.instance().o2_range.min = 20
+
+    sampler = Sampler(measurements=measurements, events=events,
+                      flow_sensor=flow, pressure_sensor=pressure,
+                      oxygen_a2d=oxygen_a2d, timer=timer)
+
+    assert len(events.alerts_queue) == 0
+
+    sampler.sampling_iteration()
+
+    assert any(alert == AlertCodes.OXYGEN_LOW for alert in events.alerts_queue.queue.queue)

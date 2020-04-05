@@ -4,19 +4,23 @@ The use of this driver requires pigpio deamon:
 'sudo pigpiod'
 (sudo apt-get install pigpio)
 """
-import pigpio
 from time import sleep
 import logging
+import pigpio
 
-from errors import PiGPIOInitError, I2CDeviceNotFoundError, \
-                I2CReadError, I2CWriteError, FlowSensorCRCError
+from .i2c_driver import I2cDriver
+from errors import (I2CReadError,
+                    I2CWriteError,
+                    PiGPIOInitError,
+                    FlowSensorCRCError,
+                    I2CDeviceNotFoundError)
+
 log = logging.getLogger(__name__)
 
 
-class Sfm3200(object):
+class Sfm3200(I2cDriver):
     """Driver class for SFM3200 Flow sensor."""
     CRC_POLYNOMIAL = 0x131
-    I2C_BUS = 1
     I2C_ADDRESS = 0x40
     SCALE_FACTOR_FLOW = 120
     OFFSET_FLOW = 0x8000
@@ -24,27 +28,7 @@ class Sfm3200(object):
     SOFT_RST_CMD = b"\x20\x00"
 
     def __init__(self):
-        try:
-            self._pig = pigpio.pi()
-        except pigpio.error as e:
-            log.error("Could not init pigpio lib. Did you run 'sudo pigpiod'?")
-            raise PiGPIOInitError("pigpio library init error") from e
-
-        if self._pig is None:
-            log.error("Could not init pigpio lib. Did you run 'sudo pigpiod'?")
-            raise PiGPIOInitError("pigpio library init error")
-
-        try:
-            self._dev = self._pig.i2c_open(self.I2C_BUS, self.I2C_ADDRESS)
-        except AttributeError as e:
-            log.error("Could not init pigpio lib. Did you run 'sudo pigpiod'?")
-            raise PiGPIOInitError("pigpio library init error") from e
-
-        except pigpio.error as e:
-            log.error("Could not open i2c connection to flow sensor."
-                      "Is it connected?")
-            raise I2CDeviceNotFoundError("i2c connection open failed") from e
-
+        super().__init__()
         self._start_measure()
         sleep(0.1)
         # Dummy read - first read values are invalid
@@ -97,7 +81,6 @@ class Sfm3200(object):
             # Measurement not ready
             if not retries:
                 log.error("Flow sensor's measure data consistently not ready")
-                raise I2CReadError("Flow sensor measurement unavailable.")
 
             elif retries == 1:
                 log.warning("Flow sensor read returns NA."
@@ -121,7 +104,6 @@ class Sfm3200(object):
 
         # Normalize flow to slm units
         flow = float(raw_value - self.OFFSET_FLOW) / self.SCALE_FACTOR_FLOW
-        log.debug(f"Flow sensor value: {flow} slm. CRC correct")
         return flow
 
     def _crc8(self, data):

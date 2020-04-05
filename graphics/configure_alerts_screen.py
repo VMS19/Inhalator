@@ -7,7 +7,7 @@ from data.configurations import Configurations
 from tkinter import *
 
 from data.thresholds import (VolumeRange, PressureRange,
-                             RespiratoryRateRange, FlowRange)
+                             RespiratoryRateRange, O2Range)
 
 from graphics.imagebutton import ImageButton
 from graphics.themes import Theme
@@ -28,13 +28,6 @@ class ThresholdButton(Button):
                        borderwidth=0, relief="flat",
                        command=self.publish)
         self.subscribers = {}
-
-    def toggle(self):
-        if self.selected:
-            self.deselect()
-
-        else:
-            self.select()
 
     @property
     def selected(self):
@@ -124,15 +117,15 @@ class Section(object):
         self.min_button.configure(text=f"MIN\n{self.range.min}")
 
 
-class VTISection(Section):
+class O2Section(Section):
     INDEX = 0
 
     @property
     def range(self):
-        return self.config.flow_range
+        return self.config.o2_range
 
 
-class MVISection(Section):
+class VolumeSection(Section):
     INDEX = 1
 
     @property
@@ -167,6 +160,7 @@ class UpOrDownSection(object):
         self.frame = Frame(master=root, bd=0, bg="red",)
         self.up_button = ImageButton(master=self.frame,
                                      image_path=self.UP_IMAGE_PATH,
+                                     repeatdelay=500, repeatinterval=100,
                                      compound="center",
                                      bg=Theme.active().SURFACE,
                                      activebackground="#514959",
@@ -175,6 +169,7 @@ class UpOrDownSection(object):
         self.down_button = ImageButton(master=self.frame,
                                        image_path=self.DOWN_IMAGE_PATH,
                                        compound="center",
+                                       repeatdelay=500, repeatinterval=100,
                                        bg=Theme.active().SURFACE,
                                        activebackground="#514959",
                                        command=self.parent.on_down_button_click)
@@ -225,8 +220,8 @@ class ConfigureAlarmsScreen(object):
         self.configure_alerts_screen = Frame(master=self.root)
 
         # Sections
-        self.flow_section = VTISection(self, self.configure_alerts_screen)
-        self.volume_section = MVISection(self, self.configure_alerts_screen)
+        self.flow_section = O2Section(self, self.configure_alerts_screen)
+        self.volume_section = VolumeSection(self, self.configure_alerts_screen)
         self.pressure_section = PressureSection(self, self.configure_alerts_screen)
         self.resp_rate_section = RespRateSection(self, self.configure_alerts_screen)
 
@@ -263,7 +258,6 @@ class ConfigureAlarmsScreen(object):
 
         for section in self.threshold_sections:
             section.update()
-
 
     def on_down_button_click(self):
         if self.selected_threshold is None:  # Dummy-proof GUI

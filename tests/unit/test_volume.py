@@ -1,4 +1,5 @@
 import csv
+import logging
 import os
 from itertools import product, cycle
 import time
@@ -12,15 +13,19 @@ from data import alerts
 from data.measurements import Measurements
 from data.events import Events
 from data.configurations import Configurations
-from data.thresholds import (FlowRange, PressureRange,
+from data.thresholds import (O2Range, PressureRange,
                              RespiratoryRateRange, VolumeRange)
 from drivers.driver_factory import DriverFactory
 
+
+SIMULATION_FOLDER = "simulation"
 
 MICROSECOND = 10 ** -6
 SIMULATION_LENGTH = 1  # seconds
 LOW_THRESHOLD = -50000
 HIGH_THRESHOLD = 50000
+
+SIMULATION_SAMPLES = 1000
 
 
 @pytest.fixture
@@ -31,10 +36,10 @@ def driver_factory():
 @pytest.fixture
 def config():
     c = Configurations.instance()
-    c.flow_range = FlowRange(min=0, max=30)
-    c.pressure_range = PressureRange(min=0, max=30)
+    c.o2_range = O2Range(min=0, max=100)
+    c.pressure_range = PressureRange(min=-1, max=30)
     c.resp_rate_range = RespiratoryRateRange(min=0, max=30)
-    c.volume_range = VolumeRange(min=0, max=30)
+    c.volume_range = VolumeRange(min=100, max=600)
     c.graph_seconds = 12
     c.debug_port = 7777
     c.breathing_threshold = 3.5
@@ -52,23 +57,6 @@ def events():
     return Events()
 
 
-this_dir = os.path.dirname(__file__)
-with open(os.path.join(this_dir, "pig_sim.csv"), "r") as f:
-    data = list(csv.reader(f))
-timestamps = [float(d[0]) for d in data[1:]]
-timestamps = timestamps[
-             :1] + timestamps  # first timestamp for InhaleStateHandler init
-DATA_SIZE = len(data) - 1
-
-time_mock = Mock()
-time_mock.side_effect = cycle(timestamps)
-
-FLOW_VALUE = 1.0
-START_PEEP_TIME = 6.615
-START_CYCLE_TIME = 2.835
-
-
-@patch('time.time', time_mock)
 def test_sampler_volume_calculation(events, measurements, config):
     """Test volume calculation working correctly.
 
@@ -78,29 +66,33 @@ def test_sampler_volume_calculation(events, measurements, config):
         * Validate expected volume.
     """
     this_dir = os.path.dirname(__file__)
-    file_path = os.path.join(this_dir, "pig_sim.csv")
+    file_path = os.path.join(this_dir, SIMULATION_FOLDER,
+                             "pig_sim_cycle.csv")
     driver_factory = DriverFactory(simulation_mode=True,
                                    simulation_data=file_path)
 
-    flow_sensor = driver_factory.get_driver("flow")
-    pressure_sensor = driver_factory.get_driver("pressure")
-    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
+    flow_sensor = driver_factory.acquire_driver("flow")
+    pressure_sensor = driver_factory.acquire_driver("pressure")
+    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
+    timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      oxygen_a2d)
+                      oxygen_a2d, timer)
 
-    for i in range(DATA_SIZE):
+    for _ in range(SIMULATION_SAMPLES):
         sampler.sampling_iteration()
 
-    expected_volume = (START_PEEP_TIME - START_CYCLE_TIME) / 60 * 1000
-    msg = f"Expected volume of {expected_volume}, received {measurements.volume}"
-    assert measurements.volume == approx(expected_volume, rel=0.1), msg
+    expected_volume = 332
+    msg = f"Expected volume of {expected_volume}, received {measurements.inspiration_volume}"
+    assert measurements.inspiration_volume == approx(expected_volume, rel=0.1), msg
 
 
 def test_sampler_alerts_when_volume_exceeds_minium(events, measurements, config, driver_factory):
-    flow_sensor = driver_factory.get_driver("flow")
-    pressure_sensor = driver_factory.get_driver("pressure")
-    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor, oxygen_a2d)
+    flow_sensor = driver_factory.acquire_driver("flow")
+    pressure_sensor = driver_factory.acquire_driver("pressure")
+    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
+    timer = driver_factory.acquire_driver("timer")
+    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
+                      oxygen_a2d, timer)
     assert len(events.alerts_queue) == 0
     sampler.sampling_iteration()
     assert len(events.alerts_queue) == 0
@@ -119,10 +111,12 @@ def test_sampler_alerts_when_volume_exceeds_minium(events, measurements, config,
 
 
 def test_sampler_alerts_when_volume_exceeds_maximum(events, measurements, config, driver_factory):
-    flow_sensor = driver_factory.get_driver("flow")
-    pressure_sensor = driver_factory.get_driver("pressure")
-    oxygen_a2d = driver_factory.get_driver("oxygen_a2d")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor, oxygen_a2d)
+    flow_sensor = driver_factory.acquire_driver("flow")
+    pressure_sensor = driver_factory.acquire_driver("pressure")
+    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
+    timer = driver_factory.acquire_driver("timer")
+    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
+                      oxygen_a2d, timer)
     assert len(events.alerts_queue) == 0
     sampler.sampling_iteration()
     assert len(events.alerts_queue) == 0

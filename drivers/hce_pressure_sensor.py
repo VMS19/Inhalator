@@ -71,3 +71,7 @@ class HcePressureSensor(object):
         pressure_reading = (pressure_raw[1] << 8) | (pressure_raw[2])
         pressure_parsed = self._calculate_pressure(pressure_reading)
         return self._calibrate_pressure(pressure_parsed)
+
+    def close(self):
+        if self._spi is not None:
+            self._spi.close()
