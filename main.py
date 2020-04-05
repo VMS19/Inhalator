@@ -17,9 +17,10 @@ from data.events import Events
 from application import Application
 from algo import Sampler
 from wd_task import WdTask
+from alert_peripheral_handler import AlertPeripheralHandler
 import errors
+from drivers.null_driver import NullDriver
 
-BYTES_IN_MB = 2 ** 20
 BYTES_IN_GB = 2 ** 30
 
 
@@ -143,12 +144,21 @@ def start_app(args):
             a2d = drivers.acquire_driver("null")
 
         timer = drivers.acquire_driver("timer")
+
         try:
             rtc = drivers.acquire_driver("rtc")
             rtc.set_system_time()
         except errors.InhalatorError:
             rtc = drivers.acquire_driver("null")
 
+        alert_driver = drivers.acquire_driver("alert")
+
+
+        if any(isinstance(driver, NullDriver)
+               for driver in [pressure_sensor, flow_sensor, watchdog, a2d, rtc]):
+            alert_driver.set_system_fault_alert(False)
+
+        alerts_handler = AlertPeripheralHandler(events, drivers)
         sampler = Sampler(measurements=measurements, events=events,
                           flow_sensor=flow_sensor,
                           pressure_sensor=pressure_sensor,

@@ -4,6 +4,7 @@ from collections import deque
 from enum import IntEnum
 from queue import Queue
 from functools import lru_cache
+from data.observable import Observable
 
 
 class AlertCodes(IntEnum):
@@ -85,7 +86,7 @@ class AlertsQueue(object):
     def __init__(self):
         self.queue = Queue(maxsize=self.MAXIMUM_ALERTS_AMOUNT)
         self.last_alert = Alert(AlertCodes.OK)
-        self._subscribers = {}
+        self.observer = Observable()
 
     def __len__(self):
         return self.queue.qsize()
@@ -99,14 +100,14 @@ class AlertsQueue(object):
 
         self.last_alert = alert
 
-        self.publish()
+        self.observer.publish(self.last_alert)
         self.queue.put(alert)
 
     def dequeue_alert(self):
         alert = self.queue.get()
         self.last_alert = self.queue.queue[0]
 
-        self.publish()
+        self.observer.publish(self.last_alert)
         return alert
 
     def clear_alerts(self):
@@ -114,14 +115,22 @@ class AlertsQueue(object):
         self.queue.queue.clear()
 
         self.last_alert = Alert(AlertCodes.OK)
-        self.publish()
+        self.observer.publish(self.last_alert)
 
-    def subscribe(self, object, callback):
-        self._subscribers[object] = callback
+class MuteAlerts(object):
 
-    def unsubscribe(self, object):
-        del self._subscribers[object]
+    def __init__(self):
+        self.observer = Observable()
+        self._alerts_muted = False
+        self.mute_time = None
 
-    def publish(self):
-        for callback in self._subscribers.values():
-            callback(self.last_alert)
+    def mute_alerts(self, value=None):
+        if value is not None:
+            self._alerts_muted = value
+        else:
+            self._alerts_muted = not self._alerts_muted
+
+        if self._alerts_muted:
+            self.mute_time = time.time()
+
+        self.observer.publish(self._alerts_muted)

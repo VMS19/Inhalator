@@ -70,9 +70,7 @@ class MuteAlertsButton(object):
         )
 
     def on_click(self):
-        self.events.mute_alerts = not self.events.mute_alerts
-        if self.events.mute_alerts:
-            self.events.mute_time = time.time()
+        self.events.mute_alerts.mute_alerts()
 
         self.update()
 

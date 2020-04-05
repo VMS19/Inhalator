@@ -37,8 +37,10 @@ class DriverFactory(object):
     def instance(cls):
         return cls.__instance
 
-    def __init__(self, simulation_mode, simulation_data='sinus',  error_probability=0):
+    def __init__(self, simulation_mode, simulation_data=None,  error_probability=0):
         self.mock = simulation_mode
+        if simulation_data is None:
+            simulation_data = 'sinus'
         self.simulation_data = simulation_data  # can be either `sinus` or file path
         self.error_probability = error_probability
         self.drivers_cache = {}
@@ -185,6 +187,11 @@ class DriverFactory(object):
         return WdDriver()
 
     @staticmethod
+    def get_alert_driver():
+        from drivers.alert_driver import AlertDriver
+        return AlertDriver()
+
+    @staticmethod
     def get_aux_driver():
         from drivers.aux_sound import SoundViaAux
         return SoundViaAux.instance()
@@ -248,6 +255,11 @@ class DriverFactory(object):
     def get_mock_wd_driver():
         from drivers.mocks.mock_wd_driver import MockWdDriver
         return MockWdDriver()
+
+    @staticmethod
+    def get_mock_alert_driver():
+        from drivers.mocks.mock_alert_driver import MockAlertDriver
+        return MockAlertDriver()
 
     @staticmethod
     def get_mock_aux_driver():

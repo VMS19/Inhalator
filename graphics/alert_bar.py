@@ -74,8 +74,6 @@ class IndicatorAlertBar(object):
                                    fg=Theme.active().ALERT_BAR_OK_TXT,
                                    bg=Theme.active().ALERT_BAR_OK)
 
-        self.sound_device = drivers.acquire_driver("aux")
-
         self.current_alert = Alert(AlertCodes.OK)
 
     @property
@@ -104,11 +102,10 @@ class IndicatorAlertBar(object):
 
     def update(self):
         # Check mute time limit
-        if (self.events.mute_alerts and
-                (time.time() - self.events.mute_time) >
-                self.configs.mute_time_limit):
-            self.events.mute_alerts = False
-
+        if self.events.mute_alerts._alerts_muted and\
+                (time.time() - self.events.mute_alerts.mute_time) >\
+                self.configs.mute_time_limit:
+            self.events.mute_alerts.mute_alerts(False)
         last_alert_in_queue = self.events.alerts_queue.last_alert
 
         # If the queue says everything is ok, and the graphics shows
@@ -142,7 +139,6 @@ class IndicatorAlertBar(object):
 
         self.message_label.configure(text="OK")
         self.timestamp_label.configure(text="")
-        self.sound_device.stop()
 
     def set_alert(self, alert: Alert):
         # Change background colors
@@ -155,12 +151,6 @@ class IndicatorAlertBar(object):
                             fg=Theme.active().TXT_ON_ERROR)
 
         self.message_label.configure(text=str(alert))
-
-        if self.events.mute_alerts:
-            self.sound_device.stop()
-
-        else:
-            self.sound_device.start()
 
     def update_timestamp_label(self):
         if self.current_alert == AlertCodes.OK:
