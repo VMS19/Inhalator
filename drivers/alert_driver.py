@@ -6,8 +6,8 @@ class AlertDriver(object):
     MEDICAL_CONTITION_GPIO = 19
     FAULT_BUZZER_GPIO = 13
     RESERVED_GPIO = 20
-    LED_GREEN = GPIO.LOW
-    LED_RED = GPIO.HIGH
+    LED_GREEN = GPIO.HIGH
+    LED_RED = GPIO.LOW
 
 
     def __init__(self):
