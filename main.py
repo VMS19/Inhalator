@@ -119,7 +119,7 @@ def start_app(args):
         log.info("Running in simulation mode!")
         log.info("Sensor Data Source: %s", args.simulate)
         log.info("Error probability: %s", args.error)
-
+    
     drivers = None
     try:
         drivers = DriverFactory(simulation_mode=simulation,
@@ -138,9 +138,10 @@ def start_app(args):
 
         watchdog = drivers.acquire_driver("wd")
         try:
-            oxygen_a2d = drivers.acquire_driver("oxygen_a2d")
+            a2d = drivers.acquire_driver("a2d")
         except errors.SPIDriverInitError:
-            oxygen_a2d = drivers.acquire_driver("null")
+            a2d = drivers.acquire_driver("null")
+
         timer = drivers.acquire_driver("timer")
 
         try:
@@ -155,8 +156,7 @@ def start_app(args):
         sampler = Sampler(measurements=measurements, events=events,
                           flow_sensor=flow_sensor,
                           pressure_sensor=pressure_sensor,
-                          oxygen_a2d=oxygen_a2d,
-                          timer=timer,
+                          a2d=a2d, timer=timer,
                           save_sensor_values=args.debug)
 
         app = Application(measurements=measurements,
@@ -172,7 +172,6 @@ def start_app(args):
         watchdog_task.start()
 
         app.run()
-
     finally:
         alert_driver = drivers.acquire_driver("alert")
         alert_driver.alert_system_fault_on()
