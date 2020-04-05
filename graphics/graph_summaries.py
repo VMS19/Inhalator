@@ -12,7 +12,7 @@ class GraphSummary(object):
         self.frame = Frame(master=self.root,
                            borderwidth=1)
         self.value_label = Label(master=self.frame, text="HELLO",
-                                 font=("Roboto", 24),
+                                 font=("Roboto", 17),
                                  bg=Theme.active().BACKGROUND,
                                  fg=self.color())
         self.units_label = Label(master=self.frame, text="HELLO",
@@ -71,10 +71,9 @@ class PressurePeakSummary(GraphSummary):
 
 class VolumeSummary(GraphSummary):
     def value(self):
-        #Todo: fix exhale volume calculation
         return "{}/{}".format(
-            round(self.measurements.inspiration_volume), "-")
-            #round(self.measurements.expiration_volume))
+            int(round(self.measurements.inspiration_volume)),
+            int(round(self.measurements.expiration_volume)))
 
     def name(self):
         return "TVinsp/exp"
@@ -92,7 +91,7 @@ class VolumeSummary(GraphSummary):
 
 class BPMSummary(GraphSummary):
     def value(self):
-        return "{:.0f}".format(self.measurements.bpm)
+        return f"{round(self.measurements.bpm)}"
 
     def name(self):
         return "Rate"

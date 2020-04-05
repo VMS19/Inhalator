@@ -3,12 +3,13 @@ import logging
 
 from errors import PiGPIOInitError, I2CDeviceNotFoundError, I2CReadError
 
+from .i2c_driver import I2cDriver
+
 log = logging.getLogger(__name__)
 
 
-class AbpPressureSensor(object):
+class AbpPressureSensor(I2cDriver):
     """Driver class for ABPMAND001PG2A3 Flow sensor."""
-    I2C_BUS = 1
     I2C_ADDRESS = 0x28
     MEASURE_BYTE_COUNT = 0x2
     MAX_RANGE_PRESSURE = 0x1  # 1 psi
@@ -20,27 +21,7 @@ class AbpPressureSensor(object):
     PSI_CMH2O_RATIO = 70.307
 
     def __init__(self):
-        try:
-            self._pig = pigpio.pi()
-        except pigpio.error as e:
-            log.error("Could not init pigpio lib. Did you run 'sudo pigpiod'?")
-            raise PiGPIOInitError("pigpio library init error") from e
-
-        if self._pig is None:
-            log.error("Could not init pigpio lib. Did you run 'sudo pigpiod'?")
-            raise PiGPIOInitError("pigpio library init error")
-
-        try:
-            self._dev = self._pig.i2c_open(self.I2C_BUS, self.I2C_ADDRESS)
-        except AttributeError as e:
-            log.error("Could not init pigpio lib. Did you run 'sudo pigpiod'?")
-            raise PiGPIOInitError("pigpio library init error") from e
-
-        except pigpio.error as e:
-            log.error("Could not open i2c connection to pressure sensor."
-                      "Is it connected?")
-            raise I2CDeviceNotFoundError("i2c connection open failed") from e
-
+        super().__init__()
         log.info("ABP pressure sensor initialized")
 
     def _calculate_pressure(self, pressure_reading):
@@ -59,7 +40,6 @@ class AbpPressureSensor(object):
             else:
                 # Todo: Do we need to retry reading after a little sleep? (see flow sensor logic)
                 log.error("Pressure sensor's measure data not ready")
-                raise I2CReadError("Pressure sensor measurement unavailable.")
         except pigpio.error as e:
             log.error("Could not read from pressure sensor. "
                       "Is the pressure sensor connected?.")

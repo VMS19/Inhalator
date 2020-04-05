@@ -49,6 +49,7 @@ class Application(object):
         # We want to alert that config.json is corrupted
         if Configurations.configuration_state() == ConfigurationState.CONFIG_CORRUPTED:
             events.alerts_queue.enqueue_alert(AlertCodes.NO_CONFIGURATION_FILE)
+            Configurations.instance().save_to_file()  # Create config file for future use.
 
         self.master_frame = MasterFrame(self.root,
                                         measurements=measurements,
@@ -93,4 +94,4 @@ class Application(object):
             except KeyboardInterrupt:
                 break
         self.exit()
-        self.drivers.get_driver("aux").stop()
+        self.drivers.acquire_driver("aux").stop()
