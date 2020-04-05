@@ -19,7 +19,8 @@ class MasterFrame(object):
         self.left_pane = LeftPane(self, measurements=measurements)
         self.right_pane = RightPane(self, events=events)
         self.center_pane = CenterPane(self, measurements=measurements)
-        self.top_pane = TopPane(self, events=events, drivers=drivers)
+        self.top_pane = TopPane(self, events=events, drivers=drivers,
+                                measurements=measurements)
 
     @property
     def panes(self):
@@ -179,7 +180,7 @@ class RightPane(object):
 
 
 class TopPane(object):
-    def __init__(self, parent, events, drivers):
+    def __init__(self, parent, events, drivers, measurements):
         self.parent = parent
         self.events = events
 
@@ -194,7 +195,10 @@ class TopPane(object):
                            height=self.height,
                            width=self.width)
 
-        self.alerts_bar = IndicatorAlertBar(self, events=events, drivers=drivers)
+        self.alerts_bar = IndicatorAlertBar(self,
+                                            events=events,
+                                            drivers=drivers,
+                                            measurements=measurements)
 
     @property
     def element(self):

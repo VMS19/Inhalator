@@ -1,4 +1,7 @@
+import os
 import time
+from tkinter.ttk import Style
+
 import timeago
 import datetime
 from tkinter import *
@@ -9,14 +12,26 @@ from data import alerts
 from data.configurations import Configurations
 from graphics.version import __version__
 
+THIS_DIRECTORY = os.path.dirname(__file__)
+RESOURCES_DIRECTORY = os.path.join(os.path.dirname(THIS_DIRECTORY),
+                                   "resources")
+
 
 class IndicatorAlertBar(object):
-    def __init__(self, parent, events, drivers):
+    BATTERY_OK_PATH = os.path.join(RESOURCES_DIRECTORY,
+                                   "baseline_battery_full_white_18dp.png")
+    BATTERY_LOW_PATH = os.path.join(RESOURCES_DIRECTORY,
+                                    "baseline_battery_alert_white_18dp.png")
+    BATTERY_MISSING_PATH = os.path.join(RESOURCES_DIRECTORY,
+                                    "baseline_battery_unknown_white_18dp.png")
+
+    def __init__(self, parent, events, drivers, measurements):
         self.parent = parent
         self.root = parent.element
         self.events = events
         self.configs = Configurations.instance()
         self.drivers = drivers
+        self.measurements = measurements
 
         self.height = self.parent.height
         self.width = self.parent.width
@@ -40,6 +55,25 @@ class IndicatorAlertBar(object):
                                    fg=Theme.active().ALERT_BAR_OK_TXT,
                                    bg=Theme.active().ALERT_BAR_OK)
 
+        self.battery_frame = Frame(master=self.root,
+                                   bg=Theme.active().ALERT_BAR_OK)  # TODO: Implement a tk.style
+        self.battery_ok_image = PhotoImage(name="ok",
+                                           file=self.BATTERY_OK_PATH)
+        self.battery_low_image = PhotoImage(name="low",
+                                            file=self.BATTERY_LOW_PATH)
+        self.battery_missing_image = PhotoImage(name="missing",
+                                                file=self.BATTERY_MISSING_PATH)
+
+        self.battery_icon = Label(master=self.battery_frame,
+                                  image=self.battery_ok_image,
+                                   fg=Theme.active().ALERT_BAR_OK_TXT,
+                                   bg=Theme.active().ALERT_BAR_OK)
+
+        self.battery_label = Label(master=self.battery_frame,
+                                   font=("Roboto", 9), text="",
+                                   fg=Theme.active().ALERT_BAR_OK_TXT,
+                                   bg=Theme.active().ALERT_BAR_OK)
+
         self.sound_device = drivers.acquire_driver("aux")
 
         self.current_alert = Alert(AlertCodes.OK)
@@ -48,11 +82,25 @@ class IndicatorAlertBar(object):
     def element(self):
         return self.bar
 
+    @property
+    def frames(self):
+        return [self.bar, self.battery_frame]
+
+    @property
+    def textual(self):
+        """Return all textual tkinter widgets, for color configuration."""
+        return [self.version_label, self.timestamp_label,
+                self.message_label, self.battery_label, self.battery_icon]
+
     def render(self):
         self.bar.place(relx=0, rely=0)
         self.message_label.place(anchor="nw", relx=0.03, rely=0.05)
         self.timestamp_label.place(anchor="nw", relx=0.04, rely=0.7)
-        self.version_label.place(anchor="nw", relx=0.8, rely=0.4)
+        self.version_label.place(anchor="nw", relx=0.8, rely=0.8)
+        self.battery_frame.place(relx=0.9, rely=0,
+                                 relheight=0.15, relwidth=0.1)
+        self.battery_label.place(relx=0.6, rely=0)
+        self.battery_icon.place(relx=0.5, rely=0)
 
     def update(self):
         # Check mute time limit
@@ -79,26 +127,34 @@ class IndicatorAlertBar(object):
 
         self.update_timestamp_label()
 
+        # Handle battery
+        self.update_battery()
+
     def set_no_alert(self):
-        self.bar.config(bg=Theme.active().ALERT_BAR_OK)
-        self.message_label.config(bg=Theme.active().ALERT_BAR_OK,
-                                  fg=Theme.active().ALERT_BAR_OK_TXT,
-                                  text="OK")
-        self.version_label.config(bg=Theme.active().ALERT_BAR_OK,
-                                  fg=Theme.active().ALERT_BAR_OK_TXT)
-        self.timestamp_label.config(bg=Theme.active().ALERT_BAR_OK,
-                                    fg=Theme.active().ALERT_BAR_OK_TXT)
+        # Change background colors
+        for frame in self.frames:
+            frame.config(bg=Theme.active().ALERT_BAR_OK)
+
+        # Change text colors
+        for label in self.textual:
+            label.config(bg=Theme.active().ALERT_BAR_OK,
+                                      fg=Theme.active().ALERT_BAR_OK_TXT)
+
+        self.message_label.configure(text="OK")
         self.timestamp_label.configure(text="")
         self.sound_device.stop()
 
     def set_alert(self, alert: Alert):
-        self.bar.config(bg=Theme.active().ERROR)
-        self.message_label.config(bg=Theme.active().ERROR,
-                                  fg=Theme.active().TXT_ON_ERROR, text=str(alert))
-        self.version_label.config(bg=Theme.active().ERROR,
-                                  fg=Theme.active().TXT_ON_ERROR)
-        self.timestamp_label.config(bg=Theme.active().ERROR,
-                                    fg=Theme.active().TXT_ON_ERROR)
+        # Change background colors
+        for frame in self.frames:
+            frame.config(bg=Theme.active().ERROR)
+
+        # Change text colors
+        for label in self.textual:
+            label.configure(bg=Theme.active().ERROR,
+                            fg=Theme.active().TXT_ON_ERROR)
+
+        self.message_label.configure(text=str(alert))
 
         if self.events.mute_alerts:
             self.sound_device.stop()
@@ -111,10 +167,10 @@ class IndicatorAlertBar(object):
             self.timestamp_label.configure(text="")
             return
 
-
         # We can't use simple alert.date() or time.time() for this calculation
         # because we want to support both simulation mode and real mode.
-        # hence, we look at the differential time since the alert last happened.
+        # hence, we look at the differential time since the alert
+        # last happened.
         now = self.drivers.acquire_driver("timer").get_time()
         then = self.current_alert.timestamp
 
@@ -123,3 +179,19 @@ class IndicatorAlertBar(object):
 
         # This display a '2 minutes ago' text
         self.timestamp_label.configure(text=f"{(timeago.format(now_dt - then_dt))}")
+
+    def update_battery(self):
+        battery_is_low = self.current_alert.contains(AlertCodes.LOW_BATTERY)
+        battry_is_missing = self.current_alert.contains(AlertCodes.NO_BATTERY)
+
+        if battry_is_missing:
+          self.battery_icon.configure(image=self.battery_missing_image)
+
+        else:
+            if battery_is_low:
+                self.battery_icon.configure(image=self.battery_low_image)
+
+            else:
+                self.battery_icon.configure(image=self.battery_ok_image)
+
+            self.battery_label.configure(text=f"{self.measurements.battery_percentage}%")

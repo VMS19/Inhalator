@@ -17,6 +17,7 @@ class Measurements(object):
         self.peep_min_pressure = 0
         self.bpm = 0
         self.o2_saturation_percentage = 20
+        self.battery_percentage = 0
         self.lock = Lock()
 
     def set_flow_value(self, new_value):
