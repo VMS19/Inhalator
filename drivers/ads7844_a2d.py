@@ -33,6 +33,7 @@ class Ads7844A2D(object):
 
     CHANNEL_MAP = [0, 4, 1, 5, 2, 6, 3, 7]
     A2D_OXYGEN_RATIO = 38.4
+    FULL_BATTERY = 6.024644649924462
     A2D_BATTERY_RATIO = 0.0337359433
     VOLTAGE_FACTOR = 38.4  # scale between voltage and oxygen percentage
 
@@ -91,7 +92,7 @@ class Ads7844A2D(object):
     def read_battery_percentage(self):
         raw_battery_value = self._sample_a2d(self.BATTERY_PERCENTAGE_CHANNEL)
         battery_value = raw_battery_value / self.A2D_BATTERY_RATIO
-        return min(100, int(battery_value * 100 / 6.024644649924462))
+        return min(100, int(battery_value * 100 / self.FULL_BATTERY))
 
     def read_battery_existence(self):
         # According to what the hardware team said, if the battery existence
