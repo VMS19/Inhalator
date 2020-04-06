@@ -54,7 +54,7 @@ class AlertsHistory(object):
         self.stack.appendleft(alert)
 
     def get(self, start, amount):
-        return list(self.stack)[start:start+amount]
+        return list(self.stack)[start:start + amount]
 
     def on_clear_alerts(self):
         # Mark all history alerts as 'seen'

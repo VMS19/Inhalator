@@ -1,4 +1,3 @@
-from drivers.aux_sound import SoundViaAux
 from data.alert import AlertCodes
 
 
