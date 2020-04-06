@@ -1,6 +1,6 @@
 import os
 import time
-from tkinter import *
+from tkinter import Tk
 
 from graphics.panes import MasterFrame
 from graphics.themes import Theme
@@ -34,7 +34,7 @@ class Application(object):
         self.frame_interval = 1 / fps
         self.sample_interval = 1 / sample_rate
         self.root = Tk()
-        self.theme = Theme.toggle_theme()  # Set to dark mode, TODO: Make this configurable
+        self.theme = Theme.toggle_theme()  # Set to dark mode
         self.root.protocol("WM_DELETE_WINDOW", self.exit)  # Catches Alt-F4
         self.root.title("Inhalator")
         self.root.geometry('800x480')

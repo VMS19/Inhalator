@@ -21,6 +21,7 @@ from alert_peripheral_handler import AlertPeripheralHandler
 import errors
 from drivers.null_driver import NullDriver
 
+BYTES_IN_MB = 2 ** 20
 BYTES_IN_GB = 2 ** 30
 
 
@@ -120,7 +121,7 @@ def start_app(args):
         log.info("Running in simulation mode!")
         log.info("Sensor Data Source: %s", args.simulate)
         log.info("Error probability: %s", args.error)
-    
+
     drivers = None
     try:
         drivers = DriverFactory(simulation_mode=simulation,
@@ -153,12 +154,11 @@ def start_app(args):
 
         alert_driver = drivers.acquire_driver("alert")
 
-
         if any(isinstance(driver, NullDriver)
-               for driver in [pressure_sensor, flow_sensor, watchdog, a2d, rtc]):
+               for driver in (pressure_sensor, flow_sensor, watchdog, a2d, rtc)):
             alert_driver.set_system_fault_alert(False)
 
-        alerts_handler = AlertPeripheralHandler(events, drivers)
+        AlertPeripheralHandler(events, drivers)
         sampler = Sampler(measurements=measurements, events=events,
                           flow_sensor=flow_sensor,
                           pressure_sensor=pressure_sensor,

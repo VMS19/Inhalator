@@ -57,5 +57,5 @@ class SoundViaAux(object):
             os.killpg(self.alarm_process.pid, 9)
             self.is_playing = False
 
-        except:
+        except Exception:
             pass

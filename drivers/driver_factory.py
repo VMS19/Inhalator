@@ -37,7 +37,7 @@ class DriverFactory(object):
     def instance(cls):
         return cls.__instance
 
-    def __init__(self, simulation_mode, simulation_data=None,  error_probability=0):
+    def __init__(self, simulation_mode, simulation_data=None, error_probability=0):
         self.mock = simulation_mode
         if simulation_data is None:
             simulation_data = 'sinus'
@@ -69,10 +69,10 @@ class DriverFactory(object):
             if not ismock:
                 try:
                     driver.close()
-                    self.log.info("Closed {} driver.".format(driver_name))
-                except:
+                    self.log.info("Closed {} driver".format(driver_name))
+                except Exception:
                     self.log.exception("Error while closing driver {}"
-                                  .format(driver_name))
+                                       .format(driver_name))
 
     def generate_mock_dead_man(self):
         return zero(

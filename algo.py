@@ -405,8 +405,8 @@ class Sampler(object):
         # Read from sensors
         result = self.read_sensors(ts)
 
-        flow_slm, pressure_cmh2o, o2_saturation_percentage, \
-        battery_percentage, battery_exists = result
+        (flow_slm, pressure_cmh2o, o2_saturation_percentage,
+         battery_percentage, battery_exists) = result
 
         if self.save_sensor_values:
             self.storage_handler.write(flow_slm, pressure_cmh2o, o2_saturation_percentage)

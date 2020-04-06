@@ -1,4 +1,3 @@
-import sys
 import os
 
 from os.path import dirname, join, abspath, isfile

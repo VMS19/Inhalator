@@ -9,7 +9,6 @@ class AlertDriver(object):
     LED_GREEN = GPIO.HIGH
     LED_RED = GPIO.LOW
 
-
     def __init__(self):
         GPIO.setmode(GPIO.BCM)
 
@@ -21,7 +20,7 @@ class AlertDriver(object):
         GPIO.setup(self.MEDICAL_CONTITION_GPIO, GPIO.OUT)
         GPIO.output(self.MEDICAL_CONTITION_GPIO, self.LED_GREEN)
 
-		# Set buzzer GPIO
+        # Set buzzer GPIO
         GPIO.setup(self.FAULT_BUZZER_GPIO, GPIO.OUT)
         GPIO.output(self.FAULT_BUZZER_GPIO, GPIO.HIGH)
 
@@ -46,7 +45,7 @@ class AlertDriver(object):
         self.set_buzzer(value or mute)
 
     def set_buzzer(self, value: bool):
-        gpio_state  = GPIO.HIGH
+        gpio_state = GPIO.HIGH
         if not value:
             gpio_state = GPIO.LOW
 
