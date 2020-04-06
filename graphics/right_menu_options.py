@@ -2,7 +2,7 @@ import os
 
 import time
 
-from graphics.alerts_history_screen import AlertsHistoryScreen
+from graphics.alerts_history.history_screen import HistoryScreen
 from graphics.configure_alerts_screen import ConfigureAlarmsScreen
 from graphics.imagebutton import ImageButton
 
@@ -15,8 +15,7 @@ RESOURCES_DIRECTORY = os.path.join(os.path.dirname(THIS_DIRECTORY), "resources")
 
 
 class ClearAlertsButton(object):
-    IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY,
-                              "baseline_history_white_48dp.png")
+    IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY, "bell-off.png")  # 48x48 pixels
 
     def __init__(self, parent, events):
         self.parent = parent
@@ -85,39 +84,6 @@ class MuteAlertsButton(object):
             self.button.set_image(self.PATH_TO_UNMUTED)
 
 
-class LockThresholdsButton(object):
-
-    IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY,
-                              "baseline_lock_open_white_48dp.png")
-
-    def __init__(self, parent):
-        self.parent = parent
-        self.root = parent.element
-
-        self.button = ImageButton(
-            master=self.root,
-            image_path=self.IMAGE_PATH,
-            command=self.on_click,
-            text="Lock",
-            relief="flat",
-            font=("Roboto", 10),
-            bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
-            fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
-            activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
-            activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,
-            state="disabled",
-        )
-
-    def on_click(self):
-        print("Not Implemented Yet")
-
-    def render(self):
-        self.button.place(relx=0, rely=0.53, relwidth=0.8, relheight=0.2)
-
-    def update(self):
-        pass
-
-
 class OpenConfigureAlertsScreenButton(object):
     IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY,
                               "baseline_settings_white_48dp.png")
@@ -173,11 +139,11 @@ class OpenAlertsHistoryScreenButton(object):
 
     def on_click(self):
         master_frame = self.parent.parent.element
-        screen = AlertsHistoryScreen(master_frame, events=self.events)
+        screen = HistoryScreen(master_frame, events=self.events)
         screen.show()
 
     def render(self):
-        self.button.place(relx=0, rely=0.79, relwidth=0.8, relheight=0.2)
+        self.button.place(relx=0, rely=0.53, relwidth=0.8, relheight=0.2)
 
     def update(self):
         pass

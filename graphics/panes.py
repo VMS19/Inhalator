@@ -6,8 +6,8 @@ from graphics.graph_summaries import VolumeSummary, BPMSummary, \
     PressurePeakSummary, O2SaturationSummary
 from graphics.right_menu_options import (MuteAlertsButton,
                                          ClearAlertsButton,
-                                         LockThresholdsButton,
-                                         OpenConfigureAlertsScreenButton, OpenAlertsHistoryScreenButton)
+                                         OpenConfigureAlertsScreenButton,
+                                         OpenAlertsHistoryScreenButton)
 from graphics.themes import Theme
 
 
@@ -153,17 +153,15 @@ class RightPane(object):
 
         self.mute_alerts_btn = MuteAlertsButton(parent=self, events=self.events)
         self.clear_alerts_btn = ClearAlertsButton(parent=self, events=self.events)
-        self.lock_thresholds_btn = LockThresholdsButton(parent=self)
         self.configure_alerts_btn = OpenConfigureAlertsScreenButton(self)
-        # self.alerts_history_btn = OpenAlertsHistoryScreenButton(self, events=self.events)
+        self.alerts_history_btn = OpenAlertsHistoryScreenButton(self, events=self.events)
 
     @property
     def buttons(self):
         return (self.mute_alerts_btn,
                 self.clear_alerts_btn,
                 self.configure_alerts_btn,
-                # self.alerts_history_btn,
-                self.lock_thresholds_btn)
+                self.alerts_history_btn)
 
     @property
     def element(self):

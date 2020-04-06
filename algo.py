@@ -369,7 +369,8 @@ class Sampler(object):
         try:
             o2_saturation_percentage = self._a2d.read_oxygen()
         except Exception as e:
-            self._events.alerts_queue.enqueue_alert(AlertCodes.OXYGEN_SENSOR_ERROR)
+            self._events.alerts_queue.enqueue_alert(AlertCodes.OXYGEN_SENSOR_ERROR,
+                                                    timestamp)
             self.log.error(e)
             o2_saturation_percentage = 0
 

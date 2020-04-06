@@ -1,6 +1,5 @@
 import os
 import time
-from tkinter.ttk import Style
 
 import timeago
 import datetime

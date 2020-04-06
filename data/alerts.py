@@ -78,36 +78,79 @@ class Alert(object):
         return datetime.datetime.fromtimestamp(self.timestamp).strftime("%A %X")
 
 
+class AlertsHistory(object):  # TODO: Move to own file
+    MAXIMUM_HISTORY_COUNT = 40
+    TIME_DIFFERENCE_BETWEEN_SAME_ALERTS = 60 * 15  # 15 Minutes
+
+    def __init__(self):
+        self.stack = deque(maxlen=40)
+
+    def append_to_history(self, alert: Alert):
+        """
+        We append an alert to the history in any one of the following cases:
+            * The alert history is empty
+            * The last alert is different from this one
+            * The last alert is the same as this one, but some time has passed since
+        """
+        if alert == AlertCodes.OK:
+            return  # TODO: Figure out
+
+        if len(self.stack) == 0:
+            # The history is empty, we definitely want it in the queue
+            self.stack.appendleft(alert)
+            return
+
+        last_alert = self.stack[0]
+        same_as_last_alert = last_alert == alert
+
+        # This is a new alert, we definitely want it in the history
+        if not same_as_last_alert:
+            # TODO: Spam-filter logic should go here,
+            # Consider this case: LOW-PRESSURE | HIGH-PRESSURE | LOW-PRESSURE repeatedly
+            self.stack.appendleft(alert)
+            return
+
+        # This is the same alert as the last one, but enough time has passed since,
+        # We want it in the history, because it's a new event.
+        time_passed_since = alert.timestamp - last_alert.timestamp
+        if time_passed_since >= self.TIME_DIFFERENCE_BETWEEN_SAME_ALERTS:
+            self.stack.appendleft(alert)
+
+    def latest(self, amount):
+        return list(self.stack)[:amount]
+
+
 class AlertsQueue(object):
     MAXIMUM_ALERTS_AMOUNT = 2
-    MAXIMUM_HISTORY_COUNT = 40
-    TIME_DIFFERENCE_BETWEEN_SAME_ALERTS = 60 * 5
 
     def __init__(self):
         self.queue = Queue(maxsize=self.MAXIMUM_ALERTS_AMOUNT)
         self.last_alert = Alert(AlertCodes.OK)
-        self.observer = Observable()
+        self.history = AlertsHistory()
+        self.observable = Observable()
 
     def __len__(self):
         return self.queue.qsize()
 
-    def enqueue_alert(self, alert, timestamp=None):
+    def enqueue_alert(self, alert, timestamp):
         if not isinstance(alert, Alert):
             alert = Alert(alert, timestamp)
+
+        self.history.append_to_history(alert)
 
         if self.queue.qsize() == self.MAXIMUM_ALERTS_AMOUNT:
             self.dequeue_alert()
 
         self.last_alert = alert
 
-        self.observer.publish(self.last_alert)
+        self.observable.publish(self.last_alert)
         self.queue.put(alert)
 
     def dequeue_alert(self):
         alert = self.queue.get()
         self.last_alert = self.queue.queue[0]
 
-        self.observer.publish(self.last_alert)
+        self.observable.publish(self.last_alert)
         return alert
 
     def clear_alerts(self):
@@ -115,12 +158,12 @@ class AlertsQueue(object):
         self.queue.queue.clear()
 
         self.last_alert = Alert(AlertCodes.OK)
-        self.observer.publish(self.last_alert)
+        self.observable.publish(self.last_alert)
+
 
 class MuteAlerts(object):
-
     def __init__(self):
-        self.observer = Observable()
+        self.observable = Observable()
         self._alerts_muted = False
         self.mute_time = None
 
@@ -133,4 +176,4 @@ class MuteAlerts(object):
         if self._alerts_muted:
             self.mute_time = time.time()
 
-        self.observer.publish(self._alerts_muted)
+        self.observable.publish(self._alerts_muted)
