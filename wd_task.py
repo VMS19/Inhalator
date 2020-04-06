@@ -6,7 +6,7 @@ log = logging.getLogger(__name__)
 
 
 class WdTask(Thread):
-    WD_TIMEOUT = 0.3  # 300 msec
+    WD_TIMEOUT = 0.25  # 250 msec
     GRACE_TIME = 4  # We allow the application this much time to start.
 
     def __init__(self, wd, arm_wd_event):
