@@ -101,14 +101,6 @@ class CenterPane(object):
         self.flow_graph = FlowGraph(self, self.measurements, blank=self.blank_graph)
         self.pressure_graph = AirPressureGraph(self, self.measurements, blank=self.blank_graph)
 
-    def pop_queue_to_list(self, q, lst):
-        # pops all queue values into list, returns if items appended to queue
-        had_values = not q.empty()
-        while not q.empty():
-            lst.pop(0)
-            lst.append(q.get())
-        return had_values
-
     @property
     def element(self):
         return self.frame
@@ -125,13 +117,6 @@ class CenterPane(object):
 
 
     def update(self):
-        # Get measurments from peripherals
-
-        had_pressure_change = self.pop_queue_to_list(self.measurements.pressure_measurements,
-            self.pressure_graph.pressure_display_values)
-        had_flow_change = self.pop_queue_to_list(self.measurements.flow_measurements,
-            self.flow_graph.flow_display_values)
-
         for graph in self.graphs:
             graph.update()
 
