@@ -108,15 +108,9 @@ class AirPressureGraph(object):
         return self.pressure_canvas
 
     def consume_measurements(self):
-        graph_min, graph_max = self.config.pressure_y_scale
         while not self.measurements.pressure_measurements.empty():
             self.pressure_display_values.pop(0)
             new_measurement = self.measurements.pressure_measurements.get()
-            if new_measurement > graph_max:
-                new_measurement = graph_max
-
-            if new_measurement < graph_min:
-                new_measurement = graph_min
             self.pressure_display_values.append(new_measurement)
 
 
@@ -192,14 +186,7 @@ class FlowGraph(object):
         return self.flow_canvas
 
     def consume_measurements(self):
-        graph_min, graph_max = self.config.flow_y_scale
         while not self.measurements.flow_measurements.empty():
             self.flow_display_values.pop(0)
             new_measurement = self.measurements.flow_measurements.get()
-            if new_measurement > graph_max:
-                new_measurement = graph_max
-
-            if new_measurement < graph_min:
-                new_measurement = graph_min
-
             self.flow_display_values.append(new_measurement)
