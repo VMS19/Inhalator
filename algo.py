@@ -95,6 +95,9 @@ class RateMeter(object):
         rate = (len(self.samples) - 1) * (self.time_span_seconds / interval)
         return rate
 
+    def is_stabled(self):
+        return len(self.samples) > 3
+
 
 class RunningSlope(object):
 
@@ -194,17 +197,20 @@ class VentilationStateMachine(object):
         self.last_breath_timestamp = timestamp
         self._measurements.bpm = self.breathes_rate_meter.beat(timestamp)
 
-        # Check bpm thresholds
-        if self._config.resp_rate_range.over(self._measurements.bpm):
-            self.log.warning(
-                "BPM too high %s, top threshold %s",
-                self._measurements.bpm, self._config.resp_rate_range.max)
-            self._events.alerts_queue.enqueue_alert(AlertCodes.BPM_HIGH, timestamp)
-        elif self._config.resp_rate_range.below(self._measurements.bpm):
-            self.log.warning(
-                "BPM too low %s, bottom threshold %s",
-                self._measurements.bpm, self._config.resp_rate_range.min)
-            self._events.alerts_queue.enqueue_alert(AlertCodes.BPM_LOW, timestamp)
+        if self.breathes_rate_meter.is_stabled():
+            # Check bpm thresholds
+            if self._config.resp_rate_range.over(self._measurements.bpm):
+                self.log.warning(
+                    "BPM too high %s, top threshold %s",
+                    self._measurements.bpm, self._config.resp_rate_range.max)
+                self._events.alerts_queue.enqueue_alert(AlertCodes.BPM_HIGH,
+                                                        timestamp)
+            elif self._config.resp_rate_range.below(self._measurements.bpm):
+                self.log.warning(
+                    "BPM too low %s, bottom threshold %s",
+                    self._measurements.bpm, self._config.resp_rate_range.min)
+                self._events.alerts_queue.enqueue_alert(AlertCodes.BPM_LOW,
+                                                        timestamp)
 
         # Update final expiration volume
         exp_volume_ml = abs(self.expiration_volume.integrate()) * 1000
