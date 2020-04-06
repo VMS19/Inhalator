@@ -6,9 +6,9 @@ import pytest
 from pytest import approx
 
 from algo import VentilationStateMachine, Sampler
+from data.alert import AlertCodes
 from data.events import Events
 from data.measurements import Measurements
-from data.alerts import AlertCodes
 from data.configurations import *
 from drivers.driver_factory import DriverFactory
 
