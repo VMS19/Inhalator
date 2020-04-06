@@ -1,6 +1,8 @@
 from collections import deque
 from tkinter import Frame
 
+from cached_property import cached_property
+
 from data.alerts import AlertsHistory
 from graphics.alerts_history.entries.entries_factory import EntriesFactory, CacheState
 from graphics.alerts_history.entries.entry import AlertEntry
@@ -20,19 +22,15 @@ class EntriesContainer(object):
         # State
         self.index = 0
         self.alerts_displayed = [None] * self.NUMBER_OF_ALERTS_ON_SCREEN
-
-    @property
-    def history(self) -> AlertsHistory:
-        return self.events.alerts_queue.history
+        self.history_snapshot = self.events.alerts_queue.history.copy()
 
     def load(self):
-        latest = self.history.get(start=self.index, amount=self.NUMBER_OF_ALERTS_ON_SCREEN)
+        latest = self.history_snapshot.get(start=self.index, amount=self.NUMBER_OF_ALERTS_ON_SCREEN)
         for index, alert in enumerate(latest):
-
             self.alerts_displayed[index] = alert
 
             entry = self.factory.render_if_absent(index)
-            entry.set_alert(alert)
+            entry.set_alert(alert, index + self.index + 1)
 
     def on_scroll_up(self):
         if self.index == 0:
@@ -43,25 +41,18 @@ class EntriesContainer(object):
         self.load()
 
     def on_scroll_down(self):
-        amount_displayed = len(self.factory)
-
         # We have reached the bottom of the history
-        if self.index == amount_displayed:
-            return
-
-        # The screen isn't fully rendered yet so there is nowhere to scroll
-        if amount_displayed < self.NUMBER_OF_ALERTS_ON_SCREEN:
+        if self.index + self.NUMBER_OF_ALERTS_ON_SCREEN >= len(self.history_snapshot):
             return
 
         self.index += 1
 
         self.load()
 
-    def on_clear_alerts(self):
-        pass
-
-    def on_new_alert(self):
-        pass
+    def on_refresh(self):
+        self.index = 0
+        self.history_snapshot = self.events.alerts_queue.history.copy()
+        self.load()
 
     def render(self):
         self.frame.place(relx=0, rely=0.15, relwidth=0.85, relheight=0.7)

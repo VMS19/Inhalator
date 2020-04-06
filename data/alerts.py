@@ -50,7 +50,7 @@ class Alert(object):
     def __init__(self, alert_code, timestamp=None):  # TODO: Add 'Seen'
         self.code = alert_code
         if timestamp is None:
-            self.timestamp = time.time()
+            self.timestamp = time.time()  # TODO: Remove
 
         else:
             self.timestamp = timestamp
@@ -84,6 +84,15 @@ class AlertsHistory(object):  # TODO: Move to own file
 
     def __init__(self):
         self.stack = deque(maxlen=40)
+        self.observable = Observable()
+
+    def __len__(self):
+        return len(self.stack)
+
+    def copy(self):
+        instance = AlertsHistory()
+        instance.stack = self.stack.copy()
+        return instance
 
     def append_to_history(self, alert: Alert):
         """
@@ -97,7 +106,7 @@ class AlertsHistory(object):  # TODO: Move to own file
 
         if len(self.stack) == 0:
             # The history is empty, we definitely want it in the queue
-            self.stack.appendleft(alert)
+            self.insert_to_stack(alert)
             return
 
         last_alert = self.stack[0]
@@ -107,14 +116,18 @@ class AlertsHistory(object):  # TODO: Move to own file
         if not same_as_last_alert:
             # TODO: Spam-filter logic should go here,
             # Consider this case: LOW-PRESSURE | HIGH-PRESSURE | LOW-PRESSURE repeatedly
-            self.stack.appendleft(alert)
+            self.insert_to_stack(alert)
             return
 
         # This is the same alert as the last one, but enough time has passed since,
         # We want it in the history, because it's a new event.
         time_passed_since = alert.timestamp - last_alert.timestamp
         if time_passed_since >= self.TIME_DIFFERENCE_BETWEEN_SAME_ALERTS:
-            self.stack.appendleft(alert)
+            self.insert_to_stack(alert)
+
+    def insert_to_stack(self, alert):
+        self.observable.publish(alert)
+        self.stack.appendleft(alert)
 
     def get(self, start, amount):
         return list(self.stack)[start:start+amount]
