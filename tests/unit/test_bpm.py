@@ -221,7 +221,6 @@ def test_bpm_alert(bpm_range, expected_alert, events, config, sampler):
     else:
         assert len(events.alerts_queue) > 0, "BPM alert not raised"
         all_alerts = list(events.alerts_queue.queue.queue)
-        print([str(alrt) for alrt in all_alerts])
         assert all(alert == expected_alert for alert in all_alerts), \
             "wrong alert was raised"
 
@@ -242,8 +241,6 @@ def test_no_bpm_alert_on_startup(events, config, sampler):
     while time.time() - current_time < SIMULATION_LENGTH:
         time.sleep(0.001)
         sampler.sampling_iteration()
-
-    print(sampler.vsm.breathes_rate_meter.samples)
 
     assert len(events.alerts_queue) == 0, \
         "BPM alert raised before sufficient breath cycles were sampled"
