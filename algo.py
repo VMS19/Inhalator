@@ -64,7 +64,6 @@ class RateMeter(object):
         self.samples = deque(maxlen=max_samples)
         self.start_timestamp = time.time()
 
-
     def reset(self):
         self.samples.clear()
         self.start_timestamp = time.time()
@@ -102,7 +101,6 @@ class RateMeter(object):
         has_timespan_passed = \
             time.time() - self.start_timestamp > self.time_span_seconds
         return has_timespan_passed or len(self.samples) >= 2
-
 
 
 class RunningSlope(object):
