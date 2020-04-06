@@ -71,5 +71,5 @@ class PressureRange(Range):
 
 
 class RespiratoryRateRange(Range):
-    NAME = "Resp.\nrate"  # TODO: This is fucked up. It should be dealt in GUI.
+    NAME = "Rate"
     UNIT = "per min"

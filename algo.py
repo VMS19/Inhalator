@@ -62,9 +62,11 @@ class RateMeter(object):
             raise ValueError("Time span must be non-zero and positive")
         self.time_span_seconds = time_span_seconds
         self.samples = deque(maxlen=max_samples)
+        self.start_timestamp = time.time()
 
     def reset(self):
         self.samples.clear()
+        self.start_timestamp = time.time()
 
     def beat(self, timestamp=None):
         if timestamp is None:
@@ -92,8 +94,13 @@ class RateMeter(object):
             return 0
 
         # We subtract 1 because we have both 1st and last sentinels.
-        rate = (len(self.samples) - 1) * (self.time_span_seconds / interval)
-        return rate
+        rate_per_minute = (len(self.samples) - 1) * (60.0 / interval)
+        return rate_per_minute
+
+    def is_stable(self):
+        has_timespan_passed = \
+            time.time() - self.start_timestamp > self.time_span_seconds
+        return has_timespan_passed or len(self.samples) >= 2
 
 
 class RunningSlope(object):
@@ -182,7 +189,8 @@ class VentilationStateMachine(object):
         self.peak_flow = 0
         # No good reason for 1000 max samples. Sounds enough.
         self.peep_avg_calculator = RunningAvg(max_samples=1000)
-        self.breathes_rate_meter = RateMeter(time_span_seconds=60, max_samples=4)
+        self.breathes_rate_meter = RateMeter(time_span_seconds=60,
+                                             max_samples=4)
         self.inspiration_volume = Accumulator()
         self.expiration_volume = Accumulator()
         self.insp_volumes = deque(maxlen=100)
@@ -207,6 +215,21 @@ class VentilationStateMachine(object):
     def enter_inhale(self, timestamp):
         self.last_breath_timestamp = timestamp
         self._measurements.bpm = self.breathes_rate_meter.beat(timestamp)
+
+        if self.breathes_rate_meter.is_stable():
+            # Check bpm thresholds
+            if self._config.resp_rate_range.over(self._measurements.bpm):
+                self.log.warning(
+                    "BPM too high %s, top threshold %s",
+                    self._measurements.bpm, self._config.resp_rate_range.max)
+                self._events.alerts_queue.enqueue_alert(AlertCodes.BPM_HIGH,
+                                                        timestamp)
+            elif self._config.resp_rate_range.below(self._measurements.bpm):
+                self.log.warning(
+                    "BPM too low %s, bottom threshold %s",
+                    self._measurements.bpm, self._config.resp_rate_range.min)
+                self._events.alerts_queue.enqueue_alert(AlertCodes.BPM_LOW,
+                                                        timestamp)
 
         # Update final expiration volume
         exp_volume_ml = abs(self.expiration_volume.integrate()) * 1000
