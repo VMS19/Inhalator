@@ -1,3 +1,4 @@
+from collections import deque
 from tkinter import Frame
 
 from data.alerts import AlertsHistory
@@ -18,21 +19,43 @@ class EntriesContainer(object):
 
         # State
         self.index = 0
+        self.alerts_displayed = [None] * self.NUMBER_OF_ALERTS_ON_SCREEN
 
     @property
     def history(self) -> AlertsHistory:
         return self.events.alerts_queue.history
 
     def load(self):
-        for index, alert in enumerate(self.history.latest(self.NUMBER_OF_ALERTS_ON_SCREEN)):
+        latest = self.history.get(start=self.index, amount=self.NUMBER_OF_ALERTS_ON_SCREEN)
+        for index, alert in enumerate(latest):
+
+            self.alerts_displayed[index] = alert
+
             entry = self.factory.render_if_absent(index)
             entry.set_alert(alert)
 
     def on_scroll_up(self):
-        pass
+        if self.index == 0:
+            return
+
+        self.index -= 1
+
+        self.load()
 
     def on_scroll_down(self):
-        pass
+        amount_displayed = len(self.factory)
+
+        # We have reached the bottom of the history
+        if self.index == amount_displayed:
+            return
+
+        # The screen isn't fully rendered yet so there is nowhere to scroll
+        if amount_displayed < self.NUMBER_OF_ALERTS_ON_SCREEN:
+            return
+
+        self.index += 1
+
+        self.load()
 
     def on_clear_alerts(self):
         pass

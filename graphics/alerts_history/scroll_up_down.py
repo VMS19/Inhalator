@@ -19,6 +19,7 @@ class ScrollUpDownContainer(object):
         self.up_button = ImageButton(master=self.frame,
                                      image_path=self.UP_IMAGE_PATH,
                                      compound="center",
+                                     repeatdelay=500, repeatinterval=100,
                                      command=self.parent.on_scroll_up,
                                      bg=Theme.active().BUTTON,
                                      activebackground=Theme.active().BUTTON_ACTIVE)
@@ -26,6 +27,7 @@ class ScrollUpDownContainer(object):
         self.down_button = ImageButton(master=self.frame,
                                        image_path=self.DOWN_IMAGE_PATH,
                                        compound="center",
+                                       repeatdelay=500, repeatinterval=100,
                                        command=self.parent.on_scroll_down,
                                        bg=Theme.active().BUTTON,
                                        activebackground=Theme.active().BUTTON_ACTIVE)

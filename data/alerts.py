@@ -47,7 +47,7 @@ class Alert(object):
         AlertCodes.NO_BATTERY: "No Battery",
     }
 
-    def __init__(self, alert_code, timestamp=None):
+    def __init__(self, alert_code, timestamp=None):  # TODO: Add 'Seen'
         self.code = alert_code
         if timestamp is None:
             self.timestamp = time.time()
@@ -116,8 +116,8 @@ class AlertsHistory(object):  # TODO: Move to own file
         if time_passed_since >= self.TIME_DIFFERENCE_BETWEEN_SAME_ALERTS:
             self.stack.appendleft(alert)
 
-    def latest(self, amount):
-        return list(self.stack)[:amount]
+    def get(self, start, amount):
+        return list(self.stack)[start:start+amount]
 
 
 class AlertsQueue(object):
