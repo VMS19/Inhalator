@@ -42,16 +42,14 @@ class Ads7844A2D(object):
 
         try:
             self._spi.open(self.SPI_BUS, self.SPI_DEV)
-        except IOError as e:
-            log.error("Couldn't init spi device, \
-                is the peripheral initialized?")
+        except IOError:
+            log.error("Couldn't init spi device. Is the peripheral initialized?")
             raise SPIDriverInitError("spidev peripheral init error")
 
         try:
             self._spi.max_speed_hz = self.SPI_CLK_SPEED_KHZ
-        except IOError as e:
-            log.error("setting spi speed failed, \
-                is speed in the correct range?")
+        except IOError:
+            log.error("setting spi speed failed. Is speed in the correct range?")
             raise SPIDriverInitError("spidev peripheral init error")
 
         try:
@@ -76,12 +74,12 @@ class Ads7844A2D(object):
                                         self.XFER_SPEED_HZ,
                                         self.PERIPHERAL_MINIMAL_DELAY)
 
-            sample_reading = ((sample_raw[1] & 0x7f) <<\
-                    self.FIRST_READING_BIT_SHIFT) |\
-                sample_raw[2] >> self.SECOND_READING_BIT_SHIFT
-        except IOError as e:
-            log.error("Failed to read ads7844."
-                      "check if peripheral is initialized correctly")
+            sample_reading = (
+                ((sample_raw[1] & 0x7f) << self.FIRST_READING_BIT_SHIFT) |
+                sample_raw[2] >> self.SECOND_READING_BIT_SHIFT)
+        except IOError:
+            log.error("Failed to read ads7844. "
+                      "Check if peripheral is initialized correctly")
             raise SPIIOError("a2d spi read error")
 
         return self._calibrate_a2d(sample_reading)

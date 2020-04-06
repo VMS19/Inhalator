@@ -398,7 +398,6 @@ class Sampler(object):
 
         # Read from sensors
         result = self.read_sensors(ts)
-
         flow_slm, pressure_cmh2o, o2_saturation_percentage = result
 
         if self.save_sensor_values:

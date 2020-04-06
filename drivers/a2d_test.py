@@ -1,5 +1,4 @@
-import time
-from ads7844_a2d import Ads7844A2D
+from drivers.ads7844_a2d import Ads7844A2D
 
 a2d = Ads7844A2D()
 read_tuple = a2d.read()
