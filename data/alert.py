@@ -77,5 +77,3 @@ class Alert(object):
 
     def mark_as_seen(self):
         self.seen = True
-
-

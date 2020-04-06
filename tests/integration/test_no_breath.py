@@ -1,6 +1,12 @@
+import logging
+from itertools import cycle
+from threading import Event
+from unittest.mock import Mock, patch
+
 import pytest
 
 from algo import Sampler
+from application import Application
 from data.alert import AlertCodes
 from data.measurements import Measurements
 from data.events import Events
@@ -44,6 +50,7 @@ def test_sinus_alerts_when_no_breath(events, measurements, config):
         * Don't simulate sensors for time required to sent no-breath alert.
         * Make sure a single no-breath alert was sent.
     """
+    arm_wd_event = Event()
     driver_factory = DriverFactory(simulation_mode=True, simulation_data="sinus")
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
@@ -52,8 +59,14 @@ def test_sinus_alerts_when_no_breath(events, measurements, config):
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       a2d, timer)
 
-    for _ in range(SIMULATION_SAMPLES):
-        sampler.sampling_iteration()
+    app = Application(measurements=measurements,
+                      events=events,
+                      arm_wd_event=arm_wd_event,
+                      drivers=driver_factory,
+                      sampler=sampler,
+                      simulation=True)
+
+    app.run_iterations(SIMULATION_SAMPLES)
 
     assert len(events.alerts_queue) == 0
 
@@ -63,7 +76,8 @@ def test_sinus_alerts_when_no_breath(events, measurements, config):
     for _ in range(num_of_samples):
         sampler._timer.get_time()
 
-    sampler.sampling_iteration()
+    app.run_iterations(1)
+    app.root.destroy()
 
     assert len(events.alerts_queue) == 1
 
@@ -78,6 +92,7 @@ def test_dead_man_alerts_when_no_breath(events, measurements, config):
         * Run deadman simulation for no-breath time.
         * Make sure at least one no-breath alert was sent.
     """
+    arm_wd_event = Event()
     driver_factory = DriverFactory(simulation_mode=True, simulation_data="dead")
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
@@ -86,10 +101,17 @@ def test_dead_man_alerts_when_no_breath(events, measurements, config):
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       a2d, timer)
 
+    app = Application(measurements=measurements,
+                      events=events,
+                      arm_wd_event=arm_wd_event,
+                      drivers=driver_factory,
+                      sampler=sampler,
+                      simulation=True)
+
     time_intervals = 1 / driver_factory.MOCK_SAMPLE_RATE_HZ
     num_of_samples = int(NO_BREATH_TIME / time_intervals)
-    for _ in range(num_of_samples):
-        sampler.sampling_iteration()
+    app.run_iterations(num_of_samples)
+    app.root.destroy()
 
     assert len(events.alerts_queue) >= 1
 
@@ -104,6 +126,7 @@ def test_noise_alerts_when_no_breath(events, measurements, config):
         * Run noise simulation for no-breath time.
         * Make sure at least one no-breath alert was sent.
     """
+    arm_wd_event = Event()
     driver_factory = DriverFactory(simulation_mode=True, simulation_data="noise")
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
@@ -112,10 +135,17 @@ def test_noise_alerts_when_no_breath(events, measurements, config):
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       a2d, timer)
 
+    app = Application(measurements=measurements,
+                      events=events,
+                      arm_wd_event=arm_wd_event,
+                      drivers=driver_factory,
+                      sampler=sampler,
+                      simulation=True)
+
     time_intervals = 1 / driver_factory.MOCK_SAMPLE_RATE_HZ
     num_of_samples = int(NO_BREATH_TIME / time_intervals)
-    for _ in range(num_of_samples):
-        sampler.sampling_iteration()
+    app.run_iterations(num_of_samples)
+    app.root.destroy()
 
     assert len(events.alerts_queue) >= 1
 

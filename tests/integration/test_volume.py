@@ -1,26 +1,25 @@
 import os
-import time
 
 import pytest
+from threading import Event
+
 from pytest import approx
 
 from algo import Sampler
+from application import Application
 from data.alert import AlertCodes
-from data.measurements import Measurements
-from data.events import Events
 from data.configurations import Configurations
-from data.thresholds import (O2Range, PressureRange,
-                             RespiratoryRateRange, VolumeRange)
+from data.events import Events
+from data.measurements import Measurements
+from data.thresholds import O2Range, PressureRange, RespiratoryRateRange, \
+    VolumeRange
 from drivers.driver_factory import DriverFactory
-
 
 SIMULATION_FOLDER = "simulation"
 
-MICROSECOND = 10 ** -6
-SIMULATION_LENGTH = 1  # seconds
+FAST_FORWARD = 100
 LOW_THRESHOLD = -50000
 HIGH_THRESHOLD = 50000
-
 SIMULATION_SAMPLES = 1000
 
 
@@ -66,6 +65,7 @@ def test_sampler_volume_calculation(events, measurements, config):
     driver_factory = DriverFactory(simulation_mode=True,
                                    simulation_data=file_path)
 
+    arm_wd_event = Event()
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
     a2d = driver_factory.acquire_driver("a2d")
@@ -73,8 +73,15 @@ def test_sampler_volume_calculation(events, measurements, config):
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       a2d, timer)
 
-    for _ in range(SIMULATION_SAMPLES):
-        sampler.sampling_iteration()
+    app = Application(measurements=measurements,
+                      events=events,
+                      arm_wd_event=arm_wd_event,
+                      drivers=driver_factory,
+                      sampler=sampler,
+                      simulation=True)
+
+    app.run_iterations(SIMULATION_SAMPLES)
+    app.root.destroy()
 
     expected_volume = 332
     msg = f"Expected volume of {expected_volume}, received {measurements.inspiration_volume}"
@@ -82,22 +89,28 @@ def test_sampler_volume_calculation(events, measurements, config):
 
 
 def test_sampler_alerts_when_volume_exceeds_minium(events, measurements, config, driver_factory):
+    arm_wd_event = Event()
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       a2d, timer)
+
+    app = Application(measurements=measurements,
+                      events=events,
+                      arm_wd_event=arm_wd_event,
+                      drivers=driver_factory,
+                      sampler=sampler,
+                      simulation=True)
+
     assert len(events.alerts_queue) == 0
-    sampler.sampling_iteration()
+    app.run_iterations(1)
     assert len(events.alerts_queue) == 0
 
     config.volume_range = VolumeRange(HIGH_THRESHOLD, HIGH_THRESHOLD)
-
-    current_time = time.time()
-    while time.time() - current_time < SIMULATION_LENGTH:
-        time.sleep(MICROSECOND)
-        sampler.sampling_iteration()
+    app.run_iterations(SIMULATION_SAMPLES)
+    app.root.destroy()
 
     assert len(events.alerts_queue) > 0
 
@@ -106,22 +119,28 @@ def test_sampler_alerts_when_volume_exceeds_minium(events, measurements, config,
 
 
 def test_sampler_alerts_when_volume_exceeds_maximum(events, measurements, config, driver_factory):
+    arm_wd_event = Event()
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       a2d, timer)
+
+    app = Application(measurements=measurements,
+                      events=events,
+                      arm_wd_event=arm_wd_event,
+                      drivers=driver_factory,
+                      sampler=sampler,
+                      simulation=True,)
+
     assert len(events.alerts_queue) == 0
-    sampler.sampling_iteration()
+    app.run_iterations(1, fast_forward=True)
     assert len(events.alerts_queue) == 0
 
     config.volume_range = VolumeRange(LOW_THRESHOLD, LOW_THRESHOLD)
-
-    current_time = time.time()
-    while time.time() - current_time < SIMULATION_LENGTH:
-        time.sleep(MICROSECOND)
-        sampler.sampling_iteration()
+    app.run_iterations(SIMULATION_SAMPLES)
+    app.root.destroy()
 
     assert len(events.alerts_queue) > 0
 

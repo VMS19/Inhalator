@@ -7,7 +7,6 @@ from tkinter import *
 
 from data.alert import Alert, AlertCodes
 from graphics.themes import Theme
-from data import alert
 from data.configurations import Configurations
 from graphics.version import __version__
 

@@ -1,6 +1,6 @@
 import os
 import time
-from tkinter import *
+from tkinter import Tk
 
 from graphics.panes import MasterFrame
 from graphics.themes import Theme
@@ -34,7 +34,7 @@ class Application(object):
         self.frame_interval = 1 / fps
         self.sample_interval = 1 / sample_rate
         self.root = Tk()
-        self.theme = Theme.toggle_theme()  # Set to dark mode, TODO: Make this configurable
+        self.theme = Theme.choose_theme()  # TODO: Make this configurable
         self.root.protocol("WM_DELETE_WINDOW", self.exit)  # Catches Alt-F4
         self.root.title("Inhalator")
         self.root.geometry('800x480')
@@ -97,3 +97,16 @@ class Application(object):
                 break
         self.exit()
         self.drivers.acquire_driver("aux").stop()
+
+    def run_iterations(self, max_iterations, fast_forward=True):
+        self.render()
+        for _ in range(max_iterations):
+            try:
+                if self.next_sample > 0 and not fast_forward:
+                    time.sleep(max(self.next_sample, 0))
+                self.sample()
+                if self.next_render <= 0:
+                    self.gui_update()
+                self.arm_wd_event.set()
+            except KeyboardInterrupt:
+                break

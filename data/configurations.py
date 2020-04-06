@@ -75,7 +75,7 @@ class Configurations(object):
 
         try:
             return cls._parse_config_file(cls.CONFIG_FILE)
-        except ConfigurationFileError as e:
+        except ConfigurationFileError:
             # The second call to _parse_config_file might fail,
             # we will however let the exception propagate upwards
             log.exception("Failed to load configuration file %s, "

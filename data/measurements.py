@@ -20,6 +20,14 @@ class Measurements(object):
         self.battery_percentage = 0
         self.lock = Lock()
 
+    def reset(self):
+        self.inspiration_volume = 0
+        self.expiration_volume = 0
+        self.intake_peak_flow = 0
+        self.intake_peak_pressure = 0
+        self.peep_min_pressure = 0
+        self.bpm = 0
+
     def set_flow_value(self, new_value):
         with self.lock:
             # pop last item if queue is full

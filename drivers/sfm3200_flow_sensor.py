@@ -11,7 +11,6 @@ import pigpio
 from .i2c_driver import I2cDriver
 from errors import (I2CReadError,
                     I2CWriteError,
-                    PiGPIOInitError,
                     FlowSensorCRCError,
                     I2CDeviceNotFoundError)
 

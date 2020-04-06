@@ -17,5 +17,3 @@ class MuteAlerts(object):
 
         if self._alerts_muted:
             self.mute_time = time.time()
-
-        self.observable.publish(self._alerts_muted)
