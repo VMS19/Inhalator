@@ -1,8 +1,4 @@
-import csv
-import logging
 import os
-from itertools import cycle
-from unittest.mock import Mock, patch
 
 import pytest
 from pytest import approx
@@ -42,8 +38,9 @@ def events():
     return Events()
 
 
-@pytest.mark.parametrize("scenario", ['pressure', 'flow',
-                                      pytest.param('both',marks=pytest.mark.xfail(reason="Can't handle simultaneous error in pressure and flow"))])
+@pytest.mark.parametrize(
+    "scenario", ['pressure', 'flow', pytest.param('both', marks=pytest.mark.xfail(
+        reason="Can't handle simultaneous error in pressure and flow"))])
 def test_slope_recognition_with_error_in_exhale(events, measurements, config, scenario):
     """Test error in exhale doesn't cause the state machine change too early.
 
@@ -111,9 +108,9 @@ def test_slope_recognition_with_error_in_exhale(events, measurements, config, sc
     assert inhale_entry == approx(4.41, rel=0.1)
 
 
-# pytest.mark.xfail("Can't handle error of drop in flow below threshold")
-@pytest.mark.parametrize("scenario", ['below',
-                                      pytest.param('pass', marks=pytest.mark.xfail(reason="Can't handle error of drop in flow below threshold"))])
+@pytest.mark.parametrize(
+    "scenario", ['below', pytest.param('pass', marks=pytest.mark.xfail(
+        reason="Can't handle error of drop in flow below threshold"))])
 def test_slope_recognition_with_error_in_inhale(events, measurements, config, scenario):
     """Test error in inhale doesn't cause the state machine change too early.
 

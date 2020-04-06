@@ -53,8 +53,6 @@ def test_bpm_calculation_const_rate(real_data):
             flow_slm=f,
             o2_percentage=o,
             timestamp=t,
-            battery_percentage=94,
-            battery_exists=True,
         )
 
     samples_len = len(vsm.breathes_rate_meter.samples) - 1
@@ -82,8 +80,6 @@ def test_bpm_calculation_const_rate_long_run(real_data):
             flow_slm=f,
             o2_percentage=o,
             timestamp=t,
-            battery_percentage=94,
-            battery_exists=True,
         )
 
     samples_len = len(vsm.breathes_rate_meter.samples) - 1
@@ -116,8 +112,6 @@ def test_bpm_calculation_changing_rate(real_data, rate):
             flow_slm=f,
             o2_percentage=o,
             timestamp=t,
-            battery_percentage=94,
-            battery_exists=True,
         )
 
     samples_len = len(vsm.breathes_rate_meter.samples) - 1
@@ -151,8 +145,6 @@ def test_bpm_calculation_changing_rate_twice(real_data, rates):
             flow_slm=f,
             o2_percentage=o,
             timestamp=t,
-            battery_percentage=94,
-            battery_exists=True,
         )
 
     samples_len = len(vsm.breathes_rate_meter.samples) - 1

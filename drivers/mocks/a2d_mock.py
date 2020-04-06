@@ -1,7 +1,4 @@
-import spidev
 import logging
-
-from errors import SPIDriverInitError, SPIIOError
 
 log = logging.getLogger(__name__)
 
