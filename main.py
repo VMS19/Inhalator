@@ -21,6 +21,7 @@ from alert_peripheral_handler import AlertPeripheralHandler
 import errors
 from drivers.null_driver import NullDriver
 
+BYTES_IN_MB = 2 ** 20
 BYTES_IN_GB = 2 ** 30
 
 

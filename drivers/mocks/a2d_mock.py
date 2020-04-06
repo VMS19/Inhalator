@@ -1,4 +1,3 @@
-import spidev
 import logging
 
 from errors import SPIDriverInitError, SPIIOError
