@@ -52,8 +52,8 @@ class AlertEntry(object):
 
     def render(self):
         self.frame.place(relwidth=1, relheight=self.relheight, relx=0, rely=self.rely)
-        self.time_label.place(relx=0.05, rely=0, relheight=1, relwidth=0.25)
-        self.description_label.place(relx=0.3, rely=0, relheight=1, relwidth=0.7)
+        self.time_label.place(relx=0.05, rely=0, relheight=1, relwidth=0.30)
+        self.description_label.place(relx=0.35, rely=0, relheight=1, relwidth=0.65)
         self.index_label.place(relx=0, rely=0, relheight=1, relwidth=0.05)
 
     def set_alert(self, alert, index):
