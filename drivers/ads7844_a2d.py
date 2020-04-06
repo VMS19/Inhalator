@@ -26,8 +26,15 @@ class Ads7844A2D(object):
     VOLTAGE_CALIBRATION = (VOLTAGE_REF / VOLTAGE_STEP_COUNT)
     FIRST_READING_BIT_SHIFT = 5
     SECOND_READING_BIT_SHIFT = 3
-    SAMPLE_CHANNELS = [0, 1] # channels to sample, 0 = oxygen, 1 = battery
+
+    OXYGEN_CHANNEL = 0
+    BATTERY_PERCENTAGE_CHANNEL = 1
+    BATTERY_EXISTENCE_CHANNEL = 2
+
     CHANNEL_MAP = [0, 4, 1, 5, 2, 6, 3, 7]
+    A2D_OXYGEN_RATIO = 38.4
+    FULL_BATTERY = 6.024644649924462
+    A2D_BATTERY_RATIO = 0.0337359433
     VOLTAGE_FACTOR = 38.4  # scale between voltage and oxygen percentage
 
     def __init__(self):
@@ -69,8 +76,8 @@ class Ads7844A2D(object):
                                         self.XFER_SPEED_HZ,
                                         self.PERIPHERAL_MINIMAL_DELAY)
 
-            sample_reading = ((sample_raw[1] & 0x7f) <<
-                              self.FIRST_READING_BIT_SHIFT) |\
+            sample_reading = ((sample_raw[1] & 0x7f) <<\
+                    self.FIRST_READING_BIT_SHIFT) |\
                 sample_raw[2] >> self.SECOND_READING_BIT_SHIFT
         except IOError as e:
             log.error("Failed to read ads7844."
@@ -79,11 +86,16 @@ class Ads7844A2D(object):
 
         return self._calibrate_a2d(sample_reading)
 
-    def read(self, input_mode=MODE_SGL, power_down_mode=PD_DISABLED):
-        sample_res = [self._sample_a2d(channel, input_mode, power_down_mode)
-                      for channel in self.SAMPLE_CHANNELS]
-        return sample_res[0] * self.VOLTAGE_FACTOR
+    def read_oxygen(self):
+        return self._sample_a2d(self.OXYGEN_CHANNEL) * self.A2D_OXYGEN_RATIO
 
-    def close(self):
-        if self._spi is not None:
-            self._spi.close()
+    def read_battery_percentage(self):
+        raw_battery_value = self._sample_a2d(self.BATTERY_PERCENTAGE_CHANNEL)
+        battery_value = raw_battery_value / self.A2D_BATTERY_RATIO
+        return min(100, int(battery_value * 100 / self.FULL_BATTERY))
+
+    def read_battery_existence(self):
+        # According to what the hardware team said, if the battery exists
+        # the read value should be around 1.6
+        raw_existence_value = self._sample_a2d(self.BATTERY_EXISTENCE_CHANNEL)
+        return 1.7 >= raw_existence_value >= 1.5

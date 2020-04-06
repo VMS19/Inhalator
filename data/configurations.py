@@ -5,7 +5,7 @@ from enum import Enum
 
 from errors import ConfigurationFileError
 from data.thresholds import (RespiratoryRateRange, PressureRange,
-                             VolumeRange, FlowRange)
+                             VolumeRange, O2Range)
 
 THIS_DIRECTORY = os.path.dirname(__file__)
 log = logging.getLogger(__name__)
@@ -29,21 +29,21 @@ class Configurations(object):
 
     __instance = None
 
-    def __init__(self, flow_range, volume_range, pressure_range, resp_rate_range,
+    def __init__(self, o2_range, volume_range, pressure_range, resp_rate_range,
                  flow_y_scale, pressure_y_scale, graph_seconds,
-                 breathing_threshold, log_enabled=True, debug_port=7777,
-                 mute_time_limit=120):
-        self.flow_range = flow_range
+                 breathing_threshold, log_enabled=True,
+                 mute_time_limit=120, low_battery_percentage=15):
+        self.o2_range = o2_range
         self.volume_range = volume_range
         self.pressure_range = pressure_range
         self.resp_rate_range = resp_rate_range
         self.graph_seconds = graph_seconds
         self.breathing_threshold = breathing_threshold
         self.log_enabled = log_enabled
-        self.debug_port = debug_port
         self.mute_time_limit = mute_time_limit
         self.flow_y_scale = flow_y_scale
         self.pressure_y_scale = pressure_y_scale
+        self.low_battery_percentage = low_battery_percentage
 
     @classmethod
     def instance(cls):
@@ -90,9 +90,9 @@ class Configurations(object):
             with open(config_file) as f:
                 config = json.load(f)
 
-            flow = FlowRange(min=config["threshold"]["flow"]["min"],
-                             max=config["threshold"]["flow"]["max"],
-                             step=config["threshold"]["flow"]["step"])
+            o2 = O2Range(min=config["threshold"]["o2"]["min"],
+                         max=config["threshold"]["o2"]["max"],
+                         step=config["threshold"]["o2"]["step"])
             volume = VolumeRange(min=config["threshold"]["volume"]["min"],
                                  max=config["threshold"]["volume"]["max"],
                                  step=config["threshold"]["volume"]["step"])
@@ -111,20 +111,20 @@ class Configurations(object):
             graph_seconds = config["graph_seconds"]
             breathing_threshold = config["threshold"]["breathing_threshold"]
             log_enabled = config["log_enabled"]
-            debug_port = config["debug_port"]
             mute_time_limit = config["mute_time_limit"]
+            low_battery_percentage = config["low_battery_percentage"]
 
-            return cls(flow_range=flow,
+            return cls(o2_range=o2,
                        volume_range=volume,
                        pressure_range=pressure,
                        resp_rate_range=resp_rate,
                        graph_seconds=graph_seconds,
                        breathing_threshold=breathing_threshold,
                        log_enabled=log_enabled,
-                       debug_port=debug_port,
                        mute_time_limit=mute_time_limit,
                        flow_y_scale=flow_y_scale,
-                       pressure_y_scale=pressure_y_scale)
+                       pressure_y_scale=pressure_y_scale,
+                       low_battery_percentage=low_battery_percentage)
 
         except Exception as e:
             raise ConfigurationFileError(f"Could not load "
@@ -134,10 +134,10 @@ class Configurations(object):
         log.info("Saving threshold values to database")
         config = {
             "threshold": {
-                "flow": {
-                    "min": self.flow_range.min,
-                    "max": self.flow_range.max,
-                    "step": self.flow_range.step
+                "o2": {
+                    "min": self.o2_range.min,
+                    "max": self.o2_range.max,
+                    "step": self.o2_range.step
                 },
                 "volume": {
                     "min": self.volume_range.min,
@@ -168,9 +168,11 @@ class Configurations(object):
             },
             "log_enabled": self.log_enabled,
             "graph_seconds": self.graph_seconds,
-            "debug_port": self.debug_port,
             "mute_time_limit": self.mute_time_limit,
+            "low_battery_percentage": self.low_battery_percentage,
         }
 
         with open(config_path, "w") as config_file:
             json.dump(config, config_file, indent=4)
+            config_file.flush()
+            os.fsync(config_file.fileno())

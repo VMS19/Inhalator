@@ -4,6 +4,7 @@ from collections import deque
 from enum import IntEnum
 from queue import Queue
 from functools import lru_cache
+from data.observable import Observable
 
 
 class AlertCodes(IntEnum):
@@ -18,7 +19,10 @@ class AlertCodes(IntEnum):
     NO_CONFIGURATION_FILE = 1 << 7
     FLOW_SENSOR_ERROR = 1 << 8
     PRESSURE_SENSOR_ERROR = 1 << 9
-    SATURATION_SENSOR_ERROR = 1 << 10
+    OXYGEN_SENSOR_ERROR = 1 << 10
+    OXYGEN_LOW = 1 << 11
+    OXYGEN_HIGH = 1 << 12
+    NO_BATTERY = 1 << 14
 
     @classmethod
     def is_valid(cls, alert_code):
@@ -34,15 +38,22 @@ class Alert(object):
         AlertCodes.NO_BREATH: "No Breathing",
         AlertCodes.PEEP_TOO_HIGH: "High PEEP",
         AlertCodes.PEEP_TOO_LOW: "Low PEEP",
+        AlertCodes.OXYGEN_HIGH: "Oxygen Too High",
+        AlertCodes.OXYGEN_LOW: "Oxygen Too Low",
         AlertCodes.NO_CONFIGURATION_FILE: "Configuration Error",
         AlertCodes.FLOW_SENSOR_ERROR: "Flow Sensor Error",
         AlertCodes.PRESSURE_SENSOR_ERROR: "Pressure Sensor Error",
-        AlertCodes.SATURATION_SENSOR_ERROR: "Saturation Sensor Error",
+        AlertCodes.OXYGEN_SENSOR_ERROR: "Oxygen Sensor Error",
+        AlertCodes.NO_BATTERY: "No Battery",
     }
 
     def __init__(self, alert_code, timestamp=None):
         self.code = alert_code
-        self.timestamp = timestamp
+        if timestamp is None:
+            self.timestamp = time.time()
+
+        else:
+            self.timestamp = timestamp
 
     def __eq__(self, other):
         return self.code == other
@@ -55,10 +66,13 @@ class Alert(object):
         # relevant error message
         errors = []
         for code, message in self.ALERT_CODE_TO_MESSAGE.items():
-            if self.code & code:
+            if self.contains(code):
                 errors.append(message)
 
         return " | ".join(errors)
+
+    def contains(self, code):
+        return self.code & code != 0
 
     def date(self):
         return datetime.datetime.fromtimestamp(self.timestamp).strftime("%A %X")
@@ -72,7 +86,7 @@ class AlertsQueue(object):
     def __init__(self):
         self.queue = Queue(maxsize=self.MAXIMUM_ALERTS_AMOUNT)
         self.last_alert = Alert(AlertCodes.OK)
-        self._subscribers = {}
+        self.observer = Observable()
 
     def __len__(self):
         return self.queue.qsize()
@@ -86,14 +100,14 @@ class AlertsQueue(object):
 
         self.last_alert = alert
 
-        self.publish()
+        self.observer.publish(self.last_alert)
         self.queue.put(alert)
 
     def dequeue_alert(self):
         alert = self.queue.get()
         self.last_alert = self.queue.queue[0]
 
-        self.publish()
+        self.observer.publish(self.last_alert)
         return alert
 
     def clear_alerts(self):
@@ -101,14 +115,22 @@ class AlertsQueue(object):
         self.queue.queue.clear()
 
         self.last_alert = Alert(AlertCodes.OK)
-        self.publish()
+        self.observer.publish(self.last_alert)
 
-    def subscribe(self, object, callback):
-        self._subscribers[object] = callback
+class MuteAlerts(object):
 
-    def unsubscribe(self, object):
-        del self._subscribers[object]
+    def __init__(self):
+        self.observer = Observable()
+        self._alerts_muted = False
+        self.mute_time = None
 
-    def publish(self):
-        for callback in self._subscribers.values():
-            callback(self.last_alert)
+    def mute_alerts(self, value=None):
+        if value is not None:
+            self._alerts_muted = value
+        else:
+            self._alerts_muted = not self._alerts_muted
+
+        if self._alerts_muted:
+            self.mute_time = time.time()
+
+        self.observer.publish(self._alerts_muted)

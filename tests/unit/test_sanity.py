@@ -4,10 +4,9 @@ from algo import Sampler
 from data.measurements import Measurements
 from data.events import Events
 from data.configurations import Configurations
-from data.thresholds import (FlowRange, PressureRange,
+from data.thresholds import (O2Range, PressureRange,
                              RespiratoryRateRange, VolumeRange)
 from drivers.driver_factory import DriverFactory
-from drivers.mocks.sensor import MockSensor
 
 
 @pytest.fixture
@@ -18,12 +17,11 @@ def driver_factory():
 @pytest.fixture
 def config():
     c = Configurations.instance()
-    c.flow_range = FlowRange(min=0, max=30)
+    c.o2_range = O2Range(min=0, max=100)
     c.pressure_range = PressureRange(min=0, max=30)
     c.resp_rate_range = RespiratoryRateRange(min=0, max=30)
     c.volume_range = VolumeRange(min=0, max=30)
     c.graph_seconds = 12
-    c.debug_port = 7777
     c.breathing_threshold = 3.5
     c.log_enabled = False
     return c
@@ -42,10 +40,10 @@ def events():
 def test_sampler_inserts_pressure_measurement_to_store(events, measurements, config, driver_factory):
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
-    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
+    a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      oxygen_a2d, timer)
+                      a2d, timer)
     assert measurements.pressure_measurements.qsize() == 0
     sampler.sampling_iteration()
     assert measurements.pressure_measurements.qsize() == 1
@@ -56,10 +54,10 @@ def test_sampler_inserts_pressure_measurement_to_store(events, measurements, con
 def test_sampler_alerts_when_pressure_exceeds_maximum(events, measurements, config, driver_factory):
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
-    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
+    a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      oxygen_a2d, timer)
+                      a2d, timer)
     assert len(events.alerts_queue) == 0
     sampler.sampling_iteration()
     assert len(events.alerts_queue) == 0
@@ -73,51 +71,15 @@ def test_sampler_alerts_when_pressure_exceeds_maximum(events, measurements, conf
 def test_sampler_alerts_when_pressure_exceeds_minimum(events, measurements, config, driver_factory):
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
-    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
+    a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      oxygen_a2d, timer)
+                      a2d, timer)
     assert len(events.alerts_queue) == 0
     sampler.sampling_iteration()
     assert len(events.alerts_queue) == 0
 
     config.pressure_range = PressureRange(0, -100)
-    sampler.sampling_iteration()
-
-    assert len(events.alerts_queue) == 1
-
-
-@pytest.mark.xfail(reason="Flow thresholds are not currently checked as per requirements")
-def test_sampler_alerts_when_flow_exceeds_maximum(events, measurements, config, driver_factory):
-    flow_sensor = MockSensor([1])
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      oxygen_a2d, timer)
-    assert len(events.alerts_queue) == 0
-    sampler.sampling_iteration()
-    assert len(events.alerts_queue) == 0
-
-    config.flow_range = FlowRange(0, 0)
-    sampler.sampling_iteration()
-
-    assert len(events.alerts_queue) == 1
-
-
-@pytest.mark.xfail(reason="Flow thresholds are not currently checked as per requirements")
-def test_sampler_alerts_when_flow_exceeds_minimum(events, measurements, config, driver_factory):
-    flow_sensor = MockSensor([-1])
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    oxygen_a2d = driver_factory.acquire_driver("oxygen_a2d")
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      oxygen_a2d, timer)
-    assert len(events.alerts_queue) == 0
-    sampler.sampling_iteration()
-    assert len(events.alerts_queue) == 0
-
-    config.flow_range = FlowRange(0, 100)
     sampler.sampling_iteration()
 
     assert len(events.alerts_queue) == 1

@@ -4,3 +4,5 @@ spidev
 cached_property
 numpy
 scipy
+timeago
+psutil
