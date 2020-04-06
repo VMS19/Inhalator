@@ -236,8 +236,7 @@ class VentilationStateMachine(object):
         self._measurements.peep_min_pressure = self.min_pressure
         self.min_pressure = sys.maxsize
 
-    def update(self, pressure_cmh2o, flow_slm, o2_percentage, timestamp,
-               battery_percentage, battery_exists):
+    def update(self, pressure_cmh2o, flow_slm, o2_percentage, timestamp):
         if self.last_breath_timestamp is None:
             # First time initialization. Not done in __init__ to avoid reading
             # the time in this class, which improves its testability.
@@ -257,7 +256,6 @@ class VentilationStateMachine(object):
         self._measurements.set_pressure_value(pressure_cmh2o)
         self._measurements.set_flow_value(flow_slm)
         self._measurements.set_saturation_percentage(o2_percentage)
-        self._measurements.set_battery_percentage(battery_percentage)
 
         # Update peak pressure/flow values
         self.peak_pressure = max(self.peak_pressure, pressure_cmh2o)
@@ -292,12 +290,6 @@ class VentilationStateMachine(object):
                 f"({o2_percentage}% < {self._config.o2_range.min}%)")
             self._events.alerts_queue.enqueue_alert(
                 AlertCodes.OXYGEN_LOW, timestamp)
-
-        # Publish alerts for battery
-        if not battery_exists:
-            self._events.alerts_queue.enqueue_alert(
-                AlertCodes.NO_BATTERY, timestamp
-            )
 
         self.check_transition(
             flow_slm=flow_slm,
@@ -383,20 +375,22 @@ class Sampler(object):
 
         try:
             battery_exists = self._a2d.read_battery_existence()
+            if not battery_exists:
+                self._events.alerts_queue.enqueue_alert(
+                    AlertCodes.NO_BATTERY, timestamp
+                )
         except Exception as e:
-            self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BATTERY)
+            self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BATTERY, timestamp)
             self.log.error(e)
-            battery_exists = False
 
         try:
             battery_percentage = self._a2d.read_battery_percentage()
+            self._measurements.set_battery_percentage(battery_percentage)
         except Exception as e:
-            self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BATTERY)
+            self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BATTERY, timestamp)
             self.log.error(e)
-            battery_percentage = 0
 
-        data = (flow_slm, pressure_cmh2o, o2_saturation_percentage,
-                battery_percentage, battery_exists)
+        data = (flow_slm, pressure_cmh2o, o2_saturation_percentage)
         return [x if x is not None else 0 for x in data]
 
     def sampling_iteration(self):
@@ -404,9 +398,7 @@ class Sampler(object):
 
         # Read from sensors
         result = self.read_sensors(ts)
-
-        (flow_slm, pressure_cmh2o, o2_saturation_percentage,
-         battery_percentage, battery_exists) = result
+        flow_slm, pressure_cmh2o, o2_saturation_percentage = result
 
         if self.save_sensor_values:
             self.storage_handler.write(flow_slm, pressure_cmh2o, o2_saturation_percentage)
@@ -416,6 +408,4 @@ class Sampler(object):
             flow_slm=flow_slm,
             o2_percentage=o2_saturation_percentage,
             timestamp=ts,
-            battery_percentage=battery_percentage,
-            battery_exists=battery_exists
         )

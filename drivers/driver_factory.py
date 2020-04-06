@@ -126,8 +126,6 @@ class DriverFactory(object):
             self.MOCK_SAMPLE_RATE_HZ,
             self.MOCK_AIRFLOW_AMPLITUDE,
             self.MOCK_BPM / 60)
-        samples = truncate(
-            samples, lower_limit=0, upper_limit=self.MOCK_AIRFLOW_AMPLITUDE)
         return samples
 
     def generate_mock_a2d_data(self):
