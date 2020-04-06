@@ -159,7 +159,7 @@ class VentilationStateMachine(object):
     }
 
     def __init__(self, measurements, events):
-        self._measurements = measurements
+        self._measurements: Measurements = measurements
         self._events = events
         self.log = logging.getLogger(self.__class__.__name__)
         self.flow_slope = RunningSlope(num_samples=7)
@@ -237,6 +237,7 @@ class VentilationStateMachine(object):
         self._measurements.expiration_volume = exp_volume_ml
         self.expiration_volume.reset()
         self.exp_volumes.append((timestamp, exp_volume_ml))
+        self._measurements.set_state_value(40)
 
         self.reset_min_values()
 
@@ -447,3 +448,4 @@ class Sampler(object):
             o2_percentage=o2_saturation_percentage,
             timestamp=ts,
         )
+        self._measurements.set_state_value(-40)
