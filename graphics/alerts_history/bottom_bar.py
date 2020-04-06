@@ -7,7 +7,7 @@ from graphics.themes import Theme
 
 
 class BottomBar(object):
-    BACK_IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY, "baseline_exit_to_app_white_36dp.png")
+    BACK_IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY, "baseline_exit_to_app_white_24dp.png")
 
     def __init__(self, parent, root):
         self.parent = parent
