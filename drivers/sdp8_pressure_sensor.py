@@ -1,10 +1,10 @@
-import pigpio
 import logging
 import sys
 from time import sleep
 
-from errors import PiGPIOInitError, I2CDeviceNotFoundError,\
-    I2CReadError, I2CWriteError
+import pigpio
+
+from errors import I2CReadError, I2CWriteError
 from .i2c_driver import I2cDriver
 
 
@@ -36,10 +36,11 @@ class SdpPressureSensor(I2cDriver):
         try:
             self._pig.i2c_write_device(self._dev,
                                        self.START_MEASURE_FLOW_AVG_CMD)
-        except pigpio.error as e:
-            self.log.error("Could not write start_measure cmd to flow sensor. "
-                           "Is the flow sensor connected?.")
+        except pigpio.error:
+            self.log.exception("Could not write start_measure cmd to flow "
+                               "sensor. Is the flow sensor connected?")
             raise I2CWriteError("i2c write failed")
+
         sleep(0.1)
 
         self.log.info("Started flow sensor measurement")
@@ -92,7 +93,7 @@ class SdpPressureSensor(I2cDriver):
             else:
                 self.log.error("Pressure sensor's measure data not ready")
 
-        except pigpio.error as e:
-            self.log.error("Could not read from pressure sensor. "
-                      "Is the pressure sensor connected?")
+        except pigpio.error:
+            self.log.exception("Could not read from pressure sensor. "
+                               "Is the pressure sensor connected?")
             raise I2CReadError("i2c write failed")

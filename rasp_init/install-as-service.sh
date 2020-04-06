@@ -21,7 +21,9 @@ sudo systemctl enable pigpiod
 echo "done!"
 
 echo "disable NTP time, use time from RTC"
+sudo timedatectl set-local-rtc true
 sudo timedatectl set-ntp false
+sudo timedatectl show
 echo "done!"
 
 echo "removing annoying ssh prompt"

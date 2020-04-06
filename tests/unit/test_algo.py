@@ -1,9 +1,6 @@
-import csv
-import os
 import time
 from unittest.mock import MagicMock
 
-import pytest
 import freezegun
 from pytest import approx
 
@@ -57,8 +54,6 @@ def test_correct_state_transitions():
             pressure_cmh2o=p,
             flow_slm=f,
             o2_percentage=o,
-            battery_exists=True,
-            battery_percentage=94,
             timestamp=t)
 
     inhale_entry = vsm.entry_points_ts[VentilationState.Inhale][0]

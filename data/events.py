@@ -1,8 +1,6 @@
 import logging
 
 from data.alerts import AlertsQueue, MuteAlerts
-import time
-from data.observable import Observable
 
 log = logging.getLogger(__name__)
 

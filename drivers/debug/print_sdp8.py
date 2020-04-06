@@ -1,6 +1,8 @@
-from sdp8_pressure_sensor import SdpPressureSensor
-import logging
 import time
+import logging
+
+from drivers.sdp8_pressure_sensor import SdpPressureSensor
+
 
 def main():
     logging.basicConfig(level=logging.DEBUG)
@@ -9,6 +11,7 @@ def main():
         pressure = sdp.read()
         print(pressure)
         time.sleep(0.2)
+
 
 if __name__ == "__main__":
     main()
