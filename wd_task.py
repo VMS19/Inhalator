@@ -6,6 +6,12 @@ log = logging.getLogger(__name__)
 
 
 class WdTask(Thread):
+    # We've seen that timeout between two arms were about 300-400ms,
+    # although the timeout was 300ms, and the HW watchdog is every 500ms.
+    # If we're at the 400ms limit and there was a 100ms delay in the main loop
+    # the WD will rise.
+    # Lowering the wd_arm time will help us make sure the main loop
+    # refreshes the WD even if a delay in the main loop occurred
     WD_TIMEOUT = 0.25  # 250 msec
     GRACE_TIME = 4  # We allow the application this much time to start.
 
