@@ -1,9 +1,16 @@
+import csv
+import logging
 import os
+import time
+from itertools import cycle
+from threading import Event
+from unittest.mock import Mock, patch
 
 import pytest
 from pytest import approx
 
 from algo import Sampler
+from application import Application
 from data.measurements import Measurements
 from data.events import Events
 from data.configurations import Configurations
@@ -47,6 +54,7 @@ def test_sampler_dead_min_max(events, measurements, config):
         * check max flow = 0
     """
     driver_factory = DriverFactory(simulation_mode=True, simulation_data="dead")
+    arm_wd_event = Event()
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
     a2d = driver_factory.acquire_driver("a2d")
@@ -54,8 +62,15 @@ def test_sampler_dead_min_max(events, measurements, config):
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       a2d, timer)
 
-    for _ in range(SAMPLES_AMOUNT):
-        sampler.sampling_iteration()
+    app = Application(measurements=measurements,
+                      events=events,
+                      arm_wd_event=arm_wd_event,
+                      drivers=driver_factory,
+                      sampler=sampler,
+                      simulation=True)
+
+    app.run_iterations(SAMPLES_AMOUNT)
+    app.root.destroy()
 
     min_pressure_msg = f"Expected min pressure of 0, received {measurements.peep_min_pressure}"
     assert measurements.peep_min_pressure == 0, min_pressure_msg
@@ -77,6 +92,7 @@ def test_sampler_sinus_min_max(events, measurements, config):
         * check max flow ~ FLOW_AMPLITUDE
     """
     driver_factory = DriverFactory(simulation_mode=True, simulation_data="noiseless_sinus")
+    arm_wd_event = Event()
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
     a2d = driver_factory.acquire_driver("a2d")
@@ -84,8 +100,15 @@ def test_sampler_sinus_min_max(events, measurements, config):
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       a2d, timer)
 
-    for _ in range(SAMPLES_AMOUNT):
-        sampler.sampling_iteration()
+    app = Application(measurements=measurements,
+                      events=events,
+                      arm_wd_event=arm_wd_event,
+                      drivers=driver_factory,
+                      sampler=sampler,
+                      simulation=True)
+
+    app.run_iterations(SAMPLES_AMOUNT)
+    app.root.destroy()
 
     expected_min_pressure = driver_factory.MOCK_PEEP
     min_pressure_msg = f"Expected min pressure be {expected_min_pressure}, " \
@@ -138,6 +161,7 @@ def test_sampler_pig_min_max(events, measurements, config):
     driver_factory = DriverFactory(simulation_mode=True,
                                    simulation_data=file_path)
 
+    arm_wd_event = Event()
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
     a2d = driver_factory.acquire_driver("a2d")
@@ -145,8 +169,15 @@ def test_sampler_pig_min_max(events, measurements, config):
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       a2d, timer)
 
-    for _ in range(SAMPLES_AMOUNT):
-        sampler.sampling_iteration()
+    app = Application(measurements=measurements,
+                      events=events,
+                      arm_wd_event=arm_wd_event,
+                      drivers=driver_factory,
+                      sampler=sampler,
+                      simulation=True)
+
+    app.run_iterations(SAMPLES_AMOUNT)
+    app.root.destroy()
 
     expected_min_pressure = approx(0.240899428, rel=0.01)
     min_pressure_msg = f"Expected min pressure of {expected_min_pressure}, " \

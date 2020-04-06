@@ -1,9 +1,7 @@
 import time
 import datetime
-from collections import deque
 from enum import IntEnum
 from queue import Queue
-from functools import lru_cache
 from data.observable import Observable
 
 
@@ -120,6 +118,7 @@ class AlertsQueue(object):
 
         self.last_alert = Alert(AlertCodes.OK)
         self.observer.publish(self.last_alert)
+
 
 class MuteAlerts(object):
 

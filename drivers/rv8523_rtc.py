@@ -34,15 +34,14 @@ class Rv8523Rtc(I2cDriver):
         log.debug("rtc initialized")
 
     def _rtc_start(self):
-
         try:
             self._pig.i2c_write_device(self._dev, [self.REG_CONTROL_1])
             read_size, ctrl_1 = self._pig.i2c_read_device(self._dev, 1)
             if read_size != 1:
                 log.error("control 1 reg data not ready")
                 raise I2CReadError("rtc data unavailable")
-        except pigpio.error as e:
-            log.error("Could not write control 1 reg to RTC"
+        except pigpio.error:
+            log.error("Could not write control 1 reg to RTC "
                       "Is the RTC connected?")
             raise I2CWriteError("i2c write failed")
 
@@ -55,8 +54,8 @@ class Rv8523Rtc(I2cDriver):
         try:
             self._pig.i2c_write_device(self._dev,
                                        [self.REG_CONTROL_1, ctrl_1[0]])
-        except pigpio.error as e:
-            log.error("Could not write control 1 reg to RTC"
+        except pigpio.error:
+            log.error("Could not write control 1 reg to RTC "
                       "Is the RTC connected?")
             raise I2CWriteError("i2c write failed")
 
@@ -102,9 +101,8 @@ class Rv8523Rtc(I2cDriver):
             self._set_clock_unit(date.month, self.REG_MONTHS)
             self._set_clock_unit(date.year - self.REG_YEARS_OFFSET,
                                  self.REG_YEARS)
-        except pigpio.error as e:
-            log.error("Could not set RTC time"
-                      "Is the RTC connected?")
+        except pigpio.error:
+            log.error("Could not set RTC time. Is the RTC connected?")
             raise I2CWriteError("i2c write failed")
 
     def set_system_time(self):
@@ -133,7 +131,6 @@ class Rv8523Rtc(I2cDriver):
             else:
                 log.error("rtc read error")
                 raise I2CReadError("RTC get time unavailable")
-        except pigpio.error as e:
-            log.error("Could not read from RTC. "
-                      "Is the RTC connected?")
+        except pigpio.error:
+            log.error("Could not read from RTC. Is the RTC connected?")
             raise I2CReadError("i2c write failed")

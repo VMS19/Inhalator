@@ -1,8 +1,14 @@
+import csv
+import logging
 import os
+from itertools import cycle
+from threading import Event
+from unittest.mock import Mock, patch
 
 import pytest
 from pytest import approx
 from algo import Sampler, VentilationState
+from application import Application
 from data.configurations import Configurations
 from data.events import Events
 from data.measurements import Measurements
@@ -38,9 +44,8 @@ def events():
     return Events()
 
 
-@pytest.mark.parametrize(
-    "scenario", ['pressure', 'flow', pytest.param('both', marks=pytest.mark.xfail(
-        reason="Can't handle simultaneous error in pressure and flow"))])
+@pytest.mark.parametrize("scenario", ['pressure', 'flow',
+                                      pytest.param('both',marks=pytest.mark.xfail(reason="Can't handle simultaneous error in pressure and flow"))])
 def test_slope_recognition_with_error_in_exhale(events, measurements, config, scenario):
     """Test error in exhale doesn't cause the state machine change too early.
 
@@ -93,6 +98,7 @@ def test_slope_recognition_with_error_in_exhale(events, measurements, config, sc
     driver_factory = DriverFactory(simulation_mode=True,
                                    simulation_data=file_path)
 
+    arm_wd_event = Event()
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
     a2d = driver_factory.acquire_driver("a2d")
@@ -100,17 +106,23 @@ def test_slope_recognition_with_error_in_exhale(events, measurements, config, sc
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       a2d, timer)
 
-    for _ in range(SAMPLES_AMOUNT):
-        sampler.sampling_iteration()
+    app = Application(measurements=measurements,
+                      events=events,
+                      arm_wd_event=arm_wd_event,
+                      drivers=driver_factory,
+                      sampler=sampler,
+                      simulation=True)
+
+    app.run_iterations(SAMPLES_AMOUNT)
+    app.root.destroy()
 
     inhale_entry = sampler.vsm.entry_points_ts[VentilationState.Inhale][0]
 
     assert inhale_entry == approx(4.41, rel=0.1)
 
 
-@pytest.mark.parametrize(
-    "scenario", ['below', pytest.param('pass', marks=pytest.mark.xfail(
-        reason="Can't handle error of drop in flow below threshold"))])
+@pytest.mark.parametrize("scenario", ['below',
+                                      pytest.param('pass', marks=pytest.mark.xfail(reason="Can't handle error of drop in flow below threshold"))])
 def test_slope_recognition_with_error_in_inhale(events, measurements, config, scenario):
     """Test error in inhale doesn't cause the state machine change too early.
 
@@ -146,6 +158,7 @@ def test_slope_recognition_with_error_in_inhale(events, measurements, config, sc
     driver_factory = DriverFactory(simulation_mode=True,
                                    simulation_data=file_path)
 
+    arm_wd_event = Event()
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
     a2d = driver_factory.acquire_driver("a2d")
@@ -153,8 +166,15 @@ def test_slope_recognition_with_error_in_inhale(events, measurements, config, sc
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       a2d, timer)
 
-    for _ in range(SAMPLES_AMOUNT):
-        sampler.sampling_iteration()
+    app = Application(measurements=measurements,
+                      events=events,
+                      arm_wd_event=arm_wd_event,
+                      drivers=driver_factory,
+                      sampler=sampler,
+                      simulation=True)
+
+    app.run_iterations(SAMPLES_AMOUNT)
+    app.root.destroy()
 
     peep_entry = sampler.vsm.entry_points_ts[VentilationState.Exhale][0]
 

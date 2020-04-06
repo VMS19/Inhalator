@@ -44,6 +44,17 @@ class Theme(object):
         else:
             cls.ACTIVE_THEME = LightTheme()
 
+    @classmethod
+    def choose_theme(cls, theme='Dark'):
+        if theme == "Dark":
+            cls.ACTIVE_THEME = DarkTheme()
+
+        elif theme == "light":
+            cls.ACTIVE_THEME = LightTheme()
+
+        else:
+            raise TypeError(f"Theme {theme} doesn't  exists")
+
 
 class LightTheme(Theme):
     def __init__(self):
