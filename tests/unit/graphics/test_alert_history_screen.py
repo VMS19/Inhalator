@@ -124,3 +124,27 @@ def test_back_button_click(screen: HistoryScreen):
     screen.bottom_bar.on_click()
     assert screen.alerts_history_screen.place_forget.called
 
+def test_unseen_alerts_are_red(screen: HistoryScreen):
+    screen.show()
+    screen.events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH, time.time())
+    screen.on_refresh_button_click()
+    assert screen.entries_container.factory.entries[0].entry.frame["bg"] == \
+        Theme.active().UNSEEN_ALERT
+
+def test_seen_alerts_are_not_red(screen: HistoryScreen):
+    screen.show()
+    screen.events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH, time.time())
+    screen.events.alerts_queue.clear_alerts()
+    screen.on_refresh_button_click()
+    assert screen.entries_container.factory.entries[0].entry.frame["bg"] == \
+        Theme.active().SURFACE
+
+def test_unseen_alerts_dont_stay_that_way(screen: HistoryScreen):
+    screen.show()
+    screen.events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH, time.time())
+    screen.on_refresh_button_click()
+
+    screen.events.alerts_queue.clear_alerts()
+    screen.on_refresh_button_click()
+    assert screen.entries_container.factory.entries[0].entry.frame["bg"] == \
+        Theme.active().SURFACE

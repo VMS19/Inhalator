@@ -30,6 +30,9 @@ class Theme(object):
     REFRESH_BUTTON_ACTIVE_BG = NotImplemented
     REFRESH_BUTTON_ACTIVE_TEXT = NotImplemented
 
+    UNSEEN_ALERT = NotImplemented
+    TXT_ON_UNSEEN_ALERT = NotImplemented
+
     @classmethod
     def active(cls):
         # This is an abstract Java Factory reduced to a static
@@ -99,3 +102,6 @@ class DarkTheme(Theme):
 
     REFRESH_BUTTON_ACTIVE_BG = "#b787f7"
     REFRESH_BUTTON_ACTIVE_TEXT = "#1f1825"
+
+    UNSEEN_ALERT = "#d36578"
+    TXT_ON_UNSEEN_ALERT = "#201516"

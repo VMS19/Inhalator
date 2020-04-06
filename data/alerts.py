@@ -55,6 +55,8 @@ class Alert(object):
         else:
             self.timestamp = timestamp
 
+        self.seen = False
+
     def __eq__(self, other):
         return self.code == other
 
@@ -76,6 +78,9 @@ class Alert(object):
 
     def date(self):
         return datetime.datetime.fromtimestamp(self.timestamp).strftime("%A %X")
+
+    def mark_as_seen(self):
+        self.seen = True
 
 
 class AlertsHistory(object):  # TODO: Move to own file
@@ -101,8 +106,6 @@ class AlertsHistory(object):  # TODO: Move to own file
             * The last alert is different from this one
             * The last alert is the same as this one, but some time has passed since
         """
-        if alert == AlertCodes.OK:
-            return  # TODO: Figure out
 
         if len(self.stack) == 0:
             # The history is empty, we definitely want it in the queue
@@ -131,6 +134,11 @@ class AlertsHistory(object):  # TODO: Move to own file
 
     def get(self, start, amount):
         return list(self.stack)[start:start+amount]
+
+    def on_clear_alerts(self):
+        # Mark all history alerts as 'seen'
+        for unseen_alert in self.stack:
+            unseen_alert.mark_as_seen()
 
 
 class AlertsQueue(object):
@@ -169,6 +177,7 @@ class AlertsQueue(object):
     def clear_alerts(self):
         # Note that emptying a queue is not thread-safe
         self.queue.queue.clear()
+        self.history.on_clear_alerts()
 
         self.last_alert = Alert(AlertCodes.OK)
         self.observable.publish(self.last_alert)
