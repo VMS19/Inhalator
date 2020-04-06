@@ -29,8 +29,13 @@ def measurements():
     return Measurements()
 
 @pytest.fixture
-def sampler(measurements, events):
-    driver_factory = DriverFactory(simulation_mode=True, simulation_data="sinus")
+def driver_factory(simulation_data):
+    return DriverFactory(simulation_mode=True,
+                         simulation_data=simulation_data)
+
+@pytest.fixture
+def sampler(measurements, events, driver_factory, bpm):
+    driver_factory.MOCK_BPM = bpm
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
     a2d = driver_factory.acquire_driver("a2d")
@@ -197,9 +202,10 @@ def test_bpm_calculation_changing_rate_twice(real_data, rates):
     assert vsm._measurements.bpm == approx(expected_bpm, rel=0.1)
 
 
-@pytest.mark.parametrize('bpm_range,expected_alert',
-                         [((0, 14), AlertCodes.BPM_HIGH),
-                          ((16, 17), AlertCodes.BPM_LOW)])
+@pytest.mark.parametrize('simulation_data,bpm,bpm_range,expected_alert',
+                         [("sinus", 18, (13, 17), AlertCodes.BPM_HIGH),
+                          ("sinus", 12, (13, 17), AlertCodes.BPM_LOW),
+                          ("sinus", 15, (13, 17), None)])
 def test_bpm_alert(bpm_range, expected_alert, events, config, sampler):
     """Test High and Low BPM alert are raised when bpm above or below range."""
     SIMULATION_LENGTH = 2
@@ -216,33 +222,21 @@ def test_bpm_alert(bpm_range, expected_alert, events, config, sampler):
         time.sleep(0.001)
         sampler.sampling_iteration()
 
-    assert len(events.alerts_queue) > 0, "BPM alert not raised"
-    all_alerts = list(events.alerts_queue.queue.queue)
-    assert all(alert == expected_alert for alert in all_alerts), \
-        "Unexpected alert was raised"
+    if expected_alert is None:
+        assert len(events.alerts_queue) == 0, \
+            "BPM alert raised, but bpm is normal"
 
-def test_bpm_in_range_no_alert(events, config, sampler):
-    """Test BPM alert is not raised when bpm inside normal range."""
-    SIMULATION_LENGTH = 2
+    else:
+        assert len(events.alerts_queue) > 0, "BPM alert not raised"
+        all_alerts = list(events.alerts_queue.queue.queue)
+        print([str(alrt) for alrt in all_alerts])
+        assert all(alert == expected_alert for alert in all_alerts), \
+            "wrong alert was raised"
 
-    assert len(events.alerts_queue) == 0
-    sampler.sampling_iteration()
-    assert len(events.alerts_queue) == 0
-
-    # Sinus simulation is 15 bpm. set it to be in normal range.
-    config.resp_rate_range = RespiratoryRateRange(14, 16)
-
-    current_time = time.time()
-    while time.time() - current_time < SIMULATION_LENGTH:
-        time.sleep(0.001)
-        sampler.sampling_iteration()
-
-    assert len(events.alerts_queue) == 0, "BPM alert raised, but bpm is normal"
-
-@pytest.mark.skip(reason="not finished. need to pass flat flow graph")
+@pytest.mark.parametrize('simulation_data,bpm', [("sinus", 15)])
 def test_no_bpm_alert_on_startup(events, config, sampler):
     """Test BPM alert is not false raised on startup - not enough samples."""
-    SIMULATION_LENGTH = 1
+    SIMULATION_LENGTH = 0.01
 
     assert len(events.alerts_queue) == 0
     sampler.sampling_iteration()
