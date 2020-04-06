@@ -190,6 +190,20 @@ class VentilationStateMachine(object):
         self.insp_flows = deque(maxlen=1000)
         self.exp_flows = deque(maxlen=1000)
 
+    def reset(self):
+        # Restart measurements
+        self._measurements.reset()
+        self.peak_pressure = 0
+        self.peak_flow = 0
+        self.min_pressure = sys.maxsize
+
+        # Restart volume calculation
+        self.inspiration_volume.reset()
+        self.expiration_volume.reset()
+
+        # Restart state machine
+        self.current_state = VentilationState.PEEP
+
     def enter_inhale(self, timestamp):
         self.last_breath_timestamp = timestamp
         self._measurements.bpm = self.breathes_rate_meter.beat(timestamp)
@@ -246,6 +260,7 @@ class VentilationStateMachine(object):
         if seconds_from_last_breath >= self.NO_BREATH_ALERT_TIME_SECONDS:
             self.log.warning("No breath detected for the last 12 seconds")
             self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH, timestamp)
+            self.reset()
 
         # We track inhale and exhale volume separately. Positive flow means
         # inhale, and negative flow means exhale.
