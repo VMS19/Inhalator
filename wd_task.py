@@ -12,7 +12,7 @@ class WdTask(Thread):
     # the WD will rise.
     # Lowering the wd_arm time will help us make sure the main loop
     # refreshes the WD even if a delay in the main loop occurred
-    WD_TIMEOUT = 0.25  # 250 msec
+    WD_TIMEOUT = 0.2  # 200 msec
     GRACE_TIME = 4  # We allow the application this much time to start.
 
     def __init__(self, wd, arm_wd_event):
