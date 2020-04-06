@@ -100,7 +100,6 @@ class DriverFactory(object):
         samples = [s + self.MOCK_PEEP for s in samples]
         if noise:
             return add_noise(samples, self.MOCK_NOISE_SIGMA)
-
         else:
             return samples
 
@@ -111,11 +110,9 @@ class DriverFactory(object):
             self.MOCK_BPM / 60)
         if noise:
             return add_noise(samples, self.MOCK_NOISE_SIGMA)
+        return samples
 
-        else:
-            return samples
-
-    def generate_mock_oxygen_data(self, noise=True):
+    def generate_mock_a2d_data(self, noise=True):
         samples = sinus(
             self.MOCK_SAMPLE_RATE_HZ,
             self.MOCK_O2_SATURATION_AMPLITUDE,
