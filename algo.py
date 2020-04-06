@@ -18,6 +18,8 @@ logging.addLevelName(TRACE, 'TRACE')
 
 BYTES_IN_GB = 2 ** 30
 
+cycle_finish = False
+
 
 class Accumulator(object):
     def __init__(self):
@@ -213,6 +215,7 @@ class VentilationStateMachine(object):
         self.current_state = VentilationState.PEEP
 
     def enter_inhale(self, timestamp):
+        global cycle_finish
         self.last_breath_timestamp = timestamp
         self._measurements.bpm = self.breathes_rate_meter.beat(timestamp)
 
@@ -237,7 +240,7 @@ class VentilationStateMachine(object):
         self._measurements.expiration_volume = exp_volume_ml
         self.expiration_volume.reset()
         self.exp_volumes.append((timestamp, exp_volume_ml))
-        self._measurements.set_state_value(40)
+        cycle_finish = True
 
         self.reset_min_values()
 
@@ -433,6 +436,7 @@ class Sampler(object):
         return [x if x is not None else 0 for x in data]
 
     def sampling_iteration(self):
+        global cycle_finish
         ts = self._timer.get_time()
 
         # Read from sensors
@@ -448,4 +452,8 @@ class Sampler(object):
             o2_percentage=o2_saturation_percentage,
             timestamp=ts,
         )
-        self._measurements.set_state_value(-40)
+        if cycle_finish:
+            self._measurements.set_state_value(40)
+            cycle_finish = False
+        else:
+            self._measurements.set_state_value(-40)
