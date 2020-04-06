@@ -1,12 +1,16 @@
 import csv
 import os
+import time
 
 import pytest
 from pytest import approx
 
-from algo import VentilationStateMachine
+from algo import VentilationStateMachine, Sampler
 from data.events import Events
 from data.measurements import Measurements
+from data.alerts import AlertCodes
+from data.configurations import *
+from drivers.driver_factory import DriverFactory
 
 
 SIMULATION_FOLDER = "simulation"
@@ -15,6 +19,35 @@ SAMPLE_TIME_DIFF = 0.045  # seconds
 TIME_FROM_BEAT_TO_SIM_END = 3.69  # seconds
 TIME_FROM_SIM_START_TO_INHALE = 1.62  # seconds
 
+
+@pytest.fixture
+def events():
+    return Events()
+
+@pytest.fixture
+def measurements():
+    return Measurements()
+
+@pytest.fixture
+def sampler(measurements, events):
+    driver_factory = DriverFactory(simulation_mode=True, simulation_data="sinus")
+    flow_sensor = driver_factory.acquire_driver("flow")
+    pressure_sensor = driver_factory.acquire_driver("pressure")
+    a2d = driver_factory.acquire_driver("a2d")
+    timer = driver_factory.acquire_driver("timer")
+    return Sampler(measurements, events, flow_sensor, pressure_sensor,
+                   a2d, timer)
+
+@pytest.fixture
+def config():
+    c = Configurations.instance()
+    c.o2_range = O2Range(min=0, max=100)
+    c.pressure_range = PressureRange(min=-1, max=30)
+    c.resp_rate_range = RespiratoryRateRange(min=0, max=30)
+    c.volume_range = VolumeRange(min=100, max=10000)
+    c.graph_seconds = 12
+    c.log_enabled = False
+    return c
 
 @pytest.fixture
 def real_data():
@@ -162,3 +195,69 @@ def test_bpm_calculation_changing_rate_twice(real_data, rates):
     interval += rates[1] * TIME_FROM_SIM_START_TO_INHALE
     expected_bpm = samples_len * (time_span_seconds / interval)
     assert vsm._measurements.bpm == approx(expected_bpm, rel=0.1)
+
+
+@pytest.mark.parametrize('bpm_range,expected_alert',
+                         [((0, 14), AlertCodes.BPM_HIGH),
+                          ((16, 17), AlertCodes.BPM_LOW)])
+def test_bpm_alert(bpm_range, expected_alert, events, config, sampler):
+    """Test High and Low BPM alert are raised when bpm above or below range."""
+    SIMULATION_LENGTH = 2
+
+    assert len(events.alerts_queue) == 0
+    sampler.sampling_iteration()
+    assert len(events.alerts_queue) == 0
+
+    # Sinus simulation is 15 bpm. set max threshold below it.
+    config.resp_rate_range = RespiratoryRateRange(*bpm_range)
+
+    current_time = time.time()
+    while time.time() - current_time < SIMULATION_LENGTH:
+        time.sleep(0.001)
+        sampler.sampling_iteration()
+
+    assert len(events.alerts_queue) > 0, "BPM alert not raised"
+    all_alerts = list(events.alerts_queue.queue.queue)
+    assert all(alert == expected_alert for alert in all_alerts), \
+        "Unexpected alert was raised"
+
+def test_bpm_in_range_no_alert(events, config, sampler):
+    """Test BPM alert is not raised when bpm inside normal range."""
+    SIMULATION_LENGTH = 2
+
+    assert len(events.alerts_queue) == 0
+    sampler.sampling_iteration()
+    assert len(events.alerts_queue) == 0
+
+    # Sinus simulation is 15 bpm. set it to be in normal range.
+    config.resp_rate_range = RespiratoryRateRange(14, 16)
+
+    current_time = time.time()
+    while time.time() - current_time < SIMULATION_LENGTH:
+        time.sleep(0.001)
+        sampler.sampling_iteration()
+
+    assert len(events.alerts_queue) == 0, "BPM alert raised, but bpm is normal"
+
+@pytest.mark.skip(reason="not finished. need to pass flat flow graph")
+def test_no_bpm_alert_on_startup(events, config, sampler):
+    """Test BPM alert is not false raised on startup - not enough samples."""
+    SIMULATION_LENGTH = 1
+
+    assert len(events.alerts_queue) == 0
+    sampler.sampling_iteration()
+    assert len(events.alerts_queue) == 0
+
+    # Sinus simulation is 15 bpm. set min threshold above, to simulate
+    # insufficient sampling.
+    config.resp_rate_range = RespiratoryRateRange(20, 30)
+
+    current_time = time.time()
+    while time.time() - current_time < SIMULATION_LENGTH:
+        time.sleep(0.001)
+        sampler.sampling_iteration()
+
+    print(sampler.vsm.breathes_rate_meter.samples)
+
+    assert len(events.alerts_queue) == 0, \
+        "BPM alert raised before sufficient breath cycles were sampled"

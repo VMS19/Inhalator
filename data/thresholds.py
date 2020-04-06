@@ -71,5 +71,5 @@ class PressureRange(Range):
 
 
 class RespiratoryRateRange(Range):
-    NAME = "rate"
+    NAME = "Rate"
     UNIT = "per min"
