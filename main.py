@@ -158,7 +158,7 @@ def start_app(args):
                for driver in (pressure_sensor, flow_sensor, watchdog, a2d, rtc)):
             alert_driver.set_system_fault_alert(False)
 
-        AlertPeripheralHandler(events, drivers)
+        AlertPeripheralHandler(events, drivers).subscribe()
         sampler = Sampler(measurements=measurements, events=events,
                           flow_sensor=flow_sensor,
                           pressure_sensor=pressure_sensor,
