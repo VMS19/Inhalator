@@ -194,6 +194,18 @@ class VentilationStateMachine(object):
         self.last_breath_timestamp = timestamp
         self._measurements.bpm = self.breathes_rate_meter.beat(timestamp)
 
+        # Check bpm thresholds
+        if self._config.resp_rate_range.over(self._measurements.bpm):
+            self.log.warning(
+                "BPM too high %s, top threshold %s",
+                self._measurements.bpm, self._config.resp_rate_range.max)
+            self._events.alerts_queue.enqueue_alert(AlertCodes.BPM_HIGH, timestamp)
+        elif self._config.resp_rate_range.below(self._measurements.bpm):
+            self.log.warning(
+                "BPM too low %s, bottom threshold %s",
+                self._measurements.bpm, self._config.resp_rate_range.min)
+            self._events.alerts_queue.enqueue_alert(AlertCodes.BPM_LOW, timestamp)
+
         # Update final expiration volume
         exp_volume_ml = abs(self.expiration_volume.integrate()) * 1000
         self.log.debug("TV exp: : %sml", exp_volume_ml)
