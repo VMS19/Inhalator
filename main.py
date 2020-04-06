@@ -153,7 +153,6 @@ def start_app(args):
 
         alert_driver = drivers.acquire_driver("alert")
 
-
         if any(isinstance(driver, NullDriver)
                for driver in [pressure_sensor, flow_sensor, watchdog, a2d, rtc]):
             alert_driver.set_system_fault_alert(False)
