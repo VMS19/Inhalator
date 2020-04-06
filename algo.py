@@ -95,7 +95,7 @@ class RateMeter(object):
         rate = (len(self.samples) - 1) * (self.time_span_seconds / interval)
         return rate
 
-    def is_stabled(self):
+    def is_stable(self):
         return len(self.samples) > 3
 
 
@@ -197,7 +197,7 @@ class VentilationStateMachine(object):
         self.last_breath_timestamp = timestamp
         self._measurements.bpm = self.breathes_rate_meter.beat(timestamp)
 
-        if self.breathes_rate_meter.is_stabled():
+        if self.breathes_rate_meter.is_stable():
             # Check bpm thresholds
             if self._config.resp_rate_range.over(self._measurements.bpm):
                 self.log.warning(
