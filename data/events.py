@@ -1,6 +1,7 @@
 import logging
 
-from data.alerts import AlertsQueue, MuteAlerts
+from data.mute_alerts import MuteAlerts
+from data.alerts_queue import AlertsQueue
 
 log = logging.getLogger(__name__)
 

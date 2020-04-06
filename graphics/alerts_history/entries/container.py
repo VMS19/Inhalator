@@ -3,7 +3,7 @@ from tkinter import Frame
 
 from cached_property import cached_property
 
-from data.alerts import AlertsHistory
+from data.history import AlertsHistory
 from graphics.alerts_history.entries.entries_factory import EntriesFactory, CacheState
 from graphics.alerts_history.entries.entry import AlertEntry
 from graphics.themes import Theme

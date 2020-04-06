@@ -37,7 +37,6 @@ class AlertEntry(object):
         return self.index_label, self.description_label, self.time_label, self.frame
 
     def set_unseen(self):
-        print("POW")
         for widget in self.with_background:
             widget.configure(bg=Theme.active().UNSEEN_ALERT)
 
@@ -45,7 +44,6 @@ class AlertEntry(object):
             widget.configure(fg=Theme.active().TXT_ON_UNSEEN_ALERT)
 
     def set_seen(self):
-        print("WOW")
         for widget in self.with_background:
             widget.configure(bg=Theme.active().SURFACE)
 

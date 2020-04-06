@@ -5,9 +5,9 @@ import timeago
 import datetime
 from tkinter import *
 
-from data.alerts import Alert, AlertCodes
+from data.alert import Alert, AlertCodes
 from graphics.themes import Theme
-from data import alerts
+from data import alert
 from data.configurations import Configurations
 from graphics.version import __version__
 

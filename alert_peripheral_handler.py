@@ -1,5 +1,5 @@
 from drivers.aux_sound import SoundViaAux
-from data.alerts import AlertCodes
+from data.alert import AlertCodes
 
 class AlertPeripheralHandler(object):
 

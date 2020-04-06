@@ -7,7 +7,7 @@ from pytest import approx
 
 from algo import RunningSlope, VentilationStateMachine, VentilationState, \
     Sampler
-from data.alerts import AlertCodes
+from data.alert import AlertCodes
 from data.configurations import Configurations
 from data.events import Events
 from data.measurements import Measurements

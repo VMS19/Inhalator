@@ -1,4 +1,4 @@
-from data.alerts import AlertCodes
+from data.alert import AlertCodes
 from graphics.alerts_history.bottom_bar import BottomBar
 from graphics.alerts_history.entries.container import EntriesContainer
 from graphics.alerts_history.right_side_menu import RightSideMenuContainer

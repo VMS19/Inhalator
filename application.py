@@ -5,7 +5,7 @@ from tkinter import *
 from graphics.panes import MasterFrame
 from graphics.themes import Theme
 from data.configurations import Configurations, ConfigurationState
-from data.alerts import AlertCodes
+from data.alert import AlertCodes
 
 
 class Application(object):

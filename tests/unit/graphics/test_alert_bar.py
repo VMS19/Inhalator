@@ -5,7 +5,8 @@ import freezegun
 import pytest
 from unittest.mock import MagicMock
 
-from data.alerts import Alert, AlertCodes, AlertsQueue
+from data.alert import Alert, AlertCodes
+from data.alerts_queue import AlertsQueue
 from data.events import Events
 from drivers.driver_factory import DriverFactory
 from graphics.alert_bar import IndicatorAlertBar
