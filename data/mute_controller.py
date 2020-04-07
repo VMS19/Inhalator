@@ -3,7 +3,7 @@ import time
 from data.observable import Observable
 
 
-class MuteAlerts(object):
+class MuteController(object):
     def __init__(self):
         self.observable = Observable()
         self._alerts_muted = False

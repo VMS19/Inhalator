@@ -100,10 +100,10 @@ class IndicatorAlertBar(object):
 
     def update(self):
         # Check mute time limit
-        if self.events.mute_alerts._alerts_muted and\
-                (time.time() - self.events.mute_alerts.mute_time) >\
+        if self.events.mute_controller._alerts_muted and\
+                (time.time() - self.events.mute_controller.mute_time) >\
                 self.configs.mute_time_limit:
-            self.events.mute_alerts.mute_alerts(False)
+            self.events.mute_controller.mute_alerts(False)
         last_alert_in_queue = self.events.alerts_queue.last_alert
 
         # If the queue says everything is ok, and the graphics shows

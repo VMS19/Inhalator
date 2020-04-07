@@ -20,7 +20,7 @@ def alert_bar() -> IndicatorAlertBar:
     parent.element = Frame()
     events = MagicMock()
     drivers = MagicMock()
-    events.mute_alerts._alerts_muted = False
+    events.mute_controller._alerts_muted = False
     measurements = MagicMock()
 
     bar = IndicatorAlertBar(parent=parent, events=events, drivers=drivers,
@@ -42,56 +42,56 @@ def test_on_alert(alert_bar: IndicatorAlertBar):
 
 
 def test_mute_disappears_after_some_time(alert_bar: IndicatorAlertBar):
-    alert_bar.events.mute_alerts._alerts_muted = True
+    alert_bar.events.mute_controller._alerts_muted = True
     alert_bar.configs.mute_time_limit = 120  # Seconds
 
     with freezegun.freeze_time("12 February 2000 00:00:00"):
         mute_time = time.time()
 
-    alert_bar.events.mute_alerts.mute_time = mute_time
+    alert_bar.events.mute_controller.mute_time = mute_time
 
     with freezegun.freeze_time("12 February 2000 00:02:01"):
         alert_bar.update()
 
-    alert_bar.events.mute_alerts.mute_alerts.assert_called_once_with(False)
+    alert_bar.events.mute_controller.mute_alerts.assert_called_once_with(False)
 
 
 def test_mute_alerts(alert_bar: IndicatorAlertBar):
     alert_bar.events = Events()
 
-    alert_bar.events.mute_alerts._alerts_muted = True
-    alert_bar.events.mute_alerts.mute_alerts(False)
-    assert alert_bar.events.mute_alerts._alerts_muted == False
+    alert_bar.events.mute_controller._alerts_muted = True
+    alert_bar.events.mute_controller.mute_alerts(False)
+    assert alert_bar.events.mute_controller._alerts_muted == False
 
-    alert_bar.events.mute_alerts._alerts_muted = False
-    alert_bar.events.mute_alerts.mute_alerts(True)
-    assert alert_bar.events.mute_alerts._alerts_muted == True
+    alert_bar.events.mute_controller._alerts_muted = False
+    alert_bar.events.mute_controller.mute_alerts(True)
+    assert alert_bar.events.mute_controller._alerts_muted == True
 
-    alert_bar.events.mute_alerts._alerts_muted = True
-    alert_bar.events.mute_alerts.mute_alerts()
-    assert alert_bar.events.mute_alerts._alerts_muted == False
+    alert_bar.events.mute_controller._alerts_muted = True
+    alert_bar.events.mute_controller.mute_alerts()
+    assert alert_bar.events.mute_controller._alerts_muted == False
 
-    alert_bar.events.mute_alerts._alerts_muted = False
-    alert_bar.events.mute_alerts.mute_alerts()
-    assert alert_bar.events.mute_alerts._alerts_muted == True
+    alert_bar.events.mute_controller._alerts_muted = False
+    alert_bar.events.mute_controller.mute_alerts()
+    assert alert_bar.events.mute_controller._alerts_muted == True
 
 
 def test_mute_does_not_disappear_immediately(alert_bar: IndicatorAlertBar):
-    alert_bar.events.mute_alerts._alerts_muted = True
+    alert_bar.events.mute_controller._alerts_muted = True
     alert_bar.configs.mute_time_limit = 120  # Seconds
 
     with freezegun.freeze_time("12 February 2000 00:00:00"):
         mute_time = time.time()
 
-    alert_bar.events.mute_alerts.mute_time = mute_time
+    alert_bar.events.mute_controller.mute_time = mute_time
 
     with freezegun.freeze_time("12 February 2000 00:00:00"):
         alert_bar.update()
-        alert_bar.events.mute_alerts.mute_alerts.assert_not_called()
+        alert_bar.events.mute_controller.mute_alerts.assert_not_called()
 
     with freezegun.freeze_time("12 February 2000 00:01:00"):
         alert_bar.update()
-        alert_bar.events.mute_alerts.mute_alerts.assert_not_called()
+        alert_bar.events.mute_controller.mute_alerts.assert_not_called()
 
 
 def test_alert_on_screen_is_the_first_one(alert_bar: IndicatorAlertBar):
