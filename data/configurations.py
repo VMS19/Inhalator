@@ -45,6 +45,9 @@ class Configurations(object):
         self.pressure_y_scale = pressure_y_scale
         self.low_battery_percentage = low_battery_percentage
 
+    def __getitem__(self, item):
+        return getattr(self, item)
+
     @classmethod
     def instance(cls):
         if cls.__instance is not None:

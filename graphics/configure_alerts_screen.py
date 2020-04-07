@@ -220,7 +220,7 @@ class ConfigureAlarmsScreen(object):
         self.configure_alerts_screen = Frame(master=self.root)
 
         # Sections
-        self.flow_section = O2Section(self, self.configure_alerts_screen)
+        self.oxygen_section = O2Section(self, self.configure_alerts_screen)
         self.volume_section = VolumeSection(self, self.configure_alerts_screen)
         self.pressure_section = PressureSection(self, self.configure_alerts_screen)
         self.resp_rate_section = RespRateSection(self, self.configure_alerts_screen)
@@ -284,12 +284,12 @@ class ConfigureAlarmsScreen(object):
 
     @cached_property
     def threshold_sections(self):
-        return (self.flow_section, self.volume_section,
+        return (self.oxygen_section, self.volume_section,
                 self.pressure_section, self.resp_rate_section)
 
     @cached_property
     def sections(self):
-        return (self.flow_section, self.volume_section,
+        return (self.oxygen_section, self.volume_section,
                 self.up_or_down_section, self.pressure_section,
                 self.resp_rate_section, self.confirm_cancel_section)
 
