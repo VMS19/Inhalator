@@ -5,8 +5,8 @@ from .honeywell_pressure_sensor import HoneywellPressureSensor
 log = logging.getLogger(__name__)
 
 
-class AbpPressureSensor(HoneywellPressureSensor):
-    """Driver class for ABPMAND001PG2A3 Flow sensor."""
+class HscPressureSensor(HoneywellPressureSensor):
+    """Driver class for HSC differential pressure sensor."""
     I2C_ADDRESS = 0x28
     MAX_RANGE_PRESSURE = 6  # 6 millibar
     MIN_RANGE_PRESSURE = -6  # -6 millibar
