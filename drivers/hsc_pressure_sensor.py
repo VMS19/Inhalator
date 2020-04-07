@@ -25,11 +25,11 @@ class HscPressureSensor(HoneywellPressureSensor):
         log.info("HSC pressure sensor initialized")
 
     def _pressure_to_flow(self, pressure_cmh2o):
-        flow = (abs(pressure_cmh2o) ** 0.5) * self.SYSTEM_RATIO_SCALE + \
-               self.SYSTEM_RATIO_OFFSET
+        flow = (abs(pressure_cmh2o) ** 0.5) * self.SYSTEM_RATIO_SCALE
         if pressure_cmh2o < 0:
             flow = -flow
 
+        flow += self.SYSTEM_RATIO_OFFSET
         return flow
 
     def read(self):
