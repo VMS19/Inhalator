@@ -11,7 +11,7 @@ def main():
 
     try:
         rtc = Rv8523Rtc()
-        cur_date = datetime.datetime.now()
+        cur_date = datetime.now()
         print('setting rtc time as ', cur_date)
         rtc.set_time(cur_date)
     finally:
