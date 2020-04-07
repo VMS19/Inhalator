@@ -1,22 +1,22 @@
 import time
 import logging
 
-from drivers.sdp8_pressure_sensor import SdpPressureSensor
+from drivers.hsc_pressure_sensor import HscPressureSensor
 
 
 def main():
     logging.basicConfig(level=logging.DEBUG)
-    sdp = None
+    hsc = None
 
     try:
-        sdp = SdpPressureSensor()
+        hsc = HscPressureSensor()
         while True:
-            pressure = sdp.read()
+            pressure = hsc.read()
             print(pressure)
             time.sleep(0.2)
     finally:
-        if sdp is not None:
-            sdp.close()
+        if hsc is not None:
+            hsc.close()
 
 
 if __name__ == "__main__":
