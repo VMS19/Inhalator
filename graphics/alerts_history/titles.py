@@ -8,7 +8,7 @@ class AlertTitles(object):
         self.root = root
         self.frame = Frame(master=self.root)
         self.index_label = Label(master=self.frame,
-                                text="#",
+                                text="",
                                 font=("Roboto", 20),
                                 bg=Theme.active().BACKGROUND,
                                 fg=Theme.active().TXT_ON_BG)

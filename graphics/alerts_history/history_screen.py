@@ -39,7 +39,7 @@ class HistoryScreen(object):
         self.hide()
 
     def show(self):
-        self.alerts_history_screen.place(relx=0.2, rely=0, relwidth=0.8, relheight=1)
+        self.alerts_history_screen.place(relx=0.2, rely=0.15, relwidth=0.8, relheight=0.85)
         self.titles.render()
         self.bottom_bar.render()
         self.entries_container.render()
