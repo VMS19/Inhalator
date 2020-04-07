@@ -1,5 +1,4 @@
 import multiprocessing
-import os
 import argparse
 import logging
 import signal
