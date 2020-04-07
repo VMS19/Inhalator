@@ -36,11 +36,11 @@ class AlertsExtractor:
         done = 0
         total_size = Path(self.log_path).stat().st_size
         with open(self.log_path) as log_file:
-            for log_line in log_file:
+            for i, log_line in enumerate(log_file):
                 done += len(log_line)
-                percentage = round(((100 * done) / total_size))
-                if percentage % 10 == 0:
-                    self.logger.info('{%s}% completed')
+                if i % 5_000 == 0:
+                    percentage = round(((100 * done) / total_size))
+                    self.logger.info(f'{percentage}% completed')
                 for alert in self.ALERTS_ORDER:
                     match = re.search(self.ALERTS_TO_REGEX[alert], log_line)
                     if match is not None:
