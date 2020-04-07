@@ -85,7 +85,7 @@ def test_alert_is_published_on_high_o2():
 
     sampler.sampling_iteration()
 
-    assert any(alert == AlertCodes.OXYGEN_HIGH for alert in events.alerts_queue.queue.queue)
+    assert any(alert == AlertCodes.OXYGEN_HIGH for alert in events.alerts_queue)
 
     measurements = Measurements()
     events = Events()
@@ -109,7 +109,7 @@ def test_alert_is_published_on_high_o2():
     sampler.sampling_iteration()
 
     assert any(alert == AlertCodes.OXYGEN_HIGH for alert in
-               events.alerts_queue.queue.queue)
+               events.alerts_queue)
 
 
 def test_alert_is_published_on_low_o2():
@@ -134,5 +134,5 @@ def test_alert_is_published_on_low_o2():
 
     sampler.sampling_iteration()
 
-    assert any(alert == AlertCodes.OXYGEN_LOW for alert in
-               events.alerts_queue.queue.queue)
+    assert any(alert == AlertCodes.OXYGEN_LOW
+               for alert in events.alerts_queue)

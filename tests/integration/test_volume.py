@@ -114,7 +114,7 @@ def test_sampler_alerts_when_volume_exceeds_minium(events, measurements, config,
 
     assert len(events.alerts_queue) > 0
 
-    all_alerts = list(events.alerts_queue.queue.queue)
+    all_alerts = list(events.alerts_queue)
     assert all(alert == AlertCodes.VOLUME_LOW for alert in all_alerts)
 
 
@@ -144,5 +144,5 @@ def test_sampler_alerts_when_volume_exceeds_maximum(events, measurements, config
 
     assert len(events.alerts_queue) > 0
 
-    all_alerts = list(events.alerts_queue.queue.queue)
+    all_alerts = list(events.alerts_queue)
     assert all(alert == AlertCodes.VOLUME_HIGH for alert in all_alerts)

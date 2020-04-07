@@ -220,7 +220,7 @@ def test_bpm_alert(bpm_range, expected_alert, events, config, sampler):
 
     else:
         assert len(events.alerts_queue) > 0, "BPM alert not raised"
-        all_alerts = list(events.alerts_queue.queue.queue)
+        all_alerts = list(events.alerts_queue)
         assert all(alert == expected_alert for alert in all_alerts), \
             "wrong alert was raised"
 

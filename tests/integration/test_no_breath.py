@@ -81,7 +81,7 @@ def test_sinus_alerts_when_no_breath(events, measurements, config):
 
     assert len(events.alerts_queue) == 1
 
-    alert = events.alerts_queue.queue.get()
+    alert = events.alerts_queue.last_alert
     assert alert == AlertCodes.NO_BREATH
 
 
@@ -115,7 +115,7 @@ def test_dead_man_alerts_when_no_breath(events, measurements, config):
 
     assert len(events.alerts_queue) >= 1
 
-    all_alerts = list(events.alerts_queue.queue.queue)
+    all_alerts = list(events.alerts_queue)
     assert all(alert == AlertCodes.NO_BREATH for alert in all_alerts)
 
 
@@ -149,5 +149,5 @@ def test_noise_alerts_when_no_breath(events, measurements, config):
 
     assert len(events.alerts_queue) >= 1
 
-    all_alerts = list(events.alerts_queue.queue.queue)
+    all_alerts = list(events.alerts_queue)
     assert all(alert == AlertCodes.NO_BREATH for alert in all_alerts)

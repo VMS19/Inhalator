@@ -100,7 +100,7 @@ def test_sampler_alerts_when_sensor_exceeds_maximum(events, measurements, config
     app.root.destroy()
     assert len(events.alerts_queue) > 0
 
-    all_alerts = list(events.alerts_queue.queue.queue)
+    all_alerts = list(events.alerts_queue)
     expected_alert = AlertCodes[f"{alert_type}_high".upper()]
     assert all(alert == expected_alert for alert in all_alerts)
 
@@ -159,7 +159,7 @@ def test_sampler_alerts_when_sensor_exceeds_minimum(events, measurements, config
     app.root.destroy()
     assert len(events.alerts_queue) > 0
 
-    all_alerts = list(events.alerts_queue.queue.queue)
+    all_alerts = list(events.alerts_queue)
     expected_alert = AlertCodes[f"{alert_type}_low".upper()]
     assert all(alert == expected_alert for alert in all_alerts)
 
