@@ -17,7 +17,7 @@ class HscPressureSensor(HoneywellPressureSensor):
         float(MAX_OUT_PRESSURE - MIN_OUT_PRESSURE)
     MBAR_CMH2O_RATIO = 1.0197162129779
     CMH2O_RATIO = MBAR_CMH2O_RATIO
-    SYSTEM_RATIO = 46.24
+    SYSTEM_RATIO = 36.609
 
     def __init__(self):
         super().__init__()
