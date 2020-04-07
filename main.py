@@ -116,7 +116,7 @@ def start_app(args):
     log = configure_logging(args.verbose)
 
     # Initialize all drivers, or mocks if in simulation mode
-    simulation = args.simulate is not None or os.uname()[1] != 'raspberrypi'
+    simulation = args.simulate is not None
     if simulation:
         log.info("Running in simulation mode!")
         log.info("Sensor Data Source: %s", args.simulate)
