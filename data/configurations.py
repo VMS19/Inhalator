@@ -47,6 +47,9 @@ class Configurations(object):
         self.low_battery_percentage = low_battery_percentage
         self.delta_time_between_alerts = delta_time_between_alerts
 
+    def __getitem__(self, item):
+        return getattr(self, item)
+
     @classmethod
     def instance(cls):
         if cls.__instance is not None:

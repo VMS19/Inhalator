@@ -22,6 +22,9 @@ class AlertCodes(IntEnum):
     OXYGEN_HIGH = 1 << 14
     NO_BATTERY = 1 << 15
 
+    def __getitem__(self, item):
+        return getattr(self, item)
+
     @classmethod
     def is_valid(cls, alert_code):
         return alert_code in map(int, cls)

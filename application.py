@@ -98,8 +98,10 @@ class Application(object):
         self.exit()
         self.drivers.acquire_driver("aux").stop()
 
-    def run_iterations(self, max_iterations, fast_forward=True):
-        self.render()
+    def run_iterations(self, max_iterations, fast_forward=True, render=True):
+        if render:
+            self.render()
+
         for _ in range(max_iterations):
             try:
                 if self.next_sample > 0 and not fast_forward:
