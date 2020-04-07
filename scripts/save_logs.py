@@ -5,6 +5,7 @@ import io
 import logging
 import argparse
 import re
+from pathlib import Path
 
 RPI_IP = '192.168.43.234'
 
@@ -26,13 +27,20 @@ class AlertsExtractor:
         'high_volume': GENERIC_LOG_REGEX.format(message='volume too high (?P<value>.*),')
     }
 
-    def __init__(self, log_file_path, output_csv_file_path):
+    def __init__(self, log_file_path, output_csv_file_path, logger):
         self.log_path = log_file_path
         self.csv_path = output_csv_file_path
+        self.logger = logger
 
     def alerts_generator(self):
+        done = 0
+        total_size = Path(self.log_path).stat().st_size
         with open(self.log_path) as log_file:
             for log_line in log_file:
+                done += len(log_line)
+                percentage = round(((100 * done) / total_size))
+                if percentage % 10 == 0:
+                    self.logger.info('{%s}% completed')
                 for alert in self.ALERTS_ORDER:
                     match = re.search(self.ALERTS_TO_REGEX[alert], log_line)
                     if match is not None:
@@ -67,7 +75,7 @@ def parse_cli_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--csv_output', default=CSV_FILE_OUTPUT)
     parser.add_argument('-a', '--alerts_output', default=ALERTS_CSV_OUTPUT)
-    parser.add_argument('-i', '--ip', default=RPI_IP)
+    parser.add_argument('-i', '--ip', default=RPI_IP, required=True)
     parser.add_argument('-d', '--delete', action='store_true')
     parser.add_argument('-o', '--output', default=LOG_FILE_PATH)
     return parser.parse_args()
