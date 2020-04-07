@@ -47,7 +47,7 @@ class Alert(object):
         AlertCodes.NO_BATTERY: "No Battery",
     }
 
-    def __init__(self, alert_code, timestamp=None):  # TODO: Add 'Seen'
+    def __init__(self, alert_code, timestamp=None):
         self.code = alert_code
         if timestamp is None:
             self.timestamp = time.time()  # TODO: Remove
