@@ -156,7 +156,7 @@ def main():
                         cli_args.ip, cli_args.csv_output)
             copy_sensor_data(cli_args.csv_output, ftp, logger)
             copy_log(ftp, cli_args.output)
-            alerts_extractor = AlertsExtractor(cli_args.output, cli_args.alerts_output)
+            alerts_extractor = AlertsExtractor(cli_args.output, cli_args.alerts_output, logger)
             logger.info('Parsing alerts log into CSV')
             alerts_extractor.convert_log_to_csv()
             logger.info('Finished, saved sensor data at %s, alerts at %s', cli_args.csv_output, cli_args.alerts_output)
