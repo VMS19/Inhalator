@@ -165,9 +165,14 @@ class DriverFactory(object):
         return MockTimer(time_series=time_series)
 
     @staticmethod
-    def get_pressure_driver():
+    def get_abp_driver():
         from drivers.abp_pressure_sensor import AbpPressureSensor
         return AbpPressureSensor()
+
+    @staticmethod
+    def get_hce_driver():
+        from drivers.hce_pressure_sensor import HcePressureSensor
+        return HcePressureSensor()
 
     @staticmethod
     def get_flow_driver():
@@ -195,14 +200,20 @@ class DriverFactory(object):
         return SoundViaAux.instance()
 
     @staticmethod
-    def get_differential_pressure_driver():
+    def get_hsc_driver():
         from drivers.hsc_pressure_sensor import HscPressureSensor
         return HscPressureSensor()
+
+    @staticmethod
+    def get_rv8523_driver():
+        from drivers.rv8523_rtc import Rv8523Rtc
+        return Rv8523Rtc()
 
     @staticmethod
     def get_rtc_driver():
         from drivers.rv8523_rtc import Rv8523Rtc
         return Rv8523Rtc()
+
 
     def get_mock_differential_pressure_driver(self):
         from drivers.mocks.sensor import MockSensor
