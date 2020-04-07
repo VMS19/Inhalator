@@ -11,7 +11,7 @@ fi
 INHALATOR_PATH=$(realpath $(dirname $(realpath $0))/..)
 
 # install dependencies
-apt install --assume-yes virtualenv libatlas-base-dev
+apt install --assume-yes virtualenv libatlas-base-dev pigpio python3-dev
 virtualenv $INHALATOR_PATH/.inhalator_env -p $(which python3)
 source $INHALATOR_PATH/.inhalator_env/bin/activate
 pip3 install --upgrade pip
@@ -31,3 +31,11 @@ cp $INHALATOR_PATH/resources/wallpaper.png /usr/share/plymouth/themes/pix/splash
 
 # disable screen saver
 raspi-config nonint do_blanking 1
+
+# enable SPI
+sudo dtparam spi=on
+sudo modprobe spi-bcm2708
+
+# enable I2C
+sudo dtparam i2c=on
+sudo modprobe i2c-dev
