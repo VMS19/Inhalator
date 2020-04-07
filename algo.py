@@ -439,11 +439,6 @@ class Sampler(object):
         flow_slm, pressure_cmh2o, o2_saturation_percentage = result
 
         if self.save_sensor_values:
-            # pip = self.measurements.intake_peak_pressure
-            # peep = self.measurements.peep_min_pressure
-            # Tvinsp = self.measurements.inspiration_volume
-            # TVexp = self.measurements.expiration_volume
-            # bpm = self.measurements.bpm
             self.storage_handler.write(flow=flow_slm,
                                        pressure=pressure_cmh2o,
                                        oxygen=o2_saturation_percentage,
