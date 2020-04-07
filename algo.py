@@ -223,13 +223,13 @@ class VentilationStateMachine(object):
                     "BPM too high %s, top threshold %s",
                     self._measurements.bpm, self._config.resp_rate_range.max)
                 self._events.alert_queue.enqueue_alert(AlertCodes.BPM_HIGH,
-                                                        timestamp)
+                                                       timestamp)
             elif self._config.resp_rate_range.below(self._measurements.bpm):
                 self.log.warning(
                     "BPM too low %s, bottom threshold %s",
                     self._measurements.bpm, self._config.resp_rate_range.min)
                 self._events.alert_queue.enqueue_alert(AlertCodes.BPM_LOW,
-                                                        timestamp)
+                                                       timestamp)
 
         # Update final expiration volume
         exp_volume_ml = abs(self.expiration_volume.integrate()) * 1000
@@ -408,7 +408,7 @@ class Sampler(object):
             o2_saturation_percentage = self._a2d.read_oxygen()
         except Exception as e:
             self._events.alert_queue.enqueue_alert(AlertCodes.OXYGEN_SENSOR_ERROR,
-                                                    timestamp)
+                                                   timestamp)
             self.log.error(e)
             o2_saturation_percentage = 0
 
