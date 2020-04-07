@@ -7,6 +7,7 @@ log = logging.getLogger(__name__)
 
 class HscPressureSensor(HoneywellPressureSensor):
     """Driver class for HSC differential pressure sensor."""
+    MUX_PORT = 1
     I2C_ADDRESS = 0x28
     MAX_RANGE_PRESSURE = 6  # 6 millibar
     MIN_RANGE_PRESSURE = -6  # -6 millibar

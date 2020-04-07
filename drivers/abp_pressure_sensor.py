@@ -7,6 +7,7 @@ log = logging.getLogger(__name__)
 
 class AbpPressureSensor(HoneywellPressureSensor):
     """Driver class for ABPMAND001PG2A3 Flow sensor."""
+    MUX_PORT = 0
     I2C_ADDRESS = 0x28
     MAX_RANGE_PRESSURE = 0x1  # 1 psi
     MIN_RANGE_PRESSURE = 0x00  # 0 psi
