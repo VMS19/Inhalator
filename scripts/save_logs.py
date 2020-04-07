@@ -5,6 +5,7 @@ import io
 import logging
 import argparse
 import re
+from pathlib import Path
 
 RPI_IP = '192.168.43.234'
 
@@ -26,13 +27,20 @@ class AlertsExtractor:
         'high_volume': GENERIC_LOG_REGEX.format(message='volume too high (?P<value>.*),')
     }
 
-    def __init__(self, log_file_path, output_csv_file_path):
+    def __init__(self, log_file_path, output_csv_file_path, logger):
         self.log_path = log_file_path
         self.csv_path = output_csv_file_path
+        self.logger = logger
 
     def alerts_generator(self):
+        done = 0
+        total_size = Path(self.log_path).stat().st_size
         with open(self.log_path) as log_file:
-            for log_line in log_file:
+            for i, log_line in enumerate(log_file):
+                done += len(log_line)
+                if i % 5_000 == 0:
+                    percentage = round(((100 * done) / total_size))
+                    self.logger.info(f'{percentage}% completed')
                 for alert in self.ALERTS_ORDER:
                     match = re.search(self.ALERTS_TO_REGEX[alert], log_line)
                     if match is not None:
@@ -67,7 +75,7 @@ def parse_cli_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--csv_output', default=CSV_FILE_OUTPUT)
     parser.add_argument('-a', '--alerts_output', default=ALERTS_CSV_OUTPUT)
-    parser.add_argument('-i', '--ip', default=RPI_IP)
+    parser.add_argument('-i', '--ip', default=RPI_IP, required=True)
     parser.add_argument('-d', '--delete', action='store_true')
     parser.add_argument('-o', '--output', default=LOG_FILE_PATH)
     return parser.parse_args()
@@ -148,7 +156,7 @@ def main():
                         cli_args.ip, cli_args.csv_output)
             copy_sensor_data(cli_args.csv_output, ftp, logger)
             copy_log(ftp, cli_args.output)
-            alerts_extractor = AlertsExtractor(cli_args.output, cli_args.alerts_output)
+            alerts_extractor = AlertsExtractor(cli_args.output, cli_args.alerts_output, logger)
             logger.info('Parsing alerts log into CSV')
             alerts_extractor.convert_log_to_csv()
             logger.info('Finished, saved sensor data at %s, alerts at %s', cli_args.csv_output, cli_args.alerts_output)

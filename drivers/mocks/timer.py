@@ -17,3 +17,6 @@ class MockTimer(object):
         current = self.current_time
         self.current_time += next(self.intervals)
         return current
+
+    def get_current_time(self):
+        return self.current_time
