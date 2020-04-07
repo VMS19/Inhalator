@@ -149,3 +149,40 @@ def test_unseen_alerts_dont_stay_that_way(screen: HistoryScreen):
     screen.on_refresh_button_click()
     assert screen.entries_container.factory.entries[0].entry.frame["bg"] == \
         Theme.active().SURFACE
+
+def test_same_alerts_trigger_a_refresh_button_after_some_time(screen: HistoryScreen):
+    screen.show()
+
+    time_to_wait = screen.events.alerts_queue.history.time_difference_between_same_alerts
+
+    with freezegun.freeze_time("12th February 2000"):
+        screen.events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH, time.time())
+
+    screen.on_refresh_button_click()
+
+    with freezegun.freeze_time("12th February 2000", tz_offset=time_to_wait + 1):
+        screen.events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH, time.time())
+
+    assert screen.right_side_menu_container.refresh_button["state"] == "active"
+
+    screen.on_refresh_button_click()
+
+    assert screen.entries_container.factory.entries[0].entry.frame["bg"] == \
+        Theme.active().UNSEEN_ALERT
+
+
+def test_same_alerts_are_ignored(screen: HistoryScreen):
+    screen.show()
+
+    time_to_wait = screen.events.alerts_queue.history.time_difference_between_same_alerts
+
+    with freezegun.freeze_time("12th February 2000"):
+        screen.events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH, time.time())
+
+    screen.right_side_menu_container.on_refresh_button_click()
+    assert screen.right_side_menu_container.refresh_button["state"] == "disabled"
+
+    with freezegun.freeze_time("12th February 2000", tz_offset=time_to_wait - 1):
+        screen.events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH, time.time())
+
+    assert screen.right_side_menu_container.refresh_button["state"] == "disabled"

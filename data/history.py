@@ -6,11 +6,11 @@ from data.observable import Observable
 
 class AlertsHistory(object):
     MAXIMUM_HISTORY_COUNT = 40
-    TIME_DIFFERENCE_BETWEEN_SAME_ALERTS = 60 * 15  # 15 Minutes
 
     def __init__(self):
         self.stack = deque(maxlen=40)
         self.observable = Observable()
+        self.time_difference_between_same_alerts = 60 * 15  # 15 Minutes
 
     def __len__(self):
         return len(self.stack)
@@ -46,7 +46,7 @@ class AlertsHistory(object):
         # This is the same alert as the last one, but enough time has passed since,
         # We want it in the history, because it's a new event.
         time_passed_since = alert.timestamp - last_alert.timestamp
-        if time_passed_since >= self.TIME_DIFFERENCE_BETWEEN_SAME_ALERTS:
+        if time_passed_since >= self.time_difference_between_same_alerts:
             self.insert_to_stack(alert)
 
     def insert_to_stack(self, alert):
