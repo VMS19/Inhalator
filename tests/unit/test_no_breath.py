@@ -44,6 +44,7 @@ def test_sinus_alerts_when_no_breath(events, measurements):
         * Don't simulate sensors for time required to sent no-breath alert.
         * Make sure a single no-breath alert was sent.
     """
+    Configurations.instance().resp_rate_range.min = 0
     sampler = create_sampler("sinus", events, measurements)
     for _ in range(SIMULATION_SAMPLES):
         sampler.sampling_iteration()
