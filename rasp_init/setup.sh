@@ -32,10 +32,8 @@ cp $INHALATOR_PATH/resources/wallpaper.png /usr/share/plymouth/themes/pix/splash
 # disable screen saver
 raspi-config nonint do_blanking 1
 
-# enable SPI
-sudo dtparam spi=on
-sudo modprobe spi-bcm2708
-
 # enable I2C
-sudo dtparam i2c=on
-sudo modprobe i2c-dev
+sudo raspi-config nonint do_i2c 0
+
+# enable SPI
+sudo raspi-config nonint do_spi 0
