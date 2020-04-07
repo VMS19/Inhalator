@@ -2,10 +2,10 @@ import RPi.GPIO as GPIO
 
 
 class AlertDriver(object):
-    SYSTEM_FAULT_GPIO = 26
+    SYSTEM_FAULT_GPIO = 20
     MEDICAL_CONTITION_GPIO = 19
     FAULT_BUZZER_GPIO = 13
-    RESERVED_GPIO = 20
+    WD_GPIO = 26
     LED_GREEN = GPIO.HIGH
     LED_RED = GPIO.LOW
 
@@ -24,9 +24,9 @@ class AlertDriver(object):
         GPIO.setup(self.FAULT_BUZZER_GPIO, GPIO.OUT)
         GPIO.output(self.FAULT_BUZZER_GPIO, GPIO.HIGH)
 
-        # Set reserved GPIO
-        GPIO.setup(self.RESERVED_GPIO, GPIO.OUT)
-        GPIO.output(self.RESERVED_GPIO, self.LED_GREEN)
+        # Set wd GPIO
+        GPIO.setup(self.WD_GPIO, GPIO.OUT)
+        GPIO.output(self.WD_GPIO, self.LED_GREEN)
 
     def set_system_fault_alert(self, value: bool):
         led = self.LED_GREEN
