@@ -1,6 +1,7 @@
 from collections import deque
 
 from data.alert import Alert
+from data.configurations import Configurations
 from data.observable import Observable
 
 
@@ -8,14 +9,21 @@ class AlertsHistory(object):
     MAXIMUM_HISTORY_COUNT = 40
 
     def __init__(self):
-        self.stack = deque(maxlen=40)
+        self.stack = deque(maxlen=self.MAXIMUM_HISTORY_COUNT)
         self.observable = Observable()
-        self.time_difference_between_same_alerts = 60 * 15  # 15 Minutes
+        self.time_difference_between_same_alerts = \
+            Configurations.instance().delta_time_between_alerts
 
     def __len__(self):
         return len(self.stack)
 
-    def copy(self):
+    def copy(self) -> "AlertsHistory":
+        """Copy this instance.
+
+        Whenever the GUI is displaying the history, it always creates a
+        snapshot using the copy() function. The reasoning behind this is
+        to be as non-intrusive to the user as possible.
+        """
         instance = AlertsHistory()
         instance.stack = self.stack.copy()
         return instance
