@@ -75,7 +75,7 @@ def test_sampler_alerts_when_sensor_exceeds_maximum(events, measurements, config
                       simulation=True,)
 
     app.run_iterations(SAMPLES_AMOUNT)
-    assert len(events.alerts_queue) == 0
+    assert len(events.alert_queue) == 0
 
     configure_alerts_screen = ConfigureAlarmsScreen(app.master_frame.element)
     configure_alerts_screen.show()
@@ -98,9 +98,9 @@ def test_sampler_alerts_when_sensor_exceeds_maximum(events, measurements, config
 
     app.run_iterations(SAMPLES_AMOUNT, render=False)
     app.root.destroy()
-    assert len(events.alerts_queue) > 0
+    assert len(events.alert_queue) > 0
 
-    all_alerts = list(events.alerts_queue)
+    all_alerts = list(events.alert_queue)
     expected_alert = AlertCodes[f"{alert_type}_high".upper()]
     assert all(alert == expected_alert for alert in all_alerts)
 
@@ -134,7 +134,7 @@ def test_sampler_alerts_when_sensor_exceeds_minimum(events, measurements, config
                       simulation=True,)
 
     app.run_iterations(SAMPLES_AMOUNT)
-    assert len(events.alerts_queue) == 0
+    assert len(events.alert_queue) == 0
 
     configure_alerts_screen = ConfigureAlarmsScreen(app.master_frame.element)
     configure_alerts_screen.show()
@@ -157,9 +157,9 @@ def test_sampler_alerts_when_sensor_exceeds_minimum(events, measurements, config
 
     app.run_iterations(SAMPLES_AMOUNT, render=False)
     app.root.destroy()
-    assert len(events.alerts_queue) > 0
+    assert len(events.alert_queue) > 0
 
-    all_alerts = list(events.alerts_queue)
+    all_alerts = list(events.alert_queue)
     expected_alert = AlertCodes[f"{alert_type}_low".upper()]
     assert all(alert == expected_alert for alert in all_alerts)
 

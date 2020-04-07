@@ -8,7 +8,7 @@ class AlertPeripheralHandler(object):
         self.alert_driver = drivers.acquire_driver("alert")
 
     def subscribe(self):
-        self.events.alerts_queue.observable.subscribe(self, self.on_new_alert)
+        self.events.alert_queue.observable.subscribe(self, self.on_new_alert)
         self.events.mute_controller.observable.subscribe(self, self.on_mute)
 
     def on_new_alert(self, alert):
@@ -19,4 +19,4 @@ class AlertPeripheralHandler(object):
     def on_mute(self, mute):
         self.alert_driver.set_buzzer(
             mute or
-            self.events.alerts_queue.last_alert == AlertCodes.OK)
+            self.events.alert_queue.last_alert == AlertCodes.OK)

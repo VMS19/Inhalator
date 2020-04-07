@@ -48,7 +48,7 @@ class Application(object):
 
         # We want to alert that config.json is corrupted
         if Configurations.configuration_state() == ConfigurationState.CONFIG_CORRUPTED:
-            events.alerts_queue.enqueue_alert(
+            events.alert_queue.enqueue_alert(
                 AlertCodes.NO_CONFIGURATION_FILE,
                 timestamp=drivers.acquire_driver("timer").get_time())
             Configurations.instance().save_to_file()  # Create config file for future use.

@@ -88,9 +88,9 @@ def test_sampler_alerts_when_volume_exceeds_minium(events, measurements, config,
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       a2d, timer)
-    assert len(events.alerts_queue) == 0
+    assert len(events.alert_queue) == 0
     sampler.sampling_iteration()
-    assert len(events.alerts_queue) == 0
+    assert len(events.alert_queue) == 0
 
     config.volume_range = VolumeRange(HIGH_THRESHOLD, HIGH_THRESHOLD)
 
@@ -99,9 +99,9 @@ def test_sampler_alerts_when_volume_exceeds_minium(events, measurements, config,
         time.sleep(MICROSECOND)
         sampler.sampling_iteration()
 
-    assert len(events.alerts_queue) > 0
+    assert len(events.alert_queue) > 0
 
-    all_alerts = list(events.alerts_queue)
+    all_alerts = list(events.alert_queue)
     assert all(alert == AlertCodes.VOLUME_LOW for alert in all_alerts)
 
 
@@ -112,9 +112,9 @@ def test_sampler_alerts_when_volume_exceeds_maximum(events, measurements, config
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       a2d, timer)
-    assert len(events.alerts_queue) == 0
+    assert len(events.alert_queue) == 0
     sampler.sampling_iteration()
-    assert len(events.alerts_queue) == 0
+    assert len(events.alert_queue) == 0
 
     config.volume_range = VolumeRange(LOW_THRESHOLD, LOW_THRESHOLD)
 
@@ -123,7 +123,7 @@ def test_sampler_alerts_when_volume_exceeds_maximum(events, measurements, config
         time.sleep(MICROSECOND)
         sampler.sampling_iteration()
 
-    assert len(events.alerts_queue) > 0
+    assert len(events.alert_queue) > 0
 
-    all_alerts = list(events.alerts_queue)
+    all_alerts = list(events.alert_queue)
     assert all(alert == AlertCodes.VOLUME_HIGH for alert in all_alerts)

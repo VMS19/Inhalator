@@ -5,7 +5,7 @@ from data.history import AlertsHistory
 from data.observable import Observable
 
 
-class AlertsQueue(object):
+class AlertQueue(object):
     MAXIMUM_ALERTS_AMOUNT = 2
 
     def __init__(self):

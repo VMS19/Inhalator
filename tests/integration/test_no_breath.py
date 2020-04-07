@@ -68,7 +68,7 @@ def test_sinus_alerts_when_no_breath(events, measurements, config):
 
     app.run_iterations(SIMULATION_SAMPLES)
 
-    assert len(events.alerts_queue) == 0
+    assert len(events.alert_queue) == 0
 
     # mocking time continue for no breath time.
     intervals = 1 / driver_factory.MOCK_SAMPLE_RATE_HZ
@@ -79,9 +79,9 @@ def test_sinus_alerts_when_no_breath(events, measurements, config):
     app.run_iterations(1)
     app.root.destroy()
 
-    assert len(events.alerts_queue) == 1
+    assert len(events.alert_queue) == 1
 
-    alert = events.alerts_queue.last_alert
+    alert = events.alert_queue.last_alert
     assert alert == AlertCodes.NO_BREATH
 
 
@@ -113,9 +113,9 @@ def test_dead_man_alerts_when_no_breath(events, measurements, config):
     app.run_iterations(num_of_samples)
     app.root.destroy()
 
-    assert len(events.alerts_queue) >= 1
+    assert len(events.alert_queue) >= 1
 
-    all_alerts = list(events.alerts_queue)
+    all_alerts = list(events.alert_queue)
     assert all(alert == AlertCodes.NO_BREATH for alert in all_alerts)
 
 
@@ -147,7 +147,7 @@ def test_noise_alerts_when_no_breath(events, measurements, config):
     app.run_iterations(num_of_samples)
     app.root.destroy()
 
-    assert len(events.alerts_queue) >= 1
+    assert len(events.alert_queue) >= 1
 
-    all_alerts = list(events.alerts_queue)
+    all_alerts = list(events.alert_queue)
     assert all(alert == AlertCodes.NO_BREATH for alert in all_alerts)

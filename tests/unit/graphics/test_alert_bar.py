@@ -6,7 +6,7 @@ import pytest
 from unittest.mock import MagicMock
 
 from data.alert import Alert, AlertCodes
-from data.alerts_queue import AlertsQueue
+from data.alert_queue import AlertQueue
 from data.events import Events
 from drivers.driver_factory import DriverFactory
 from graphics.alert_bar import IndicatorAlertBar
@@ -95,21 +95,21 @@ def test_mute_does_not_disappear_immediately(alert_bar: IndicatorAlertBar):
 
 
 def test_alert_on_screen_is_the_first_one(alert_bar: IndicatorAlertBar):
-    alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.VOLUME_LOW)
+    alert_bar.events.alert_queue.last_alert = Alert(AlertCodes.VOLUME_LOW)
     alert_bar.update()
-    alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.VOLUME_HIGH)
+    alert_bar.events.alert_queue.last_alert = Alert(AlertCodes.VOLUME_HIGH)
     alert_bar.update()
     assert alert_bar.message_label["text"] == "Low Volume"
 
 
 def test_alert_on_screen_changes_after_an_ok(alert_bar: IndicatorAlertBar):
-    alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.VOLUME_LOW)
+    alert_bar.events.alert_queue.last_alert = Alert(AlertCodes.VOLUME_LOW)
     alert_bar.update()
-    alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.VOLUME_HIGH)
+    alert_bar.events.alert_queue.last_alert = Alert(AlertCodes.VOLUME_HIGH)
     alert_bar.update()
-    alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.OK)
+    alert_bar.events.alert_queue.last_alert = Alert(AlertCodes.OK)
     alert_bar.update()
-    alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.VOLUME_HIGH)
+    alert_bar.events.alert_queue.last_alert = Alert(AlertCodes.VOLUME_HIGH)
     alert_bar.update()
 
     assert alert_bar.message_label["text"] == "High Volume"
@@ -117,7 +117,7 @@ def test_alert_on_screen_changes_after_an_ok(alert_bar: IndicatorAlertBar):
 
 def test_timestamp_label_is_empty_when_there_is_no_alert(
         alert_bar: IndicatorAlertBar):
-    alert_bar.events.alerts_queue = AlertsQueue()
+    alert_bar.events.alert_queue = AlertQueue()
     alert_bar.update()
 
     assert alert_bar.timestamp_label["text"] == ""
@@ -125,7 +125,7 @@ def test_timestamp_label_is_empty_when_there_is_no_alert(
 
 def test_timestamp_label_is_empty_when_there_is_an_ok_alert(
         alert_bar: IndicatorAlertBar):
-    alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.OK)
+    alert_bar.events.alert_queue.last_alert = Alert(AlertCodes.OK)
 
     alert_bar.update()
 
@@ -134,16 +134,16 @@ def test_timestamp_label_is_empty_when_there_is_an_ok_alert(
 
 def test_timestamp_label_is_empty_when_alert_changes_to_ok(
         alert_bar: IndicatorAlertBar):
-    alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.NO_BREATH)
+    alert_bar.events.alert_queue.last_alert = Alert(AlertCodes.NO_BREATH)
     alert_bar.update()
-    alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.OK)
+    alert_bar.events.alert_queue.last_alert = Alert(AlertCodes.OK)
     alert_bar.update()
 
     assert alert_bar.timestamp_label["text"] == ""
 
 
 def test_timestamp_label_on_alert(alert_bar: IndicatorAlertBar):
-    alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.NO_BREATH,
+    alert_bar.events.alert_queue.last_alert = Alert(AlertCodes.NO_BREATH,
                                                      alert_bar.drivers.acquire_driver(
                                                          "timer").get_current_time())
     alert_bar.update()
@@ -159,7 +159,7 @@ def test_timestamp_label_on_alert_changes_with_time(
     drivers_factory.acquire_driver("timer").get_current_time = MagicMock(
         return_value=0)
 
-    alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.NO_BREATH, 0)
+    alert_bar.events.alert_queue.last_alert = Alert(AlertCodes.NO_BREATH, 0)
     alert_bar.update()
     assert alert_bar.timestamp_label["text"] == "just now"
 
@@ -176,7 +176,7 @@ def test_timestamp_label_resets_on_new_alert(alert_bar: IndicatorAlertBar):
     drivers_factory.acquire_driver("timer").get_current_time = MagicMock(
         return_value=0)
 
-    alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.NO_BREATH, 0)
+    alert_bar.events.alert_queue.last_alert = Alert(AlertCodes.NO_BREATH, 0)
     alert_bar.update()
     assert alert_bar.timestamp_label["text"] == "just now"
 
@@ -185,10 +185,10 @@ def test_timestamp_label_resets_on_new_alert(alert_bar: IndicatorAlertBar):
     alert_bar.update()
     assert alert_bar.timestamp_label["text"] == "1 hour ago"
 
-    alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.OK)
+    alert_bar.events.alert_queue.last_alert = Alert(AlertCodes.OK)
     alert_bar.update()
 
-    alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.VOLUME_HIGH,
+    alert_bar.events.alert_queue.last_alert = Alert(AlertCodes.VOLUME_HIGH,
                                                      60 * 60)
     alert_bar.update()
     assert alert_bar.timestamp_label["text"] == "just now"
@@ -200,7 +200,7 @@ def test_version_label(alert_bar: IndicatorAlertBar):
 
 
 def test_alert_on_high_oxygen(alert_bar: IndicatorAlertBar):
-    alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.OXYGEN_HIGH,
+    alert_bar.events.alert_queue.last_alert = Alert(AlertCodes.OXYGEN_HIGH,
                                                      alert_bar.drivers.acquire_driver(
                                                          "timer").get_current_time())
     alert_bar.update()
@@ -209,7 +209,7 @@ def test_alert_on_high_oxygen(alert_bar: IndicatorAlertBar):
 
 
 def test_alert_on_low_oxygen(alert_bar: IndicatorAlertBar):
-    alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.OXYGEN_LOW,
+    alert_bar.events.alert_queue.last_alert = Alert(AlertCodes.OXYGEN_LOW,
                                                      alert_bar.drivers.acquire_driver(
                                                          "timer").get_current_time())
     alert_bar.update()
@@ -218,7 +218,7 @@ def test_alert_on_low_oxygen(alert_bar: IndicatorAlertBar):
 
 
 def test_on_low_battery(alert_bar: IndicatorAlertBar):
-    alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.OK)
+    alert_bar.events.alert_queue.last_alert = Alert(AlertCodes.OK)
     alert_bar.configs.low_battery_percentage = 15
     alert_bar.measurements.battery_percentage = 4
     alert_bar.update()
@@ -228,7 +228,7 @@ def test_on_low_battery(alert_bar: IndicatorAlertBar):
 
 
 def test_on_no_battery(alert_bar: IndicatorAlertBar):
-    alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.NO_BATTERY)
+    alert_bar.events.alert_queue.last_alert = Alert(AlertCodes.NO_BATTERY)
     alert_bar.measurements.battery_percentage = 4
     alert_bar.update()
 
@@ -237,7 +237,7 @@ def test_on_no_battery(alert_bar: IndicatorAlertBar):
 
 
 def test_on_good_battery(alert_bar: IndicatorAlertBar):
-    alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.OK)
+    alert_bar.events.alert_queue.last_alert = Alert(AlertCodes.OK)
     alert_bar.measurements.battery_percentage = 40
     alert_bar.update()
 

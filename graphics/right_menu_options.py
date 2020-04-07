@@ -34,7 +34,7 @@ class ClearAlertsButton(object):
         )
 
     def on_click(self):
-        self.events.alerts_queue.clear_alerts()
+        self.events.alert_queue.clear_alerts()
 
     def render(self):
         self.button.place(relx=0, rely=0.01, relwidth=0.8, relheight=0.2)

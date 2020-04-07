@@ -22,7 +22,7 @@ class EntriesContainer(object):
         # State
         self.index = 0
         self.alerts_displayed = [None] * self.NUMBER_OF_ALERTS_ON_SCREEN
-        self.history_snapshot = self.events.alerts_queue.history.copy()
+        self.history_snapshot = self.events.alert_queue.history.copy()
 
     def load(self):
         latest = self.history_snapshot.get(start=self.index, amount=self.NUMBER_OF_ALERTS_ON_SCREEN)
@@ -51,7 +51,7 @@ class EntriesContainer(object):
 
     def on_refresh(self):
         self.index = 0
-        self.history_snapshot = self.events.alerts_queue.history.copy()
+        self.history_snapshot = self.events.alert_queue.history.copy()
         self.load()
 
     def render(self):

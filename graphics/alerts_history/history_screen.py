@@ -21,7 +21,7 @@ class HistoryScreen(object):
         self.entries_container = EntriesContainer(self.alerts_history_screen, events)
         self.right_side_menu_container = RightSideMenuContainer(self, self.alerts_history_screen)
 
-        self.events.alerts_queue.history.observable.subscribe(self, self.on_new_alert)
+        self.events.alert_queue.history.observable.subscribe(self, self.on_new_alert)
 
     def on_new_alert(self, alert):
         self.right_side_menu_container.mark_as_needs_refresh()
@@ -47,4 +47,4 @@ class HistoryScreen(object):
 
     def hide(self):
         self.alerts_history_screen.place_forget()
-        self.events.alerts_queue.history.observable.unsubscribe(self)
+        self.events.alert_queue.history.observable.unsubscribe(self)

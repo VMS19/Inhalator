@@ -104,7 +104,7 @@ class IndicatorAlertBar(object):
                 (time.time() - self.events.mute_controller.mute_time) >\
                 self.configs.mute_time_limit:
             self.events.mute_controller.mute_alerts(False)
-        last_alert_in_queue = self.events.alerts_queue.last_alert
+        last_alert_in_queue = self.events.alert_queue.last_alert
 
         # If the queue says everything is ok, and the graphics shows
         # otherwise, change the graphics state and update the GUI
