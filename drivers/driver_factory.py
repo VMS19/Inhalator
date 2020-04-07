@@ -186,7 +186,7 @@ class DriverFactory(object):
             data = self.generate_mock_dead_man()
         elif data_source == 'sinus' or data_source == 'noiseless_sinus':
             noise = "noiseless" not in data_source
-            method_name = f"generate_mock_{driver_name}_data"
+            method_name = f"generate_sinus_{driver_name}_data"
             method = getattr(self, method_name, None)
             data = method(noise=noise)
         elif data_source == "noise":
