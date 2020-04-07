@@ -8,5 +8,5 @@ else
     sshpass -p 'raspberry' ssh pi@$IP_ADDR sudo date -s @`( date -u +"%s" )`
 
     # Set rtc time
-    sshpass -p 'raspberry' ssh pi@$IP_ADDR '~/Inhalator/scripts/set_rtc_time.py'
+    sshpass -p 'raspberry' ssh pi@$IP_ADDR '/usr/bin/python3 ~/Inhalator/scripts/set_rtc_time.py'
 fi
