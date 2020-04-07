@@ -134,7 +134,7 @@ def start_app(args):
             pressure_sensor = drivers.acquire_driver("null")
 
         try:
-            flow_sensor = drivers.acquire_driver("differential_pressure")
+            flow_sensor = drivers.acquire_driver("flow")
         except errors.I2CDeviceNotFoundError:
             flow_sensor = drivers.acquire_driver("null")
 

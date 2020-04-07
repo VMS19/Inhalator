@@ -1,18 +1,15 @@
-import os
-
 import pytest
 from pytest import approx
 
-from algo import Sampler
 from data.measurements import Measurements
 from data.events import Events
 from data.configurations import Configurations
 from data.thresholds import (O2Range, PressureRange,
                              RespiratoryRateRange, VolumeRange)
 from drivers.driver_factory import DriverFactory
+from tests.unit.conftest import create_sampler
 
 SAMPLES_AMOUNT = 118
-SIMULATION_FOLDER = "simulation"
 
 
 @pytest.fixture
@@ -38,7 +35,7 @@ def events():
     return Events()
 
 
-def test_sampler_dead_min_max(events, measurements, config):
+def test_sampler_dead_min_max(events, measurements):
     """Test dead simulation results with min & max equal 0
 
     Flow:
@@ -46,14 +43,7 @@ def test_sampler_dead_min_max(events, measurements, config):
         * check min & max pressure = 0
         * check max flow = 0
     """
-    driver_factory = DriverFactory(simulation_mode=True, simulation_data="dead")
-    flow_sensor = driver_factory.acquire_driver("flow")
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    a2d = driver_factory.acquire_driver("a2d")
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
-
+    sampler = create_sampler("dead", events, measurements)
     for _ in range(SAMPLES_AMOUNT):
         sampler.sampling_iteration()
 
@@ -67,7 +57,7 @@ def test_sampler_dead_min_max(events, measurements, config):
     assert measurements.intake_peak_flow == 0, max_flow_msg
 
 
-def test_sampler_sinus_min_max(events, measurements, config):
+def test_sampler_sinus_min_max(events, measurements):
     """Test sinus sim results in min & max approx the amplitude
 
     Flow:
@@ -76,34 +66,27 @@ def test_sampler_sinus_min_max(events, measurements, config):
         * check max pressure ~ PRESSURE_AMPLITUDE
         * check max flow ~ FLOW_AMPLITUDE
     """
-    driver_factory = DriverFactory(simulation_mode=True, simulation_data="noiseless_sinus")
-    flow_sensor = driver_factory.acquire_driver("flow")
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    a2d = driver_factory.acquire_driver("a2d")
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
-
+    sampler = create_sampler("noiseless_sinus", events, measurements)
     for _ in range(SAMPLES_AMOUNT):
         sampler.sampling_iteration()
 
-    expected_min_pressure = driver_factory.MOCK_PEEP
+    expected_min_pressure = DriverFactory.MOCK_PEEP
     min_pressure_msg = f"Expected min pressure be {expected_min_pressure}, " \
                        f"received {measurements.peep_min_pressure}"
     assert measurements.peep_min_pressure == expected_min_pressure, min_pressure_msg
 
-    expected_pressure = driver_factory.MOCK_PRESSURE_AMPLITUDE
+    expected_pressure = DriverFactory.MOCK_PRESSURE_AMPLITUDE
     max_pressure_msg = f"Expected max pressure be {expected_pressure}, " \
                        f"received {measurements.intake_peak_pressure}"
     assert measurements.intake_peak_pressure == expected_pressure, max_pressure_msg
 
-    expected_flow = driver_factory.MOCK_AIRFLOW_AMPLITUDE
+    expected_flow = DriverFactory.MOCK_AIRFLOW_AMPLITUDE
     max_flow_msg = f"Expected max flow be {expected_flow}, " \
                    f"received {measurements.intake_peak_flow}"
     assert measurements.intake_peak_flow == expected_flow, max_flow_msg
 
 
-def test_sampler_pig_min_max(events, measurements, config):
+def test_sampler_pig_min_max(events, measurements):
     """Test volume calculation working correctly.
     Flow:
         * Run pig simulation with sinus flow in range (0,40) i.e:
@@ -132,18 +115,7 @@ def test_sampler_pig_min_max(events, measurements, config):
         XXXXXXXXXXXXXXXX                                            XXXXXXXXXXXX
 
     """
-    this_dir = os.path.dirname(__file__)
-    file_path = os.path.join(this_dir, SIMULATION_FOLDER,
-                             "pig_sim_cycle.csv")
-    driver_factory = DriverFactory(simulation_mode=True,
-                                   simulation_data=file_path)
-
-    flow_sensor = driver_factory.acquire_driver("flow")
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    a2d = driver_factory.acquire_driver("a2d")
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
+    sampler = create_sampler("pig_sim_cycle.csv", events, measurements)
 
     for _ in range(SAMPLES_AMOUNT):
         sampler.sampling_iteration()

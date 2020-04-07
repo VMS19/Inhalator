@@ -1,15 +1,12 @@
-import os
-
 import pytest
 from pytest import approx
-from algo import Sampler, VentilationState
+from algo import VentilationState
 from data.configurations import Configurations
 from data.events import Events
 from data.measurements import Measurements
 from data.thresholds import O2Range, PressureRange, RespiratoryRateRange, \
     VolumeRange
-from drivers.driver_factory import DriverFactory
-
+from tests.unit.conftest import create_sampler
 
 SAMPLES_AMOUNT = 118
 SIMULATION_FOLDER = "simulation"
@@ -41,7 +38,7 @@ def events():
 @pytest.mark.parametrize(
     "scenario", ['pressure', 'flow', pytest.param('both', marks=pytest.mark.xfail(
         reason="Can't handle simultaneous error in pressure and flow"))])
-def test_slope_recognition_with_error_in_exhale(events, measurements, config, scenario):
+def test_slope_recognition_with_error_in_exhale(events, measurements, scenario):
     """Test error in exhale doesn't cause the state machine change too early.
 
     Flow:
@@ -87,19 +84,8 @@ def test_slope_recognition_with_error_in_exhale(events, measurements, config, sc
 
                     X
     """
-    this_dir = os.path.dirname(__file__)
-    file_path = os.path.join(this_dir, SIMULATION_FOLDER,
-                             f"pig_sim_extreme_in_exhale_{scenario}.csv")
-    driver_factory = DriverFactory(simulation_mode=True,
-                                   simulation_data=file_path)
-
-    flow_sensor = driver_factory.acquire_driver("flow")
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    a2d = driver_factory.acquire_driver("a2d")
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
-
+    data = f"pig_sim_extreme_in_exhale_{scenario}.csv"
+    sampler = create_sampler(data, events, measurements)
     for _ in range(SAMPLES_AMOUNT):
         sampler.sampling_iteration()
 
@@ -111,7 +97,7 @@ def test_slope_recognition_with_error_in_exhale(events, measurements, config, sc
 @pytest.mark.parametrize(
     "scenario", ['below', pytest.param('pass', marks=pytest.mark.xfail(
         reason="Can't handle error of drop in flow below threshold"))])
-def test_slope_recognition_with_error_in_inhale(events, measurements, config, scenario):
+def test_slope_recognition_with_error_in_inhale(events, measurements, scenario):
     """Test error in inhale doesn't cause the state machine change too early.
 
     Flow:
@@ -140,19 +126,8 @@ def test_slope_recognition_with_error_in_inhale(events, measurements, config, sc
 
                                  Xpass             Xpass
     """
-    this_dir = os.path.dirname(__file__)
-    file_path = os.path.join(this_dir, SIMULATION_FOLDER,
-                             f"pig_sim_extreme_in_inhale_{scenario}_threshold.csv")
-    driver_factory = DriverFactory(simulation_mode=True,
-                                   simulation_data=file_path)
-
-    flow_sensor = driver_factory.acquire_driver("flow")
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    a2d = driver_factory.acquire_driver("a2d")
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
-
+    data = f"pig_sim_extreme_in_inhale_{scenario}_threshold.csv"
+    sampler = create_sampler(data, events, measurements)
     for _ in range(SAMPLES_AMOUNT):
         sampler.sampling_iteration()
 

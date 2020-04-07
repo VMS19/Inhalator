@@ -80,12 +80,11 @@ class DriverFactory(object):
             amplitude=self.MOCK_PRESSURE_AMPLITUDE,
             freq=self.MOCK_BPM / 60.0)
 
-    def generate_mock_noise(self):
-        samples = [0] * 1000
-        noise_samples = add_noise(samples, self.MOCK_NOISE_SIGMA)
-        return [10 + x for x in noise_samples]
+    def generate_mock_noise(self, baseline):
+        samples = [baseline] * 1000
+        return add_noise(samples, self.MOCK_NOISE_SIGMA)
 
-    def generate_mock_pressure_data(self, noise=True):
+    def generate_sinus_pressure_data(self, noise=True):
         samples = sinus(
             sample_rate=self.MOCK_SAMPLE_RATE_HZ,
             amplitude=self.MOCK_PRESSURE_AMPLITUDE,
@@ -100,10 +99,9 @@ class DriverFactory(object):
         samples = [s + self.MOCK_PEEP for s in samples]
         if noise:
             return add_noise(samples, self.MOCK_NOISE_SIGMA)
-        else:
-            return samples
+        return samples
 
-    def generate_mock_flow_data(self, noise=True):
+    def generate_sinus_flow_data(self, noise=True):
         samples = sinus(
             self.MOCK_SAMPLE_RATE_HZ,
             self.MOCK_AIRFLOW_AMPLITUDE,
@@ -148,9 +146,13 @@ class DriverFactory(object):
         return AbpPressureSensor()
 
     @staticmethod
-    def get_flow_driver():
-        from drivers.sfm3200_flow_sensor import Sfm3200
-        return Sfm3200()
+    def get_flow_driver(name="sdp8"):
+        if name == "sdp8":
+            from drivers.sdp8_pressure_sensor import SdpPressureSensor
+            return SdpPressureSensor()
+        else:
+            from drivers.sfm3200_flow_sensor import Sfm3200
+            return Sfm3200()
 
     @staticmethod
     def get_a2d_driver():
@@ -173,11 +175,6 @@ class DriverFactory(object):
         return SoundViaAux.instance()
 
     @staticmethod
-    def get_differential_pressure_driver():
-        from drivers.sdp8_pressure_sensor import SdpPressureSensor
-        return SdpPressureSensor()
-
-    @staticmethod
     def get_rtc_driver():
         from drivers.rv8523_rtc import Rv8523Rtc
         return Rv8523Rtc()
@@ -193,7 +190,7 @@ class DriverFactory(object):
             method = getattr(self, method_name, None)
             data = method(noise=noise)
         elif data_source == "noise":
-            data = self.generate_mock_noise()
+            data = self.generate_mock_noise(baseline=10)
         else:
             data = generate_data_from_file(driver_name, data_source)
         return MockSensor(data, error_probability=self.error_probability)

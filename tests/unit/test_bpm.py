@@ -24,14 +24,17 @@ TIME_FROM_SIM_START_TO_INHALE = 1.62  # seconds
 def events():
     return Events()
 
+
 @pytest.fixture
 def measurements():
     return Measurements()
+
 
 @pytest.fixture
 def driver_factory(simulation_data):
     return DriverFactory(simulation_mode=True,
                          simulation_data=simulation_data)
+
 
 @pytest.fixture
 def sampler(measurements, events, driver_factory, bpm):
@@ -43,6 +46,7 @@ def sampler(measurements, events, driver_factory, bpm):
     return Sampler(measurements, events, flow_sensor, pressure_sensor,
                    a2d, timer)
 
+
 @pytest.fixture
 def config():
     c = Configurations.instance()
@@ -53,6 +57,7 @@ def config():
     c.graph_seconds = 12
     c.log_enabled = False
     return c
+
 
 @pytest.fixture
 def real_data():
@@ -200,7 +205,7 @@ def test_bpm_calculation_changing_rate_twice(real_data, rates):
                           ("sinus", 15, (13, 17), None)])
 def test_bpm_alert(bpm_range, expected_alert, events, config, sampler):
     """Test High and Low BPM alert are raised when bpm above or below range."""
-    SIMULATION_LENGTH = 2
+    simulation_length = 2
 
     assert len(events.alerts_queue) == 0
     sampler.sampling_iteration()
@@ -210,7 +215,7 @@ def test_bpm_alert(bpm_range, expected_alert, events, config, sampler):
     config.resp_rate_range = RespiratoryRateRange(*bpm_range)
 
     current_time = time.time()
-    while time.time() - current_time < SIMULATION_LENGTH:
+    while time.time() - current_time < simulation_length:
         time.sleep(0.001)
         sampler.sampling_iteration()
 
@@ -224,10 +229,11 @@ def test_bpm_alert(bpm_range, expected_alert, events, config, sampler):
         assert all(alert == expected_alert for alert in all_alerts), \
             "wrong alert was raised"
 
+
 @pytest.mark.parametrize('simulation_data,bpm', [("sinus", 15)])
 def test_no_bpm_alert_on_startup(events, config, sampler):
     """Test BPM alert is not false raised on startup - not enough samples."""
-    SIMULATION_LENGTH = 0.01
+    simulation_length = 0.01
 
     assert len(events.alerts_queue) == 0
     sampler.sampling_iteration()
@@ -238,7 +244,7 @@ def test_no_bpm_alert_on_startup(events, config, sampler):
     config.resp_rate_range = RespiratoryRateRange(20, 30)
 
     current_time = time.time()
-    while time.time() - current_time < SIMULATION_LENGTH:
+    while time.time() - current_time < simulation_length:
         time.sleep(0.001)
         sampler.sampling_iteration()
 

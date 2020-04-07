@@ -1,18 +1,15 @@
-import os
 import time
 
 import pytest
 from pytest import approx
 
-from algo import Sampler
 from data import alerts
 from data.measurements import Measurements
 from data.events import Events
 from data.configurations import Configurations
 from data.thresholds import (O2Range, PressureRange,
                              RespiratoryRateRange, VolumeRange)
-from drivers.driver_factory import DriverFactory
-
+from tests.unit.conftest import create_sampler
 
 SIMULATION_FOLDER = "simulation"
 
@@ -22,11 +19,6 @@ LOW_THRESHOLD = -50000
 HIGH_THRESHOLD = 50000
 
 SIMULATION_SAMPLES = 1000
-
-
-@pytest.fixture
-def driver_factory():
-    return DriverFactory(simulation_mode=True, simulation_data="sinus")
 
 
 @pytest.fixture
@@ -52,7 +44,7 @@ def events():
     return Events()
 
 
-def test_sampler_volume_calculation(events, measurements, config):
+def test_sampler_volume_calculation(events, measurements):
     """Test volume calculation working correctly.
 
     Flow:
@@ -60,19 +52,7 @@ def test_sampler_volume_calculation(events, measurements, config):
         * Simulate constant flow of 1.
         * Validate expected volume.
     """
-    this_dir = os.path.dirname(__file__)
-    file_path = os.path.join(this_dir, SIMULATION_FOLDER,
-                             "pig_sim_cycle.csv")
-    driver_factory = DriverFactory(simulation_mode=True,
-                                   simulation_data=file_path)
-
-    flow_sensor = driver_factory.acquire_driver("flow")
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    a2d = driver_factory.acquire_driver("a2d")
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
-
+    sampler = create_sampler("pig_sim_cycle.csv", events, measurements)
     for _ in range(SIMULATION_SAMPLES):
         sampler.sampling_iteration()
 
@@ -81,13 +61,8 @@ def test_sampler_volume_calculation(events, measurements, config):
     assert measurements.inspiration_volume == approx(expected_volume, rel=0.1), msg
 
 
-def test_sampler_alerts_when_volume_exceeds_minium(events, measurements, config, driver_factory):
-    flow_sensor = driver_factory.acquire_driver("flow")
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    a2d = driver_factory.acquire_driver("a2d")
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
+def test_sampler_alerts_when_volume_exceeds_minium(events, measurements, config):
+    sampler = create_sampler("sinus", events, measurements)
     assert len(events.alerts_queue) == 0
     sampler.sampling_iteration()
     assert len(events.alerts_queue) == 0
@@ -105,13 +80,8 @@ def test_sampler_alerts_when_volume_exceeds_minium(events, measurements, config,
     assert all(alert == alerts.AlertCodes.VOLUME_LOW for alert in all_alerts)
 
 
-def test_sampler_alerts_when_volume_exceeds_maximum(events, measurements, config, driver_factory):
-    flow_sensor = driver_factory.acquire_driver("flow")
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    a2d = driver_factory.acquire_driver("a2d")
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
+def test_sampler_alerts_when_volume_exceeds_maximum(events, measurements, config):
+    sampler = create_sampler("sinus", events, measurements)
     assert len(events.alerts_queue) == 0
     sampler.sampling_iteration()
     assert len(events.alerts_queue) == 0
