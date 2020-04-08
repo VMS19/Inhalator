@@ -1,3 +1,5 @@
+from data.alerts import AlertCodes
+
 class AlertPeripheralHandler(object):
 
     def __init__(self, events, drivers):
@@ -19,5 +21,4 @@ class AlertPeripheralHandler(object):
     def on_mute(self, mute):
         self.alert_driver.set_buzzer(
             mute or
-            (not self.events.alerts_queue.last_alert.is_medical_condition() and
-             not self.events.alerts_queue.last_alert.is_system_alert()))
+            self.events.alerts_queue.last_alert == AlertCodes.OK)
