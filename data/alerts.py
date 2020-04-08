@@ -65,6 +65,9 @@ class Alert(object):
     def __eq__(self, other):
         return self.code == other
 
+    def __ge__(self, other):
+        return self.code >= other
+
     def __str__(self):
         if self.code in self.ALERT_CODE_TO_MESSAGE:
             return self.ALERT_CODE_TO_MESSAGE[self.code]
