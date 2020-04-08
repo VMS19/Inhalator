@@ -28,13 +28,13 @@ class AlertDriver(object):
         GPIO.setup(self.WD_GPIO, GPIO.OUT)
         GPIO.output(self.WD_GPIO, self.LED_GREEN)
 
-    def set_system_fault_alert(self, value: bool):
+    def set_system_fault_alert(self, value: bool, mute: bool):
         led = self.LED_GREEN
         if not value:
             led = self.LED_RED
 
         GPIO.output(self.SYSTEM_FAULT_GPIO, led)
-        self.set_buzzer(value)
+        self.set_buzzer(value or mute)
 
     def set_medical_condition_alert(self, value: bool, mute: bool):
         led = self.LED_GREEN

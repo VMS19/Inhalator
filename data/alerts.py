@@ -70,6 +70,9 @@ class Alert(object):
     def is_medical_condition(self):
         return 0 < self.code <= 100
 
+    def is_system_alert(self):
+        return 100 < self.code
+
     def __str__(self):
         if self.code in self.ALERT_CODE_TO_MESSAGE:
             return self.ALERT_CODE_TO_MESSAGE[self.code]

@@ -12,8 +12,12 @@ class AlertPeripheralHandler(object):
         self.alert_driver.set_medical_condition_alert(
             not alert.is_medical_condition(),
             self.events.mute_alerts._alerts_muted)
+        self.alert_driver.set_system_fault_alert(
+            not alert.is_system_alert(),
+            self.events.mute_alerts._alerts_muted)
 
     def on_mute(self, mute):
         self.alert_driver.set_buzzer(
             mute or
-            not self.events.alerts_queue.last_alert.is_medical_condition())
+            not self.events.alerts_queue.last_alert.is_medical_condition() or
+            not self.events.alerts_queue.last_alert.is_system_alert())
