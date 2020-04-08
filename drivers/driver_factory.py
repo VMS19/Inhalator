@@ -171,8 +171,8 @@ class DriverFactory(object):
 
     @staticmethod
     def get_flow_driver():
-        from drivers.sfm3200_flow_sensor import Sfm3200
-        return Sfm3200()
+        from drivers.hsc_pressure_sensor import HscPressureSensor
+        return HscPressureSensor()
 
     @staticmethod
     def get_a2d_driver():
@@ -196,8 +196,8 @@ class DriverFactory(object):
 
     @staticmethod
     def get_differential_pressure_driver():
-        from drivers.sdp8_pressure_sensor import SdpPressureSensor
-        return SdpPressureSensor()
+        from drivers.hsc_pressure_sensor import HscPressureSensor
+        return HscPressureSensor()
 
     @staticmethod
     def get_rtc_driver():

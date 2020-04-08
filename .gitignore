@@ -10,3 +10,4 @@ config.json
 htmlcov
 inhalator.csv*
 headers.csv
+.inhalator_env/

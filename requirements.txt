@@ -6,3 +6,4 @@ numpy
 scipy
 timeago
 psutil
+RPi.GPIO
