@@ -127,6 +127,13 @@ def start_app(args):
                                 simulation_data=args.simulate,
                                 error_probability=args.error)
 
+        # Must initialize mux before pressure and flow drivers! do not reorder
+        try:
+            # mux driver is singleton. initialize it and driver factory cache it
+            drivers.acquire_driver("mux")
+        except errors.I2CDeviceNotFoundError:
+            pass
+
         try:
             pressure_sensor = drivers.acquire_driver("pressure")
         except errors.I2CDeviceNotFoundError:

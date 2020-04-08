@@ -8,7 +8,7 @@ from .i2c_driver import I2cDriver
 
 log = logging.getLogger(__name__)
 
-#Todo: close this driver!! init it via driver_factory!!!
+
 class MuxI2C(I2cDriver):
 
     MUX_INSTANCE = None
