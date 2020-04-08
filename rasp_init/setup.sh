@@ -11,7 +11,7 @@ fi
 INHALATOR_PATH=$(realpath $(dirname $(realpath $0))/..)
 
 # install dependencies
-apt install --assume-yes virtualenv libatlas-base-dev pigpio python3-dev
+apt install --assume-yes virtualenv libatlas-base-dev pigpio python3-dev vim
 virtualenv $INHALATOR_PATH/.inhalator_env -p $(which python3)
 source $INHALATOR_PATH/.inhalator_env/bin/activate
 pip3 install --upgrade pip
@@ -48,8 +48,21 @@ sed -i 's/#xserver-command=X/xserver-command=X -nocursor/g' /etc/lightdm/lightdm
 # disable first use wizard
 rm -f /etc/xdg/autostart/piwiz.desktop
 
+# disable BT
+echo "dtoverlay=disable-bt" >> /boot/config.txt
+
+# set keyboard layout
+raspi-config nonint do_change_locale en_US.UTF-8
+raspi-config nonint do_configure_keyboard us
+
 # enable I2C
 sudo raspi-config nonint do_i2c 0
 
 # enable SPI
 sudo raspi-config nonint do_spi 0
+
+# add the interpreter from the venv to PATH
+echo "source /home/pi/Inhalator/.inhalator_env/bin/activate" >> /home/pi/.bashrc
+
+# add ll and lla to bashrc
+echo -e "alias ll='ls -l'\nalias lla='ls -la'"
