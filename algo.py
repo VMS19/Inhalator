@@ -399,7 +399,7 @@ class Sampler(object):
         :return: Tuple of (flow, pressure, saturation) if there are no errors,
                 or None if an error occurred in any of the drivers.
         """
-        flow_slm = self.read_single_sensor(
+        flow_slm, temperature = self.read_single_sensor(
             self._flow_sensor, AlertCodes.FLOW_SENSOR_ERROR, timestamp)
         pressure_cmh2o = self.read_single_sensor(
             self._pressure_sensor, AlertCodes.PRESSURE_SENSOR_ERROR, timestamp)
@@ -428,7 +428,7 @@ class Sampler(object):
             self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BATTERY, timestamp)
             self.log.error(e)
 
-        data = (flow_slm, pressure_cmh2o, o2_saturation_percentage)
+        data = (flow_slm, temperature, pressure_cmh2o, o2_saturation_percentage)
         return [x if x is not None else 0 for x in data]
 
     def sampling_iteration(self):
@@ -436,7 +436,7 @@ class Sampler(object):
 
         # Read from sensors
         result = self.read_sensors(ts)
-        flow_slm, pressure_cmh2o, o2_saturation_percentage = result
+        flow_slm, temperature, pressure_cmh2o, o2_saturation_percentage = result
 
         if self.save_sensor_values:
             self.storage_handler.write(flow=flow_slm,
@@ -446,7 +446,8 @@ class Sampler(object):
                                        peep=self._measurements.peep_min_pressure,
                                        tv_insp=self._measurements.inspiration_volume,
                                        tv_exp=self._measurements.expiration_volume,
-                                       bpm=self._measurements.bpm)
+                                       bpm=self._measurements.bpm,
+                                       temperature=temperature)
 
         self.vsm.update(
             pressure_cmh2o=pressure_cmh2o,
