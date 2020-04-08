@@ -22,11 +22,11 @@ class AlertCodes(IntEnum):
     OXYGEN_HIGH = 11
 
     # system alerts
-    NO_CONFIGURATION_FILE = 100
-    FLOW_SENSOR_ERROR = 101
-    PRESSURE_SENSOR_ERROR =  102
-    OXYGEN_SENSOR_ERROR = 103
-    NO_BATTERY = 104
+    NO_CONFIGURATION_FILE = 101
+    FLOW_SENSOR_ERROR = 102
+    PRESSURE_SENSOR_ERROR =  103
+    OXYGEN_SENSOR_ERROR = 104
+    NO_BATTERY = 105
 
     def __getitem__(self, item):
         return getattr(self, item)
