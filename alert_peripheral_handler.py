@@ -1,5 +1,6 @@
 from data.alerts import AlertCodes
 
+
 class AlertPeripheralHandler(object):
 
     def __init__(self, events, drivers):
