@@ -13,10 +13,11 @@ class AlertPeripheralHandler(object):
 
     def on_new_alert(self, alert):
         self.alert_driver.set_medical_condition_alert(
-            alert == AlertCodes.OK,
+            alert == AlertCodes.OK or alert >= AlertCodes.SYSTEM_ALERT_OFFSET,
             self.events.mute_alerts._alerts_muted)
 
     def on_mute(self, mute):
         self.alert_driver.set_buzzer(
             mute or
-            self.events.alerts_queue.last_alert == AlertCodes.OK)
+            self.events.alerts_queue.last_alert == AlertCodes.OK or
+            self.events.alerts_queue.last_alert >= AlertCodes.SYSTEM_ALERT_OFFSET)
