@@ -144,7 +144,7 @@ def test_timestamp_label_is_empty_when_alert_changes_to_ok(
 def test_timestamp_label_on_alert(alert_bar: IndicatorAlertBar):
     alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.NO_BREATH,
                                                      alert_bar.drivers.acquire_driver(
-                                                         "timer").get_time())
+                                                         "timer").get_current_time())
     alert_bar.update()
 
     assert alert_bar.timestamp_label["text"] == "just now"
@@ -201,7 +201,7 @@ def test_version_label(alert_bar: IndicatorAlertBar):
 def test_alert_on_high_oxygen(alert_bar: IndicatorAlertBar):
     alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.OXYGEN_HIGH,
                                                      alert_bar.drivers.acquire_driver(
-                                                         "timer").get_time())
+                                                         "timer").get_current_time())
     alert_bar.update()
 
     assert alert_bar.message_label["text"] == "Oxygen Too High"
@@ -210,7 +210,7 @@ def test_alert_on_high_oxygen(alert_bar: IndicatorAlertBar):
 def test_alert_on_low_oxygen(alert_bar: IndicatorAlertBar):
     alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.OXYGEN_LOW,
                                                      alert_bar.drivers.acquire_driver(
-                                                         "timer").get_time())
+                                                         "timer").get_current_time())
     alert_bar.update()
 
     assert alert_bar.message_label["text"] == "Oxygen Too Low"

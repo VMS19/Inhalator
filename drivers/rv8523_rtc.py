@@ -83,7 +83,7 @@ class Rv8523Rtc(I2cDriver):
 
         return self.ERR_FAIL
 
-    def _get_time(self):
+    def get_rtc_time(self):
         seconds = self._get_clock_unit(0x7F, self.REG_SECONDS)
         minutes = self._get_clock_unit(0x7F)
         hours = self._get_clock_unit(0x3F)
@@ -92,7 +92,7 @@ class Rv8523Rtc(I2cDriver):
         years = self._get_clock_unit(0x7F) + self.REG_YEARS_OFFSET
         return datetime(years, months, days, hours, minutes, seconds)
 
-    def set_time(self, date):
+    def set_rtc_time(self, date):
         try:
             self._set_clock_unit(date.second, self.REG_SECONDS)
             self._set_clock_unit(date.minute, self.REG_MINUTES)
@@ -125,7 +125,7 @@ class Rv8523Rtc(I2cDriver):
     def read(self):
         """ Returns date years to seconds """
         try:
-            time = self._get_time()
+            time = self.get_rtc_time()
             if time != self.ERR_FAIL:
                 return time
             else:

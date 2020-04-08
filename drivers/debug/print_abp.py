@@ -1,22 +1,22 @@
 import time
 import logging
 
-from drivers.sdp8_pressure_sensor import SdpPressureSensor
+from drivers.abp_pressure_sensor import AbpPressureSensor
 
 
 def main():
     logging.basicConfig(level=logging.DEBUG)
-    sdp = None
+    abp = None
 
     try:
-        sdp = SdpPressureSensor()
+        abp = AbpPressureSensor()
         while True:
-            pressure = sdp.read()
+            pressure = abp.read()
             print(pressure)
             time.sleep(0.2)
     finally:
-        if sdp is not None:
-            sdp.close()
+        if abp is not None:
+            abp.close()
 
 
 if __name__ == "__main__":

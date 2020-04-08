@@ -1,5 +1,6 @@
 # Breathing Air
-![](https://github.com/Reznic/Inhalator/workflows/build/badge.svg)
+![](https://github.com/Reznic/Inhalator/workflows/build/badge.svg) 
+[![Coverage Status](https://coveralls.io/repos/github/Reznic/Inhalator/badge.svg?branch=master)](https://coveralls.io/github/Reznic/Inhalator?branch=master)
 
 
 Turning stupid BiPAP into full-scale inhalators. 
