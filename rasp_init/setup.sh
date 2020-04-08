@@ -65,4 +65,4 @@ sudo raspi-config nonint do_spi 0
 echo "source /home/pi/Inhalator/.inhalator_env/bin/activate" >> /home/pi/.bashrc
 
 # add ll and lla to bashrc
-echo -e "alias ll='ls -l'\nalias lla='ls -la'"
+echo -e "alias ll='ls -l'\nalias lla='ls -la'" >> /home/pi/.bashrc
