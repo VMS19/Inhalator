@@ -6,25 +6,27 @@ from data.observable import Observable
 
 
 class AlertCodes(IntEnum):
-    MEDICAL_ALERT_OFFSET = 1
-    SYSTEM_ALERT_OFFSET = 100
     OK = 0
-    PRESSURE_LOW = MEDICAL_ALERT_OFFSET
-    PRESSURE_HIGH = MEDICAL_ALERT_OFFSET + 1
-    VOLUME_LOW = MEDICAL_ALERT_OFFSET + 2
-    VOLUME_HIGH = MEDICAL_ALERT_OFFSET + 3
-    PEEP_TOO_HIGH = MEDICAL_ALERT_OFFSET + 4
-    PEEP_TOO_LOW = MEDICAL_ALERT_OFFSET + 5
-    BPM_LOW = MEDICAL_ALERT_OFFSET + 6
-    BPM_HIGH = MEDICAL_ALERT_OFFSET + 7
-    NO_BREATH = MEDICAL_ALERT_OFFSET + 8
-    NO_CONFIGURATION_FILE = SYSTEM_ALERT_OFFSET
-    FLOW_SENSOR_ERROR = SYSTEM_ALERT_OFFSET + 1
-    PRESSURE_SENSOR_ERROR = SYSTEM_ALERT_OFFSET + 2
-    OXYGEN_SENSOR_ERROR = SYSTEM_ALERT_OFFSET + 3
-    OXYGEN_LOW = SYSTEM_ALERT_OFFSET + 4
-    OXYGEN_HIGH = SYSTEM_ALERT_OFFSET + 5
-    NO_BATTERY = SYSTEM_ALERT_OFFSET + 6
+
+    # medical alerts
+    PRESSURE_LOW = 1
+    PRESSURE_HIGH = 2
+    VOLUME_LOW = 3
+    VOLUME_HIGH = 4
+    PEEP_TOO_HIGH = 5
+    PEEP_TOO_LOW = 6
+    BPM_LOW = 7
+    BPM_HIGH = 8
+    NO_BREATH = 9
+    OXYGEN_LOW = 10
+    OXYGEN_HIGH = 11
+
+    # system alerts
+    NO_CONFIGURATION_FILE = 100
+    FLOW_SENSOR_ERROR = 101
+    PRESSURE_SENSOR_ERROR =  102
+    OXYGEN_SENSOR_ERROR = 103
+    NO_BATTERY = 104
 
     def __getitem__(self, item):
         return getattr(self, item)
@@ -65,8 +67,8 @@ class Alert(object):
     def __eq__(self, other):
         return self.code == other
 
-    def __ge__(self, other):
-        return self.code >= other
+    def is_medical_condition(self):
+        return 0 < self.code <= 100
 
     def __str__(self):
         if self.code in self.ALERT_CODE_TO_MESSAGE:
