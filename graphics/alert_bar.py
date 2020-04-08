@@ -161,7 +161,7 @@ class IndicatorAlertBar(object):
         # because we want to support both simulation mode and real mode.
         # hence, we look at the differential time since the alert
         # last happened.
-        now = self.drivers.acquire_driver("timer").get_current_time()
+        now = self.drivers.acquire_driver("timer").get_time()
         then = self.current_alert.timestamp
 
         now_dt = datetime.datetime.fromtimestamp(now)
