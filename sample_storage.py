@@ -9,7 +9,7 @@ BYTES_IN_GB = 2 ** 30
 class SamplesStorage:
     COLUMNS = ['timestamp',
                'unix_time (milliseconds)',
-               'time_elapsed (seconds)',
+               'time elapsed (seconds)',
                'flow',
                'pressure',
                'oxygen',
