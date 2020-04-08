@@ -3,6 +3,7 @@ import os
 import time
 
 from graphics.alerts_history_screen import AlertsHistoryScreen
+from graphics.calibrate.calibrate_flow import CalibrateFlowScreen
 from graphics.configure_alerts_screen import ConfigureAlarmsScreen
 from graphics.imagebutton import ImageButton
 
@@ -183,7 +184,7 @@ class OpenAlertsHistoryScreenButton(object):
         pass
 
 
-class AutoZeroButton(object):
+class CalibrationsButton(object):
 
     def __init__(self, parent):
         self.parent = parent
@@ -192,7 +193,7 @@ class AutoZeroButton(object):
         self.button = Button(
             master=self.root,
             command=self.on_click,
-            text="Autozero",
+            text="Calibrate",
             relief="flat",
             font=("Roboto", 10),
             bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
@@ -201,11 +202,20 @@ class AutoZeroButton(object):
             activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,
         )
 
+        self.screen = None
+
+
     def on_click(self):
-        print("Not Implemented Yet")
+        master_frame = self.parent.parent.element
+        self.screen = CalibrateFlowScreen(master_frame, self.parent.measurements, self.on_exit)
+        self.screen.show()
+
+    def on_exit(self):
+        self.screen = None
 
     def render(self):
         self.button.place(relx=0, rely=0.53, relwidth=0.8, relheight=0.2)
 
     def update(self):
-        pass
+        if self.screen is not None:
+            self.screen.update()

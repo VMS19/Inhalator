@@ -7,7 +7,7 @@ from graphics.graph_summaries import VolumeSummary, BPMSummary, \
 from graphics.right_menu_options import (MuteAlertsButton,
                                          ClearAlertsButton,
                                          LockThresholdsButton,
-                                         OpenConfigureAlertsScreenButton, OpenAlertsHistoryScreenButton, AutoZeroButton)
+                                         OpenConfigureAlertsScreenButton, OpenAlertsHistoryScreenButton, CalibrationsButton)
 from graphics.themes import Theme
 
 
@@ -17,7 +17,7 @@ class MasterFrame(object):
 
         self.master_frame = Frame(master=self.root, bg="black")
         self.left_pane = LeftPane(self, measurements=measurements)
-        self.right_pane = RightPane(self, events=events)
+        self.right_pane = RightPane(self, events=events, measurements=measurements)
         self.center_pane = CenterPane(self, measurements=measurements)
         self.top_pane = TopPane(self, events=events, drivers=drivers,
                                 measurements=measurements)
@@ -137,9 +137,10 @@ class CenterPane(object):
 
 
 class RightPane(object):
-    def __init__(self, parent, events):
+    def __init__(self, parent, events, measurements):
         self.parent = parent
         self.events = events
+        self.measurements = measurements
 
         self.root = parent.element
         self.screen_height = self.root.winfo_screenheight()
@@ -156,7 +157,7 @@ class RightPane(object):
         self.lock_thresholds_btn = LockThresholdsButton(parent=self)
         self.configure_alerts_btn = OpenConfigureAlertsScreenButton(self)
         # self.alerts_history_btn = OpenAlertsHistoryScreenButton(self, events=self.events)
-        self.auto_zero_btn = AutoZeroButton(self)
+        self.calibrate_btn = CalibrationsButton(self)
 
     @property
     def buttons(self):
@@ -165,7 +166,7 @@ class RightPane(object):
                 self.configure_alerts_btn,
                 # self.alerts_history_btn,
                 # self.lock_thresholds_btn
-                self.auto_zero_btn,
+                self.calibrate_btn,
                 )
 
     @property

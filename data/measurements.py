@@ -2,6 +2,7 @@ from queue import Queue
 from threading import Lock
 
 from data.configurations import Configurations
+from data.offset import Offset
 
 
 class Measurements(object):
@@ -20,6 +21,9 @@ class Measurements(object):
         self.battery_percentage = 0
         self.lock = Lock()
 
+        self.last_flow_measuremnt = 0
+        self.flow_offset = Offset("flow", 0)
+
     def reset(self):
         self.inspiration_volume = 0
         self.expiration_volume = 0
@@ -29,6 +33,8 @@ class Measurements(object):
         self.bpm = 0
 
     def set_flow_value(self, new_value):
+        self.last_flow_measuremnt = new_value
+
         with self.lock:
             # pop last item if queue is full
             if self.flow_measurements.full():

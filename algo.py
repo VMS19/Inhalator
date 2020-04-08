@@ -404,6 +404,8 @@ class Sampler(object):
         pressure_cmh2o = self.read_single_sensor(
             self._pressure_sensor, AlertCodes.PRESSURE_SENSOR_ERROR, timestamp)
 
+        flow_slm += self._measurements.flow_offset.offset
+
         try:
             o2_saturation_percentage = self._a2d.read_oxygen()
         except Exception as e:
