@@ -7,7 +7,7 @@ from pytest import approx
 
 from algo import RunningSlope, VentilationStateMachine, VentilationState, \
     Sampler
-from data.alerts import AlertCodes
+from data.alert import AlertCodes
 from data.configurations import Configurations
 from data.events import Events
 from data.measurements import Measurements
@@ -81,11 +81,11 @@ def test_alert_is_published_on_high_o2():
                       flow_sensor=flow, pressure_sensor=pressure, a2d=a2d,
                       timer=timer)
 
-    assert len(events.alerts_queue) == 0
+    assert len(events.alert_queue) == 0
 
     sampler.sampling_iteration()
 
-    assert any(alert == AlertCodes.OXYGEN_HIGH for alert in events.alerts_queue.queue.queue)
+    assert any(alert == AlertCodes.OXYGEN_HIGH for alert in events.alert_queue)
 
     measurements = Measurements()
     events = Events()
@@ -104,12 +104,12 @@ def test_alert_is_published_on_high_o2():
                       flow_sensor=flow, pressure_sensor=pressure, a2d=a2d,
                       timer=timer)
 
-    assert len(events.alerts_queue) == 0
+    assert len(events.alert_queue) == 0
 
     sampler.sampling_iteration()
 
     assert any(alert == AlertCodes.OXYGEN_HIGH for alert in
-               events.alerts_queue.queue.queue)
+               events.alert_queue)
 
 
 def test_alert_is_published_on_low_o2():
@@ -130,9 +130,9 @@ def test_alert_is_published_on_low_o2():
                       flow_sensor=flow, pressure_sensor=pressure, a2d=a2d,
                       timer=timer)
 
-    assert len(events.alerts_queue) == 0
+    assert len(events.alert_queue) == 0
 
     sampler.sampling_iteration()
 
-    assert any(alert == AlertCodes.OXYGEN_LOW for alert in
-               events.alerts_queue.queue.queue)
+    assert any(alert == AlertCodes.OXYGEN_LOW
+               for alert in events.alert_queue)
