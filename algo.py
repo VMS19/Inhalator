@@ -8,7 +8,7 @@ from collections import deque
 from numpy import trapz
 from scipy.stats import linregress
 
-from data.alerts import AlertCodes
+from data.alert import AlertCodes
 from data.measurements import Measurements
 from data.configurations import Configurations
 from sample_storage import SamplesStorage
@@ -222,14 +222,14 @@ class VentilationStateMachine(object):
                 self.log.warning(
                     "BPM too high %s, top threshold %s",
                     self._measurements.bpm, self._config.resp_rate_range.max)
-                self._events.alerts_queue.enqueue_alert(AlertCodes.BPM_HIGH,
-                                                        timestamp)
+                self._events.alert_queue.enqueue_alert(AlertCodes.BPM_HIGH,
+                                                       timestamp)
             elif self._config.resp_rate_range.below(self._measurements.bpm):
                 self.log.warning(
                     "BPM too low %s, bottom threshold %s",
                     self._measurements.bpm, self._config.resp_rate_range.min)
-                self._events.alerts_queue.enqueue_alert(AlertCodes.BPM_LOW,
-                                                        timestamp)
+                self._events.alert_queue.enqueue_alert(AlertCodes.BPM_LOW,
+                                                       timestamp)
 
         # Update final expiration volume
         exp_volume_ml = abs(self.expiration_volume.integrate()) * 1000
@@ -249,12 +249,12 @@ class VentilationStateMachine(object):
         self.insp_volumes.append((timestamp, insp_volume_ml))
 
         if self._config.volume_range.below(insp_volume_ml):
-            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW, timestamp)
+            self._events.alert_queue.enqueue_alert(AlertCodes.VOLUME_LOW, timestamp)
             self.log.warning(
                 "volume too low %s, bottom threshold %s",
                 insp_volume_ml, self._config.volume_range.min)
         elif self._config.volume_range.over(insp_volume_ml):
-            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH, timestamp)
+            self._events.alert_queue.enqueue_alert(AlertCodes.VOLUME_HIGH, timestamp)
             self.log.warning(
                 "volume too high %s, top threshold %s",
                 insp_volume_ml, self._config.volume_range.max)
@@ -282,7 +282,7 @@ class VentilationStateMachine(object):
         seconds_from_last_breath = timestamp - self.last_breath_timestamp
         if seconds_from_last_breath >= self.NO_BREATH_ALERT_TIME_SECONDS:
             self.log.warning("No breath detected for the last 12 seconds")
-            self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH, timestamp)
+            self._events.alert_queue.enqueue_alert(AlertCodes.NO_BREATH, timestamp)
             self.reset()
 
         # We track inhale and exhale volume separately. Positive flow means
@@ -305,12 +305,12 @@ class VentilationStateMachine(object):
             self.log.warning(
                 "pressure too high %s, top threshold %s",
                 pressure_cmh2o, self._config.pressure_range.max)
-            self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_HIGH, timestamp)
+            self._events.alert_queue.enqueue_alert(AlertCodes.PRESSURE_HIGH, timestamp)
         elif self._config.pressure_range.below(pressure_cmh2o):
             self.log.warning(
                 "pressure too low %s, bottom threshold %s",
                 pressure_cmh2o, self._config.pressure_range.min)
-            self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW, timestamp)
+            self._events.alert_queue.enqueue_alert(AlertCodes.PRESSURE_LOW, timestamp)
 
         # Publish alerts for Oxygen
         # Oxygen too high
@@ -318,7 +318,7 @@ class VentilationStateMachine(object):
             self.log.warning(
                 f"Oxygen percentage too high "
                 f"({o2_percentage}% > {self._config.o2_range.max}%)")
-            self._events.alerts_queue.enqueue_alert(
+            self._events.alert_queue.enqueue_alert(
                 AlertCodes.OXYGEN_HIGH, timestamp)
 
             # Oxygen too low
@@ -326,7 +326,7 @@ class VentilationStateMachine(object):
             self.log.warning(
                 f"Oxygen percentage too low "
                 f"({o2_percentage}% < {self._config.o2_range.min}%)")
-            self._events.alerts_queue.enqueue_alert(
+            self._events.alert_queue.enqueue_alert(
                 AlertCodes.OXYGEN_LOW, timestamp)
 
         self.check_transition(
@@ -385,7 +385,7 @@ class Sampler(object):
         try:
             return sensor.read()
         except Exception as e:
-            self._events.alerts_queue.enqueue_alert(alert_code, timestamp)
+            self._events.alert_queue.enqueue_alert(alert_code, timestamp)
             self.log.error(e)
         return None
 
@@ -407,25 +407,26 @@ class Sampler(object):
         try:
             o2_saturation_percentage = self._a2d.read_oxygen()
         except Exception as e:
-            self._events.alerts_queue.enqueue_alert(AlertCodes.OXYGEN_SENSOR_ERROR)
+            self._events.alert_queue.enqueue_alert(AlertCodes.OXYGEN_SENSOR_ERROR,
+                                                   timestamp)
             self.log.error(e)
             o2_saturation_percentage = 0
 
         try:
             battery_exists = self._a2d.read_battery_existence()
             if not battery_exists:
-                self._events.alerts_queue.enqueue_alert(
+                self._events.alert_queue.enqueue_alert(
                     AlertCodes.NO_BATTERY, timestamp
                 )
         except Exception as e:
-            self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BATTERY, timestamp)
+            self._events.alert_queue.enqueue_alert(AlertCodes.NO_BATTERY, timestamp)
             self.log.error(e)
 
         try:
             battery_percentage = self._a2d.read_battery_percentage()
             self._measurements.set_battery_percentage(battery_percentage)
         except Exception as e:
-            self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BATTERY, timestamp)
+            self._events.alert_queue.enqueue_alert(AlertCodes.NO_BATTERY, timestamp)
             self.log.error(e)
 
         data = (flow_slm, pressure_cmh2o, o2_saturation_percentage)
