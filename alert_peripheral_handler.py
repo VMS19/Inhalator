@@ -12,9 +12,15 @@ class AlertPeripheralHandler(object):
         self.events.mute_controller.observable.subscribe(self, self.on_mute)
 
     def on_new_alert(self, alert):
+        alerts_muted = self.events.mute_controller._alerts_muted
+
         self.alert_driver.set_medical_condition_alert(
-            alert == AlertCodes.OK,
-            self.events.mute_controller._alerts_muted)
+            not alert.is_medical_condition(),
+            alerts_muted)
+
+        self.alert_driver.set_system_fault_alert(
+            not alert.is_system_alert(),
+            alerts_muted)
 
     def on_mute(self, mute):
         self.alert_driver.set_buzzer(
