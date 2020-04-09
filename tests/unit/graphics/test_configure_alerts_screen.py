@@ -4,7 +4,7 @@ from tkinter import Frame
 import pytest
 from unittest.mock import MagicMock
 
-from data.alert import Alert, AlertCodes
+from data.alerts import Alert, AlertCodes
 from data.configurations import Configurations
 from graphics.configure_alerts_screen import ConfigureAlarmsScreen
 from graphics.themes import Theme, DarkTheme

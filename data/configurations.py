@@ -32,8 +32,7 @@ class Configurations(object):
     def __init__(self, o2_range, volume_range, pressure_range, resp_rate_range,
                  flow_y_scale, pressure_y_scale, graph_seconds,
                  breathing_threshold, log_enabled=True,
-                 mute_time_limit=120, low_battery_percentage=15,
-                 delta_time_between_alerts=900):
+                 mute_time_limit=120, low_battery_percentage=15):
         self.o2_range = o2_range
         self.volume_range = volume_range
         self.pressure_range = pressure_range
@@ -45,7 +44,6 @@ class Configurations(object):
         self.flow_y_scale = flow_y_scale
         self.pressure_y_scale = pressure_y_scale
         self.low_battery_percentage = low_battery_percentage
-        self.delta_time_between_alerts = delta_time_between_alerts
 
     def __getitem__(self, item):
         return getattr(self, item)
@@ -118,7 +116,6 @@ class Configurations(object):
             log_enabled = config["log_enabled"]
             mute_time_limit = config["mute_time_limit"]
             low_battery_percentage = config["low_battery_percentage"]
-            delta_time_between_alerts = config["delta_time_between_alerts"]
 
             return cls(o2_range=o2,
                        volume_range=volume,
@@ -130,8 +127,7 @@ class Configurations(object):
                        mute_time_limit=mute_time_limit,
                        flow_y_scale=flow_y_scale,
                        pressure_y_scale=pressure_y_scale,
-                       low_battery_percentage=low_battery_percentage,
-                       delta_time_between_alerts=delta_time_between_alerts)
+                       low_battery_percentage=low_battery_percentage)
 
         except Exception as e:
             raise ConfigurationFileError(f"Could not load "
@@ -177,7 +173,6 @@ class Configurations(object):
             "graph_seconds": self.graph_seconds,
             "mute_time_limit": self.mute_time_limit,
             "low_battery_percentage": self.low_battery_percentage,
-            "delta_time_between_alerts": self.delta_time_between_alerts,
         }
 
         with open(config_path, "w") as config_file:

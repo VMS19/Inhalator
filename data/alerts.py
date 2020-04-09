@@ -1,6 +1,8 @@
 import time
 import datetime
 from enum import IntEnum
+from queue import Queue
+from data.observable import Observable
 
 
 class AlertCodes(IntEnum):
@@ -57,12 +59,10 @@ class Alert(object):
     def __init__(self, alert_code, timestamp=None):
         self.code = alert_code
         if timestamp is None:
-            self.timestamp = time.time()  # TODO: Remove
+            self.timestamp = time.time()
 
         else:
             self.timestamp = timestamp
-
-        self.seen = False
 
     def __eq__(self, other):
         return self.code == other
@@ -92,5 +92,61 @@ class Alert(object):
     def date(self):
         return datetime.datetime.fromtimestamp(self.timestamp).strftime("%A %X")
 
-    def mark_as_seen(self):
-        self.seen = True
+
+class AlertsQueue(object):
+    MAXIMUM_ALERTS_AMOUNT = 2
+    MAXIMUM_HISTORY_COUNT = 40
+    TIME_DIFFERENCE_BETWEEN_SAME_ALERTS = 60 * 5
+
+    def __init__(self):
+        self.queue = Queue(maxsize=self.MAXIMUM_ALERTS_AMOUNT)
+        self.last_alert = Alert(AlertCodes.OK)
+        self.observer = Observable()
+
+    def __len__(self):
+        return self.queue.qsize()
+
+    def enqueue_alert(self, alert, timestamp=None):
+        if not isinstance(alert, Alert):
+            alert = Alert(alert, timestamp)
+
+        if self.queue.qsize() == self.MAXIMUM_ALERTS_AMOUNT:
+            self.dequeue_alert()
+
+        self.last_alert = alert
+
+        self.observer.publish(self.last_alert)
+        self.queue.put(alert)
+
+    def dequeue_alert(self):
+        alert = self.queue.get()
+        self.last_alert = self.queue.queue[0]
+
+        self.observer.publish(self.last_alert)
+        return alert
+
+    def clear_alerts(self):
+        # Note that emptying a queue is not thread-safe
+        self.queue.queue.clear()
+
+        self.last_alert = Alert(AlertCodes.OK)
+        self.observer.publish(self.last_alert)
+
+
+class MuteAlerts(object):
+
+    def __init__(self):
+        self.observer = Observable()
+        self._alerts_muted = False
+        self.mute_time = None
+
+    def mute_alerts(self, value=None):
+        if value is not None:
+            self._alerts_muted = value
+        else:
+            self._alerts_muted = not self._alerts_muted
+
+        if self._alerts_muted:
+            self.mute_time = time.time()
+
+        self.observer.publish(self._alerts_muted)
