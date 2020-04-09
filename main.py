@@ -127,6 +127,13 @@ def start_app(args):
                                 simulation_data=args.simulate,
                                 error_probability=args.error)
 
+        # Must initialize mux before pressure and flow drivers! do not reorder
+        try:
+            # mux driver is singleton. initialize it and driver factory cache it
+            drivers.acquire_driver("mux")
+        except errors.I2CDeviceNotFoundError:
+            pass
+
         try:
             pressure_sensor = drivers.acquire_driver("pressure")
         except errors.I2CDeviceNotFoundError:
@@ -155,7 +162,7 @@ def start_app(args):
 
         if any(isinstance(driver, NullDriver)
                for driver in (pressure_sensor, flow_sensor, watchdog, a2d, rtc)):
-            alert_driver.set_system_fault_alert(False)
+            alert_driver.set_system_fault_alert(value=False, mute=False)
 
         AlertPeripheralHandler(events, drivers).subscribe()
         sampler = Sampler(measurements=measurements, events=events,
