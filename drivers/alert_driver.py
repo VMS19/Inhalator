@@ -50,3 +50,6 @@ class AlertDriver(object):
             gpio_state = GPIO.LOW
 
         GPIO.output(self.FAULT_BUZZER_GPIO, gpio_state)
+
+    def close(self):
+        pass

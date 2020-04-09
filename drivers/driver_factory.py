@@ -204,6 +204,11 @@ class DriverFactory(object):
         from drivers.rv8523_rtc import Rv8523Rtc
         return Rv8523Rtc()
 
+    @staticmethod
+    def get_mux_driver():
+        from drivers.mux_i2c import MuxI2C
+        return MuxI2C()
+
     def get_mock_differential_pressure_driver(self):
         from drivers.mocks.sensor import MockSensor
         simulation_data = self.simulation_data
@@ -273,3 +278,8 @@ class DriverFactory(object):
     def get_mock_rtc_driver():
         from drivers.mocks.mock_rv8523_rtc_driver import MockRv8523Rtc
         return MockRv8523Rtc()
+
+    @staticmethod
+    def get_mock_mux_driver():
+        from unittest.mock import MagicMock
+        return MagicMock()

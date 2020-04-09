@@ -97,3 +97,7 @@ class Ads7844A2D(object):
         # the read value should be around 1.6
         raw_existence_value = self._sample_a2d(self.BATTERY_EXISTENCE_CHANNEL)
         return 1.7 >= raw_existence_value >= 1.5
+
+    def close(self):
+        if self._spi is not None:
+            self._spi.close()
