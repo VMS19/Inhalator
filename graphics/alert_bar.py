@@ -96,11 +96,11 @@ class IndicatorAlertBar(object):
         self.bar.place(relx=0, rely=0)
         self.message_label.place(anchor="nw", relx=0.03, rely=0.05)
         self.timestamp_label.place(anchor="nw", relx=0.04, rely=0.7)
-        self.battery_frame.place(relx=0.80, rely=0.05,
-                                 relheight=0.8, relwidth=0.2)
-        self.battery_label.place(relx=0.65, rely=0)
-        self.battery_icon.place(relx=0.5, rely=0)
-        self.version_label.place(relx=0.45, rely=0.7)
+        self.battery_frame.place(relx=0.7, rely=0.05,
+                                 relheight=0.8, relwidth=0.3)
+        self.battery_label.place(relx=0.75, rely=0)
+        self.battery_icon.place(relx=0.6, rely=0)
+        self.version_label.place(relx=0.5, rely=0.7)
 
     def update(self):
         # Check mute time limit
