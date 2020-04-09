@@ -100,7 +100,7 @@ class IndicatorAlertBar(object):
                                  relheight=0.8, relwidth=0.3)
         self.battery_label.place(relx=0.75, rely=0)
         self.battery_icon.place(relx=0.6, rely=0)
-        self.version_label.place(relx=0.5, rely=0.7)
+        self.version_label.place(relx=0.3, rely=0.7)
 
     def update(self):
         # Check mute time limit
