@@ -8,6 +8,13 @@ then
 	exit 1
 fi
 
+# exit if not running as root
+if [ "root" != $(whoami) ]
+then
+	echo "This script should be run as root!"
+	exit 1
+fi
+
 INHALATOR_PATH=$(realpath $(dirname $(realpath $0))/..)
 
 # install dependencies
@@ -66,3 +73,10 @@ echo "source /home/pi/Inhalator/.inhalator_env/bin/activate" >> /home/pi/.bashrc
 
 # add ll and lla to bashrc
 echo -e "alias ll='ls -l'\nalias lla='ls -la'" >> /home/pi/.bashrc
+
+# re-enable file system expansion
+sed -i 's/#init_here/init=\/usr\/lib\/raspi-config\/init_resize.sh/g' /boot/cmdline.txt
+sed -i 's/exit 0 #remove this//g' /etc/rc.local
+sed -i 's/8500000 #//g' /usr/lib/raspi-config/init_resize.sh
+
+echo "setup done. DO NOT REBOOT - USE ONLY SHUTDOWN!!!"
