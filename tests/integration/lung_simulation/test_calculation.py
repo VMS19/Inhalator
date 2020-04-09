@@ -7,6 +7,7 @@ from pytest import approx
 
 from algo import Sampler, VentilationState
 from application import Application
+from data import alerts
 from data.configurations import Configurations
 from data.events import Events
 from data.measurements import Measurements

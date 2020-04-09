@@ -5,7 +5,7 @@ from tkinter import Tk
 from graphics.panes import MasterFrame
 from graphics.themes import Theme
 from data.configurations import Configurations, ConfigurationState
-from data.alert import AlertCodes
+from data.alerts import AlertCodes
 
 
 class Application(object):
@@ -48,9 +48,7 @@ class Application(object):
 
         # We want to alert that config.json is corrupted
         if Configurations.configuration_state() == ConfigurationState.CONFIG_CORRUPTED:
-            events.alert_queue.enqueue_alert(
-                AlertCodes.NO_CONFIGURATION_FILE,
-                timestamp=drivers.acquire_driver("timer").get_time())
+            events.alerts_queue.enqueue_alert(AlertCodes.NO_CONFIGURATION_FILE)
             Configurations.instance().save_to_file()  # Create config file for future use.
 
         self.master_frame = MasterFrame(self.root,
