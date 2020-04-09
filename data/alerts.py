@@ -7,22 +7,26 @@ from data.observable import Observable
 
 class AlertCodes(IntEnum):
     OK = 0
-    PRESSURE_LOW = 1 << 0
-    PRESSURE_HIGH = 1 << 1
-    VOLUME_LOW = 1 << 2
-    VOLUME_HIGH = 1 << 3
-    PEEP_TOO_HIGH = 1 << 4
-    PEEP_TOO_LOW = 1 << 5
-    BPM_LOW = 1 << 6
-    BPM_HIGH = 1 << 7
-    NO_BREATH = 1 << 8
-    NO_CONFIGURATION_FILE = 1 << 9
-    FLOW_SENSOR_ERROR = 1 << 10
-    PRESSURE_SENSOR_ERROR = 1 << 11
-    OXYGEN_SENSOR_ERROR = 1 << 12
-    OXYGEN_LOW = 1 << 13
-    OXYGEN_HIGH = 1 << 14
-    NO_BATTERY = 1 << 15
+
+    # medical alerts
+    PRESSURE_LOW = 1
+    PRESSURE_HIGH = 2
+    VOLUME_LOW = 3
+    VOLUME_HIGH = 4
+    PEEP_TOO_HIGH = 5
+    PEEP_TOO_LOW = 6
+    BPM_LOW = 7
+    BPM_HIGH = 8
+    NO_BREATH = 9
+    OXYGEN_LOW = 10
+    OXYGEN_HIGH = 11
+
+    # system alerts
+    NO_CONFIGURATION_FILE = 101
+    FLOW_SENSOR_ERROR = 102
+    PRESSURE_SENSOR_ERROR = 103
+    OXYGEN_SENSOR_ERROR = 104
+    NO_BATTERY = 105
 
     def __getitem__(self, item):
         return getattr(self, item)
@@ -62,6 +66,12 @@ class Alert(object):
 
     def __eq__(self, other):
         return self.code == other
+
+    def is_medical_condition(self):
+        return 0 < self.code <= 100
+
+    def is_system_alert(self):
+        return 100 < self.code
 
     def __str__(self):
         if self.code in self.ALERT_CODE_TO_MESSAGE:
