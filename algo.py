@@ -399,10 +399,11 @@ class Sampler(object):
         :return: Tuple of (flow, pressure, saturation) if there are no errors,
                 or None if an error occurred in any of the drivers.
         """
-        flow_slm, temperature = self.read_single_sensor(
+        flow_slm = self.read_single_sensor(
             self._flow_sensor, AlertCodes.FLOW_SENSOR_ERROR, timestamp)
         pressure_cmh2o = self.read_single_sensor(
             self._pressure_sensor, AlertCodes.PRESSURE_SENSOR_ERROR, timestamp)
+        temperature = self._flow_sensor.read_temperature()
 
         try:
             o2_saturation_percentage = self._a2d.read_oxygen()

@@ -31,17 +31,37 @@ class HscPressureSensor(HoneywellPressureSensor):
         flow += self.SYSTEM_RATIO_OFFSET
         return flow
 
+    def _raw_reading_to_temp(self, raw_temp):
+        return (raw_temp * 200/2047) - 50
+
     def read(self):
         """ Returns pressure as cmh2o """
         try:
             with mux.lock(self.MUX_PORT):
                 read_size, pressure_raw = \
-                    self._pig.i2c_read_device(self._dev, self.MEASURE_BYTE_COUNT + 1)
+                    self._pig.i2c_read_device(self._dev, self.MEASURE_BYTE_COUNT)
             if read_size >= self.MEASURE_BYTE_COUNT:
                 pressure_reading = ((pressure_raw[0] & 0x3F) << 8) | (pressure_raw[1])
-                temp = pressure_raw[2]
                 dp_cmh2o = self._calculate_pressure(pressure_reading)
-                return self._pressure_to_flow(dp_cmh2o), temp
+
+                return self._pressure_to_flow(dp_cmh2o)
+            else:
+                log.warning("Pressure sensor's measure data not ready")
+        except pigpio.error as e:
+            log.error("Could not read from pressure sensor. "
+                      "Is the pressure sensor connected?.")
+            raise I2CReadError("i2c write failed") from e
+
+    def read_temperature(self):
+        """ Returns temperature """
+        try:
+            with mux.lock(self.MUX_PORT):
+                read_size, pressure_raw = \
+                    self._pig.i2c_read_device(self._dev, self.MEASURE_BYTE_COUNT + 2)
+            if read_size >= self.MEASURE_BYTE_COUNT:
+                temp = (pressure_raw[2] << 3) | ((pressure_raw[3] & 0xE0) >> 5)
+
+                return self._raw_reading_to_temp(temp)
             else:
                 log.warning("Pressure sensor's measure data not ready")
         except pigpio.error as e:
