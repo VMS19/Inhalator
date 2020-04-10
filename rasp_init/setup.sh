@@ -68,6 +68,9 @@ sudo raspi-config nonint do_i2c 0
 # enable SPI
 sudo raspi-config nonint do_spi 0
 
+# set timezone
+timedatectl set-timezone 'Asia/Jerusalem'
+
 # add the interpreter from the venv to PATH
 echo "source /home/pi/Inhalator/.inhalator_env/bin/activate" >> /home/pi/.bashrc
 
