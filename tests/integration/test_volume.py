@@ -7,7 +7,7 @@ from pytest import approx
 
 from algo import Sampler
 from application import Application
-from data.alert import AlertCodes
+from data import alerts
 from data.configurations import Configurations
 from data.events import Events
 from data.measurements import Measurements
@@ -104,18 +104,18 @@ def test_sampler_alerts_when_volume_exceeds_minium(events, measurements, config,
                       sampler=sampler,
                       simulation=True)
 
-    assert len(events.alert_queue) == 0
+    assert len(events.alerts_queue) == 0
     app.run_iterations(1)
-    assert len(events.alert_queue) == 0
+    assert len(events.alerts_queue) == 0
 
     config.volume_range = VolumeRange(HIGH_THRESHOLD, HIGH_THRESHOLD)
     app.run_iterations(SIMULATION_SAMPLES)
     app.root.destroy()
 
-    assert len(events.alert_queue) > 0
+    assert len(events.alerts_queue) > 0
 
-    all_alerts = list(events.alert_queue)
-    assert all(alert == AlertCodes.VOLUME_LOW for alert in all_alerts)
+    all_alerts = list(events.alerts_queue.queue.queue)
+    assert all(alert == alerts.AlertCodes.VOLUME_LOW for alert in all_alerts)
 
 
 def test_sampler_alerts_when_volume_exceeds_maximum(events, measurements, config, driver_factory):
@@ -134,15 +134,15 @@ def test_sampler_alerts_when_volume_exceeds_maximum(events, measurements, config
                       sampler=sampler,
                       simulation=True,)
 
-    assert len(events.alert_queue) == 0
+    assert len(events.alerts_queue) == 0
     app.run_iterations(1, fast_forward=True)
-    assert len(events.alert_queue) == 0
+    assert len(events.alerts_queue) == 0
 
     config.volume_range = VolumeRange(LOW_THRESHOLD, LOW_THRESHOLD)
     app.run_iterations(SIMULATION_SAMPLES)
     app.root.destroy()
 
-    assert len(events.alert_queue) > 0
+    assert len(events.alerts_queue) > 0
 
-    all_alerts = list(events.alert_queue)
-    assert all(alert == AlertCodes.VOLUME_HIGH for alert in all_alerts)
+    all_alerts = list(events.alerts_queue.queue.queue)
+    assert all(alert == alerts.AlertCodes.VOLUME_HIGH for alert in all_alerts)
