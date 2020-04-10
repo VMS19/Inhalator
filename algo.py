@@ -141,6 +141,9 @@ class VentilationStateMachine(object):
     HOLD_TO_EXHALE_SLOPE = -4
     EXHALE_TO_PEEP_SLOPE = -4
 
+    # flow threshold indicator for exhale phase change in flow direction.
+    EXHALE_FLOW_INDICATOR = -3  # slm
+
     # Transition table:
     # The key is a given current state, and the value is a tuple of:
     # 1. The compare func against the threshold (greater-than, less-than)
@@ -334,6 +337,9 @@ class VentilationStateMachine(object):
             pressure_cmh2o=pressure_cmh2o,
             timestamp=timestamp)
 
+        self.infer_flow_direction(flow_slm)
+
+
     def check_transition(self, flow_slm, pressure_cmh2o, timestamp):
         pressure_slope = self.pressure_slope.add_sample(pressure_cmh2o, timestamp)
         flow_slop = self.flow_slope.add_sample(flow_slm, timestamp)
@@ -351,6 +357,11 @@ class VentilationStateMachine(object):
             if entry_handler is not None:
                 # noinspection PyArgumentList
                 entry_handler(timestamp)
+
+    def infer_flow_direction(self, flow_value_slm):
+        """If flow below threshold, we are in exhale."""
+        if flow_value_slm < self.EXHALE_FLOW_INDICATOR:
+            self.inspiration_volume.reset()
 
     def infer_state(self, flow_slope, flow_slm, pressure_slope, pressure_cmh2o):
         flow_positive_increasing = flow_slope > 3 and flow_slm > 2
