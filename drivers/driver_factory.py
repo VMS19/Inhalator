@@ -2,8 +2,6 @@ import csv
 
 import logging
 
-from data.configurations import Configurations
-from drivers.mocks.mock_differential_pressure import MockDifferentialPressureSensor
 from drivers.mocks.sinus import sinus, truncate, add_noise, zero
 
 
@@ -221,13 +219,7 @@ class DriverFactory(object):
         else:
             data = generate_data_from_file('flow', simulation_data)
 
-
-        import numpy as np
-        import random
-        offset = Configurations.instance().dp_offset
-        data = [d + (random.randrange(-5, 5) / 10) - offset + 10 for d in data]
-
-        return MockDifferentialPressureSensor(data)
+        return MockSensor(data)
 
     def get_mock_pressure_driver(self):
         from drivers.mocks.sensor import MockSensor

@@ -136,4 +136,3 @@ class FlowCalibrationScreen(object):
 
     def on_cancel(self):
         self.hide()
-
