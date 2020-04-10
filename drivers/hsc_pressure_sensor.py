@@ -34,7 +34,6 @@ class HscPressureSensor(HoneywellPressureSensor):
         # Add sign for flow direction
         if pressure_cmh2o < 0:
             flow = -flow
-            
         return flow
 
     def read(self):
