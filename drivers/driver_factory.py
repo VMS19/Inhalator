@@ -2,6 +2,7 @@ import csv
 
 import logging
 
+from data.configurations import Configurations
 from drivers.mocks.sinus import sinus, truncate, add_noise, zero
 
 
@@ -218,6 +219,13 @@ class DriverFactory(object):
             data = self.generate_mock_air_flow_data()
         else:
             data = generate_data_from_file('flow', simulation_data)
+
+
+        import numpy as np
+        import random
+        offset = Configurations.instance().dp_offset
+        data = [d + (random.randrange(-5, 5) / 10) - offset + 10 for d in data]
+
         return MockSensor(data)
 
     def get_mock_pressure_driver(self):
@@ -248,6 +256,7 @@ class DriverFactory(object):
             data = self.generate_mock_noise()
         else:
             data = generate_data_from_file('flow', simulation_data)
+
         return MockSensor(data, error_probability=self.error_probability)
 
     def get_mock_a2d_driver(self):

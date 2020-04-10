@@ -20,3 +20,8 @@ class MockTimer(object):
 
     def get_current_time(self):
         return self.current_time
+
+    def sleep(self, amount):
+        # This function is currently only being used in the Calibration screen
+        # and doing nothing is the desired effect.
+        pass
