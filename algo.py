@@ -367,7 +367,7 @@ class VentilationStateMachine(object):
 class Sampler(object):
 
     def __init__(self, measurements, events, flow_sensor, pressure_sensor,
-                 a2d, timer, save_sensor_values=False):
+                 a2d, timer, average_window=10, save_sensor_values=False):
         super(Sampler, self).__init__()
         self.log = logging.getLogger(self.__class__.__name__)
         self._measurements = measurements  # type: Measurements
@@ -380,6 +380,7 @@ class Sampler(object):
         self.vsm = VentilationStateMachine(measurements, events)
         self.storage_handler = SamplesStorage()
         self.save_sensor_values = save_sensor_values
+        self.flow_avg = RunningAvg(average_window)
 
     def read_single_sensor(self, sensor, alert_code, timestamp):
         try:
@@ -401,6 +402,9 @@ class Sampler(object):
         """
         flow_slm = self.read_single_sensor(
             self._flow_sensor, AlertCodes.FLOW_SENSOR_ERROR, timestamp)
+        flow_avg_sample = self.flow_avg.process(flow_slm)
+
+
         pressure_cmh2o = self.read_single_sensor(
             self._pressure_sensor, AlertCodes.PRESSURE_SENSOR_ERROR, timestamp)
 
@@ -428,7 +432,7 @@ class Sampler(object):
             self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BATTERY, timestamp)
             self.log.error(e)
 
-        data = (flow_slm, pressure_cmh2o, o2_saturation_percentage)
+        data = (flow_avg_sample, pressure_cmh2o, o2_saturation_percentage)
         return [x if x is not None else 0 for x in data]
 
     def sampling_iteration(self):
@@ -437,6 +441,7 @@ class Sampler(object):
         # Read from sensors
         result = self.read_sensors(ts)
         flow_slm, pressure_cmh2o, o2_saturation_percentage = result
+
 
         if self.save_sensor_values:
             self.storage_handler.write(flow=flow_slm,
