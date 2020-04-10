@@ -367,7 +367,7 @@ class VentilationStateMachine(object):
 class Sampler(object):
 
     def __init__(self, measurements, events, flow_sensor, pressure_sensor,
-                 a2d, timer, average_window=6, save_sensor_values=False):
+                 a2d, timer, average_window=1, save_sensor_values=False):
         super(Sampler, self).__init__()
         self.log = logging.getLogger(self.__class__.__name__)
         self._measurements = measurements  # type: Measurements
@@ -441,7 +441,6 @@ class Sampler(object):
         # Read from sensors
         result = self.read_sensors(ts)
         flow_slm, pressure_cmh2o, o2_saturation_percentage = result
-
 
         if self.save_sensor_values:
             self.storage_handler.write(flow=flow_slm,
