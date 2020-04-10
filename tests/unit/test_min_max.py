@@ -52,7 +52,7 @@ def test_sampler_dead_min_max(events, measurements, config):
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
+                      a2d, timer, average_window=1)
 
     for _ in range(SAMPLES_AMOUNT):
         sampler.sampling_iteration()
@@ -82,7 +82,7 @@ def test_sampler_sinus_min_max(events, measurements, config):
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
+                      a2d, timer, average_window=1)
 
     for _ in range(SAMPLES_AMOUNT):
         sampler.sampling_iteration()
@@ -143,7 +143,7 @@ def test_sampler_pig_min_max(events, measurements, config):
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
+                      a2d, timer, average_window=1)
 
     for _ in range(SAMPLES_AMOUNT):
         sampler.sampling_iteration()

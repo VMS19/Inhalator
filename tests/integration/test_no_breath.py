@@ -57,7 +57,7 @@ def test_sinus_alerts_when_no_breath(events, measurements, config):
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
+                      a2d, timer, average_window=1)
 
     app = Application(measurements=measurements,
                       events=events,
@@ -99,7 +99,7 @@ def test_dead_man_alerts_when_no_breath(events, measurements, config):
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
+                      a2d, timer, average_window=1)
 
     app = Application(measurements=measurements,
                       events=events,
@@ -133,7 +133,7 @@ def test_noise_alerts_when_no_breath(events, measurements, config):
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
+                      a2d, timer, average_window=1)
 
     app = Application(measurements=measurements,
                       events=events,

@@ -71,7 +71,7 @@ def test_sampler_volume_calculation(events, measurements, config):
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
+                      a2d, timer, average_window=1)
 
     for _ in range(SIMULATION_SAMPLES):
         sampler.sampling_iteration()
@@ -87,7 +87,7 @@ def test_sampler_alerts_when_volume_exceeds_minium(events, measurements, config,
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
+                      a2d, timer, average_window=1)
     assert len(events.alerts_queue) == 0
     sampler.sampling_iteration()
     assert len(events.alerts_queue) == 0
@@ -111,7 +111,7 @@ def test_sampler_alerts_when_volume_exceeds_maximum(events, measurements, config
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
+                      a2d, timer, average_window=1)
     assert len(events.alerts_queue) == 0
     sampler.sampling_iteration()
     assert len(events.alerts_queue) == 0
