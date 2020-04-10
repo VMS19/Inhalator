@@ -26,3 +26,6 @@ class MockSensor(object):
         if random.random() < self.error_probability:
             raise self.random_error()
         return sample
+
+    def read_differential_pressure(self):
+        return 1
