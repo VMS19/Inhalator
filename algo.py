@@ -403,7 +403,7 @@ class Sampler(object):
         """
         flow_slm = self.read_single_sensor(
             self._flow_sensor, AlertCodes.FLOW_SENSOR_ERROR, timestamp)
-        if flow_slm < 2:
+        if abs(flow_slm) < 2:
             flow_avg_sample = self.small_flow_avg.process(flow_slm)
             self.large_flow_avg.reset()
         else:
