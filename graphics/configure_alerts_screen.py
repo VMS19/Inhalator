@@ -128,7 +128,7 @@ class SectionWithCalibrate(Section):
         self.calibrate_button.configure(bg="#3c3149", fg="#d7b1f9",
                                         text="Calibrate",
                                         command=self.on_calibrate,
-                                        font=("Roboto", 18),
+                                        font=("Roboto", 16),
                                         activebackground="#433850",
                                         activeforeground="#e3e1e5",
                                         borderwidth=0, relief="flat")

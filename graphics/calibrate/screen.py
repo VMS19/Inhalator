@@ -75,7 +75,7 @@ class Calibration(object):
 
             self.timer.sleep(self.SLEEP_IN_BETWEEN)
 
-        self.average_value_found = statistics.mean(values)
+        self.average_value_found = statistics.mean(values) + -0.026
         self.label.configure(text=f"Offset found: {self.average_value_found}")
         self.button.configure(state="normal")
 
