@@ -50,10 +50,6 @@ class Calibration(object):
         # State
         self.average_value_found = None
 
-    @property
-    def waiting_time(self):
-        return
-
     def calibrate(self):
         # TODO: Handle watchdog
 
