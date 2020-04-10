@@ -25,7 +25,7 @@ class Application(object):
         return cls.__instance
 
     def __init__(self, measurements, events, arm_wd_event, drivers, sampler,
-                 simulation=False, fps=25, sample_rate=22):
+                 simulation=False, fps=14, sample_rate=60):
         self.should_run = True
         self.drivers = drivers
         self.arm_wd_event = arm_wd_event
@@ -42,11 +42,25 @@ class Application(object):
         self.last_render_ts = 0
         self.last_sample_ts = 0
 
-        self.fps = 0
+        self.fps = 15
         self.fps_sec_counter = 0
 
-        self.sps = 0
+        self.sps = 60
         self.sps_sec_counter = 0
+
+        self.expected_fps = fps
+        self.expected_sps = sample_rate
+
+        self.fps_counter = 0
+        self.sps_counter = 0
+
+        self.render_ts_sec = 0
+        self.sample_ts_sec = 0
+
+        self.ts_sec = 0
+
+        self.last_sample_update_ts = 0
+        self.last_gui_update_ts = 0
 
         if os.uname()[1] == 'raspberrypi':
             # on production we don't want to see the ugly cursor
@@ -83,6 +97,8 @@ class Application(object):
             self.fps_sec_counter = self.last_render_ts
             print("fps {}".format(self.fps))
             self.fps = 1
+        self.fps_counter += 1
+
 
     def sample(self):
         self.sampler.sampling_iteration()
@@ -93,6 +109,9 @@ class Application(object):
             self.sps_sec_counter = self.last_sample_ts
             print("sps {}".format(self.sps))
             self.sps = 1
+        self.sps_counter += 1
+
+
 
     @property
     def next_render(self):
@@ -106,11 +125,17 @@ class Application(object):
         self.render()
         while self.should_run:
             try:
-                if self.next_sample > 0:
-                    time.sleep(max(self.next_sample, 0))
-                self.sample()
-                if self.next_render <= 0:
+
+                time_now = time.time()
+
+                if time_now - self.last_gui_update_ts >= (1 / 15):
                     self.gui_update()
+                    self.last_gui_update_ts = time_now
+                if time_now - self.last_sample_update_ts >= (1 / 150):
+                    self.sample()
+                    self.last_sample_update_ts = time_now
+                
+
                 self.arm_wd_event.set()
             except KeyboardInterrupt:
                 break
