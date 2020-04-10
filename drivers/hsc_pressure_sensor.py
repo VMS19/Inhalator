@@ -18,15 +18,18 @@ class HscPressureSensor(HoneywellPressureSensor):
     MBAR_CMH2O_RATIO = 1.0197162129779
     CMH2O_RATIO = MBAR_CMH2O_RATIO
     SYSTEM_RATIO_SCALE = 36.55
-    SYSTEM_RATIO_OFFSET = -0.026
 
     def __init__(self):
         super().__init__()
+        self._calibration_offset = 0
         log.info("HSC pressure sensor initialized")
+
+    def set_calibration_offset(self, offset):
+        self._calibration_offset = offset
 
     def _pressure_to_flow(self, pressure_cmh2o):
         # Add offset
-        pressure_cmh2o += self.SYSTEM_RATIO_OFFSET
+        pressure_cmh2o -= self._calibration_offset
 
         # Convert to flow value
         flow = (abs(pressure_cmh2o) ** 0.5) * self.SYSTEM_RATIO_SCALE
@@ -34,8 +37,12 @@ class HscPressureSensor(HoneywellPressureSensor):
         # Add sign for flow direction
         if pressure_cmh2o < 0:
             flow = -flow
+
         return flow
 
+    def read_differential_pressure(self):
+        return super(HscPressureSensor, self).read()
+
     def read(self):
-        dp_cmh2o = super(HscPressureSensor, self).read()
+        dp_cmh2o = self.read_differential_pressure()
         return self._pressure_to_flow(dp_cmh2o)

@@ -122,9 +122,11 @@ class OpenConfigureAlertsScreenButton(object):
     IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY,
                               "baseline_settings_white_48dp.png")
 
-    def __init__(self, parent):
+    def __init__(self, parent, measurements, drivers):
         self.parent = parent
         self.root = parent.element
+        self.measurements = measurements
+        self.drivers = drivers
 
         self.button = ImageButton(
             master=self.root,
@@ -140,7 +142,9 @@ class OpenConfigureAlertsScreenButton(object):
 
     def on_click(self):
         master_frame = self.parent.parent.element
-        screen = ConfigureAlarmsScreen(master_frame)
+        screen = ConfigureAlarmsScreen(master_frame,
+                                       measurements=self.measurements,
+                                       drivers=self.drivers)
         screen.show()
 
     def render(self):

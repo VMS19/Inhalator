@@ -38,6 +38,7 @@ class HoneywellPressureSensor(I2cDriver):
             if read_size >= self.MEASURE_BYTE_COUNT:
                 pressure_reading = ((pressure_raw[0] & 0x3F) << 8) | (pressure_raw[1])
                 return self._calculate_pressure(pressure_reading)
+
             else:
                 log.warning("Pressure sensor's measure data not ready")
         except pigpio.error as e:
