@@ -29,3 +29,7 @@ class HscPressureSensor(HoneywellPressureSensor):
         if pressure_cmh2o < 0:
             flow = -flow
         return flow
+
+     def read(self):
+        dp_cmh2o = super(HscPressureSensor, self).read()
+        return self._pressure_to_flow(dp_cmh2o)
