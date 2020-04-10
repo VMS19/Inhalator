@@ -12,6 +12,9 @@ class MockSensor(object):
         self.data = cycle(seq)
         self.error_probability = error_probability
 
+    def set_calibration_offset(self, offset):
+        pass
+
     def random_error(self):
         exe = random.choice([ValueError, OSError, TimeoutError, ZeroDivisionError])
         return exe(f"{self.__class__.__name__} failed to read")

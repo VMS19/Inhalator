@@ -1,6 +1,5 @@
 import logging
 
-from data.configurations import Configurations
 from .honeywell_pressure_sensor import HoneywellPressureSensor
 
 log = logging.getLogger(__name__)
