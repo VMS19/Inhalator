@@ -45,6 +45,9 @@ class Application(object):
         self.fps = 0
         self.fps_sec_counter = 0
 
+        self.sps = 0
+        self.sps_sec_counter = 0
+
         if os.uname()[1] == 'raspberrypi':
             # on production we don't want to see the ugly cursor
             self.root.config(cursor="none")
@@ -78,12 +81,18 @@ class Application(object):
             self.fps += 1
         else:
             self.fps_sec_counter = self.last_render_ts
-            print(self.fps)
-            self.fps = 0
+            print("fps {}".format(self.fps))
+            self.fps = 1
 
     def sample(self):
         self.sampler.sampling_iteration()
         self.last_sample_ts = time.time()
+        if (self.sps_sec_counter + 1) > self.last_sample_ts:
+            self.sps += 1
+        else:
+            self.sps_sec_counter = self.last_sample_ts
+            print("sps {}".format(self.sps))
+            self.sps = 1
 
     @property
     def next_render(self):
