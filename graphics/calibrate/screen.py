@@ -71,7 +71,7 @@ class Calibration(object):
 
             self.timer.sleep(self.SLEEP_IN_BETWEEN)
 
-        self.average_value_found = statistics.mean(values) + -0.026
+        self.average_value_found = statistics.mean(values)
         self.label.configure(text=f"Offset found: {self.average_value_found}")
         self.button.configure(state="normal")
 
@@ -82,6 +82,8 @@ class Calibration(object):
 
     def save(self):
         Configurations.instance().dp_offset = self.average_value_found
+        self.dp_driver.set_calibration_offset(self.average_value_found)
+        Configurations.instance().save_to_file()
 
 
 class OKCancelSection(object):

@@ -33,7 +33,7 @@
         }
   },
   "calibration": {
-    "dp_offset": 0
+    "dp_offset": 0.026
   },
   "log_enabled": true,
   "graph_seconds": 12.0,
