@@ -380,8 +380,7 @@ class Sampler(object):
         self.vsm = VentilationStateMachine(measurements, events)
         self.storage_handler = SamplesStorage()
         self.save_sensor_values = save_sensor_values
-        self.large_flow_avg = RunningAvg(average_window)
-        self.small_flow_avg = RunningAvg(average_window)
+        self.flow_avg = RunningAvg(average_window)
 
     def read_single_sensor(self, sensor, alert_code, timestamp):
         try:
@@ -403,12 +402,12 @@ class Sampler(object):
         """
         flow_slm = self.read_single_sensor(
             self._flow_sensor, AlertCodes.FLOW_SENSOR_ERROR, timestamp)
+
         if abs(flow_slm) < 2:
-            flow_avg_sample = self.small_flow_avg.process(flow_slm)
-            self.large_flow_avg.reset()
+            flow_avg_sample = self.flow_avg.process(flow_slm)
         else:
-            flow_avg_sample = self.large_flow_avg.process(flow_slm)
-            self.small_flow_avg.reset()
+            self.flow_avg.reset()
+            flow_avg_sample = flow_slm
 
         pressure_cmh2o = self.read_single_sensor(
             self._pressure_sensor, AlertCodes.PRESSURE_SENSOR_ERROR, timestamp)
