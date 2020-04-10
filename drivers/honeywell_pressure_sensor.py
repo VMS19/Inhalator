@@ -22,6 +22,9 @@ class HoneywellPressureSensor(I2cDriver):
     MIN_OUT_PRESSURE = NotImplemented
     SENSITIVITY = NotImplemented
     CMH2O_RATIO = NotImplemented
+    def __init__(self):
+        super().__init__()
+        self.last_value = 0
 
     def _calculate_pressure(self, pressure_reading):
         pressure = (self.MIN_RANGE_PRESSURE +
@@ -37,9 +40,11 @@ class HoneywellPressureSensor(I2cDriver):
                     self._pig.i2c_read_device(self._dev, self.MEASURE_BYTE_COUNT)
             if read_size >= self.MEASURE_BYTE_COUNT:
                 pressure_reading = ((pressure_raw[0] & 0x3F) << 8) | (pressure_raw[1])
-                return self._calculate_pressure(pressure_reading)
+                self.last_value = self._calculate_pressure(pressure_reading)
+                return self.last_value
             else:
                 log.warning("Pressure sensor's measure data not ready")
+                return self.last_value
         except pigpio.error as e:
             log.error("Could not read from pressure sensor. "
                       "Is the pressure sensor connected?.")
