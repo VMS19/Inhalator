@@ -367,7 +367,7 @@ class VentilationStateMachine(object):
 class Sampler(object):
 
     def __init__(self, measurements, events, flow_sensor, pressure_sensor,
-                 a2d, timer, average_window=10, save_sensor_values=False):
+                 a2d, timer, average_window=6, save_sensor_values=False):
         super(Sampler, self).__init__()
         self.log = logging.getLogger(self.__class__.__name__)
         self._measurements = measurements  # type: Measurements
@@ -403,11 +403,7 @@ class Sampler(object):
         flow_slm = self.read_single_sensor(
             self._flow_sensor, AlertCodes.FLOW_SENSOR_ERROR, timestamp)
 
-        if abs(flow_slm) < 2:
-            flow_avg_sample = self.flow_avg.process(flow_slm)
-        else:
-            self.flow_avg.reset()
-            flow_avg_sample = flow_slm
+        flow_avg_sample = self.flow_avg.process(flow_slm)
 
         pressure_cmh2o = self.read_single_sensor(
             self._pressure_sensor, AlertCodes.PRESSURE_SENSOR_ERROR, timestamp)
