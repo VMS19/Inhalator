@@ -71,7 +71,7 @@ class Calibration(object):
 
             self.label.update()  # This is needed so the GUI doesn't freeze
 
-            values.append(self.dp_driver.read())
+            values.append(self.dp_driver.read_differential_pressure())
 
             self.timer.sleep(self.SLEEP_IN_BETWEEN)
 

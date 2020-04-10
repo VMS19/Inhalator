@@ -31,6 +31,9 @@ class HscPressureSensor(HoneywellPressureSensor):
             flow = -flow
         return flow
 
+    def read_differential_pressure(self):
+        return super(HscPressureSensor, self).read() - Configurations.instance().dp_offset
+
     def read(self):
-        dp_cmh2o = super(HscPressureSensor, self).read()
+        dp_cmh2o = self.read_differential_pressure()
         return self._pressure_to_flow(dp_cmh2o)
