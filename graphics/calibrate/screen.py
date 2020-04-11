@@ -74,6 +74,8 @@ class Calibration(object):
         self.average_value_found = statistics.mean(values)
         self.label.configure(text=f"Offset found: {self.average_value_found}")
         self.button.configure(state="normal")
+        self.parent.enable_ok_button()
+        self.button.configure(text="Recalibrate")
 
     def render(self):
         self.frame.place(relx=0, rely=0.25, relwidth=1, relheight=0.5)
@@ -95,6 +97,7 @@ class OKCancelSection(object):
                                 command=self.parent.on_ok,
                                 bg=Theme.active().SURFACE,
                                 fg=Theme.active().TXT_ON_SURFACE,
+                                state="disabled",
                                 text="OK")
         self.cancel_button = Button(master=self.frame,
                                     bg=Theme.active().SURFACE,
@@ -107,6 +110,8 @@ class OKCancelSection(object):
         self.ok_button.place(relx=0, rely=0, relwidth=0.5, relheight=1)
         self.cancel_button.place(relx=0.5, rely=0, relwidth=0.5, relheight=1)
 
+    def enable_ok_button(self):
+        self.ok_button.configure(state="normal")
 
 
 class FlowCalibrationScreen(object):
@@ -127,6 +132,9 @@ class FlowCalibrationScreen(object):
 
     def hide(self):
         self.screen.place_forget()
+
+    def enable_ok_button(self):
+        self.ok_cancel_section.enable_ok_button()
 
     def on_ok(self):
         self.calibration.save()
