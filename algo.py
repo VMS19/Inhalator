@@ -138,16 +138,19 @@ class VentilationState(Enum):
 
 
 class VentilationStateMachine(object):
+    TELEMETRY_REPORT_MAX_INTERVAL_SEC = 5
     NO_BREATH_ALERT_TIME_SECONDS = 12
 
-    def __init__(self, measurements, events):
+    def __init__(self, measurements, events, telemetry_sender):
         self._measurements = measurements
         self._events = events
+        self.telemetry_sender = telemetry_sender
         self.log = logging.getLogger(self.__class__.__name__)
         self.flow_slope = RunningSlope(num_samples=7)
         self.pressure_slope = RunningSlope(num_samples=7)
         self._config = Configurations.instance()
         self.last_breath_timestamp = None
+        self.last_telemetry_report = None
         self.current_state = VentilationState.PEEP
 
         # Data structure to record last 100 entry timestamp for each state.
@@ -241,10 +244,21 @@ class VentilationStateMachine(object):
         self._measurements.inspiration_volume = insp_volume_ml
         self.inspiration_volume.reset()
         self.insp_volumes.append((timestamp, insp_volume_ml))
+        self.send_telemetry(timestamp)
         self.reset_peaks()
 
     def enter_peep(self, timestamp):
         pass
+
+    def send_telemetry(self, timestamp):
+        self.telemetry_sender.enqueue(
+            timestamp=timestamp,
+            p_peak=self._measurements.intake_peak_pressure,
+            p_min=self._measurements.peep_min_pressure,
+            v_te=self._measurements.expiration_volume,
+            v_ti=self._measurements.inspiration_volume,
+            o2_percent=self._measurements.o2_saturation_percentage)
+        self.last_telemetry_report = timestamp
 
     def reset_peaks(self):
         self._measurements.intake_peak_pressure = self.peak_pressure
@@ -257,10 +271,13 @@ class VentilationStateMachine(object):
         self.min_pressure = sys.maxsize
 
     def update(self, pressure_cmh2o, flow_slm, o2_percentage, timestamp):
+        # First time initialization. Not done in __init__ to avoid reading
+        # the time in this class, which improves its testability.
         if self.last_breath_timestamp is None:
-            # First time initialization. Not done in __init__ to avoid reading
-            # the time in this class, which improves its testability.
             self.last_breath_timestamp = timestamp
+        if self.last_telemetry_report is None:
+            self.last_telemetry_report = timestamp
+
         # First - check how long it was since last breath
         seconds_from_last_breath = timestamp - self.last_breath_timestamp
         if seconds_from_last_breath >= self.NO_BREATH_ALERT_TIME_SECONDS:
@@ -322,6 +339,9 @@ class VentilationStateMachine(object):
             pressure_cmh2o=pressure_cmh2o,
             timestamp=timestamp)
 
+        if timestamp - self.last_telemetry_report > self.TELEMETRY_REPORT_MAX_INTERVAL_SEC:
+            self.send_telemetry(timestamp)
+
     def check_transition(self, flow_slm, pressure_cmh2o, timestamp):
         pressure_slope = self.pressure_slope.add_sample(pressure_cmh2o, timestamp)
         flow_slop = self.flow_slope.add_sample(flow_slm, timestamp)
@@ -362,7 +382,8 @@ class VentilationStateMachine(object):
 class Sampler(object):
 
     def __init__(self, measurements, events, flow_sensor, pressure_sensor,
-                 a2d, timer, average_window, save_sensor_values=False):
+                 a2d, timer, average_window, telemetry_sender,
+                 save_sensor_values=False):
         super(Sampler, self).__init__()
         self.log = logging.getLogger(self.__class__.__name__)
         self._measurements = measurements
@@ -372,7 +393,7 @@ class Sampler(object):
         self._timer = timer
         self._config = Configurations.instance()
         self._events = events
-        self.vsm = VentilationStateMachine(measurements, events)
+        self.vsm = VentilationStateMachine(measurements, events, telemetry_sender)
         self.storage_handler = SamplesStorage()
         self.save_sensor_values = save_sensor_values
         self.flow_avg = RunningAvg(average_window)

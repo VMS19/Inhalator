@@ -53,5 +53,10 @@
   "graph_seconds": 12.0,
   "low_battery_percentage": 15,
   "mute_time_limit" : 120,
-  "boot_alert_grace_time" : 10
+  "boot_alert_grace_time" : 10,
+  "telemetry": {
+    "enable": false,
+    "url": "http://127.0.0.1:5000/telemetry",
+    "api-key": null
+  }
 }
