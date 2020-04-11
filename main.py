@@ -158,9 +158,14 @@ def start_app(args):
 
         try:
             rtc = drivers.acquire_driver("rtc")
-            rtc.set_system_time()
         except errors.InhalatorError:
             rtc = drivers.acquire_driver("null")
+
+        try:
+            if not isinstance(rtc, NullDriver):
+                rtc.set_system_time()
+        except ValueError:
+            pass
 
         alert_driver = drivers.acquire_driver("alert")
 
