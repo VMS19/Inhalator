@@ -24,7 +24,7 @@ class Title(object):
 
 class Calibration(object):
     NUMBER_OF_SAMPLES_TO_TAKE = 100
-    SLEEP_IN_BETWEEN = 1 / 20
+    SLEEP_IN_BETWEEN = 3 / 100
 
     def __init__(self, parent, root, drivers):
         self.parent = parent
