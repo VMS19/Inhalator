@@ -63,9 +63,7 @@ class BreathVolumeMeter(object):
 
             if self.last_flow_direction == self.INHALE_DIR:
                 # Direction transition - inhale to exhale direction
-                volume = -1 * self.inspiration_sum.integrate()
-                print("-----inhale: max {}, {}-----".format(volume,
-                                                            self.insp_volume))
+                volume = self.inspiration_sum.integrate()
                 self.inspiration_sum.reset()
                 self.active_accumulator = self.expiration_sum
                 self.insp_volume = max(volume, self.insp_volume)
@@ -73,26 +71,23 @@ class BreathVolumeMeter(object):
             else:
                 # Direction transition - exhale to inhale direction
                 # expiration volume is negative. convert to positive value
-                volume = self.expiration_sum.integrate()
-                print("-----exhale: max {}, {}-----".format(volume, self.exp_volume))
+                volume = -1 * self.expiration_sum.integrate()
                 self.expiration_sum.reset()
                 self.active_accumulator = self.inspiration_sum
                 self.exp_volume = max(volume, self.exp_volume)
 
             self.last_flow_direction = flow_direction
 
-        self.active_accumulator.add_sample(flow, timestamp)
+        self.active_accumulator.add_sample(timestamp, flow)
 
     def get_insp_volume_ml(self):
         volume = self.insp_volume * self.ML_IN_LITER
         self.insp_volume = 0
-
         return volume
 
     def get_exp_volume_ml(self):
         volume = self.exp_volume * self.ML_IN_LITER
         self.exp_volume = 0
-
         return volume
 
     def reset(self):
