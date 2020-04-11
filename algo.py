@@ -282,7 +282,9 @@ class VentilationStateMachine(object):
         seconds_from_last_breath = timestamp - self.last_breath_timestamp
         if seconds_from_last_breath >= self.NO_BREATH_ALERT_TIME_SECONDS:
             self.log.warning("No breath detected for the last 12 seconds")
-            self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH, timestamp)
+            self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH,
+                                                    timestamp)
+            self.last_breath_timestamp = None
             self.reset()
 
         # We track inhale and exhale volume separately. Positive flow means
