@@ -32,8 +32,8 @@ class Ads7844A2D(object):
     BATTERY_EXISTENCE_CHANNEL = 2
 
     CHANNEL_MAP = [0, 4, 1, 5, 2, 6, 3, 7]
-    A2D_OXYGEN_RATIO = 48.5436893204
-    A2D_OXYGEN_OFFSET = 1.3
+    A2D_OXYGEN_RATIO = 50.778
+    A2D_OXYGEN_OFFSET = 1.044
     FULL_BATTERY = 6.024644649924462
     A2D_BATTERY_RATIO = 0.0337359433
     VOLTAGE_FACTOR = 38.4  # scale between voltage and oxygen percentage
@@ -86,6 +86,7 @@ class Ads7844A2D(object):
         return self._calibrate_a2d(sample_reading)
 
     def read_oxygen(self):
+        log.error(f"o2 = {self._sample_a2d(self.OXYGEN_CHANNEL)}")
         return self._sample_a2d(self.OXYGEN_CHANNEL) * self.A2D_OXYGEN_RATIO +\
             self.A2D_OXYGEN_OFFSET
 
