@@ -27,5 +27,8 @@ class MockSensor(object):
             raise self.random_error()
         return sample
 
+    def pressure_to_flow(self, pressure):
+        return pressure
+
     def read_differential_pressure(self):
         return 1
