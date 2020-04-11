@@ -24,7 +24,7 @@ class Title(object):
 
 class Calibration(object):
     NUMBER_OF_SAMPLES_TO_TAKE = 100
-    SLEEP_IN_BETWEEN = 1 / 20
+    SLEEP_IN_BETWEEN = 3 / 100
 
     def __init__(self, parent, root, drivers):
         self.parent = parent
@@ -72,8 +72,14 @@ class Calibration(object):
             self.timer.sleep(self.SLEEP_IN_BETWEEN)
 
         self.average_value_found = statistics.mean(values)
-        self.label.configure(text=f"Offset found: {self.average_value_found}")
+        self.label.configure(text=f"Offset found: {self.get_difference():.5f}")
         self.button.configure(state="normal")
+        self.parent.enable_ok_button()
+        self.button.configure(text="Recalibrate")
+
+    def get_difference(self):
+        """Get offset drift."""
+        return self.average_value_found - Configurations.instance().dp_offset
 
     def render(self):
         self.frame.place(relx=0, rely=0.25, relwidth=1, relheight=0.5)
@@ -95,6 +101,7 @@ class OKCancelSection(object):
                                 command=self.parent.on_ok,
                                 bg=Theme.active().SURFACE,
                                 fg=Theme.active().TXT_ON_SURFACE,
+                                state="disabled",
                                 text="OK")
         self.cancel_button = Button(master=self.frame,
                                     bg=Theme.active().SURFACE,
@@ -107,6 +114,8 @@ class OKCancelSection(object):
         self.ok_button.place(relx=0, rely=0, relwidth=0.5, relheight=1)
         self.cancel_button.place(relx=0.5, rely=0, relwidth=0.5, relheight=1)
 
+    def enable_ok_button(self):
+        self.ok_button.configure(state="normal")
 
 
 class FlowCalibrationScreen(object):
@@ -127,6 +136,9 @@ class FlowCalibrationScreen(object):
 
     def hide(self):
         self.screen.place_forget()
+
+    def enable_ok_button(self):
+        self.ok_cancel_section.enable_ok_button()
 
     def on_ok(self):
         self.calibration.save()
