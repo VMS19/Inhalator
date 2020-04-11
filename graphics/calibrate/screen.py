@@ -72,7 +72,7 @@ class Calibration(object):
             self.timer.sleep(self.SLEEP_IN_BETWEEN)
 
         self.average_value_found = statistics.mean(values)
-        self.label.configure(text=f"Offset found: {self.get_difference():.2f}mL")
+        self.label.configure(text=f"Offset found: {self.get_difference():.2f}L/sec")
         self.button.configure(state="normal")
         self.parent.enable_ok_button()
         self.button.configure(text="Recalibrate")
