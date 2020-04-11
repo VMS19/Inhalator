@@ -38,6 +38,72 @@ class Accumulator(object):
         self.timestamps.clear()
 
 
+class BreathVolumeMeter(object):
+    INHALE_DIR = True
+    EXHALE_DIR = False
+    ML_IN_LITER = 1000
+
+    def __init__(self):
+        self.inspiration_sum = Accumulator()
+        self.expiration_sum = Accumulator()
+        self.active_accumulator = self.inspiration_sum
+        self.insp_volume = 0
+        self.exp_volume = 0
+        self.last_flow_direction = self.INHALE_DIR
+
+    def add_sample(self, timestamp, flow):
+        if flow > 0:
+            flow_direction = self.INHALE_DIR
+        elif flow < 0:
+            flow_direction = self.EXHALE_DIR
+        else:
+            flow_direction = self.last_flow_direction
+
+        if flow_direction != self.last_flow_direction:
+
+            if self.last_flow_direction == self.INHALE_DIR:
+                # Direction transition - inhale to exhale direction
+                volume = -1 * self.inspiration_sum.integrate()
+                print("-----inhale: max {}, {}-----".format(volume,
+                                                            self.insp_volume))
+                self.inspiration_sum.reset()
+                self.active_accumulator = self.expiration_sum
+                self.insp_volume = max(volume, self.insp_volume)
+
+            else:
+                # Direction transition - exhale to inhale direction
+                # expiration volume is negative. convert to positive value
+                volume = self.expiration_sum.integrate()
+                print("-----exhale: max {}, {}-----".format(volume, self.exp_volume))
+                self.expiration_sum.reset()
+                self.active_accumulator = self.inspiration_sum
+                self.exp_volume = max(volume, self.exp_volume)
+
+            self.last_flow_direction = flow_direction
+
+        self.active_accumulator.add_sample(flow, timestamp)
+
+    def get_insp_volume_ml(self):
+        volume = self.insp_volume * self.ML_IN_LITER
+        self.insp_volume = 0
+
+        return volume
+
+    def get_exp_volume_ml(self):
+        volume = self.exp_volume * self.ML_IN_LITER
+        self.exp_volume = 0
+
+        return volume
+
+    def reset(self):
+        self.inspiration_sum.reset()
+        self.expiration_sum.reset()
+        self.active_accumulator = self.inspiration_sum
+        self.insp_volume = 0
+        self.exp_volume = 0
+        self.last_flow_direction = self.INHALE_DIR
+
+
 class RunningAvg(object):
 
     def __init__(self, max_samples):
@@ -191,10 +257,7 @@ class VentilationStateMachine(object):
         self.peep_avg_calculator = RunningAvg(max_samples=1000)
         self.breathes_rate_meter = RateMeter(time_span_seconds=60,
                                              max_samples=4)
-        self.inspiration_volume = Accumulator()
-        self.expiration_volume = Accumulator()
-        self.insp_volumes = deque(maxlen=100)
-        self.exp_volumes = deque(maxlen=100)
+        self.breath_meter = BreathVolumeMeter()
         self.insp_flows = deque(maxlen=1000)
         self.exp_flows = deque(maxlen=1000)
 
@@ -206,8 +269,7 @@ class VentilationStateMachine(object):
         self.min_pressure = sys.maxsize
 
         # Restart volume calculation
-        self.inspiration_volume.reset()
-        self.expiration_volume.reset()
+        self.breath_meter.reset()
 
         # Restart state machine
         self.current_state = VentilationState.PEEP
@@ -232,21 +294,17 @@ class VentilationStateMachine(object):
                                                         timestamp)
 
         # Update final expiration volume
-        exp_volume_ml = abs(self.expiration_volume.integrate()) * 1000
+        exp_volume_ml = self.breath_meter.get_exp_volume_ml()
         self.log.debug("TV exp: : %sml", exp_volume_ml)
         self._measurements.expiration_volume = exp_volume_ml
-        self.expiration_volume.reset()
-        self.exp_volumes.append((timestamp, exp_volume_ml))
 
         self.reset_min_values()
 
     def enter_exhale(self, timestamp):
         # Update final inspiration volume
-        insp_volume_ml = self.inspiration_volume.integrate() * 1000
+        insp_volume_ml = self.breath_meter.get_insp_volume_ml()
         self.log.debug("TV insp: : %sml", insp_volume_ml)
         self._measurements.inspiration_volume = insp_volume_ml
-        self.inspiration_volume.reset()
-        self.insp_volumes.append((timestamp, insp_volume_ml))
 
         if self._config.volume_range.below(insp_volume_ml):
             self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW, timestamp)
@@ -285,12 +343,7 @@ class VentilationStateMachine(object):
             self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH, timestamp)
             self.reset()
 
-        # We track inhale and exhale volume separately. Positive flow means
-        # inhale, and negative flow means exhale.
-        flow_recorder = self.insp_flows if flow_slm >= 0 else self.exp_flows
-        flow_recorder.append(timestamp)
-        accumulator = self.inspiration_volume if flow_slm > 0 else self.expiration_volume
-        accumulator.add_sample(timestamp, flow_slm)
+        self.breath_meter.add_sample(timestamp, flow_slm)
         self._measurements.set_pressure_value(pressure_cmh2o)
         self._measurements.set_flow_value(flow_slm)
         self._measurements.set_saturation_percentage(o2_percentage)
