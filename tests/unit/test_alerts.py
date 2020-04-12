@@ -25,11 +25,17 @@ def events():
 
 @pytest.mark.parametrize("alert1, alert2", product(ALERTS, ALERTS))
 def test_alert_contains(alert1, alert2):
+    """Check that Alert contains function works correctly.
+
+    For any two types of alert, create Alert object from the first and
+    then check if the object contains the second alert (only when the two
+    alerts are the same it should return True).
+    """
     expected_results = alert1 == alert2
     assert Alert(alert1).contains(alert2) == expected_results
 
 
-def test_flow_null_driver(events, measurements):
+def test_invalid_flow_driver_initialization(events, measurements):
     driver_factory = DriverFactory(simulation_mode=True)
     flow_sensor = NullDriver()
     pressure_sensor = driver_factory.acquire_driver("pressure")
@@ -44,7 +50,7 @@ def test_flow_null_driver(events, measurements):
     assert alerts.AlertCodes.FLOW_SENSOR_ERROR in all_alerts
 
 
-def test_pressure_null_driver(events, measurements):
+def test_invalid_pressure_driver_initialization(events, measurements):
     driver_factory = DriverFactory(simulation_mode=True)
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = NullDriver()
@@ -60,7 +66,7 @@ def test_pressure_null_driver(events, measurements):
 
 
 @pytest.mark.xfail(reason="Alert queue is too small to contain alert")
-def test_a2d_null_driver(events, measurements):
+def test_invalid_a2d_driver_initialization(events, measurements):
     driver_factory = DriverFactory(simulation_mode=True)
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
@@ -76,7 +82,7 @@ def test_a2d_null_driver(events, measurements):
     assert alerts.AlertCodes.NO_BATTERY in all_alerts
 
 
-def test_battery_does_not_exists(events, measurements):
+def test_battery_does_not_exist(events, measurements):
     driver_factory = DriverFactory(simulation_mode=True)
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
