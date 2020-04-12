@@ -37,16 +37,13 @@ class AirPressureGraph(object):
         self.pressure_axis.set_ylabel('Pressure [cmH20]')
 
         # Calibrate x-axis
-        amount_of_xs = self.measurements._amount_of_samples_in_graph
-        self.pressure_axis.set_xticks(
-            range(0, (amount_of_xs + 1),
-                  int(amount_of_xs / self.config.graph_seconds)))
-
+        self.pressure_axis.set_xticks([], [])
         self.pressure_axis.set_xticklabels([])
 
         self.pressure_canvas = FigureCanvasTkAgg(self.pressure_figure,
                                                  master=self.root)
 
+        amount_of_xs = self.measurements._amount_of_samples_in_graph
         self.pressure_display_values = [0] * amount_of_xs
         self.pressure_graph, = self.pressure_axis.plot(
             self.measurements.x_axis,
@@ -122,11 +119,7 @@ class FlowGraph(object):
         self.flow_axis.set_ylabel('Flow [L/min]')
 
         # Calibrate x-axis
-        amount_of_xs = self.measurements._amount_of_samples_in_graph
-        self.flow_axis.set_xticks(
-            range(0, amount_of_xs + 1,
-                  int(amount_of_xs / self.config.graph_seconds)))
-
+        self.flow_axis.set_xticks([], [])
         self.flow_axis.set_xticklabels([])
 
         self.flow_display_values = [0] * self.measurements._amount_of_samples_in_graph
@@ -137,6 +130,7 @@ class FlowGraph(object):
             linewidth=1,
             animated=True)
 
+        amount_of_xs = self.measurements._amount_of_samples_in_graph
         self.x_axis_display_values = [0] * amount_of_xs
         self.x_axis_graph, = \
             self.flow_axis.plot(self.measurements.x_axis,
