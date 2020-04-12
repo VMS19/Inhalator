@@ -1,1 +1,3 @@
-__version__ = "1.3.1"
+from sh import git
+
+__version__ = git.describe(tags=True, dirty=True)

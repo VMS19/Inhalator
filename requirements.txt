@@ -7,3 +7,4 @@ scipy
 timeago
 psutil
 RPi.GPIO
+sh
