@@ -78,6 +78,7 @@ class Calibration(object):
         self.button.configure(text="Recalibrate")
 
     def get_difference(self):
+        """Get offset drift."""
         return self.average_value_found - Configurations.instance().dp_offset
 
     def render(self):
