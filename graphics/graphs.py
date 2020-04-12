@@ -40,7 +40,7 @@ class AirPressureGraph(object):
         self.pressure_axis.set_ylabel('Pressure [cmH20]')
 
         # Calibrate x-axis
-        self.pressure_axis.set_xticks([], [])
+        self.pressure_axis.set_xticks([])
         self.pressure_axis.set_xticklabels([])
 
         amount_of_xs = self.measurements._amount_of_samples_in_graph
@@ -136,7 +136,7 @@ class FlowGraph(object):
         self.flow_axis.set_ylabel('Flow [L/min]')
 
         # Calibrate x-axis
-        self.flow_axis.set_xticks([], [])
+        self.flow_axis.set_xticks([])
         self.flow_axis.set_xticklabels([])
 
         self.flow_display_values = [0] * self.measurements._amount_of_samples_in_graph
