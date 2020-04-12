@@ -74,6 +74,7 @@ class Application(object):
 
     def sample(self):
         self.sampler.sampling_iteration()
+        print("samplerate={}Hz".format(1/(time.time() - self.last_sample_ts)))
         self.last_sample_ts = time.time()
 
     @property

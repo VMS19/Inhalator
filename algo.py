@@ -313,6 +313,7 @@ class VentilationStateMachine(object):
 
         leakage = insp_volume_ml - exp_volume_ml
         self.log.warning("leakage: {}".format(leakage))
+        self._measurements.set_saturation_percentage(leakage)
 
         self.reset_min_values()
 
@@ -347,7 +348,7 @@ class VentilationStateMachine(object):
         self.breath_meter.add_sample(timestamp, flow_slm)
         self._measurements.set_pressure_value(pressure_cmh2o)
         self._measurements.set_flow_value(flow_slm)
-        self._measurements.set_saturation_percentage(o2_percentage)
+        #self._measurements.set_saturation_percentage(o2_percentage)
 
         # Update peak pressure/flow values
         self.peak_pressure = max(self.peak_pressure, pressure_cmh2o)
@@ -458,7 +459,6 @@ class Sampler(object):
             self._flow_sensor, AlertCodes.FLOW_SENSOR_ERROR, timestamp)
 
         flow_avg_sample = self.flow_avg.process(flow_slm)
-
         pressure_cmh2o = self.read_single_sensor(
             self._pressure_sensor, AlertCodes.PRESSURE_SENSOR_ERROR, timestamp)
 
@@ -485,7 +485,6 @@ class Sampler(object):
         except Exception as e:
             self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BATTERY, timestamp)
             self.log.error(e)
-
         data = (flow_avg_sample, pressure_cmh2o, o2_saturation_percentage)
         return [x if x is not None else 0 for x in data]
 
