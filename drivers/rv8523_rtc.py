@@ -90,7 +90,14 @@ class Rv8523Rtc(I2cDriver):
         days = self._get_clock_unit(0x1F)
         months = self._get_clock_unit(0x1F, self.REG_MONTHS)
         years = self._get_clock_unit(0x7F) + self.REG_YEARS_OFFSET
-        return datetime(years, months, days, hours, minutes, seconds)
+        try:
+            return datetime(years, months, days, hours, minutes, seconds)
+        except ValueError as e:
+            self.set_rtc_time(datetime.now())
+            raise RuntimeError(
+                f"RTC returned invalid time: "
+                f"{hours}:{minutes}:{seconds} {days}/{months}/{years}. "
+                f"Please set RTC time") from e
 
     def set_rtc_time(self, date):
         try:
@@ -106,11 +113,8 @@ class Rv8523Rtc(I2cDriver):
             raise I2CWriteError("i2c write failed")
 
     def set_system_time(self):
-        ''' Read RTC and set as system time '''
-        try:
-            dt = self.read()
-        except Exception as e:
-            raise e
+        """Read RTC and set as system time."""
+        dt = self.read()
 
         second = str(dt.second)
         minute = str(dt.minute)
