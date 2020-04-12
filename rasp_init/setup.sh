@@ -82,7 +82,7 @@ sed -i 's/#init_here/init=\/usr\/lib\/raspi-config\/init_resize.sh/g' /boot/cmdl
 sed -i 's/exit 0 #remove this//g' /etc/rc.local
 sed -i 's/8500000 #//g' /usr/lib/raspi-config/init_resize.sh
 
-# config WD pull up
+# config buzzer io pull up
 echo "gpio=13=pu" >> /boot/config.txt
 
 echo "setup done. DO NOT REBOOT - USE ONLY SHUTDOWN!!!"
