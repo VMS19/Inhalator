@@ -13,7 +13,6 @@ from data.thresholds import (O2Range, PressureRange,
                              RespiratoryRateRange, VolumeRange)
 from drivers.driver_factory import DriverFactory
 
-
 SIMULATION_FOLDER = "simulation"
 
 MICROSECOND = 10 ** -6
@@ -81,7 +80,43 @@ def test_sampler_volume_calculation(events, measurements, config):
     assert measurements.inspiration_volume == approx(expected_volume, rel=0.1), msg
 
 
-def test_sampler_alerts_when_volume_exceeds_minium(events, measurements, config, driver_factory):
+def test_alert_on_exhale_volume(events, measurements, config):
+    this_dir = os.path.dirname(__file__)
+    file_path = os.path.join(this_dir, SIMULATION_FOLDER,
+                             "pig_sim_cycle.csv")
+    driver_factory = DriverFactory(simulation_mode=True,
+                                   simulation_data=file_path)
+
+    flow_sensor = driver_factory.acquire_driver("flow")
+    pressure_sensor = driver_factory.acquire_driver("pressure")
+    a2d = driver_factory.acquire_driver("a2d")
+    timer = driver_factory.acquire_driver("timer")
+    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
+                      a2d, timer, average_window=1)
+
+    assert len(events.alerts_queue) == 0
+    sampler.sampling_iteration()
+    assert len(events.alerts_queue) == 0
+
+    config.volume_range = VolumeRange(0, 50)
+
+    current_time = time.time()
+    while time.time() - current_time < SIMULATION_LENGTH:
+        time.sleep(MICROSECOND)
+        sampler.sampling_iteration()
+
+    expected_insp_volume = 332
+    msg = f"Expected volume of {expected_insp_volume}, received {measurements.inspiration_volume}"
+    assert measurements.inspiration_volume == approx(expected_insp_volume, rel=0.1), msg
+
+    expected_exp_volume = 28
+    msg = f"Expected volume of {expected_exp_volume}, received {measurements.expiration_volume}"
+    assert measurements.expiration_volume == approx(expected_exp_volume, rel=0.1), msg
+
+    assert len(events.alerts_queue) == 0
+
+
+def test_sampler_alerts_when_volume_exceeds_minimum(events, measurements, config, driver_factory):
     flow_sensor = driver_factory.acquire_driver("flow")
     pressure_sensor = driver_factory.acquire_driver("pressure")
     a2d = driver_factory.acquire_driver("a2d")
@@ -127,3 +162,4 @@ def test_sampler_alerts_when_volume_exceeds_maximum(events, measurements, config
 
     all_alerts = list(events.alerts_queue.queue.queue)
     assert all(alert == alerts.AlertCodes.VOLUME_HIGH for alert in all_alerts)
+
