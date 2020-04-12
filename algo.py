@@ -457,6 +457,9 @@ class Sampler(object):
                                        tv_exp=self._measurements.expiration_volume,
                                        bpm=self._measurements.bpm)
 
+        o2_saturation_percentage = max(0,
+                                       min(o2_saturation_percentage, 100))
+
         self.vsm.update(
             pressure_cmh2o=pressure_cmh2o,
             flow_slm=flow_slm,
