@@ -14,8 +14,6 @@ jobs:
         tox-environment: [flake8, tests]
         python-version: [3.7]
     steps:
-    - name: Upgrade Git
-      run: sudo apt-get update && sudo apt-get install -y git=2.24.0
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v1
@@ -26,7 +24,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install tox
     - name: Run ${{ matrix.tox-environment }}
-      run: tox -e ${{ matrix.tox-environment }}
+      run: |
+        git init  # faking a git repo
+        tox -e ${{ matrix.tox-environment }}
     - name: Send coverage to coveralls
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
