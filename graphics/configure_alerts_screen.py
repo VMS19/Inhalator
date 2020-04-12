@@ -333,9 +333,9 @@ class ConfigureAlarmsScreen(object):
         self.configure_alerts_screen.place_forget()
 
     def confirm(self):
-        Configurations.instance().save_to_file()
         for section in self.threshold_sections:
             section.confirm()
+        Configurations.instance().save_to_file()
         self.hide()
 
     def cancel(self):

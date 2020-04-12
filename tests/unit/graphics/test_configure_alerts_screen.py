@@ -37,9 +37,20 @@ def test_up_down_buttons_on_min(screen: ConfigureAlarmsScreen):
 
     screen.pressure_section.min_button.publish()
     screen.on_up_button_click()
-    assert Configurations.instance().pressure_range.min == min_pressure + step
+    assert Configurations.instance().pressure_range.temporary_min == min_pressure + step
     screen.on_down_button_click()
+    assert Configurations.instance().pressure_range.temporary_min == min_pressure
+
+
+def test_min_changes_only_when_confirmed(screen: ConfigureAlarmsScreen):
+    min_pressure = Configurations.instance().pressure_range.min
+    step = Configurations.instance().pressure_range.step
+
+    screen.pressure_section.min_button.publish()
+    screen.on_up_button_click()
     assert Configurations.instance().pressure_range.min == min_pressure
+    screen.confirm()
+    assert Configurations.instance().pressure_range.min == min_pressure + step
 
 
 def test_up_down_buttons_on_max(screen: ConfigureAlarmsScreen):
@@ -48,9 +59,9 @@ def test_up_down_buttons_on_max(screen: ConfigureAlarmsScreen):
 
     screen.pressure_section.max_button.publish()
     screen.on_up_button_click()
-    assert Configurations.instance().pressure_range.max == max_pressure + step
+    assert Configurations.instance().pressure_range.temporary_max == max_pressure + step
     screen.on_down_button_click()
-    assert Configurations.instance().pressure_range.max == max_pressure
+    assert Configurations.instance().pressure_range.temporary_max == max_pressure
 
 
 def test_pressing_cancel_undoes_everything(screen: ConfigureAlarmsScreen):
@@ -77,7 +88,7 @@ def test_minimum_cant_go_over_maximum(screen: ConfigureAlarmsScreen):
     screen.pressure_section.min_button.publish()  # Click the min button
     screen.on_up_button_click()  # Raise it
 
-    assert config.pressure_range.min == 0
+    assert config.pressure_range.temporary_min == 0
 
     # Revert changes since Configurations is a Singleton and we don't
     # want it to interact with other tests
@@ -91,7 +102,7 @@ def test_maxmimum_cant_go_under_minimum(screen: ConfigureAlarmsScreen):
     screen.pressure_section.max_button.publish()  # Click the min button
     screen.on_down_button_click()  # Lower it
 
-    assert config.pressure_range.max == 0
+    assert config.pressure_range.temporary_max == 0
 
     # Revert changes since Configurations is a Singleton and we don't
     # want it to interact with other tests
