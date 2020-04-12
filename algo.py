@@ -47,7 +47,12 @@ class RunningAvg(object):
         self.samples.clear()
 
     def process(self, pressure):
-        self.samples.append(pressure)
+        if pressure is not None:
+            self.samples.append(pressure)
+
+        if len(self.samples) == 0:
+            return 0
+
         return mean(self.samples)
 
 
