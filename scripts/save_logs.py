@@ -155,14 +155,17 @@ def main():
             logger.info("Copying data files from Raspberry(%s) to %s",
                         cli_args.ip, cli_args.csv_output)
             copy_sensor_data(cli_args.csv_output, ftp, logger)
+            logger.info('Saved sensor data at %s', cli_args.csv_output)
+
             logger.info('Copying log file')
             copy_log(ftp, cli_args.output)
             if cli_args.alerts_output is not None:
                 alerts_extractor = AlertsExtractor(cli_args.output, cli_args.alerts_output, logger)
                 logger.info('Parsing alerts log into CSV')
                 alerts_extractor.convert_log_to_csv()
-            logger.info('Finished, saved sensor data at %s, alerts at %s', cli_args.csv_output, cli_args.alerts_output)
+                logger.info("Saved alerts at %s", cli_args.alerts_output)
 
+    logger.info("Finished")
 
 if __name__ == '__main__':
     main()
