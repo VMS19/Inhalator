@@ -71,7 +71,7 @@ class IndicatorAlertBar(object):
                                    bg=Theme.active().ALERT_BAR_OK)
 
         self.version_label = Label(master=self.battery_frame,
-                                   font=("Roboto", 10),
+                                   font=("Roboto", 9),
                                    text="Ver. {}".format(__version__),
                                    fg=Theme.active().ALERT_BAR_OK_TXT,
                                    bg=Theme.active().ALERT_BAR_OK)
