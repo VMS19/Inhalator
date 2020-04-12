@@ -458,7 +458,9 @@ class Sampler(object):
         flow_slm = self.read_single_sensor(
             self._flow_sensor, AlertCodes.FLOW_SENSOR_ERROR, timestamp)
 
+
         flow_avg_sample = self.flow_avg.process(flow_slm)
+
         pressure_cmh2o = self.read_single_sensor(
             self._pressure_sensor, AlertCodes.PRESSURE_SENSOR_ERROR, timestamp)
 

@@ -25,7 +25,7 @@ BYTES_IN_GB = 2 ** 30
 
 # the Honeywell differential pressure sensor is very noisy, so we've applied
 # some averaging of the last samples to make the graph smoother
-NOISY_DP_SENSOR_SAMPLES = 10
+NOISY_DP_SENSOR_SAMPLES = 1
 
 
 def monitor(target, args, output_path):
@@ -88,7 +88,7 @@ def parse_args():
         help="The speed, in samples-per-seconds, in which the simulation will "
              "be played at. Useful for slowing down the simulation to see what "
              "is going on, or speeding up to run simulation faster",
-        type=float, default=100)
+        type=float, default=50)
     parser.add_argument(
         "--fps", "-f",
         help="Frames-per-second for the application to render",
