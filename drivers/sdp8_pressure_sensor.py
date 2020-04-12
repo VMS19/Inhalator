@@ -52,7 +52,7 @@ class SdpPressureSensor(I2cDriver):
             differential_psi_pressure * (1 / self.CMH20_PASCAL_RATIO)
         return differential_cmh2o_pressure
 
-    def pressure_to_flow(self, pressure):
+    def _pressure_to_flow(self, pressure):
         flow = (abs(pressure) ** 0.5) * self.SYSTEM_RATIO
         if pressure < 0:
             flow = -flow
@@ -88,7 +88,7 @@ class SdpPressureSensor(I2cDriver):
                 crc_calc = self._crc8(pressure_raw[:2])
                 if not crc_calc == expected_crc:
                     print('bad crc')
-                return (self.pressure_to_flow(
+                return (self._pressure_to_flow(
                     self._calculate_pressure(pressure_reading)))
             else:
                 self.log.error("Pressure sensor's measure data not ready")
