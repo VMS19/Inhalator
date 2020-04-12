@@ -33,12 +33,21 @@ class AirPressureGraph(object):
 
         self.pressure_figure = Figure(figsize=(5, 2), dpi=100,
                                       facecolor=Theme.active().SURFACE)
-        self.pressure_axis = self.pressure_figure.add_subplot(111, label="pressure")
+        self.pressure_axis = self.pressure_figure.add_subplot(111,
+                                                              label="pressure")
         self.pressure_axis.set_ylabel('Pressure [cmH20]')
 
         # Calibrate x-axis
         self.pressure_axis.set_xticks([], [])
         self.pressure_axis.set_xticklabels([])
+
+        self.x_axis_display_values = [0] * amount_of_xs
+        self.x_axis_graph, = \
+            self.pressure_axis.plot(self.measurements.x_axis,
+                                    self.x_axis_display_values,
+                                    color=Theme.active().WHITE,
+                                    animated=True,
+                                    linewidth=1)
 
         self.pressure_canvas = FigureCanvasTkAgg(self.pressure_figure,
                                                  master=self.root)
@@ -90,9 +99,13 @@ class AirPressureGraph(object):
         self.pressure_max_threshold_graph.set_ydata([self.config.pressure_range.max] *
                                                     len(self.measurements.x_axis))
 
+        self.x_axis_graph.set_ydata(self.x_axis_display_values)
+
         self.pressure_axis.draw_artist(self.pressure_graph)
         self.pressure_axis.draw_artist(self.pressure_min_threshold_graph)
         self.pressure_axis.draw_artist(self.pressure_max_threshold_graph)
+        self.pressure_axis.draw_artist(self.x_axis_graph)
+
         self.pressure_figure.canvas.blit(self.pressure_axis.bbox)
         self.pressure_figure.canvas.flush_events()
 
@@ -135,7 +148,7 @@ class FlowGraph(object):
         self.x_axis_graph, = \
             self.flow_axis.plot(self.measurements.x_axis,
                                 self.x_axis_display_values,
-                                color="#ffffff",
+                                color=Theme.active().WHITE,
                                 animated=True,
                                 linewidth=1)
 
