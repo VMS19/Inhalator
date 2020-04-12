@@ -79,6 +79,10 @@ def test_sampler_volume_calculation(events, measurements, config):
     msg = f"Expected volume of {expected_volume}, received {measurements.inspiration_volume}"
     assert measurements.inspiration_volume == approx(expected_volume, rel=0.1), msg
 
+    expected_exp_volume = 28
+    msg = f"Expected volume of {expected_exp_volume}, received {measurements.expiration_volume}"
+    assert measurements.expiration_volume == approx(expected_exp_volume, rel=0.1), msg
+
 
 def test_alert_on_exhale_volume(events, measurements, config):
     this_dir = os.path.dirname(__file__)
