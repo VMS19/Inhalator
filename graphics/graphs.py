@@ -42,8 +42,7 @@ class AirPressureGraph(object):
             range(0, (amount_of_xs + 1),
                   int(amount_of_xs / self.config.graph_seconds)))
 
-        labels = range(0, int(self.config.graph_seconds + 1))
-        self.pressure_axis.set_xticklabels(labels)
+        self.pressure_axis.set_xticklabels([])
 
         self.pressure_canvas = FigureCanvasTkAgg(self.pressure_figure,
                                                  master=self.root)
@@ -55,7 +54,6 @@ class AirPressureGraph(object):
             color=Theme.active().YELLOW,  # yellow
             linewidth=1,
             animated=True)
-
 
         # Scale y values
         self.pressure_graph.axes.set_ylim(*self.config.pressure_y_scale)
@@ -108,7 +106,7 @@ class AirPressureGraph(object):
 
 class FlowGraph(object):
     def __init__(self, parent, measurements, blank):
-        rcParams.update({'figure.autolayout':True})
+        rcParams.update({'figure.autolayout': True})
         self.parent = parent
         self.root = parent.element
         self.measurements = measurements
@@ -129,8 +127,7 @@ class FlowGraph(object):
             range(0, amount_of_xs + 1,
                   int(amount_of_xs / self.config.graph_seconds)))
 
-        labels = range(int(self.config.graph_seconds + 1))
-        self.flow_axis.set_xticklabels(labels)
+        self.flow_axis.set_xticklabels([])
 
         self.flow_display_values = [0] * self.measurements._amount_of_samples_in_graph
         self.flow_graph, = self.flow_axis.plot(
