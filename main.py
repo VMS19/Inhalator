@@ -158,14 +158,15 @@ def start_app(args):
 
         try:
             rtc = drivers.acquire_driver("rtc")
+            try:
+                rtc.set_system_time()
+            except RuntimeError:
+                # When RTC lose its batteries, it starts returning an invalid
+                # time. We prefer not being depend on it
+                log.exception("RTC returned invalid time")
+
         except errors.InhalatorError:
             rtc = drivers.acquire_driver("null")
-
-        try:
-            if not isinstance(rtc, NullDriver):
-                rtc.set_system_time()
-        except ValueError:
-            pass
 
         alert_driver = drivers.acquire_driver("alert")
 
