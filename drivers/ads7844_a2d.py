@@ -115,9 +115,12 @@ class Ads7844A2D(object):
     def read_oxygen_raw(self):
         return self._sample_a2d(self.OXYGEN_CHANNEL)
 
+    def convert_voltage_to_oxygen(self, volt):
+        return volt * self._oxygen_calibration_scale + \
+            self._oxygen_calibration_offset
+
     def read_oxygen(self):
-        return self.read_oxygen_raw() * self._oxygen_calibration_scale + \
-               self._oxygen_calibration_offset
+        return self.convert_voltage_to_oxygen(self.read_oxygen_raw())
 
     def read_battery_percentage(self):
         raw_battery_value = self._sample_a2d(self.BATTERY_PERCENTAGE_CHANNEL)

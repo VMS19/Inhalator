@@ -15,6 +15,7 @@ class Calibration(object):
     def __init__(self, parent, root, drivers):
         self.parent = parent
         self.root = root
+        self.config = Configurations.instance()
 
         self.sensor_driver = drivers.acquire_driver(self.CALIBRATED_DRIVER)
         self.timer = drivers.acquire_driver("timer")
@@ -36,16 +37,15 @@ class Calibration(object):
         # State
         self.average_value_found = None
 
-    @property
-    def offset_configuration(self):
-        raise NotImplemented
-
     def read_raw_value(self):
         raise NotImplemented
 
     def get_difference(self):
         """Get offset drift."""
-        return self.average_value_found - self.offset_configuration
+        raise NotImplemented
+
+    def save(self):
+        raise NotImplemented
 
     def calibrate(self):
         # TODO: Handle watchdog
@@ -55,7 +55,7 @@ class Calibration(object):
         # Read values from sensor
         for index in range(self.NUMBER_OF_SAMPLES_TO_TAKE):
             # Inform User
-            waiting_time_left = ((self.NUMBER_OF_SAMPLES_TO_TAKE - index ) *
+            waiting_time_left = ((self.NUMBER_OF_SAMPLES_TO_TAKE - index) *
                                  self.SLEEP_IN_BETWEEN)
 
             self.label.configure(
@@ -69,7 +69,8 @@ class Calibration(object):
             self.timer.sleep(self.SLEEP_IN_BETWEEN)
 
         self.average_value_found = statistics.mean(values)
-        self.label.configure(text=f"Offset found: {self.get_difference():.5f}")
+        self.label.configure(
+            text=f"Offset change found: {self.get_difference():.5f}")
         self.button.configure(state="normal")
         self.parent.enable_ok_button()
         self.button.configure(text="Recalibrate")
@@ -78,9 +79,6 @@ class Calibration(object):
         self.frame.place(relx=0, rely=0.25, relwidth=1, relheight=0.5)
         self.label.place(relx=0, rely=0, relheight=0.5, relwidth=1)
         self.button.place(relx=0, rely=0.5, relheight=0.5, relwidth=1)
-
-    def save(self):
-        raise NotImplemented
 
 
 class OKCancelSection(object):
@@ -164,29 +162,38 @@ class DifferentialPressureCalibration(Calibration):
     def read_raw_value(self):
         return self.sensor_driver.read_differential_pressure()
 
-    @property
-    def offset_configuration(self):
-        return Configurations.instance().dp_offset
+    def get_difference(self):
+        """Get offset drift."""
+        return self.average_value_found - self.config.dp_offset
 
     def save(self):
-        Configurations.instance().dp_offset = self.average_value_found
+        self.config.dp_offset = self.average_value_found
         self.sensor_driver.set_calibration_offset(self.average_value_found)
-        Configurations.instance().save_to_file()
+        self.config.save_to_file()
 
-class OxygenCalibration(Calibration):
+
+class Oxygen21Calibration(Calibration):
     NAME = "O2 sensor Calibration"
     CALIBRATED_DRIVER = "a2d"
     PRE_CALIBRATE_ALERT_MSG = \
-        "Please make sure system in 100% oxygen, and tube connected to sensor."
+        "Please make sure system in 21% oxygen, and tube connected to sensor."
+
+    @property
+    def calibrated_point(self):
+        return self.config.oxygen_point1
 
     def read_raw_value(self):
         return self.sensor_driver.read_oxygen_raw()
 
-    @property
-    def offset_configuration(self):
-        return Configurations.instance().oxygen_offset
+    def get_difference(self):
+        """Get offset drift."""
+        average_percentage_found = \
+            self.sensor_driver.convert_voltage_to_oxygen(self.average_value_found)
+        return average_percentage_found - self.calibrated_point["y"]
 
     def save(self):
-        Configurations.instance().oxygen = self.average_value_found
-        self.sensor_driver.set_oxygen_calibration_offset(self.average_value_found)
-        Configurations.instance().save_to_file()
+        # Todo: add update for the second point
+        self.calibrated_point["y"] = self.average_value_found
+        self.sensor_driver.set_oxygen_calibration(self.config.oxygen_point1,
+                                                  self.config.oxygen_point2)
+        self.config.save_to_file()
