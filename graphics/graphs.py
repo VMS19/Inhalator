@@ -48,7 +48,7 @@ class AirPressureGraph(object):
         self.pressure_graph, = self.pressure_axis.plot(
             self.measurements.x_axis,
             self.pressure_display_values,
-            color=Theme.active().YELLOW,  # yellow
+            color=Theme.active().YELLOW,
             linewidth=1,
             animated=True)
 
@@ -126,7 +126,7 @@ class FlowGraph(object):
         self.flow_graph, = self.flow_axis.plot(
             self.measurements.x_axis,
             self.flow_display_values,
-            color=Theme.active().LIGHT_BLUE,  # blue
+            color=Theme.active().LIGHT_BLUE,
             linewidth=1,
             animated=True)
 
