@@ -55,7 +55,6 @@ class AirPressureGraph(object):
         self.pressure_canvas = FigureCanvasTkAgg(self.pressure_figure,
                                                  master=self.root)
 
-        amount_of_xs = self.measurements._amount_of_samples_in_graph
         self.pressure_display_values = [0] * amount_of_xs
         self.pressure_graph, = self.pressure_axis.plot(
             self.measurements.x_axis,
