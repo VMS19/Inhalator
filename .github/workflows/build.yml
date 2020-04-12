@@ -24,7 +24,8 @@ jobs:
         python -m pip install --upgrade pip
         pip install tox
     - name: Run ${{ matrix.tox-environment }}
-      run: tox -e ${{ matrix.tox-environment }}
+      run: |
+        tox -e ${{ matrix.tox-environment }}
     - name: Send coverage to coveralls
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}

@@ -1,6 +1,5 @@
 import os
 import time
-from tkinter.ttk import Style
 
 import timeago
 import datetime
@@ -8,7 +7,6 @@ from tkinter import *
 
 from data.alerts import Alert, AlertCodes
 from graphics.themes import Theme
-from data import alerts
 from data.configurations import Configurations
 from graphics.version import __version__
 
@@ -45,18 +43,14 @@ class IndicatorAlertBar(object):
                                    bg=Theme.active().ALERT_BAR_OK,
                                    fg=Theme.active().ALERT_BAR_OK_TXT,)
 
-        self.timestamp_label = Label(master=self.root, font=("Roboto", 12),
+        self.timestamp_label = Label(master=self.root,
+                                     font=("Roboto", 12),
                                      text="",
                                      fg=Theme.active().ALERT_BAR_OK_TXT,
                                      bg=Theme.active().ALERT_BAR_OK)
 
-        self.version_label = Label(master=self.root, font=("Roboto", 10),
-                                   text="Ver. {}".format(__version__),
-                                   fg=Theme.active().ALERT_BAR_OK_TXT,
-                                   bg=Theme.active().ALERT_BAR_OK)
-
-        self.battery_frame = Frame(master=self.root,
-                                   bg=Theme.active().ALERT_BAR_OK)  # TODO: Implement a tk.style
+        self.system_info_frame = Frame(master=self.root,
+                                       bg=Theme.active().ALERT_BAR_OK)  # TODO: Implement a tk.style
         self.battery_ok_image = PhotoImage(name="ok",
                                            file=self.BATTERY_OK_PATH)
         self.battery_low_image = PhotoImage(name="low",
@@ -64,13 +58,20 @@ class IndicatorAlertBar(object):
         self.battery_missing_image = PhotoImage(name="missing",
                                                 file=self.BATTERY_MISSING_PATH)
 
-        self.battery_icon = Label(master=self.battery_frame,
+        self.battery_icon = Label(master=self.system_info_frame,
                                   image=self.battery_ok_image,
+                                  fg=Theme.active().ALERT_BAR_OK_TXT,
+                                  bg=Theme.active().ALERT_BAR_OK)
+
+        self.battery_label = Label(master=self.system_info_frame,
+                                   font=("Roboto", 9),
+                                   text="",
                                    fg=Theme.active().ALERT_BAR_OK_TXT,
                                    bg=Theme.active().ALERT_BAR_OK)
 
-        self.battery_label = Label(master=self.battery_frame,
-                                   font=("Roboto", 9), text="",
+        self.version_label = Label(master=self.system_info_frame,
+                                   font=("Roboto", 9),
+                                   text="Ver. {}".format(__version__),
                                    fg=Theme.active().ALERT_BAR_OK_TXT,
                                    bg=Theme.active().ALERT_BAR_OK)
 
@@ -82,7 +83,7 @@ class IndicatorAlertBar(object):
 
     @property
     def frames(self):
-        return [self.bar, self.battery_frame]
+        return [self.bar, self.system_info_frame]
 
     @property
     def textual(self):
@@ -94,11 +95,11 @@ class IndicatorAlertBar(object):
         self.bar.place(relx=0, rely=0)
         self.message_label.place(anchor="nw", relx=0.03, rely=0.05)
         self.timestamp_label.place(anchor="nw", relx=0.04, rely=0.7)
-        self.version_label.place(anchor="nw", relx=0.83, rely=0.7)
-        self.battery_frame.place(relx=0.80, rely=0.05,
-                                 relheight=0.20, relwidth=0.2)
-        self.battery_label.place(relx=0.65, rely=0)
-        self.battery_icon.place(relx=0.5, rely=0)
+        self.system_info_frame.place(relx=0.7, rely=0.05,
+                                     relheight=0.8, relwidth=0.3)
+        self.battery_label.place(relx=0.75, rely=0)
+        self.battery_icon.place(relx=0.6, rely=0)
+        self.version_label.place(relx=0.3, rely=0.7)
 
     def update(self):
         # Check mute time limit
