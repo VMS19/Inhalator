@@ -243,6 +243,17 @@ class VentilationStateMachine(object):
         self.expiration_volume.reset()
         self.exp_volumes.append((timestamp, exp_volume_ml))
 
+        if self._config.volume_range.below(exp_volume_ml):
+            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW, timestamp)
+            self.log.warning(
+                "volume too low %s, bottom threshold %s",
+                exp_volume_ml, self._config.volume_range.min)
+        elif self._config.volume_range.over(exp_volume_ml):
+            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH, timestamp)
+            self.log.warning(
+                "volume too high %s, top threshold %s",
+                exp_volume_ml, self._config.volume_range.max)
+
         self.reset_min_values()
 
     def enter_exhale(self, timestamp):
@@ -252,17 +263,6 @@ class VentilationStateMachine(object):
         self._measurements.inspiration_volume = insp_volume_ml
         self.inspiration_volume.reset()
         self.insp_volumes.append((timestamp, insp_volume_ml))
-
-        if self._config.volume_range.below(insp_volume_ml):
-            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW, timestamp)
-            self.log.warning(
-                "volume too low %s, bottom threshold %s",
-                insp_volume_ml, self._config.volume_range.min)
-        elif self._config.volume_range.over(insp_volume_ml):
-            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH, timestamp)
-            self.log.warning(
-                "volume too high %s, top threshold %s",
-                insp_volume_ml, self._config.volume_range.max)
         self.reset_peaks()
 
     def enter_peep(self, timestamp):

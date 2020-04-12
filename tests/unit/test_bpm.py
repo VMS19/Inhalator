@@ -208,6 +208,9 @@ def test_bpm_alert(bpm_range, expected_alert, events, config, sampler):
 
     # Sinus simulation is 15 bpm. set max threshold below it.
     config.resp_rate_range = RespiratoryRateRange(*bpm_range)
+    # Set volume range to prevent volume alerts.
+    config.volume_range = VolumeRange(-500000, 500000)
+
 
     current_time = time.time()
     while time.time() - current_time < SIMULATION_LENGTH:
@@ -236,6 +239,9 @@ def test_no_bpm_alert_on_startup(events, config, sampler):
     # Sinus simulation is 15 bpm. set min threshold above, to simulate
     # insufficient sampling.
     config.resp_rate_range = RespiratoryRateRange(20, 30)
+    # Set volume range to prevent volume alerts.
+    config.volume_range = VolumeRange(-500000, 500000)
+
 
     current_time = time.time()
     while time.time() - current_time < SIMULATION_LENGTH:
@@ -244,3 +250,4 @@ def test_no_bpm_alert_on_startup(events, config, sampler):
 
     assert len(events.alerts_queue) == 0, \
         "BPM alert raised before sufficient breath cycles were sampled"
+
