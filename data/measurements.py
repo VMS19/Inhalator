@@ -8,6 +8,8 @@ class Measurements(object):
     def __init__(self, sample_rate=22):
         self.inspiration_volume = 0
         self.expiration_volume = 0
+        self.avg_insp_volume = 0
+        self.avg_exp_volume = 0
         self.flow_measurements = Queue(maxsize=40)  # TODO: Rename?
         self.pressure_measurements = Queue(maxsize=40)  # TODO: Rename?
         self.sample_interval = 1 / sample_rate
@@ -23,6 +25,8 @@ class Measurements(object):
     def reset(self):
         self.inspiration_volume = 0
         self.expiration_volume = 0
+        self.avg_insp_volume = 0
+        self.avg_exp_volume = 0
         self.intake_peak_flow = 0
         self.intake_peak_pressure = 0
         self.peep_min_pressure = 0
