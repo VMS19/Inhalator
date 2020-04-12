@@ -94,6 +94,7 @@ class Rv8523Rtc(I2cDriver):
             return datetime(years, months, days, hours, minutes, seconds)
         except ValueError as e:
             log.error("RTC invalid time, please set RTC")
+            self.set_rtc_time(datetime.now())
             raise e
 
     def set_rtc_time(self, date):
