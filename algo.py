@@ -293,24 +293,30 @@ class VentilationStateMachine(object):
         self.log.debug("TV exp: : %sml", exp_volume_ml)
         self._measurements.expiration_volume = exp_volume_ml
 
-        self.reset_min_values()
-
-    def enter_exhale(self, timestamp):
         # Update final inspiration volume
         insp_volume_ml = self.breath_meter.get_insp_volume_ml()
         self.log.debug("TV insp: : %sml", insp_volume_ml)
         self._measurements.inspiration_volume = insp_volume_ml
 
         if self._config.volume_range.below(insp_volume_ml):
-            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW, timestamp)
+            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW,
+                                                    timestamp)
             self.log.warning(
                 "volume too low %s, bottom threshold %s",
                 insp_volume_ml, self._config.volume_range.min)
         elif self._config.volume_range.over(insp_volume_ml):
-            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH, timestamp)
+            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH,
+                                                    timestamp)
             self.log.warning(
                 "volume too high %s, top threshold %s",
                 insp_volume_ml, self._config.volume_range.max)
+
+        leakage = insp_volume_ml - exp_volume_ml
+        self.log.warning("leakage: {}".format(leakage))
+
+        self.reset_min_values()
+
+    def enter_exhale(self, timestamp):
         self.reset_peaks()
 
     def enter_peep(self, timestamp):
