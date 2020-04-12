@@ -14,6 +14,8 @@ jobs:
         tox-environment: [flake8, tests]
         python-version: [3.7]
     steps:
+    - name: Upgrade Git
+      run: apt-get update && apt-get install -y git
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v1
