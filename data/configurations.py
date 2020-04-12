@@ -31,9 +31,9 @@ class Configurations(object):
 
     def __init__(self, o2_range, volume_range, pressure_range, resp_rate_range,
                  flow_y_scale, pressure_y_scale, graph_seconds,
-                 breathing_threshold, log_enabled=True,
-                 mute_time_limit=120, low_battery_percentage=15,
-                 dp_offset=0):
+                 breathing_threshold, oxygen_point1, oxygen_point2,
+                 log_enabled=True, mute_time_limit=120,
+                 low_battery_percentage=15, dp_offset=0):
         self.o2_range = o2_range
         self.volume_range = volume_range
         self.pressure_range = pressure_range
@@ -46,6 +46,8 @@ class Configurations(object):
         self.pressure_y_scale = pressure_y_scale
         self.low_battery_percentage = low_battery_percentage
         self.dp_offset = dp_offset
+        self.oxygen_point1 = oxygen_point1
+        self.oxygen_point2 = oxygen_point2
 
     def __getitem__(self, item):
         return getattr(self, item)
@@ -119,6 +121,8 @@ class Configurations(object):
             mute_time_limit = config["mute_time_limit"]
             low_battery_percentage = config["low_battery_percentage"]
             dp_offset = config["calibration"]["dp_offset"]
+            oxygen_point1 = config["calibration"]["oxygen_point1"]
+            oxygen_point2 = config["calibration"]["oxygen_point2"]
 
             return cls(o2_range=o2,
                        volume_range=volume,
@@ -131,7 +135,9 @@ class Configurations(object):
                        flow_y_scale=flow_y_scale,
                        pressure_y_scale=pressure_y_scale,
                        low_battery_percentage=low_battery_percentage,
-                       dp_offset=dp_offset)
+                       dp_offset=dp_offset,
+                       oxygen_point1=oxygen_point1,
+                       oxygen_point2=oxygen_point2)
 
         except Exception as e:
             raise ConfigurationFileError(f"Could not load "
@@ -178,7 +184,9 @@ class Configurations(object):
             "mute_time_limit": self.mute_time_limit,
             "low_battery_percentage": self.low_battery_percentage,
             "calibration": {
-                "dp_offset": self.dp_offset
+                "dp_offset": self.dp_offset,
+                "oxygen_point1": self.oxygen_point1,
+                "oxygen_point2": self.oxygen_point2,
             },
         }
 

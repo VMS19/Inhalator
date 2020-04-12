@@ -33,7 +33,15 @@
         }
   },
   "calibration": {
-    "dp_offset": 0.026
+    "dp_offset": 0.026,
+    "oxygen_point1": {
+        "x": 21,
+        "y": 1.2
+    },
+    "oxygen_point2": {
+        "x": 100,
+        "y": 1.5
+    }
   },
   "log_enabled": true,
   "graph_seconds": 12.0,
