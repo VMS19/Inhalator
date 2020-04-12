@@ -25,7 +25,6 @@ jobs:
         pip install tox
     - name: Run ${{ matrix.tox-environment }}
       run: |
-        git init  # faking a git repo
         tox -e ${{ matrix.tox-environment }}
     - name: Send coverage to coveralls
       env:
