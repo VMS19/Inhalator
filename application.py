@@ -43,7 +43,7 @@ class Application(object):
         self.last_sample_ts = 0
 
         self.fps = 0
-        self.second_counter = 0
+        self.fps_sec_counter = 0
 
         if os.uname()[1] == 'raspberrypi':
             # on production we don't want to see the ugly cursor
@@ -74,10 +74,10 @@ class Application(object):
         self.root.update_idletasks()
         self.master_frame.update()
         self.last_render_ts = time.time()
-        if (self.second_counter + 1) > self.last_render_ts:
+        if (self.fps_sec_counter + 1) > self.last_render_ts:
             self.fps += 1
         else:
-            self.second_counter = self.last_render_ts
+            self.fps_sec_counter = self.last_render_ts
             print(self.fps)
             self.fps = 0
 
