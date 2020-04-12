@@ -41,7 +41,7 @@ def sampler(measurements, events, driver_factory, bpm):
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     return Sampler(measurements, events, flow_sensor, pressure_sensor,
-                   a2d, timer)
+                   a2d, timer, average_window=1)
 
 @pytest.fixture
 def config():

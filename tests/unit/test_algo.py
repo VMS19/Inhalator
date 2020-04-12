@@ -79,7 +79,7 @@ def test_alert_is_published_on_high_o2():
 
     sampler = Sampler(measurements=measurements, events=events,
                       flow_sensor=flow, pressure_sensor=pressure, a2d=a2d,
-                      timer=timer)
+                      timer=timer, average_window=1)
 
     assert len(events.alerts_queue) == 0
 
@@ -102,7 +102,7 @@ def test_alert_is_published_on_high_o2():
 
     sampler = Sampler(measurements=measurements, events=events,
                       flow_sensor=flow, pressure_sensor=pressure, a2d=a2d,
-                      timer=timer)
+                      timer=timer, average_window=1)
 
     assert len(events.alerts_queue) == 0
 
@@ -128,7 +128,7 @@ def test_alert_is_published_on_low_o2():
 
     sampler = Sampler(measurements=measurements, events=events,
                       flow_sensor=flow, pressure_sensor=pressure, a2d=a2d,
-                      timer=timer)
+                      timer=timer, average_window=1)
 
     assert len(events.alerts_queue) == 0
 

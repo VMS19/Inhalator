@@ -218,6 +218,7 @@ class DriverFactory(object):
             data = self.generate_mock_air_flow_data()
         else:
             data = generate_data_from_file('flow', simulation_data)
+
         return MockSensor(data)
 
     def get_mock_pressure_driver(self):
@@ -248,6 +249,7 @@ class DriverFactory(object):
             data = self.generate_mock_noise()
         else:
             data = generate_data_from_file('flow', simulation_data)
+
         return MockSensor(data, error_probability=self.error_probability)
 
     def get_mock_a2d_driver(self):

@@ -65,7 +65,7 @@ def test_sampler_alerts_when_sensor_exceeds_maximum(events, measurements, config
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
+                      a2d, timer, average_window=1)
 
     app = Application(measurements=measurements,
                       events=events,
@@ -77,7 +77,9 @@ def test_sampler_alerts_when_sensor_exceeds_maximum(events, measurements, config
     app.run_iterations(SAMPLES_AMOUNT)
     assert len(events.alerts_queue) == 0
 
-    configure_alerts_screen = ConfigureAlarmsScreen(app.master_frame.element)
+    configure_alerts_screen = ConfigureAlarmsScreen(app.master_frame.element,
+                                                    measurements=measurements,
+                                                    drivers=driver_factory)
     configure_alerts_screen.show()
     getattr(configure_alerts_screen, f"{alert_type}_section").max_button.publish()
     app.gui_update()
@@ -124,7 +126,7 @@ def test_sampler_alerts_when_sensor_exceeds_minimum(events, measurements, config
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
+                      a2d, timer, average_window=1)
 
     app = Application(measurements=measurements,
                       events=events,
@@ -136,7 +138,9 @@ def test_sampler_alerts_when_sensor_exceeds_minimum(events, measurements, config
     app.run_iterations(SAMPLES_AMOUNT)
     assert len(events.alerts_queue) == 0
 
-    configure_alerts_screen = ConfigureAlarmsScreen(app.master_frame.element)
+    configure_alerts_screen = ConfigureAlarmsScreen(app.master_frame.element,
+                                                    measurements=measurements,
+                                                    drivers=driver_factory)
     configure_alerts_screen.show()
     getattr(configure_alerts_screen, f"{alert_type}_section").min_button.publish()
     app.gui_update()

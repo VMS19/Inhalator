@@ -56,6 +56,9 @@ class Application(object):
                                         events=events,
                                         drivers=drivers)
 
+        differential_pressure_driver = self.drivers.acquire_driver("differential_pressure")
+        differential_pressure_driver.set_calibration_offset(Configurations.instance().dp_offset)
+
     def exit(self):
         self.root.quit()
         self.should_run = False

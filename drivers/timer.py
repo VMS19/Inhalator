@@ -12,3 +12,6 @@ class Timer(object):
 
     def get_current_time(self):
         return self.get_time()
+
+    def sleep(self, amount):
+        return time.sleep(amount)
