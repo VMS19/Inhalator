@@ -35,7 +35,6 @@ def test_alert_contains(alert1, alert2):
     assert Alert(alert1).contains(alert2) == expected_results
 
 
-@pytest.mark.xfail(reason="Trying to average the flow when doesn't exists")
 def test_invalid_flow_driver_initialization(events, measurements):
     driver_factory = DriverFactory(simulation_mode=True)
     flow_sensor = NullDriver()
