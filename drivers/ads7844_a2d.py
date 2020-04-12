@@ -1,7 +1,7 @@
 import spidev
 import logging
 
-from errors import SPIDriverInitError, SPIIOError
+from errors import SPIDriverInitError, SPIIOError, InvalidCalibrationError
 
 log = logging.getLogger(__name__)
 
@@ -32,26 +32,26 @@ class Ads7844A2D(object):
     BATTERY_EXISTENCE_CHANNEL = 2
 
     CHANNEL_MAP = [0, 4, 1, 5, 2, 6, 3, 7]
-    A2D_OXYGEN_RATIO = 57.4240867
-    A2D_OXYGEN_OFFSET = 0.51566
     FULL_BATTERY = 6.024644649924462
     A2D_BATTERY_RATIO = 0.0337359433
-    VOLTAGE_FACTOR = 38.4  # scale between voltage and oxygen percentage
 
     def __init__(self):
         self._oxygen_calibration_offset = 0
+        self._oxygen_calibration_scale = 0
         self._spi = spidev.SpiDev()
 
         try:
             self._spi.open(self.SPI_BUS, self.SPI_DEV)
         except IOError:
-            log.error("Couldn't init spi device. Is the peripheral initialized?")
+            log.error(
+                "Couldn't init spi device. Is the peripheral initialized?")
             raise SPIDriverInitError("spidev peripheral init error")
 
         try:
             self._spi.max_speed_hz = self.SPI_CLK_SPEED_KHZ
         except IOError:
-            log.error("setting spi speed failed. Is speed in the correct range?")
+            log.error(
+                "setting spi speed failed. Is speed in the correct range?")
             raise SPIDriverInitError("spidev peripheral init error")
 
         try:
@@ -68,10 +68,11 @@ class Ads7844A2D(object):
     def _sample_a2d(self, channel, input_mode=MODE_SGL,
                     power_down_mode=PD_DISABLED):
         try:
-            start_byte = self.DEFAULT_CTRL_BYTE |\
-                (self.CHANNEL_MAP[channel] << self.CHANNEL_SELECT_SHIFT) |\
-                (input_mode << self.INPUT_MODE_SHIFT) |\
-                power_down_mode
+            start_byte = self.DEFAULT_CTRL_BYTE | \
+                         (self.CHANNEL_MAP[
+                              channel] << self.CHANNEL_SELECT_SHIFT) | \
+                         (input_mode << self.INPUT_MODE_SHIFT) | \
+                         power_down_mode
             sample_raw = self._spi.xfer([start_byte, 0, 0],
                                         self.XFER_SPEED_HZ,
                                         self.PERIPHERAL_MINIMAL_DELAY)
@@ -86,15 +87,37 @@ class Ads7844A2D(object):
 
         return self._calibrate_a2d(sample_reading)
 
-    def set_oxygen_calibration_offset(self):
-        pass
+    def set_oxygen_calibration(self, point1, point2):
+        if point1["x"] > point2["x"]:
+            left_p = point2
+            right_p = point1
+        elif point1["x"] < point2["x"]:
+            left_p = point1
+            right_p = point2
+        else:
+            raise InvalidCalibrationError(
+                "Two calibration points on same x value")
+
+        new_scale = (right_p["y"] - left_p["y"]) / (
+            right_p["x"] - left_p["x"])
+
+        if new_scale <= 0:
+            raise InvalidCalibrationError(
+                f"Bad oxygen calibration. negative slope."
+                f"({left_p['x']},{left_p['y']}),"
+                f"({right_p['x']},{right_p['y']})")
+
+        new_offset = point1["y"] - point1["x"] * new_scale
+
+        self._oxygen_calibration_scale = new_scale
+        self._oxygen_calibration_offset = new_offset
 
     def read_oxygen_raw(self):
         return self._sample_a2d(self.OXYGEN_CHANNEL)
 
     def read_oxygen(self):
-        return self.read_oxygen_raw() * self.A2D_OXYGEN_RATIO +\
-            self.A2D_OXYGEN_OFFSET
+        return self.read_oxygen_raw() * self._oxygen_calibration_scale + \
+               self._oxygen_calibration_offset
 
     def read_battery_percentage(self):
         raw_battery_value = self._sample_a2d(self.BATTERY_PERCENTAGE_CHANNEL)
