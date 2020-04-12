@@ -18,13 +18,13 @@ fi
 INHALATOR_PATH=$(realpath $(dirname $(realpath $0))/..)
 
 # install dependencies
-apt update
-apt install --assume-yes virtualenv libatlas-base-dev pigpio python3-dev vim
+apt-get update
+apt-get install --assume-yes virtualenv libatlas-base-dev pigpio python3-dev vim
 virtualenv $INHALATOR_PATH/.inhalator_env -p $(which python3)
 source $INHALATOR_PATH/.inhalator_env/bin/activate
 pip3 install --upgrade pip
 pip3 install -r $INHALATOR_PATH/requirements.txt
-apt install proftpd -y && service proftpd restart
+apt-get install proftpd -y && service proftpd restart
 
 
 # install as service
