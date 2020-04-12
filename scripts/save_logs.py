@@ -74,7 +74,7 @@ def configure_logger():
 def parse_cli_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--csv_output', default=CSV_FILE_OUTPUT)
-    parser.add_argument('-a', '--alerts_output', default=ALERTS_CSV_OUTPUT)
+    parser.add_argument('-a', '--alerts_output', nargs='?', type=str, const=ALERTS_CSV_OUTPUT)
     parser.add_argument('-i', '--ip', default=RPI_IP, required=True)
     parser.add_argument('-d', '--delete', action='store_true')
     parser.add_argument('-o', '--output', default=LOG_FILE_PATH)
@@ -152,13 +152,15 @@ def main():
 
         else:
             # Copy files from RPi to local storage.
-            logger.info(f"Copying logs files from Raspberry(%s) to %s",
+            logger.info("Copying data files from Raspberry(%s) to %s",
                         cli_args.ip, cli_args.csv_output)
             copy_sensor_data(cli_args.csv_output, ftp, logger)
+            logger.info('Copying log file')
             copy_log(ftp, cli_args.output)
-            alerts_extractor = AlertsExtractor(cli_args.output, cli_args.alerts_output, logger)
-            logger.info('Parsing alerts log into CSV')
-            alerts_extractor.convert_log_to_csv()
+            if cli_args.alerts_output is not None:
+                alerts_extractor = AlertsExtractor(cli_args.output, cli_args.alerts_output, logger)
+                logger.info('Parsing alerts log into CSV')
+                alerts_extractor.convert_log_to_csv()
             logger.info('Finished, saved sensor data at %s, alerts at %s', cli_args.csv_output, cli_args.alerts_output)
 
 
