@@ -3,7 +3,7 @@ from tkinter import *
 from graphics.alert_bar import IndicatorAlertBar
 from graphics.graphs import FlowGraph, AirPressureGraph, BlankGraph
 from graphics.graph_summaries import VolumeSummary, BPMSummary, \
-    PressurePeakSummary, O2SaturationSummary, InhaleExhaleAvgSummary
+    PressurePeakSummary, O2SaturationSummary
 from graphics.right_menu_options import (MuteAlertsButton,
                                          ClearAlertsButton,
                                          LockThresholdsButton,
@@ -65,7 +65,6 @@ class LeftPane(object):
         self.bpm_summary = BPMSummary(self, measurements)
         self.pressure_peak_summary = PressurePeakSummary(self, measurements)
         self.o2_saturation_summary = O2SaturationSummary(self, measurements)
-        self.inhale_exhale_avg_summary = InhaleExhaleAvgSummary(self, measurements)
 
     @property
     def element(self):
@@ -74,8 +73,7 @@ class LeftPane(object):
     @property
     def summaries(self):
         return (self.volume_summary, self.bpm_summary,
-                self.pressure_peak_summary, self.o2_saturation_summary,
-                self.inhale_exhale_avg_summary)
+                self.pressure_peak_summary, self.o2_saturation_summary)
 
     def render(self):
         self.frame.grid(row=1, column=0)
