@@ -53,7 +53,7 @@ class AirPressureGraph(object):
             self.measurements.x_axis,
             self.pressure_display_values,
             color=Theme.active().YELLOW,  # yellow
-            linewidth=2,
+            linewidth=1,
             animated=True)
 
 
@@ -67,7 +67,7 @@ class AirPressureGraph(object):
                                     len(self.measurements.x_axis),
                                     color=Theme.active().RED,
                                     animated=True,
-                                    linewidth=3)
+                                    linewidth=1)
 
         self.pressure_min_threshold_graph, = \
             self.pressure_axis.plot(self.measurements.x_axis,
@@ -75,7 +75,7 @@ class AirPressureGraph(object):
                                     len(self.measurements.x_axis),
                                     color=Theme.active().RED,
                                     animated=True,
-                                    linewidth=3)
+                                    linewidth=1)
 
     def render(self):
         self.pressure_canvas.draw()
@@ -137,7 +137,7 @@ class FlowGraph(object):
             self.measurements.x_axis,
             self.flow_display_values,
             color=Theme.active().LIGHT_BLUE,  # blue
-            linewidth=2,
+            linewidth=1,
             animated=True)
 
         self.x_axis_display_values = [0] * amount_of_xs
