@@ -85,6 +85,9 @@ def test_sampler_volume_calculation(events, measurements, config):
 
 
 def test_alert_on_exhale_volume(events, measurements, config):
+    """Validating alerts are popping for exhale volume and not inhale volume."""
+
+    # initialize application
     this_dir = os.path.dirname(__file__)
     file_path = os.path.join(this_dir, SIMULATION_FOLDER,
                              "pig_sim_cycle.csv")
@@ -102,20 +105,14 @@ def test_alert_on_exhale_volume(events, measurements, config):
     sampler.sampling_iteration()
     assert len(events.alerts_queue) == 0
 
+    # Set volume range between the expected exhale volume (28), and not the inhale volume (332).
+    # Validate that there are no alerts about volume (caused by inhale volume)
     config.volume_range = VolumeRange(0, 50)
 
     current_time = time.time()
     while time.time() - current_time < SIMULATION_LENGTH:
         time.sleep(MICROSECOND)
         sampler.sampling_iteration()
-
-    expected_insp_volume = 332
-    msg = f"Expected volume of {expected_insp_volume}, received {measurements.inspiration_volume}"
-    assert measurements.inspiration_volume == approx(expected_insp_volume, rel=0.1), msg
-
-    expected_exp_volume = 28
-    msg = f"Expected volume of {expected_exp_volume}, received {measurements.expiration_volume}"
-    assert measurements.expiration_volume == approx(expected_exp_volume, rel=0.1), msg
 
     assert len(events.alerts_queue) == 0
 
