@@ -6,9 +6,8 @@ from data.configurations import Configurations
 
 from tkinter import *
 
-from data.thresholds import (VolumeRange, PressureRange,
-                             RespiratoryRateRange, O2Range)
-from graphics.calibrate.screen import FlowCalibrationScreen
+from graphics.calibrate.screen import CalibrationScreen, \
+    DifferentialPressureCalibration
 
 from graphics.imagebutton import ImageButton
 from graphics.themes import Theme
@@ -118,12 +117,11 @@ class Section(object):
 
 
 class SectionWithCalibrate(Section):
-    def __init__(self, parent, root, measurements, drivers):
+    CALIBRATION_CLASS = NotImplemented
+
+    def __init__(self, parent, root, drivers):
         super().__init__(parent, root)
-
-        self.measurements = measurements
         self.drivers = drivers
-
         self.calibrate_button = Button(master=self.minmax_divider)
         self.calibrate_button.configure(bg="#3c3149", fg="#d7b1f9",
                                         text="Calibrate",
@@ -138,10 +136,11 @@ class SectionWithCalibrate(Section):
         self.calibrate_button.place(relx=0, rely=0, relheight=1, relwidth=1)
 
     def on_calibrate(self):
-        screen = FlowCalibrationScreen(self.parent.root,
-                                       measurements=self.measurements,
-                                       drivers=self.drivers)
+        screen = CalibrationScreen(self.parent.root,
+                                   self.CALIBRATION_CLASS,
+                                   drivers=self.drivers)
         screen.show()
+
 
 class O2Section(Section):
     INDEX = 0
@@ -153,6 +152,7 @@ class O2Section(Section):
 
 class VolumeSection(SectionWithCalibrate):
     INDEX = 1
+    CALIBRATION_CLASS = DifferentialPressureCalibration
 
     @property
     def range(self):
@@ -236,7 +236,7 @@ class ConfirmCancelSection(object):
 
 
 class ConfigureAlarmsScreen(object):
-    def __init__(self, root, measurements, drivers):
+    def __init__(self, root, drivers):
         self.root = root
 
         # Screen state
@@ -249,7 +249,6 @@ class ConfigureAlarmsScreen(object):
         self.oxygen_section = O2Section(self, self.configure_alerts_screen)
         self.volume_section = VolumeSection(self,
                                             self.configure_alerts_screen,
-                                            measurements=measurements,
                                             drivers=drivers)
         self.pressure_section = PressureSection(self, self.configure_alerts_screen)
         self.resp_rate_section = RespRateSection(self, self.configure_alerts_screen)

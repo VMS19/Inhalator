@@ -17,9 +17,7 @@ class MasterFrame(object):
 
         self.master_frame = Frame(master=self.root, bg="black")
         self.left_pane = LeftPane(self, measurements=measurements)
-        self.right_pane = RightPane(self, events=events,
-                                    measurements=measurements,
-                                    drivers=drivers)
+        self.right_pane = RightPane(self, events=events, drivers=drivers)
         self.center_pane = CenterPane(self, measurements=measurements)
         self.top_pane = TopPane(self, events=events, drivers=drivers,
                                 measurements=measurements)
@@ -139,11 +137,10 @@ class CenterPane(object):
 
 
 class RightPane(object):
-    def __init__(self, parent, events, measurements, drivers):
+    def __init__(self, parent, events, drivers):
         self.parent = parent
         self.events = events
         self.drivers = drivers
-        self.measurements = measurements
 
         self.root = parent.element
         self.screen_height = self.root.winfo_screenheight()
@@ -159,7 +156,7 @@ class RightPane(object):
         self.clear_alerts_btn = ClearAlertsButton(parent=self, events=self.events)
         self.lock_thresholds_btn = LockThresholdsButton(parent=self)
         self.configure_alerts_btn = OpenConfigureAlertsScreenButton(
-            self, measurements=measurements, drivers=self.drivers)
+            self, drivers=self.drivers)
         # self.alerts_history_btn = OpenAlertsHistoryScreenButton(self, events=self.events)
 
     @property

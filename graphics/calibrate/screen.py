@@ -6,23 +6,9 @@ from data.configurations import Configurations
 from graphics.themes import Theme
 
 
-class Title(object):
-    def __init__(self, parent, root):
-        self.parent = parent
-        self.root = root
-        self.frame = Frame(master=self.root)
-        self.label = Label(master=self.frame,
-                           text="Flow Calibration",
-                           font=("Roboto", 20),
-                           bg=Theme.active().BACKGROUND,
-                           fg=Theme.active().TXT_ON_BG)
-
-    def render(self):
-        self.frame.place(relx=0, rely=0, relwidth=1, relheight=0.25)
-        self.label.place(relx=0, rely=0, relheight=1, relwidth=1)
-
-
 class Calibration(object):
+    CALIBRATED_DRIVER = NotImplemented
+    PRE_CALIBRATE_ALERT_MSG = "Please make sure tubes are detached from sensor!"
     NUMBER_OF_SAMPLES_TO_TAKE = 100
     SLEEP_IN_BETWEEN = 3 / 100
 
@@ -30,13 +16,13 @@ class Calibration(object):
         self.parent = parent
         self.root = root
 
-        self.dp_driver = drivers.acquire_driver("differential_pressure")
+        self.sensor_driver = drivers.acquire_driver(self.CALIBRATED_DRIVER)
         self.timer = drivers.acquire_driver("timer")
         self.watch_dog = drivers.acquire_driver("wd")
 
         self.frame = Frame(master=self.root)
         self.label = Label(master=self.frame,
-                           text="Please make sure airflow is not connected!",
+                           text=self.PRE_CALIBRATE_ALERT_MSG,
                            font=("Roboto", 16),
                            bg=Theme.active().BACKGROUND,
                            fg=Theme.active().TXT_ON_BG)
@@ -49,6 +35,17 @@ class Calibration(object):
 
         # State
         self.average_value_found = None
+
+    @property
+    def offset_configuration(self):
+        raise NotImplemented
+
+    def read_raw_value(self):
+        raise NotImplemented
+
+    def get_difference(self):
+        """Get offset drift."""
+        return self.average_value_found - self.offset_configuration
 
     def calibrate(self):
         # TODO: Handle watchdog
@@ -67,7 +64,7 @@ class Calibration(object):
 
             self.label.update()  # This is needed so the GUI doesn't freeze
 
-            values.append(self.dp_driver.read_differential_pressure())
+            values.append(self.read_raw_value())
 
             self.timer.sleep(self.SLEEP_IN_BETWEEN)
 
@@ -77,19 +74,13 @@ class Calibration(object):
         self.parent.enable_ok_button()
         self.button.configure(text="Recalibrate")
 
-    def get_difference(self):
-        """Get offset drift."""
-        return self.average_value_found - Configurations.instance().dp_offset
-
     def render(self):
         self.frame.place(relx=0, rely=0.25, relwidth=1, relheight=0.5)
         self.label.place(relx=0, rely=0, relheight=0.5, relwidth=1)
         self.button.place(relx=0, rely=0.5, relheight=0.5, relwidth=1)
 
     def save(self):
-        Configurations.instance().dp_offset = self.average_value_found
-        self.dp_driver.set_calibration_offset(self.average_value_found)
-        Configurations.instance().save_to_file()
+        raise NotImplemented
 
 
 class OKCancelSection(object):
@@ -118,14 +109,30 @@ class OKCancelSection(object):
         self.ok_button.configure(state="normal")
 
 
-class FlowCalibrationScreen(object):
-    def __init__(self, root, measurements, drivers):
+class Title(object):
+    def __init__(self, parent, root, title_str):
+        self.parent = parent
         self.root = root
-        self.measurements = measurements
+        self.frame = Frame(master=self.root)
+        self.label = Label(master=self.frame,
+                           text=title_str,
+                           font=("Roboto", 20),
+                           bg=Theme.active().BACKGROUND,
+                           fg=Theme.active().TXT_ON_BG)
+
+    def render(self):
+        self.frame.place(relx=0, rely=0, relwidth=1, relheight=0.25)
+        self.label.place(relx=0, rely=0, relheight=1, relwidth=1)
+
+
+class CalibrationScreen(object):
+    def __init__(self, root, calibration_class, drivers):
+        self.root = root
+        self.calibration_class = calibration_class
 
         self.screen = Frame(master=self.root, bg="red")
-        self.title = Title(self, self.screen)
-        self.calibration = Calibration(self, self.screen, drivers)
+        self.calibration = self.calibration_class(self, self.screen, drivers)
+        self.title = Title(self, self.screen, self.calibration.NAME)
         self.ok_cancel_section = OKCancelSection(self, self.screen)
 
     def show(self):
@@ -146,3 +153,21 @@ class FlowCalibrationScreen(object):
 
     def on_cancel(self):
         self.hide()
+
+
+class DifferentialPressureCalibration(Calibration):
+    NAME = "Flow Calibration"
+    CALIBRATED_DRIVER = "differential_pressure"
+
+    def read_raw_value(self):
+        self.sensor_driver.read_differential_pressure()
+
+    @property
+    def offset_configuration(self):
+        return Configurations.instance().dp_offset
+
+    def save(self):
+        Configurations.instance().dp_offset = self.average_value_found
+        self.sensor_driver.set_calibration_offset(self.average_value_found)
+        Configurations.instance().save_to_file()
+
