@@ -39,6 +39,7 @@ class Ads7844A2D(object):
     VOLTAGE_FACTOR = 38.4  # scale between voltage and oxygen percentage
 
     def __init__(self):
+        self._oxygen_calibration_offset = 0
         self._spi = spidev.SpiDev()
 
         try:
@@ -85,8 +86,14 @@ class Ads7844A2D(object):
 
         return self._calibrate_a2d(sample_reading)
 
+    def set_oxygen_calibration_offset(self):
+        pass
+
+    def read_oxygen_raw(self):
+        return self._sample_a2d(self.OXYGEN_CHANNEL)
+
     def read_oxygen(self):
-        return self._sample_a2d(self.OXYGEN_CHANNEL) * self.A2D_OXYGEN_RATIO +\
+        return self.read_oxygen_raw() * self.A2D_OXYGEN_RATIO +\
             self.A2D_OXYGEN_OFFSET
 
     def read_battery_percentage(self):

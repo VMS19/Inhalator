@@ -8,7 +8,7 @@ from graphics.themes import Theme
 
 class Calibration(object):
     CALIBRATED_DRIVER = NotImplemented
-    PRE_CALIBRATE_ALERT_MSG = "Please make sure tubes are detached from sensor!"
+    PRE_CALIBRATE_ALERT_MSG = NotImplemented
     NUMBER_OF_SAMPLES_TO_TAKE = 100
     SLEEP_IN_BETWEEN = 3 / 100
 
@@ -158,9 +158,11 @@ class CalibrationScreen(object):
 class DifferentialPressureCalibration(Calibration):
     NAME = "Flow Calibration"
     CALIBRATED_DRIVER = "differential_pressure"
+    PRE_CALIBRATE_ALERT_MSG = \
+        "Please make sure tubes are detached from flow sensor!"
 
     def read_raw_value(self):
-        self.sensor_driver.read_differential_pressure()
+        return self.sensor_driver.read_differential_pressure()
 
     @property
     def offset_configuration(self):
@@ -171,3 +173,20 @@ class DifferentialPressureCalibration(Calibration):
         self.sensor_driver.set_calibration_offset(self.average_value_found)
         Configurations.instance().save_to_file()
 
+class OxygenCalibration(Calibration):
+    NAME = "O2 sensor Calibration"
+    CALIBRATED_DRIVER = "a2d"
+    PRE_CALIBRATE_ALERT_MSG = \
+        "Please make sure system in 100% oxygen, and tube connected to sensor."
+
+    def read_raw_value(self):
+        return self.sensor_driver.read_oxygen_raw()
+
+    @property
+    def offset_configuration(self):
+        return Configurations.instance().oxygen_offset
+
+    def save(self):
+        Configurations.instance().oxygen = self.average_value_found
+        self.sensor_driver.set_oxygen_calibration_offset(self.average_value_found)
+        Configurations.instance().save_to_file()
