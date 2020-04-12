@@ -35,12 +35,15 @@ class AirPressureGraph(object):
                                       facecolor=Theme.active().SURFACE)
         self.pressure_axis = self.pressure_figure.add_subplot(111,
                                                               label="pressure")
+        self.pressure_axis.spines["right"].set_visible(False)
+        self.pressure_axis.spines["bottom"].set_visible(False)
         self.pressure_axis.set_ylabel('Pressure [cmH20]')
 
         # Calibrate x-axis
         self.pressure_axis.set_xticks([], [])
         self.pressure_axis.set_xticklabels([])
 
+        amount_of_xs = self.measurements._amount_of_samples_in_graph
         self.x_axis_display_values = [0] * amount_of_xs
         self.x_axis_graph, = \
             self.pressure_axis.plot(self.measurements.x_axis,
@@ -129,6 +132,8 @@ class FlowGraph(object):
         self.flow_figure = Figure(figsize=(5, 2),
                                   dpi=100, facecolor=Theme.active().SURFACE)
         self.flow_axis = self.flow_figure.add_subplot(111, label="flow")
+        self.flow_axis.spines["right"].set_visible(False)
+        self.flow_axis.spines["bottom"].set_visible(False)
         self.flow_axis.set_ylabel('Flow [L/min]')
 
         # Calibrate x-axis
