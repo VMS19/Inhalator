@@ -51,7 +51,7 @@ class IndicatorAlertBar(object):
                                      bg=Theme.active().ALERT_BAR_OK)
 
         self.version_label = Label(master=self.root, font=("Roboto", 10),
-                                   text="{}".format(__version__),
+                                   text="Ver. {}".format(__version__),
                                    fg=Theme.active().ALERT_BAR_OK_TXT,
                                    bg=Theme.active().ALERT_BAR_OK)
 
@@ -94,7 +94,7 @@ class IndicatorAlertBar(object):
         self.bar.place(relx=0, rely=0)
         self.message_label.place(anchor="nw", relx=0.03, rely=0.05)
         self.timestamp_label.place(anchor="nw", relx=0.04, rely=0.7)
-        self.version_label.place(anchor="nw", relx=0.75, rely=0.7)
+        self.version_label.place(anchor="nw", relx=0.71, rely=0.7)
         self.battery_frame.place(relx=0.80, rely=0.05,
                                  relheight=0.20, relwidth=0.2)
         self.battery_label.place(relx=0.65, rely=0)
