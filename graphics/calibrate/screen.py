@@ -72,14 +72,15 @@ class Calibration(object):
             self.timer.sleep(self.SLEEP_IN_BETWEEN)
 
         self.average_value_found = statistics.mean(values)
-        self.label.configure(text=f"Offset found: {self.get_difference():.5f}")
+        self.label.configure(text=f"Offset found: {self.get_difference():.2f}")
         self.button.configure(state="normal")
         self.parent.enable_ok_button()
         self.button.configure(text="Recalibrate")
 
     def get_difference(self):
         """Get offset drift."""
-        return self.average_value_found - Configurations.instance().dp_offset
+        offset = self.average_value_found - Configurations.instance().dp_offset
+        return self.dp_driver.pressure_to_flow(offset)
 
     def render(self):
         self.frame.place(relx=0, rely=0.25, relwidth=1, relheight=0.5)

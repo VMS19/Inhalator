@@ -1,3 +1,4 @@
+from math import copysign
 from itertools import cycle
 from numpy import random
 
@@ -29,3 +30,6 @@ class MockSensor(object):
 
     def read_differential_pressure(self):
         return 1
+
+    def pressure_to_flow(self, pressure):
+        return copysign(abs(pressure) ** 0.5, pressure)
