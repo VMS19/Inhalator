@@ -116,7 +116,7 @@ class AlertsQueue(object):
 
         if self.start_timestamp + self._config.boot_alert_grace_time >\
            time.time() and alert.is_medical_condition():
-           return
+            return
 
         if self.queue.qsize() == self.MAXIMUM_ALERTS_AMOUNT:
             self.dequeue_alert()
