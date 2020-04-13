@@ -43,3 +43,7 @@ class InvalidCalibrationError(InhalatorError):
 
 class ConfigurationFileError(BaseException):
     pass
+
+
+class UnavailableMeasurmentError(InhalatorError):
+    pass

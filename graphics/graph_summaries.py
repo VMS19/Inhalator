@@ -72,8 +72,8 @@ class PressurePeakSummary(GraphSummary):
 class VolumeSummary(GraphSummary):
     def value(self):
         return "{}/{}".format(
-            int(round(self.measurements.inspiration_volume)),
-            int(round(self.measurements.expiration_volume)))
+            int(round(self.measurements.avg_insp_volume)),
+            int(round(self.measurements.avg_exp_volume)))
 
     def name(self):
         return "TVinsp/exp"
@@ -109,7 +109,7 @@ class BPMSummary(GraphSummary):
 
 class O2SaturationSummary(GraphSummary):
     def value(self):
-        return min(round(self.measurements.o2_saturation_percentage), 100)
+        return round(self.measurements.o2_saturation_percentage)
 
     def name(self):
         return "FiO2"

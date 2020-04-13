@@ -11,6 +11,7 @@ from scipy.stats import linregress
 from data.alerts import AlertCodes
 from data.configurations import Configurations
 from sample_storage import SamplesStorage
+from errors import UnavailableMeasurmentError
 
 TRACE = logging.DEBUG - 1
 logging.addLevelName(TRACE, 'TRACE')
@@ -197,6 +198,8 @@ class VentilationStateMachine(object):
                                              max_samples=4)
         self.inspiration_volume = Accumulator()
         self.expiration_volume = Accumulator()
+        self.avg_exp_volume = RunningAvg(max_samples=4)
+        self.avg_insp_volume = RunningAvg(max_samples=4)
         self.insp_volumes = deque(maxlen=100)
         self.exp_volumes = deque(maxlen=100)
         self.insp_flows = deque(maxlen=1000)
@@ -219,7 +222,6 @@ class VentilationStateMachine(object):
     def enter_inhale(self, timestamp):
         self.last_breath_timestamp = timestamp
         self._measurements.bpm = self.breathes_rate_meter.beat(timestamp)
-
         if self.breathes_rate_meter.is_stable():
             # Check bpm thresholds
             if self._config.resp_rate_range.over(self._measurements.bpm):
@@ -238,6 +240,7 @@ class VentilationStateMachine(object):
         # Update final expiration volume
         exp_volume_ml = abs(self.expiration_volume.integrate()) * 1000
         self.log.debug("TV exp: : %sml", exp_volume_ml)
+        self._measurements.avg_exp_volume = self.avg_exp_volume.process(exp_volume_ml)
         self._measurements.expiration_volume = exp_volume_ml
         self.expiration_volume.reset()
         self.exp_volumes.append((timestamp, exp_volume_ml))
@@ -259,6 +262,7 @@ class VentilationStateMachine(object):
         # Update final inspiration volume
         insp_volume_ml = self.inspiration_volume.integrate() * 1000
         self.log.debug("TV insp: : %sml", insp_volume_ml)
+        self._measurements.avg_insp_volume = self.avg_insp_volume.process(insp_volume_ml)
         self._measurements.inspiration_volume = insp_volume_ml
         self.inspiration_volume.reset()
         self.insp_volumes.append((timestamp, insp_volume_ml))
@@ -391,6 +395,8 @@ class Sampler(object):
     def read_single_sensor(self, sensor, alert_code, timestamp):
         try:
             return sensor.read()
+        except UnavailableMeasurmentError as e:
+            self.log.error(e)
         except Exception as e:
             self._events.alerts_queue.enqueue_alert(alert_code, timestamp)
             self.log.error(e)
@@ -457,6 +463,9 @@ class Sampler(object):
                                        tv_insp=self._measurements.inspiration_volume,
                                        tv_exp=self._measurements.expiration_volume,
                                        bpm=self._measurements.bpm)
+
+        o2_saturation_percentage = max(0,
+                                       min(o2_saturation_percentage, 100))
 
         self.vsm.update(
             pressure_cmh2o=pressure_cmh2o,
