@@ -139,8 +139,6 @@ class VentilationState(Enum):
 
 class VentilationStateMachine(object):
     NO_BREATH_ALERT_TIME_SECONDS = 12
-    EXP_VOLUME_THRESHOLD = 50  # Minimal volume to consider exhale
-    INSP_VOLUME_THRESHOLD = 50  # Minimal volume to consider inhale
 
     def __init__(self, measurements, events):
         self._measurements = measurements
@@ -197,7 +195,7 @@ class VentilationStateMachine(object):
     def enter_inhale(self, timestamp):
         # Check if the minimum volume for inhale has been reached.
         insp_volume = self.inspiration_volume.integrate() * 1000
-        if insp_volume < self.INSP_VOLUME_THRESHOLD:
+        if insp_volume < self._config.min_insp_volume_for_inhale:
             return False  # Not enough volume to be considered inhale.
 
         self.last_breath_timestamp = timestamp
@@ -242,7 +240,7 @@ class VentilationStateMachine(object):
     def enter_exhale(self, timestamp):
         # Check if the minimum volume for exhale has been reached.
         exp_volume = self.expiration_volume.integrate() * 1000
-        if exp_volume < self.EXP_VOLUME_THRESHOLD:
+        if exp_volume < self._config.min_exp_volume_for_exhale:
             return False  # Not enough volume to be considered exhale
         # Update final inspiration volume
         insp_volume_ml = self.inspiration_volume.integrate() * 1000
@@ -348,10 +346,10 @@ class VentilationStateMachine(object):
         flow_positive_increasing = flow_slope > 3 and flow_slm > 2
         flow_negative_decreasing = flow_slope < -10 and flow_slm < -2
 
-        if flow_positive_increasing and pressure_slope > 0:
+        if flow_positive_increasing and pressure_slope > self._config.min_pressure_slope_for_inhale:
             return VentilationState.Inhale
 
-        if flow_negative_decreasing and pressure_slope < 12:
+        if flow_negative_decreasing and pressure_slope < self._config.max_pressure_slope_for_exhale:
             return VentilationState.Exhale
         return self.current_state
 
