@@ -89,7 +89,7 @@ class Calibration(object):
 
         self.average_value_found = statistics.mean(values)
         self.label.configure(
-            text=f"Offset change found: {self.get_difference():.5f}")
+            text=f"Offset change found: {self.get_difference():.2f}")
 
         self.parent.enable_ok_button()
         for btn in self.calibration_buttons:
@@ -278,7 +278,7 @@ def calc_calibration_line(point1, point2):
         right_p["y"] - left_p["y"])
 
     # Minimal slope for valid calibration set to 25. slope should be around 60
-    if new_scale < 25:
+    if (1 / new_scale) < 25:
         raise InvalidCalibrationError(
             f"Bad calibration.\ntoo small slope."
             f"({int(left_p['x'])}% : {left_p['y']:.5f}V),\n"
