@@ -74,6 +74,14 @@ class Application(object):
     def sample(self):
         self.sampler.sampling_iteration()
 
+    @property
+    def next_render(self):
+        return self.frame_interval - (time.time() - self.last_gui_update_ts)
+
+    @property
+    def next_sample(self):
+        return self.sample_interval - (time.time() - self.last_sample_update_ts)
+
     def run(self):
         self.render()
         while self.should_run:
@@ -102,8 +110,11 @@ class Application(object):
                 if self.next_sample > 0 and not fast_forward:
                     time.sleep(max(self.next_sample, 0))
                 self.sample()
+                self.last_sample_update_ts = time.time()
                 if self.next_render <= 0:
                     self.gui_update()
+                    self.last_gui_update_ts = time.time()
+
                 self.arm_wd_event.set()
             except KeyboardInterrupt:
                 break
