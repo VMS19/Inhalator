@@ -131,10 +131,12 @@ class RunningSlope(object):
 
 class VentilationState(Enum):
     Calibration = 0  # State unknown yet
-    Inhale = 1  # Air is flowing to the lungs
+    Inhale = 1  # Air is flowing to the lungs and enough volume
     Hold = 2  # PIP is maintained
-    Exhale = 3  # Pressure is relieved, air flowing out
+    Exhale = 3  # Pressure is relieved, air flowing out and enough volume
     PEEP = 4  # Positive low pressure is maintained until next cycle.
+    Sub_inhale = 5  # Air is flowing to the lungs
+    Sub_exhale = 6  # Pressure is relieved, air flowing out
 
 
 class VentilationStateMachine(object):
@@ -157,13 +159,17 @@ class VentilationStateMachine(object):
             VentilationState.PEEP: deque(maxlen=100),
             VentilationState.Inhale: deque(maxlen=100),
             VentilationState.Hold: deque(maxlen=100),
-            VentilationState.Exhale: deque(maxlen=100)
+            VentilationState.Exhale: deque(maxlen=100),
+            VentilationState.Sub_inhale: deque(maxlen=100),
+            VentilationState.Sub_exhale: deque(maxlen=100)
         }
 
         # Function to call when entering a state.
         self.entry_handlers = {
             VentilationState.Inhale: self.enter_inhale,
             VentilationState.Exhale: self.enter_exhale,
+            VentilationState.Sub_inhale: self.enter_sub_inhale,
+            VentilationState.Sub_exhale: self.enter_sub_exhale,
             VentilationState.PEEP: self.enter_peep
         }
         self.peak_pressure = 0
@@ -190,14 +196,10 @@ class VentilationStateMachine(object):
         self.expiration_volume.reset()
 
         # Restart state machine
+        print("reset")
         self.current_state = VentilationState.PEEP
 
-    def enter_inhale(self, timestamp):
-        # Check if the minimum volume for inhale has been reached.
-        insp_volume = self.inspiration_volume.integrate() * 1000
-        if insp_volume < self._config.min_insp_volume_for_inhale:
-            return False  # Not enough volume to be considered inhale.
-
+    def enter_inhale(self, timestamp, prev_state):
         self.last_breath_timestamp = timestamp
         self._measurements.bpm = self.breathes_rate_meter.beat(timestamp)
 
@@ -216,42 +218,106 @@ class VentilationStateMachine(object):
                 self._events.alerts_queue.enqueue_alert(AlertCodes.BPM_LOW,
                                                         timestamp)
 
-        # Update final expiration volume
-        exp_volume_ml = self.expiration_volume.integrate() * 1000
-        self.log.debug("TV exp: : %sml", exp_volume_ml)
-        self._measurements.expiration_volume = exp_volume_ml
-        self.expiration_volume.reset()
-        self.exp_volumes.append((timestamp, exp_volume_ml))
-
-        if self._config.volume_range.below(exp_volume_ml):
-            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW, timestamp)
-            self.log.warning(
-                "volume too low %s, bottom threshold %s",
-                exp_volume_ml, self._config.volume_range.min)
-        elif self._config.volume_range.over(exp_volume_ml):
-            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH, timestamp)
-            self.log.warning(
-                "volume too high %s, top threshold %s",
-                exp_volume_ml, self._config.volume_range.max)
-
-        self.reset_min_values()
+        # # Update final expiration volume
+        # exp_volume_ml = self.expiration_volume.integrate() * 1000
+        # self.log.debug("TV exp: : %sml", exp_volume_ml)
+        # self._measurements.expiration_volume = exp_volume_ml
+        # self.expiration_volume.reset()
+        # self.exp_volumes.append((timestamp, exp_volume_ml))
+        #
+        # if self._config.volume_range.below(exp_volume_ml):
+        #     self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW, timestamp)
+        #     self.log.warning(
+        #         "volume too low %s, bottom threshold %s",
+        #         exp_volume_ml, self._config.volume_range.min)
+        # elif self._config.volume_range.over(exp_volume_ml):
+        #     self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH, timestamp)
+        #     self.log.warning(
+        #         "volume too high %s, top threshold %s",
+        #         exp_volume_ml, self._config.volume_range.max)
+        #
+        # self.reset_min_values()
         return True
 
-    def enter_exhale(self, timestamp):
-        # Check if the minimum volume for exhale has been reached.
-        exp_volume = self.expiration_volume.integrate() * 1000
-        if exp_volume < self._config.min_exp_volume_for_exhale:
-            return False  # Not enough volume to be considered exhale
+    def enter_exhale(self, timestamp, prev_state):
         # Update final inspiration volume
-        insp_volume_ml = self.inspiration_volume.integrate() * 1000
-        self.log.debug("TV insp: : %sml", insp_volume_ml)
-        self._measurements.inspiration_volume = insp_volume_ml
-        self.inspiration_volume.reset()
-        self.insp_volumes.append((timestamp, insp_volume_ml))
-        self.reset_peaks()
+        # insp_volume_ml = self.inspiration_volume.integrate() * 1000
+        # self.log.debug("TV insp: : %sml", insp_volume_ml)
+        # self._measurements.inspiration_volume = insp_volume_ml
+        # self.inspiration_volume.reset()
+        # self.insp_volumes.append((timestamp, insp_volume_ml))
+        # self.reset_peaks()
+        return True
+
+    def enter_sub_inhale(self, timestamp, prev_state):
+        if prev_state == VentilationState.Exhale:
+            # Update final expiration volume
+            exp_volume_ml = self.expiration_volume.integrate() * 1000
+            self.log.debug("TV exp: : %sml", exp_volume_ml)
+            self._measurements.expiration_volume = exp_volume_ml
+            self.expiration_volume.reset()
+            self.exp_volumes.append((timestamp, exp_volume_ml))
+
+            if self._config.volume_range.below(exp_volume_ml):
+                self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW,
+                                                        timestamp)
+                self.log.warning(
+                    "volume too low %s, bottom threshold %s",
+                    exp_volume_ml, self._config.volume_range.min)
+            elif self._config.volume_range.over(exp_volume_ml):
+                self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH,
+                                                        timestamp)
+                self.log.warning(
+                    "volume too high %s, top threshold %s",
+                    exp_volume_ml, self._config.volume_range.max)
+
+            self.reset_min_values()
+
+        else:
+            insp_volume_ml = self.inspiration_volume.integrate() * 1000
+            self.log.debug("TV insp: : %sml", insp_volume_ml)
+            self._measurements.inspiration_volume = insp_volume_ml
+            self.inspiration_volume.reset()
+            self.insp_volumes.append((timestamp, insp_volume_ml))
+            self.reset_peaks()
+
+        return True
+
+    def enter_sub_exhale(self, timestamp, prev_state):
+        if prev_state == VentilationState.Exhale:
+            # Update final expiration volume
+            exp_volume_ml = self.expiration_volume.integrate() * 1000
+            self.log.debug("TV exp: : %sml", exp_volume_ml)
+            self._measurements.expiration_volume = exp_volume_ml
+            self.expiration_volume.reset()
+            self.exp_volumes.append((timestamp, exp_volume_ml))
+
+            if self._config.volume_range.below(exp_volume_ml):
+                self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW,
+                                                        timestamp)
+                self.log.warning(
+                    "volume too low %s, bottom threshold %s",
+                    exp_volume_ml, self._config.volume_range.min)
+            elif self._config.volume_range.over(exp_volume_ml):
+                self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH,
+                                                        timestamp)
+                self.log.warning(
+                    "volume too high %s, top threshold %s",
+                    exp_volume_ml, self._config.volume_range.max)
+
+            self.reset_min_values()
+
+        else:
+            insp_volume_ml = self.inspiration_volume.integrate() * 1000
+            self.log.debug("TV insp: : %sml", insp_volume_ml)
+            self._measurements.inspiration_volume = insp_volume_ml
+            self.inspiration_volume.reset()
+            self.insp_volumes.append((timestamp, insp_volume_ml))
+            self.reset_peaks()
         return True
 
     def enter_peep(self, timestamp):
+        print("etered peep")
         return True
 
     def reset_peaks(self):
@@ -316,9 +382,9 @@ class VentilationStateMachine(object):
 
             # Oxygen too low
         elif self._config.o2_range.below(o2_percentage):
-            self.log.warning(
-                f"Oxygen percentage too low "
-                f"({o2_percentage}% < {self._config.o2_range.min}%)")
+            # self.log.warning(
+            #     f"Oxygen percentage too low "
+            #     f"({o2_percentage}% < {self._config.o2_range.min}%)")
             self._events.alerts_queue.enqueue_alert(
                 AlertCodes.OXYGEN_LOW, timestamp)
 
@@ -334,10 +400,11 @@ class VentilationStateMachine(object):
             return  # Not enough data
 
         next_state = self.infer_state(flow_slop, flow_slm, pressure_slope, pressure_cmh2o)
+        print(timestamp - 11428.99634, self.current_state, next_state)
         if next_state != self.current_state:
             entry_handler = self.entry_handlers.get(next_state, None)
             # noinspection PyArgumentList
-            if entry_handler(timestamp):
+            if entry_handler(timestamp, self.current_state):
                 self.current_state = next_state
                 self.entry_points_ts[next_state].append(timestamp)
                 self.log.debug("%s -> %s", self.current_state, next_state)
@@ -345,12 +412,38 @@ class VentilationStateMachine(object):
     def infer_state(self, flow_slope, flow_slm, pressure_slope, pressure_cmh2o):
         flow_positive_increasing = flow_slope > 3 and flow_slm > 2
         flow_negative_decreasing = flow_slope < -10 and flow_slm < -2
+        print('\t',self.inspiration_volume.integrate() * 1000,
+              self.expiration_volume.integrate() * 1000,
+              flow_negative_decreasing and pressure_slope < self._config.max_pressure_slope_for_exhale,
+              flow_positive_increasing and pressure_slope > self._config.min_pressure_slope_for_inhale)
+        print('\t\t', flow_slope, pressure_slope)
 
-        if flow_positive_increasing and pressure_slope > self._config.min_pressure_slope_for_inhale:
-            return VentilationState.Inhale
+        #  currently at a sub state
+        if self.current_state == VentilationState.Sub_inhale:
+            insp_volume = self.inspiration_volume.integrate() * 1000
+            if insp_volume >= self._config.min_insp_volume_for_inhale:
+                return VentilationState.Inhale
 
-        if flow_negative_decreasing and pressure_slope < self._config.max_pressure_slope_for_exhale:
-            return VentilationState.Exhale
+            elif flow_negative_decreasing and pressure_slope < self._config.max_pressure_slope_for_exhale:
+                return VentilationState.Sub_exhale
+
+        if self.current_state == VentilationState.Sub_exhale:
+            exp_volume = self.expiration_volume.integrate() * 1000
+            if exp_volume >= self._config.min_exp_volume_for_exhale:
+                return VentilationState.Exhale
+
+            elif flow_positive_increasing and pressure_slope > self._config.min_pressure_slope_for_inhale:
+                return VentilationState.Sub_inhale
+
+        #  currently at a inhale\exhale state
+        if self.current_state != VentilationState.Exhale:
+            if flow_negative_decreasing and pressure_slope < self._config.max_pressure_slope_for_exhale:
+                return VentilationState.Sub_exhale
+
+        if self.current_state != VentilationState.Inhale:
+            if flow_positive_increasing and pressure_slope > self._config.min_pressure_slope_for_inhale:
+                return VentilationState.Sub_inhale
+
         return self.current_state
 
 
@@ -440,7 +533,8 @@ class Sampler(object):
                                        peep=self._measurements.peep_min_pressure,
                                        tv_insp=self._measurements.inspiration_volume,
                                        tv_exp=self._measurements.expiration_volume,
-                                       bpm=self._measurements.bpm)
+                                       bpm=self._measurements.bpm,
+                                       ts=ts)
 
         self.vsm.update(
             pressure_cmh2o=pressure_cmh2o,

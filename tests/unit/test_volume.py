@@ -4,7 +4,7 @@ import time
 import pytest
 from pytest import approx
 
-from algo import Sampler
+from algo import Sampler, VentilationState
 from data import alerts
 from data.measurements import Measurements
 from data.events import Events
@@ -20,7 +20,9 @@ SIMULATION_LENGTH = 1  # seconds
 LOW_THRESHOLD = -50000
 HIGH_THRESHOLD = 50000
 
-SIMULATION_SAMPLES = 1000
+SIMULATION_SAMPLES = 604
+EXPERIMENT_VOLUMES = [288, 304, 292, 306, 295, 305, 290,
+                      306, 289, 303, 291, 305, 293, 309]
 
 
 @pytest.fixture
@@ -61,7 +63,7 @@ def test_sampler_volume_calculation(events, measurements, config):
     """
     this_dir = os.path.dirname(__file__)
     file_path = os.path.join(this_dir, SIMULATION_FOLDER,
-                             "pig_sim_cycle.csv")
+                             "lung_sim.csv")
     driver_factory = DriverFactory(simulation_mode=True,
                                    simulation_data=file_path)
 
@@ -72,16 +74,31 @@ def test_sampler_volume_calculation(events, measurements, config):
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       a2d, timer, average_window=1)
 
-    for _ in range(SIMULATION_SAMPLES):
-        sampler.sampling_iteration()
+    current_state = sampler.vsm.current_state
+    for expected_volume in EXPERIMENT_VOLUMES:
+        while current_state == sampler.vsm.current_state:
+            sampler.sampling_iteration()
 
-    expected_volume = 332
-    msg = f"Expected volume of {expected_volume}, received {measurements.inspiration_volume}"
-    assert measurements.inspiration_volume == approx(expected_volume, rel=0.1), msg
+        current_state = sampler.vsm.current_state
+        if current_state == VentilationState.Inhale:
+            volume = measurements.expiration_volume
 
-    expected_exp_volume = 28
-    msg = f"Expected volume of {expected_exp_volume}, received {measurements.expiration_volume}"
-    assert measurements.expiration_volume == approx(expected_exp_volume, rel=0.1), msg
+        else:
+            volume = measurements.inspiration_volume
+
+        msg = f"Received volume of {volume}, expected {expected_volume}"
+        assert volume == approx(expected_volume, 0.2), msg
+
+    # for _ in range(SIMULATION_SAMPLES):
+    #     sampler.sampling_iteration()
+    #
+    # expected_volume = 332
+    # msg = f"Expected volume of {expected_volume}, received {measurements.inspiration_volume}"
+    # assert measurements.inspiration_volume == approx(expected_volume, rel=0.1), msg
+    #
+    # expected_exp_volume = 28
+    # msg = f"Expected volume of {expected_exp_volume}, received {measurements.expiration_volume}"
+    # assert measurements.expiration_volume == approx(expected_exp_volume, rel=0.1), msg
 
 
 def test_alert_on_exhale_volume(events, measurements, config):
