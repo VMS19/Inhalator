@@ -22,6 +22,7 @@ class Calibration(object):
         # State
         self.average_value_found = None
 
+        self.drivers = drivers
         self.sensor_driver = drivers.acquire_driver(self.CALIBRATED_DRIVER)
         self.timer = drivers.acquire_driver("timer")
         self.watch_dog = drivers.acquire_driver("wd")
@@ -93,7 +94,7 @@ class Calibration(object):
 
         self.parent.enable_ok_button()
         for btn in self.calibration_buttons:
-            btn.configure(state="normal", text="Recalibrate")
+            btn.configure(state="normal")
 
     def render(self):
         self.frame.place(relx=0, rely=0.25, relwidth=1, relheight=0.5)
@@ -189,7 +190,7 @@ class DifferentialPressureCalibration(Calibration):
     def get_difference(self):
         """Get offset drift."""
         offset = self.average_value_found - Configurations.instance().dp_offset
-        return self.dp_driver.pressure_to_flow(offset)
+        return self.drivers.acquire_driver("differential_pressure").pressure_to_flow(offset)
 
     def configure_new_calibration(self):
         self.config.dp_offset = self.average_value_found
@@ -205,7 +206,6 @@ class OxygenCalibration(Calibration):
         "For 21%: detach tube from O2 sensor\n" \
         "For 100%: full oxygen and tube connected"
     STEP_2_CALIBRATION_PERCENTAGE = 100
-
 
     def __init__(self, *args):
         self.calibrated_point = None
