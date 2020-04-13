@@ -181,7 +181,7 @@ class DifferentialPressureCalibration(Calibration):
     NAME = "Flow Calibration"
     CALIBRATED_DRIVER = "differential_pressure"
     PRE_CALIBRATE_ALERT_MSG = \
-        "Please make sure tubes are detached from flow sensor!"
+        "Make sure tubes are detached from sensor!"
 
     def read_raw_value(self):
         return self.sensor_driver.read_differential_pressure()
@@ -196,13 +196,13 @@ class DifferentialPressureCalibration(Calibration):
 
 
 class OxygenCalibration(Calibration):
-    NAME = "O2 sensor Calibration"
+    NAME = "O2 Calibration"
     CALIBRATED_DRIVER = "a2d"
     SAMPLING_TIME = 5  # seconds
     PRE_CALIBRATE_ALERT_MSG = \
-        "Please make sure before calibrating!:\n" \
+        "Make sure before calibrating!:\n" \
         "For 21%: detach tube from O2 sensor\n" \
-        "For 100%: tester sensor shows 100% and tube connected"
+        "For 100%: full oxygen and tube connected"
 
     def __init__(self, *args):
         self.calibrated_point = None
