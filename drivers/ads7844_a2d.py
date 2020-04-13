@@ -32,25 +32,26 @@ class Ads7844A2D(object):
     BATTERY_EXISTENCE_CHANNEL = 2
 
     CHANNEL_MAP = [0, 4, 1, 5, 2, 6, 3, 7]
-    A2D_OXYGEN_RATIO = 57.4240867
-    A2D_OXYGEN_OFFSET = 0.51566
     FULL_BATTERY = 6.024644649924462
     A2D_BATTERY_RATIO = 0.0337359433
-    VOLTAGE_FACTOR = 38.4  # scale between voltage and oxygen percentage
 
     def __init__(self):
+        self._oxygen_calibration_offset = 0
+        self._oxygen_calibration_scale = 0
         self._spi = spidev.SpiDev()
 
         try:
             self._spi.open(self.SPI_BUS, self.SPI_DEV)
         except IOError:
-            log.error("Couldn't init spi device. Is the peripheral initialized?")
+            log.error(
+                "Couldn't init spi device. Is the peripheral initialized?")
             raise SPIDriverInitError("spidev peripheral init error")
 
         try:
             self._spi.max_speed_hz = self.SPI_CLK_SPEED_KHZ
         except IOError:
-            log.error("setting spi speed failed. Is speed in the correct range?")
+            log.error(
+                "setting spi speed failed. Is speed in the correct range?")
             raise SPIDriverInitError("spidev peripheral init error")
 
         try:
@@ -67,10 +68,9 @@ class Ads7844A2D(object):
     def _sample_a2d(self, channel, input_mode=MODE_SGL,
                     power_down_mode=PD_DISABLED):
         try:
-            start_byte = self.DEFAULT_CTRL_BYTE |\
-                (self.CHANNEL_MAP[channel] << self.CHANNEL_SELECT_SHIFT) |\
-                (input_mode << self.INPUT_MODE_SHIFT) |\
-                power_down_mode
+            start_byte = self.DEFAULT_CTRL_BYTE | \
+                (self.CHANNEL_MAP[channel] << self.CHANNEL_SELECT_SHIFT) | \
+                (input_mode << self.INPUT_MODE_SHIFT) | power_down_mode
             sample_raw = self._spi.xfer([start_byte, 0, 0],
                                         self.XFER_SPEED_HZ,
                                         self.PERIPHERAL_MINIMAL_DELAY)
@@ -85,9 +85,19 @@ class Ads7844A2D(object):
 
         return self._calibrate_a2d(sample_reading)
 
+    def set_oxygen_calibration(self, offset, scale):
+        self._oxygen_calibration_scale = scale
+        self._oxygen_calibration_offset = offset
+
+    def read_oxygen_raw(self):
+        return self._sample_a2d(self.OXYGEN_CHANNEL)
+
+    def convert_voltage_to_oxygen(self, volt):
+        return volt * self._oxygen_calibration_scale + \
+            self._oxygen_calibration_offset
+
     def read_oxygen(self):
-        return self._sample_a2d(self.OXYGEN_CHANNEL) * self.A2D_OXYGEN_RATIO +\
-            self.A2D_OXYGEN_OFFSET
+        return self.convert_voltage_to_oxygen(self.read_oxygen_raw())
 
     def read_battery_percentage(self):
         raw_battery_value = self._sample_a2d(self.BATTERY_PERCENTAGE_CHANNEL)

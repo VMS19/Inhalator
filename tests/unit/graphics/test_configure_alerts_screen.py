@@ -18,7 +18,7 @@ def screen() -> ConfigureAlarmsScreen:
     measurements = Measurements()
     drivers = DriverFactory(simulation_mode=True, simulation_data='sinus')
 
-    return ConfigureAlarmsScreen(root=Frame(), drivers=drivers, measurements=measurements)
+    return ConfigureAlarmsScreen(root=Frame(), drivers=drivers)
 
 
 def test_changing_threshold_using_max_button(screen: ConfigureAlarmsScreen):

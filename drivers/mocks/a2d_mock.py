@@ -12,6 +12,15 @@ class MockA2D(object):
     def read_oxygen(self):
         return self.oxygen
 
+    def set_oxygen_calibration(self, offset, scale):
+        log.info(f"Oxygen calibration: offset={offset}, scale={scale}")
+
+    def read_oxygen_raw(self):
+        return 5
+
+    def convert_voltage_to_oxygen(self, voltage):
+        return 101
+
     def read_battery_percentage(self):
         return self.battery_percentage
 

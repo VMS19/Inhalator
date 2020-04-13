@@ -31,9 +31,11 @@ class Configurations(object):
 
     def __init__(self, o2_range, volume_range, pressure_range, resp_rate_range,
                  flow_y_scale, pressure_y_scale, graph_seconds,
-                 breathing_threshold, log_enabled=True,
-                 mute_time_limit=120, low_battery_percentage=15,
-                 dp_offset=0, boot_alert_grace_time=7):
+                 breathing_threshold, oxygen_point1, oxygen_point2,
+                 min_insp_volume_for_inhale, min_exp_volume_for_exhale,
+                 min_pressure_slope_for_inhale, max_pressure_slope_for_exhale,
+                 log_enabled=True, mute_time_limit=120,
+                 low_battery_percentage=15, dp_offset=0, boot_alert_grace_time=7):
         self.o2_range = o2_range
         self.volume_range = volume_range
         self.pressure_range = pressure_range
@@ -44,8 +46,14 @@ class Configurations(object):
         self.mute_time_limit = mute_time_limit
         self.flow_y_scale = flow_y_scale
         self.pressure_y_scale = pressure_y_scale
+        self.min_insp_volume_for_inhale = min_insp_volume_for_inhale
+        self.min_exp_volume_for_exhale = min_exp_volume_for_exhale
+        self.min_pressure_slope_for_inhale = min_pressure_slope_for_inhale
+        self.max_pressure_slope_for_exhale = max_pressure_slope_for_exhale
         self.low_battery_percentage = low_battery_percentage
         self.dp_offset = dp_offset
+        self.oxygen_point1 = oxygen_point1
+        self.oxygen_point2 = oxygen_point2
         self.boot_alert_grace_time = boot_alert_grace_time
 
     def __getitem__(self, item):
@@ -114,12 +122,19 @@ class Configurations(object):
             pressure_y_scale = (config["graph_y_scale"]["pressure"]["min"],
                                 config["graph_y_scale"]["pressure"]["max"])
 
+            min_insp_volume_for_inhale = config["state_machine"]["min_insp_volume_for_inhale"]
+            min_exp_volume_for_exhale = config["state_machine"]["min_exp_volume_for_exhale"]
+            min_pressure_slope_for_inhale = config["state_machine"]["min_pressure_slope_for_inhale"]
+            max_pressure_slope_for_exhale = config["state_machine"]["max_pressure_slope_for_exhale"]
+
             graph_seconds = config["graph_seconds"]
             breathing_threshold = config["threshold"]["breathing_threshold"]
             log_enabled = config["log_enabled"]
             mute_time_limit = config["mute_time_limit"]
             low_battery_percentage = config["low_battery_percentage"]
             dp_offset = config["calibration"]["dp_offset"]
+            oxygen_point1 = config["calibration"]["oxygen_point1"]
+            oxygen_point2 = config["calibration"]["oxygen_point2"]
             boot_alert_grace_time = config["boot_alert_grace_time"]
 
             return cls(o2_range=o2,
@@ -132,8 +147,14 @@ class Configurations(object):
                        mute_time_limit=mute_time_limit,
                        flow_y_scale=flow_y_scale,
                        pressure_y_scale=pressure_y_scale,
+                       min_insp_volume_for_inhale=min_insp_volume_for_inhale,
+                       min_exp_volume_for_exhale=min_exp_volume_for_exhale,
+                       min_pressure_slope_for_inhale=min_pressure_slope_for_inhale,
+                       max_pressure_slope_for_exhale=max_pressure_slope_for_exhale,
                        low_battery_percentage=low_battery_percentage,
                        dp_offset=dp_offset,
+                       oxygen_point1=oxygen_point1,
+                       oxygen_point2=oxygen_point2,
                        boot_alert_grace_time=boot_alert_grace_time)
 
         except Exception as e:
@@ -176,12 +197,20 @@ class Configurations(object):
                     "max": self.pressure_y_scale[1]
                 }
             },
+            "state_machine": {
+                "min_insp_volume_for_inhale": self.min_insp_volume_for_inhale,
+                "min_exp_volume_for_exhale": self.min_exp_volume_for_exhale,
+                "min_pressure_slope_for_inhale": self.min_pressure_slope_for_inhale,
+                "max_pressure_slope_for_exhale": self.max_pressure_slope_for_exhale
+            },
             "log_enabled": self.log_enabled,
             "graph_seconds": self.graph_seconds,
             "mute_time_limit": self.mute_time_limit,
             "low_battery_percentage": self.low_battery_percentage,
             "calibration": {
-                "dp_offset": self.dp_offset
+                "dp_offset": self.dp_offset,
+                "oxygen_point1": self.oxygen_point1,
+                "oxygen_point2": self.oxygen_point2,
             },
             "boot_alert_grace_time": self.boot_alert_grace_time
         }
