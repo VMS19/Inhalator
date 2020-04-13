@@ -272,14 +272,16 @@ def calc_calibration_line(point1, point2):
             "Bad calibration.\n"
             "Two calibration points on same x value")
 
-    new_scale = (right_p["y"] - left_p["y"]) / (
-        right_p["x"] - left_p["x"])
+    # We compute the calibration line on the reversed function:
+    # O2 percentage as function of voltage. x is now the 'y' and vise versa.
+    new_scale = (right_p["x"] - left_p["x"]) / (
+        right_p["y"] - left_p["y"])
 
     if new_scale <= 0:
         raise InvalidCalibrationError(
             f"Bad calibration.\nnegative slope."
-            f"({left_p['x']:.5f},{left_p['y']:.5f}),"
-            f"({right_p['x']:.5f},{right_p['y']:.5f})")
+            f"({left_p['x']:.5f} : {left_p['y']:.5f}),"
+            f"({right_p['x']:.5f} : {right_p['y']:.5f})")
 
-    new_offset = point1["y"] - point1["x"] * new_scale
+    new_offset = point1["x"] - point1["y"] * new_scale
     return new_offset, new_scale
