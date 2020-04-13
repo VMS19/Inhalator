@@ -13,7 +13,7 @@ class MockA2D(object):
         return self.oxygen
 
     def set_oxygen_calibration(self, offset, scale):
-        pass
+        log.info(f"Oxygen calibration: offset={offset}, scale={scale}")
 
     def read_oxygen_raw(self):
         return 5

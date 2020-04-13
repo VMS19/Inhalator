@@ -203,6 +203,8 @@ class OxygenCalibration(Calibration):
         "Make sure before calibrating!:\n" \
         "For 21%: detach tube from O2 sensor\n" \
         "For 100%: full oxygen and tube connected"
+    STEP_2_CALIBRATION_PERCENTAGE = 100
+
 
     def __init__(self, *args):
         self.calibrated_point = None
@@ -217,9 +219,9 @@ class OxygenCalibration(Calibration):
 
         self.calibrate_point2_button = Button(master=self.frame,
             bg=Theme.active().SURFACE,
-            command=self.calibrate_point2,
+            command=self.calibrate_level2_point,
             fg=Theme.active().TXT_ON_SURFACE,
-            text=f"Calibrate {self.config.oxygen_point2['x']}%")
+            text=f"Calibrate {self.STEP_2_CALIBRATION_PERCENTAGE}%")
 
         self.calibration_buttons = [self.calibrate_point1_button,
                                     self.calibrate_point2_button]
@@ -229,8 +231,9 @@ class OxygenCalibration(Calibration):
         self.calibrate()
         self.calibrate_point2_button.configure(state="disabled")
 
-    def calibrate_point2(self):
-        self.calibrated_point = self.config.oxygen_point2
+    def calibrate_level2_point(self):
+        self.calibrated_point = {"x": self.STEP_2_CALIBRATION_PERCENTAGE,
+                                 "y": 0}
         self.calibrate()
         self.calibrate_point1_button.configure(state="disabled")
 
@@ -257,8 +260,13 @@ class OxygenCalibration(Calibration):
                                               other_calibration_point)
 
         self.sensor_driver.set_oxygen_calibration(offset, scale)
-        self.calibrated_point["y"] = self.average_value_found
 
+        if self.calibrated_point is self.config.oxygen_point1:
+            self.config.oxygen_point1["x"] = new_calibration_point["x"]
+            self.config.oxygen_point1["y"] = new_calibration_point["y"]
+        else:
+            self.config.oxygen_point2["x"] = new_calibration_point["x"]
+            self.config.oxygen_point2["y"] = new_calibration_point["y"]
 
 def calc_calibration_line(point1, point2):
     if point1["x"] > point2["x"]:
@@ -267,10 +275,13 @@ def calc_calibration_line(point1, point2):
     elif point1["x"] < point2["x"]:
         left_p = point1
         right_p = point2
-    else:
+
+    if point1["x"] == point2["x"] or point1["y"] == point2["y"]:
         raise InvalidCalibrationError(
             "Bad calibration.\n"
-            "Two calibration points on same x value")
+            "Two calibration points have same value:\n"
+            f"({int(left_p['x'])}% : {left_p['y']:.5f}V),\n"
+            f"({int(right_p['x'])}% : {right_p['y']:.5f}V)")
 
     # We compute the calibration line on the reversed function:
     # O2 percentage as function of voltage. x is now the 'y' and vise versa.
