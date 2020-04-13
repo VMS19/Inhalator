@@ -93,7 +93,7 @@ class Calibration(object):
 
         self.parent.enable_ok_button()
         for btn in self.calibration_buttons:
-            btn.configure(state="normal")
+            btn.configure(state="normal", text="Recalibrate")
 
     def render(self):
         self.frame.place(relx=0, rely=0.25, relwidth=1, relheight=0.5)
@@ -188,7 +188,8 @@ class DifferentialPressureCalibration(Calibration):
 
     def get_difference(self):
         """Get offset drift."""
-        return self.average_value_found - self.config.dp_offset
+        offset = self.average_value_found - Configurations.instance().dp_offset
+        return self.dp_driver.pressure_to_flow(offset)
 
     def configure_new_calibration(self):
         self.config.dp_offset = self.average_value_found
