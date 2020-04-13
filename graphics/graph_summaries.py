@@ -72,8 +72,8 @@ class PressurePeakSummary(GraphSummary):
 class VolumeSummary(GraphSummary):
     def value(self):
         return "{}/{}".format(
-            int(round(self.measurements.inspiration_volume)),
-            int(round(self.measurements.expiration_volume)))
+            int(round(self.measurements.avg_insp_volume)),
+            int(round(self.measurements.avg_exp_volume)))
 
     def name(self):
         return "TVinsp/exp"
