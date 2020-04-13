@@ -69,10 +69,8 @@ class Ads7844A2D(object):
                     power_down_mode=PD_DISABLED):
         try:
             start_byte = self.DEFAULT_CTRL_BYTE | \
-                         (self.CHANNEL_MAP[
-                              channel] << self.CHANNEL_SELECT_SHIFT) | \
-                         (input_mode << self.INPUT_MODE_SHIFT) | \
-                         power_down_mode
+                (self.CHANNEL_MAP[channel] << self.CHANNEL_SELECT_SHIFT) | \
+                (input_mode << self.INPUT_MODE_SHIFT) | power_down_mode
             sample_raw = self._spi.xfer([start_byte, 0, 0],
                                         self.XFER_SPEED_HZ,
                                         self.PERIPHERAL_MINIMAL_DELAY)
