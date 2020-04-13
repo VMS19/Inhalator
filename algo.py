@@ -25,9 +25,7 @@ class Accumulator(object):
         self.timestamps = deque()
 
     def add_sample(self, timestamp, value):
-        # flow is measured in Liter/minute, so we convert it to liter/seconds
-        # because this is our time unit
-        self.samples.append(value / 60)
+        self.samples.append(value)
         self.timestamps.append(timestamp)
 
     def integrate(self):
@@ -141,27 +139,6 @@ class VentilationState(Enum):
 
 class VentilationStateMachine(object):
     NO_BREATH_ALERT_TIME_SECONDS = 12
-    PEEP_TO_INHALE_SLOPE = 8
-    INHALE_TO_HOLD_SLOPE = 4
-    HOLD_TO_EXHALE_SLOPE = -4
-    EXHALE_TO_PEEP_SLOPE = -4
-
-    # Transition table:
-    # The key is a given current state, and the value is a tuple of:
-    # 1. The compare func against the threshold (greater-than, less-than)
-    # 2. The threshold to compare against
-    # 3. The next state if the comparison evaluates to true.
-    #
-    # For each new sample we compute the current slope, and according to
-    # the current state we perform the appropriate comparison against the
-    # appropriate threshold. If the comparison returns True - we transition
-    # to the next state according to the table.
-    TRANSITION_TABLE = {
-        VentilationState.PEEP: (float.__gt__, PEEP_TO_INHALE_SLOPE, VentilationState.Inhale),
-        VentilationState.Inhale: (float.__lt__, INHALE_TO_HOLD_SLOPE, VentilationState.Hold),
-        VentilationState.Hold: (float.__lt__, HOLD_TO_EXHALE_SLOPE, VentilationState.Exhale),
-        VentilationState.Exhale: (float.__gt__, EXHALE_TO_PEEP_SLOPE, VentilationState.PEEP),
-    }
 
     def __init__(self, measurements, events):
         self._measurements = measurements
@@ -202,8 +179,6 @@ class VentilationStateMachine(object):
         self.avg_insp_volume = RunningAvg(max_samples=4)
         self.insp_volumes = deque(maxlen=100)
         self.exp_volumes = deque(maxlen=100)
-        self.insp_flows = deque(maxlen=1000)
-        self.exp_flows = deque(maxlen=1000)
 
     def reset(self):
         # Restart measurements
@@ -238,7 +213,7 @@ class VentilationStateMachine(object):
                                                         timestamp)
 
         # Update final expiration volume
-        exp_volume_ml = abs(self.expiration_volume.integrate()) * 1000
+        exp_volume_ml = self.expiration_volume.integrate() * 1000
         self.log.debug("TV exp: : %sml", exp_volume_ml)
         self._measurements.avg_exp_volume = self.avg_exp_volume.process(exp_volume_ml)
         self._measurements.expiration_volume = exp_volume_ml
@@ -295,12 +270,15 @@ class VentilationStateMachine(object):
             self.last_breath_timestamp = None
             self.reset()
 
+        # Flow is measured in Liter/minute, so we convert it to liter/seconds
+        # because this is our time unit
+        flow_lps = flow_slm / 60  # Liter/sec
         # We track inhale and exhale volume separately. Positive flow means
-        # inhale, and negative flow means exhale.
-        flow_recorder = self.insp_flows if flow_slm >= 0 else self.exp_flows
-        flow_recorder.append(timestamp)
-        accumulator = self.inspiration_volume if flow_slm > 0 else self.expiration_volume
-        accumulator.add_sample(timestamp, flow_slm)
+        # inhale, and negative flow means exhale. But in order to keep our time
+        # series monotonic we add 0 samples instead of negative/positive sample
+        # for inhale/exhale integrator respectively.
+        self.inspiration_volume.add_sample(timestamp, max(0, flow_lps))
+        self.expiration_volume.add_sample(timestamp, abs(min(0, flow_lps)))
         self._measurements.set_pressure_value(pressure_cmh2o)
         self._measurements.set_flow_value(flow_slm)
         self._measurements.set_saturation_percentage(o2_percentage)
@@ -352,25 +330,32 @@ class VentilationStateMachine(object):
 
         next_state = self.infer_state(flow_slop, flow_slm, pressure_slope, pressure_cmh2o)
         if next_state != self.current_state:
-            self.pressure_slope.reset()
-            self.flow_slope.reset()
-            self.log.debug("%s -> %s", self.current_state, next_state)
             self.current_state = next_state
             self.entry_points_ts[next_state].append(timestamp)
+            self.log.debug("%s -> %s", self.current_state, next_state)
             entry_handler = self.entry_handlers.get(next_state, None)
-            if entry_handler is not None:
-                # noinspection PyArgumentList
-                entry_handler(timestamp)
+            # noinspection PyArgumentList
+            entry_handler(timestamp)
 
     def infer_state(self, flow_slope, flow_slm, pressure_slope, pressure_cmh2o):
-        flow_positive_increasing = flow_slope > 3 and flow_slm > 2
-        flow_negative_decreasing = flow_slope < -3 and flow_slm < -2
+        if self.current_state != VentilationState.Inhale:
+            flow_positive_increasing = flow_slope > 3 and flow_slm > 2
+            pressure_increasing = pressure_slope > self._config.min_pressure_slope_for_inhale
+            if flow_positive_increasing and pressure_increasing:
+                # Check if the minimum volume for inhale has been reached.
+                insp_volume = self.inspiration_volume.integrate() * 1000
+                if insp_volume > self._config.min_insp_volume_for_inhale:
+                    return VentilationState.Inhale
 
-        if flow_positive_increasing and pressure_slope > 0:
-            return VentilationState.Inhale
+        if self.current_state != VentilationState.Exhale:
+            flow_negative_decreasing = flow_slope < -10 and flow_slm < -2
+            pressure_decreasing = pressure_slope < self._config.max_pressure_slope_for_exhale
+            if flow_negative_decreasing and pressure_decreasing:
+                # Check if the minimum volume for exhale has been reached.
+                exp_volume = self.expiration_volume.integrate() * 1000
+                if exp_volume > self._config.min_exp_volume_for_exhale:
+                    return VentilationState.Exhale
 
-        if flow_negative_decreasing:
-            return VentilationState.Exhale
         return self.current_state
 
 
