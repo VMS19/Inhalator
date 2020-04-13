@@ -76,7 +76,7 @@ class VolumeSummary(GraphSummary):
             int(round(self.measurements.avg_exp_volume)))
 
     def name(self):
-        return "Avg TVinsp/exp"
+        return "TVinsp/exp"
 
     def units(self):
         return "ml"
