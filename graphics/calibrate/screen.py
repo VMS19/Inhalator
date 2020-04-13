@@ -200,7 +200,7 @@ class OxygenCalibration(Calibration):
     CALIBRATED_DRIVER = "a2d"
     SAMPLING_TIME = 5  # seconds
     PRE_CALIBRATE_ALERT_MSG = \
-        "Make sure before calibrating!:\n" \
+        "Please make sure before calibrating!:\n" \
         "For 21%: detach tube from O2 sensor\n" \
         "For 100%: full oxygen and tube connected"
     STEP_2_CALIBRATION_PERCENTAGE = 100
