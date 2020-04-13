@@ -52,8 +52,8 @@ class SamplesStorage:
             self.first_ts = timestamp
         return (timestamp - self.first_ts).total_seconds()
 
-    def write(self, flow, pressure, oxygen, pip=None, peep=None, tv_insp=None, tv_exp=None, bpm=None,ts=None):
+    def write(self, flow, pressure, oxygen, pip=None, peep=None, tv_insp=None, tv_exp=None, bpm=None,ts=None, state=None):
         timestamp = datetime.datetime.now()
         unix_time = timestamp.timestamp() * 1000
-        time_diff = ts #self._time_diff(timestamp)
-        self._write_row([timestamp, unix_time, time_diff, flow, pressure, oxygen, pip, peep, tv_insp, tv_exp, bpm])
+        time_diff = ts
+        self._write_row([timestamp, unix_time, time_diff, flow, pressure, oxygen, pip, peep, tv_insp, tv_exp, bpm, state])
