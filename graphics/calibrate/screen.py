@@ -4,6 +4,7 @@ from tkinter import *
 
 from data.configurations import Configurations
 from graphics.themes import Theme
+from errors import InvalidCalibrationError
 
 
 class Calibration(object):
@@ -44,8 +45,18 @@ class Calibration(object):
         """Get offset drift."""
         raise NotImplemented
 
-    def save(self):
+    def configure_new_calibration(self):
         raise NotImplemented
+
+    def save(self):
+        try:
+            self.configure_new_calibration()
+        except InvalidCalibrationError as err:
+            self.label.config(text=str(err))
+            return False
+        else:
+            self.config.save_to_file()
+            return True
 
     def calibrate(self):
         # TODO: Handle watchdog
@@ -146,8 +157,8 @@ class CalibrationScreen(object):
         self.ok_cancel_section.enable_ok_button()
 
     def on_ok(self):
-        self.calibration.save()
-        self.hide()
+        if self.calibration.save():
+            self.hide()
 
     def on_cancel(self):
         self.hide()
@@ -166,17 +177,19 @@ class DifferentialPressureCalibration(Calibration):
         """Get offset drift."""
         return self.average_value_found - self.config.dp_offset
 
-    def save(self):
+    def configure_new_calibration(self):
         self.config.dp_offset = self.average_value_found
         self.sensor_driver.set_calibration_offset(self.average_value_found)
-        self.config.save_to_file()
 
 
-class Oxygen21Calibration(Calibration):
+class OxygenCalibration(Calibration):
     NAME = "O2 sensor Calibration"
     CALIBRATED_DRIVER = "a2d"
-    PRE_CALIBRATE_ALERT_MSG = \
-        "Please make sure system in 21% oxygen, and tube connected to sensor."
+
+    @property
+    def PRE_CALIBRATE_ALERT_MSG(self):
+        return f"Please make sure system in {self.calibrated_point['x']}%" \
+                "oxygen, and tube connected to sensor."
 
     @property
     def calibrated_point(self):
@@ -188,12 +201,12 @@ class Oxygen21Calibration(Calibration):
     def get_difference(self):
         """Get offset drift."""
         average_percentage_found = \
-            self.sensor_driver.convert_voltage_to_oxygen(self.average_value_found)
-        return average_percentage_found - self.calibrated_point["y"]
+            self.sensor_driver.convert_voltage_to_oxygen(
+                self.average_value_found)
+        return average_percentage_found - self.calibrated_point["x"]
 
-    def save(self):
+    def configure_new_calibration(self):
         # Todo: add update for the second point
         self.calibrated_point["y"] = self.average_value_found
         self.sensor_driver.set_oxygen_calibration(self.config.oxygen_point1,
                                                   self.config.oxygen_point2)
-        self.config.save_to_file()

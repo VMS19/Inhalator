@@ -7,7 +7,7 @@ from data.configurations import Configurations
 from tkinter import *
 
 from graphics.calibrate.screen import CalibrationScreen, \
-    DifferentialPressureCalibration
+    DifferentialPressureCalibration, OxygenCalibration
 
 from graphics.imagebutton import ImageButton
 from graphics.themes import Theme
@@ -142,8 +142,9 @@ class SectionWithCalibrate(Section):
         screen.show()
 
 
-class O2Section(Section):
+class O2Section(SectionWithCalibrate):
     INDEX = 0
+    CALIBRATION_CLASS = OxygenCalibration
 
     @property
     def range(self):
@@ -246,7 +247,8 @@ class ConfigureAlarmsScreen(object):
         self.configure_alerts_screen = Frame(master=self.root)
 
         # Sections
-        self.oxygen_section = O2Section(self, self.configure_alerts_screen)
+        self.oxygen_section = O2Section(self, self.configure_alerts_screen,
+                                        drivers=drivers)
         self.volume_section = VolumeSection(self,
                                             self.configure_alerts_screen,
                                             drivers=drivers)

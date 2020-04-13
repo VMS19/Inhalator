@@ -96,6 +96,7 @@ class Ads7844A2D(object):
             right_p = point2
         else:
             raise InvalidCalibrationError(
+                "Bad oxygen calibration.\n"
                 "Two calibration points on same x value")
 
         new_scale = (right_p["y"] - left_p["y"]) / (
@@ -103,9 +104,9 @@ class Ads7844A2D(object):
 
         if new_scale <= 0:
             raise InvalidCalibrationError(
-                f"Bad oxygen calibration. negative slope."
-                f"({left_p['x']},{left_p['y']}),"
-                f"({right_p['x']},{right_p['y']})")
+                f"Bad oxygen calibration.\nnegative slope."
+                f"({left_p['x']}%,{left_p['y']}V),"
+                f"({right_p['x']}%,{right_p['y']}V)")
 
         new_offset = point1["y"] - point1["x"] * new_scale
 
