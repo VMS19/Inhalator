@@ -244,30 +244,6 @@ class OxygenCalibration(Calibration):
                 self.average_value_found)
         return average_percentage_found - self.calibrated_point["x"]
 
-    def calc_calibration_line(self, point1, point2):
-        if point1["x"] > point2["x"]:
-            left_p = point2
-            right_p = point1
-        elif point1["x"] < point2["x"]:
-            left_p = point1
-            right_p = point2
-        else:
-            raise InvalidCalibrationError(
-                "Bad oxygen calibration.\n"
-                "Two calibration points on same x value")
-
-        new_scale = (right_p["y"] - left_p["y"]) / (
-            right_p["x"] - left_p["x"])
-
-        if new_scale <= 0:
-            raise InvalidCalibrationError(
-                f"Bad oxygen calibration.\nnegative slope."
-                f"({left_p['x']:.5f}%,{left_p['y']:.5f}V),"
-                f"({right_p['x']:.5f}%,{right_p['y']:.5f}V)")
-
-        new_offset = point1["y"] - point1["x"] * new_scale
-        return new_offset, new_scale
-
     def configure_new_calibration(self):
         new_calibration_point = {"x": self.calibrated_point["x"],
                                  "y": self.average_value_found}
@@ -277,8 +253,33 @@ class OxygenCalibration(Calibration):
         else:
             other_calibration_point = self.config.oxygen_point1
 
-        offset, scale = self.calc_calibration_line(new_calibration_point,
-                                                   other_calibration_point)
+        offset, scale = calc_calibration_line(new_calibration_point,
+                                              other_calibration_point)
 
         self.sensor_driver.set_oxygen_calibration(offset, scale)
         self.calibrated_point["y"] = self.average_value_found
+
+
+def calc_calibration_line(point1, point2):
+    if point1["x"] > point2["x"]:
+        left_p = point2
+        right_p = point1
+    elif point1["x"] < point2["x"]:
+        left_p = point1
+        right_p = point2
+    else:
+        raise InvalidCalibrationError(
+            "Bad calibration.\n"
+            "Two calibration points on same x value")
+
+    new_scale = (right_p["y"] - left_p["y"]) / (
+        right_p["x"] - left_p["x"])
+
+    if new_scale <= 0:
+        raise InvalidCalibrationError(
+            f"Bad calibration.\nnegative slope."
+            f"({left_p['x']:.5f},{left_p['y']:.5f}),"
+            f"({right_p['x']:.5f},{right_p['y']:.5f})")
+
+    new_offset = point1["y"] - point1["x"] * new_scale
+    return new_offset, new_scale

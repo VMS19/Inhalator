@@ -6,6 +6,7 @@ from graphics.panes import MasterFrame
 from graphics.themes import Theme
 from data.configurations import Configurations, ConfigurationState
 from data.alerts import AlertCodes
+from graphics.calibrate.screen import calc_calibration_line
 
 
 class Application(object):
@@ -62,8 +63,9 @@ class Application(object):
         differential_pressure_driver = self.drivers.acquire_driver("differential_pressure")
         differential_pressure_driver.set_calibration_offset(self.config.dp_offset)
         oxygen_driver = self.drivers.acquire_driver("a2d")
-        oxygen_driver.set_oxygen_calibration(self.config.oxygen_point1,
-                                             self.config.oxygen_point2)
+        oxygen_driver.set_oxygen_calibration(*calc_calibration_line(
+                                             self.config.oxygen_point1,
+                                             self.config.oxygen_point2))
 
     def exit(self):
         self.root.quit()
