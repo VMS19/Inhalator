@@ -59,6 +59,7 @@ def test_sampler_volume_calculation(events, measurements, config):
         * Simulate constant flow of 1.
         * Validate expected volume.
     """
+    config.min_exp_volume_for_exhale = 0
     this_dir = os.path.dirname(__file__)
     file_path = os.path.join(this_dir, SIMULATION_FOLDER,
                              "pig_sim_cycle.csv")
@@ -78,10 +79,6 @@ def test_sampler_volume_calculation(events, measurements, config):
     expected_volume = 332
     msg = f"Expected volume of {expected_volume}, received {measurements.inspiration_volume}"
     assert measurements.inspiration_volume == approx(expected_volume, rel=0.1), msg
-
-    expected_exp_volume = 28
-    msg = f"Expected volume of {expected_exp_volume}, received {measurements.expiration_volume}"
-    assert measurements.expiration_volume == approx(expected_exp_volume, rel=0.1), msg
 
 
 def test_alert_on_exhale_volume(events, measurements, config):
