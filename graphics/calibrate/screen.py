@@ -277,8 +277,8 @@ def calc_calibration_line(point1, point2):
     new_scale = (right_p["x"] - left_p["x"]) / (
         right_p["y"] - left_p["y"])
 
-    # Minimal slope for valid calibration set to 25. slope should be around 60
-    if (1 / new_scale) < 25:
+    # normal slope should be around 50..
+    if new_scale <= 0 or new_scale > 100:
         raise InvalidCalibrationError(
             f"Bad calibration.\ntoo small slope."
             f"({int(left_p['x'])}% : {left_p['y']:.5f}V),\n"
