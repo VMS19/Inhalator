@@ -25,7 +25,7 @@ class Application(object):
         return cls.__instance
 
     def __init__(self, measurements, events, arm_wd_event, drivers, sampler,
-                 simulation=False, fps=15, sample_rate=90):
+                 simulation=False, fps=10, sample_rate=70):
         self.should_run = True
         self.drivers = drivers
         self.arm_wd_event = arm_wd_event
@@ -41,7 +41,6 @@ class Application(object):
         self.root.title("Inhalator")
         self.root.geometry('800x480')
         self.root.attributes("-fullscreen", True)
-
 
         if os.uname()[1] == 'raspberrypi':
             # on production we don't want to see the ugly cursor
