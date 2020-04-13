@@ -36,9 +36,10 @@ class SPIIOError(InhalatorError):
 class I2CReadError(InhalatorError):
     pass
 
+
 class InvalidCalibrationError(InhalatorError):
     pass
 
+
 class ConfigurationFileError(BaseException):
     pass
-

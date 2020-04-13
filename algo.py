@@ -9,7 +9,6 @@ from numpy import trapz
 from scipy.stats import linregress
 
 from data.alerts import AlertCodes
-from data.measurements import Measurements
 from data.configurations import Configurations
 from sample_storage import SamplesStorage
 
