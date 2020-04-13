@@ -1,5 +1,6 @@
+import argparse
+
 import pandas as pd
-import sys
 import matplotlib.pyplot as plt
 
 from algo import VentilationStateMachine, VentilationState
@@ -19,8 +20,8 @@ CONVERTERS = {
 }
 
 
-def plot_file(file_path):
-    df = pd.read_csv(file_path, converters=CONVERTERS)
+def plot_file(file_path, start=0, end=-1):
+    df = pd.read_csv(file_path, converters=CONVERTERS)[start:end]
     measurements = Measurements()
     events = Events()
     vsm = VentilationStateMachine(measurements, events)
@@ -81,5 +82,18 @@ def draw_pressure(axes, samples, timestamp, vsm):
         ymin=0, ymax=30, colors="r", linestyle="dashed")
 
 
+def parse_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("csv_path", help="The path to the CSV file")
+    parser.add_argument(
+        "start_line", default=0, type=int, nargs="?",
+        help="Start from this line (not including CSV header)")
+    parser.add_argument(
+        "end_line", default=-1, type=int, nargs="?",
+        help="Read up to this line (not including CSV header)")
+    return parser.parse_args()
+
+
 if __name__ == '__main__':
-    plot_file(sys.argv[1])
+    args = parse_arguments()
+    plot_file(file_path=args.csv_path, start=args.start_line, end=args.end_line)
