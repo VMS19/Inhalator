@@ -376,7 +376,7 @@ class Sampler(object):
                  a2d, timer, average_window, save_sensor_values=False):
         super(Sampler, self).__init__()
         self.log = logging.getLogger(self.__class__.__name__)
-        self._measurements = measurements  # type: Measurements
+        self._measurements = measurements
         self._flow_sensor = flow_sensor
         self._pressure_sensor = pressure_sensor
         self._a2d = a2d
