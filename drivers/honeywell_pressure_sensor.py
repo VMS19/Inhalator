@@ -1,7 +1,7 @@
 import pigpio
 import logging
 
-from errors import I2CReadError
+from errors import I2CReadError, UnavailableMeasurmentError
 
 from .i2c_driver import I2cDriver
 from .mux_i2c import MuxI2C
@@ -38,9 +38,9 @@ class HoneywellPressureSensor(I2cDriver):
             if read_size >= self.MEASURE_BYTE_COUNT:
                 pressure_reading = ((pressure_raw[0] & 0x3F) << 8) | (pressure_raw[1])
                 return self._calculate_pressure(pressure_reading)
-
             else:
                 log.warning("Pressure sensor's measure data not ready")
+                raise UnavailableMeasurmentError("Pressure sensor data unavailable")
         except pigpio.error as e:
             log.error("Could not read from pressure sensor. "
                       "Is the pressure sensor connected?.")

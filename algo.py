@@ -12,6 +12,7 @@ from data.alerts import AlertCodes
 from data.measurements import Measurements
 from data.configurations import Configurations
 from sample_storage import SamplesStorage
+from errors import UnavailableMeasurmentError
 
 TRACE = logging.DEBUG - 1
 logging.addLevelName(TRACE, 'TRACE')
@@ -392,6 +393,8 @@ class Sampler(object):
     def read_single_sensor(self, sensor, alert_code, timestamp):
         try:
             return sensor.read()
+        except UnavailableMeasurmentError as e:
+            self.log.error(e)
         except Exception as e:
             self._events.alerts_queue.enqueue_alert(alert_code, timestamp)
             self.log.error(e)

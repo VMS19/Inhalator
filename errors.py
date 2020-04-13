@@ -39,3 +39,7 @@ class I2CReadError(InhalatorError):
 
 class ConfigurationFileError(BaseException):
     pass
+
+
+class UnavailableMeasurmentError(InhalatorError):
+    pass
