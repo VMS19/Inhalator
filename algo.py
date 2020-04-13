@@ -196,7 +196,6 @@ class VentilationStateMachine(object):
         self.expiration_volume.reset()
 
         # Restart state machine
-        print("reset")
         self.current_state = VentilationState.PEEP
 
     def enter_inhale(self, timestamp, prev_state):
@@ -264,7 +263,6 @@ class VentilationStateMachine(object):
         return True
 
     def enter_peep(self, timestamp):
-        print("etered peep")
         return True
 
     def reset_peaks(self):
@@ -347,7 +345,6 @@ class VentilationStateMachine(object):
             return  # Not enough data
 
         next_state = self.infer_state(flow_slop, flow_slm, pressure_slope, pressure_cmh2o)
-        print(timestamp - 11428.99634, self.current_state, next_state)
         if next_state != self.current_state:
             entry_handler = self.entry_handlers.get(next_state, None)
             # noinspection PyArgumentList
