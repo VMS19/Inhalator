@@ -11,12 +11,16 @@ class Calibration(object):
     CALIBRATED_DRIVER = NotImplemented
     PRE_CALIBRATE_ALERT_MSG = NotImplemented
     NUMBER_OF_SAMPLES_TO_TAKE = 100
-    SLEEP_IN_BETWEEN = 3 / 100
+    SAMPLING_TIME = 3  # seconds
+    SLEEP_IN_BETWEEN = SAMPLING_TIME / 100
 
     def __init__(self, parent, root, drivers):
         self.parent = parent
         self.root = root
         self.config = Configurations.instance()
+
+        # State
+        self.average_value_found = None
 
         self.sensor_driver = drivers.acquire_driver(self.CALIBRATED_DRIVER)
         self.timer = drivers.acquire_driver("timer")
@@ -29,14 +33,16 @@ class Calibration(object):
                            bg=Theme.active().BACKGROUND,
                            fg=Theme.active().TXT_ON_BG)
 
-        self.button = Button(master=self.frame,
+        self.calibration_buttons = []
+        self.create_calibration_menu()
+
+    def create_calibration_menu(self):
+        button = Button(master=self.frame,
                              bg=Theme.active().SURFACE,
                              command=self.calibrate,
                              fg=Theme.active().TXT_ON_SURFACE,
                              text="Calibrate")
-
-        # State
-        self.average_value_found = None
+        self.calibration_buttons = [button]
 
     def read_raw_value(self):
         raise NotImplemented
@@ -71,7 +77,9 @@ class Calibration(object):
 
             self.label.configure(
                 text=f"Please wait {math.ceil(waiting_time_left)} seconds...")
-            self.button.configure(state="disabled")
+
+            for btn in self.calibration_buttons:
+                btn.configure(state="disabled")
 
             self.label.update()  # This is needed so the GUI doesn't freeze
 
@@ -82,14 +90,19 @@ class Calibration(object):
         self.average_value_found = statistics.mean(values)
         self.label.configure(
             text=f"Offset change found: {self.get_difference():.5f}")
-        self.button.configure(state="normal")
+
         self.parent.enable_ok_button()
-        self.button.configure(text="Recalibrate")
+        for btn in self.calibration_buttons:
+            btn.configure(state="normal")
 
     def render(self):
         self.frame.place(relx=0, rely=0.25, relwidth=1, relheight=0.5)
         self.label.place(relx=0, rely=0, relheight=0.5, relwidth=1)
-        self.button.place(relx=0, rely=0.5, relheight=0.5, relwidth=1)
+        calibration_button_width = 1 / len(self.calibration_buttons)
+        for i, btn in enumerate(self.calibration_buttons):
+            btn.place(relx=i*calibration_button_width,
+                      rely=0.5, relheight=0.5,
+                      relwidth=calibration_button_width)
 
 
 class OKCancelSection(object):
@@ -185,15 +198,41 @@ class DifferentialPressureCalibration(Calibration):
 class OxygenCalibration(Calibration):
     NAME = "O2 sensor Calibration"
     CALIBRATED_DRIVER = "a2d"
+    SAMPLING_TIME = 5  # seconds
+    PRE_CALIBRATE_ALERT_MSG = \
+        "Please make sure before calibrating!:\n" \
+        "For 21%: detach tube from O2 sensor\n" \
+        "For 100%: tester sensor shows 100% and tube connected"
 
-    @property
-    def PRE_CALIBRATE_ALERT_MSG(self):
-        return f"Please make sure system in {self.calibrated_point['x']}%" \
-                "oxygen, and tube connected to sensor."
+    def __init__(self, *args):
+        self.calibrated_point = None
+        super().__init__(*args)
 
-    @property
-    def calibrated_point(self):
-        return self.config.oxygen_point1
+    def create_calibration_menu(self):
+        self.calibrate_point1_button = Button(master=self.frame,
+            bg=Theme.active().SURFACE,
+            command=self.calibrate_point1,
+            fg=Theme.active().TXT_ON_SURFACE,
+            text=f"Calibrate {self.config.oxygen_point1['x']}%")
+
+        self.calibrate_point2_button = Button(master=self.frame,
+            bg=Theme.active().SURFACE,
+            command=self.calibrate_point2,
+            fg=Theme.active().TXT_ON_SURFACE,
+            text=f"Calibrate {self.config.oxygen_point2['x']}%")
+
+        self.calibration_buttons = [self.calibrate_point1_button,
+                                    self.calibrate_point2_button]
+
+    def calibrate_point1(self):
+        self.calibrated_point = self.config.oxygen_point1
+        self.calibrate()
+        self.calibrate_point2_button.configure(state="disabled")
+
+    def calibrate_point2(self):
+        self.calibrated_point = self.config.oxygen_point2
+        self.calibrate()
+        self.calibrate_point1_button.configure(state="disabled")
 
     def read_raw_value(self):
         return self.sensor_driver.read_oxygen_raw()
@@ -205,8 +244,41 @@ class OxygenCalibration(Calibration):
                 self.average_value_found)
         return average_percentage_found - self.calibrated_point["x"]
 
+    def calc_calibration_line(self, point1, point2):
+        if point1["x"] > point2["x"]:
+            left_p = point2
+            right_p = point1
+        elif point1["x"] < point2["x"]:
+            left_p = point1
+            right_p = point2
+        else:
+            raise InvalidCalibrationError(
+                "Bad oxygen calibration.\n"
+                "Two calibration points on same x value")
+
+        new_scale = (right_p["y"] - left_p["y"]) / (
+            right_p["x"] - left_p["x"])
+
+        if new_scale <= 0:
+            raise InvalidCalibrationError(
+                f"Bad oxygen calibration.\nnegative slope."
+                f"({left_p['x']:.5f}%,{left_p['y']:.5f}V),"
+                f"({right_p['x']:.5f}%,{right_p['y']:.5f}V)")
+
+        new_offset = point1["y"] - point1["x"] * new_scale
+        return new_offset, new_scale
+
     def configure_new_calibration(self):
-        # Todo: add update for the second point
+        new_calibration_point = {"x": self.calibrated_point["x"],
+                                 "y": self.average_value_found}
+
+        if self.calibrated_point is self.config.oxygen_point1:
+            other_calibration_point = self.config.oxygen_point2
+        else:
+            other_calibration_point = self.config.oxygen_point1
+
+        offset, scale = self.calc_calibration_line(new_calibration_point,
+                                                   other_calibration_point)
+
+        self.sensor_driver.set_oxygen_calibration(offset, scale)
         self.calibrated_point["y"] = self.average_value_found
-        self.sensor_driver.set_oxygen_calibration(self.config.oxygen_point1,
-                                                  self.config.oxygen_point2)

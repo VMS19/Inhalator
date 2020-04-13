@@ -1,7 +1,7 @@
 import spidev
 import logging
 
-from errors import SPIDriverInitError, SPIIOError, InvalidCalibrationError
+from errors import SPIDriverInitError, SPIIOError
 
 log = logging.getLogger(__name__)
 
@@ -87,31 +87,9 @@ class Ads7844A2D(object):
 
         return self._calibrate_a2d(sample_reading)
 
-    def set_oxygen_calibration(self, point1, point2):
-        if point1["x"] > point2["x"]:
-            left_p = point2
-            right_p = point1
-        elif point1["x"] < point2["x"]:
-            left_p = point1
-            right_p = point2
-        else:
-            raise InvalidCalibrationError(
-                "Bad oxygen calibration.\n"
-                "Two calibration points on same x value")
-
-        new_scale = (right_p["y"] - left_p["y"]) / (
-            right_p["x"] - left_p["x"])
-
-        if new_scale <= 0:
-            raise InvalidCalibrationError(
-                f"Bad oxygen calibration.\nnegative slope."
-                f"({left_p['x']}%,{left_p['y']}V),"
-                f"({right_p['x']}%,{right_p['y']}V)")
-
-        new_offset = point1["y"] - point1["x"] * new_scale
-
-        self._oxygen_calibration_scale = new_scale
-        self._oxygen_calibration_offset = new_offset
+    def set_oxygen_calibration(self, offset, scale):
+        self._oxygen_calibration_scale = scale
+        self._oxygen_calibration_offset = offset
 
     def read_oxygen_raw(self):
         return self._sample_a2d(self.OXYGEN_CHANNEL)
