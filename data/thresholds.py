@@ -7,6 +7,8 @@ class Range(object):
         self.min = min
         self.max = max
         self.step = step
+        self.temporary_min = min
+        self.temporary_max = max
 
     def __setattr__(self, key, value):
         # We want to limit the precision of thresholds to 3 after the dot
@@ -14,9 +16,6 @@ class Range(object):
             self.__dict__[key] = float("{:.3f}".format(value))
         else:
             self.__dict__[key] = value
-
-    def copy(self):
-        return self.__class__(self.min, self.max)
 
     def below(self, value):
         """
@@ -41,18 +40,26 @@ class Range(object):
         self.max = other.max
 
     def increase_min(self):
-        if self.min + self.step <= self.max:
-            self.min += self.step
+        if self.temporary_min + self.step <= self.temporary_max:
+            self.temporary_min += self.step
 
     def increase_max(self):
-        self.max += self.step
+        self.temporary_max += self.step
 
     def decrease_min(self):
-        self.min -= self.step
+        self.temporary_min -= self.step
 
     def decrease_max(self):
-        if self.max - self.step >= self.min:
-            self.max -= self.step
+        if self.temporary_max - self.step >= self.temporary_min:
+            self.temporary_max -= self.step
+
+    def confirm(self):
+        self.max = self.temporary_max
+        self.min = self.temporary_min
+
+    def cancel(self):
+        self.temporary_max = self.max
+        self.temporary_min = self.min
 
 
 class O2Range(Range):

@@ -65,8 +65,6 @@ class Section(object):
         self.parent = parent
         self.root = root
 
-        self.original_range = self.range.copy()
-
         self.frame = Frame(self.root, bg="red")
         self.name_label = Label(master=self.frame, font=("Roboto", 15),
                                 bg=Theme.active().SURFACE,
@@ -95,12 +93,15 @@ class Section(object):
     def range(self):
         raise NotImplementedError()
 
-    def undo(self):
-        self.range.load_from(self.original_range)
+    def confirm(self):
+        self.range.confirm()
+
+    def cancel(self):
+        self.range.cancel()
 
     def update(self):
-        self.max_button.configure(text=f"MAX\n{self.range.max}")
-        self.min_button.configure(text=f"MIN\n{self.range.min}")
+        self.max_button.configure(text=f"MAX\n{self.range.temporary_max}")
+        self.min_button.configure(text=f"MIN\n{self.range.temporary_min}")
 
     def render(self):
         self.frame.place(relx=(0.2) * self.INDEX,
@@ -113,8 +114,8 @@ class Section(object):
 
         self.name_label.configure(text=self.range.NAME)
         self.unit_label.configure(text=self.range.UNIT)
-        self.max_button.configure(text=f"MAX\n{self.range.max}")
-        self.min_button.configure(text=f"MIN\n{self.range.min}")
+        self.max_button.configure(text=f"MAX\n{self.range.temporary_max}")
+        self.min_button.configure(text=f"MIN\n{self.range.temporary_min}")
 
 
 class SectionWithCalibrate(Section):
@@ -332,11 +333,13 @@ class ConfigureAlarmsScreen(object):
         self.configure_alerts_screen.place_forget()
 
     def confirm(self):
+        for section in self.threshold_sections:
+            section.confirm()
         Configurations.instance().save_to_file()
         self.hide()
 
     def cancel(self):
         for section in self.threshold_sections:
-            section.undo()
+            section.cancel()
 
         self.hide()
