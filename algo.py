@@ -246,16 +246,16 @@ class VentilationStateMachine(object):
         self.expiration_volume.reset()
         self.exp_volumes.append((timestamp, exp_volume_ml))
 
-        if self._config.volume_range.below(exp_volume_ml):
+        if self._config.volume_range.below(self._measurements.avg_exp_volume):
             self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW, timestamp)
             self.log.warning(
-                "volume too low %s, bottom threshold %s",
-                exp_volume_ml, self._config.volume_range.min)
-        elif self._config.volume_range.over(exp_volume_ml):
+                "average volume too low %s, bottom threshold %s",
+                self._measurements.avg_exp_volume, self._config.volume_range.min)
+        elif self._config.volume_range.over(self._measurements.avg_exp_volume):
             self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH, timestamp)
             self.log.warning(
-                "volume too high %s, top threshold %s",
-                exp_volume_ml, self._config.volume_range.max)
+                "average volume too high %s, top threshold %s",
+                self._measurements.avg_exp_volume, self._config.volume_range.max)
 
         self.reset_min_values()
 
