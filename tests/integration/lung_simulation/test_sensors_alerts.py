@@ -78,7 +78,6 @@ def test_sampler_alerts_when_sensor_exceeds_maximum(events, measurements, config
     assert len(events.alerts_queue) == 0
 
     configure_alerts_screen = ConfigureAlarmsScreen(app.master_frame.element,
-                                                    measurements=measurements,
                                                     drivers=driver_factory)
     configure_alerts_screen.show()
     getattr(configure_alerts_screen, f"{alert_type}_section").max_button.publish()
@@ -139,7 +138,6 @@ def test_sampler_alerts_when_sensor_exceeds_minimum(events, measurements, config
     assert len(events.alerts_queue) == 0
 
     configure_alerts_screen = ConfigureAlarmsScreen(app.master_frame.element,
-                                                    measurements=measurements,
                                                     drivers=driver_factory)
     configure_alerts_screen.show()
     getattr(configure_alerts_screen, f"{alert_type}_section").min_button.publish()

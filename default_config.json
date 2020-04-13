@@ -39,7 +39,15 @@
     "max_pressure_slope_for_exhale": 12
   },
   "calibration": {
-    "dp_offset": 0.026
+    "dp_offset": 0.026,
+    "oxygen_point1": {
+        "x": 21,
+        "y": 0.3567203
+    },
+    "oxygen_point2": {
+        "x": 0,
+        "y": 0
+    }
   },
   "log_enabled": true,
   "graph_seconds": 12.0,

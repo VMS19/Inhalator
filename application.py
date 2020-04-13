@@ -6,6 +6,7 @@ from graphics.panes import MasterFrame
 from graphics.themes import Theme
 from data.configurations import Configurations, ConfigurationState
 from data.alerts import AlertCodes
+from graphics.calibrate.screen import calc_calibration_line
 
 
 class Application(object):
@@ -51,13 +52,20 @@ class Application(object):
             events.alerts_queue.enqueue_alert(AlertCodes.NO_CONFIGURATION_FILE)
             Configurations.instance().save_to_file()  # Create config file for future use.
 
+        self.config = Configurations.instance()
+
         self.master_frame = MasterFrame(self.root,
                                         measurements=measurements,
                                         events=events,
                                         drivers=drivers)
 
+        # Load sensors calibrations
         differential_pressure_driver = self.drivers.acquire_driver("differential_pressure")
-        differential_pressure_driver.set_calibration_offset(Configurations.instance().dp_offset)
+        differential_pressure_driver.set_calibration_offset(self.config.dp_offset)
+        oxygen_driver = self.drivers.acquire_driver("a2d")
+        oxygen_driver.set_oxygen_calibration(*calc_calibration_line(
+                                             self.config.oxygen_point1,
+                                             self.config.oxygen_point2))
 
     def exit(self):
         self.root.quit()

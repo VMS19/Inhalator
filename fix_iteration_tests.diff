@@ -1,0 +1,34 @@
+ application.py | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/application.py b/application.py
+index d14e4e1..f187093 100644
+--- a/application.py
++++ b/application.py
+@@ -93,6 +93,14 @@ class Application(object):
+         self.exit()
+         self.drivers.acquire_driver("aux").stop()
+ 
++    @property
++    def next_render(self):
++        return self.frame_interval - (time.time() - self.last_gui_update_ts)
++
++    @property
++    def next_sample(self):
++        return self.sample_interval - (time.time() - self.last_sample_update_ts)
++
+     def run_iterations(self, max_iterations, fast_forward=True, render=True):
+         if render:
+             self.render()
+@@ -102,8 +110,11 @@ class Application(object):
+                 if self.next_sample > 0 and not fast_forward:
+                     time.sleep(max(self.next_sample, 0))
+                 self.sample()
++                self.last_sample_update_ts = time.time()
+                 if self.next_render <= 0:
+                     self.gui_update()
++                    self.last_gui_update_ts = time.time()
++
+                 self.arm_wd_event.set()
+             except KeyboardInterrupt:
+                 break
