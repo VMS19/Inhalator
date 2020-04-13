@@ -278,12 +278,15 @@ class VentilationStateMachine(object):
             self.last_breath_timestamp = None
             self.reset()
 
-        # We track inhale and exhale volume separately. Positive flow means
-        # inhale, and negative flow means exhale.
-        accumulator = self.inspiration_volume if flow_slm > 0 else self.expiration_volume
-        # flow is measured in Liter/minute, so we convert it to liter/seconds
+        # Flow is measured in Liter/minute, so we convert it to liter/seconds
         # because this is our time unit
-        accumulator.add_sample(timestamp, abs(flow_slm) / 60)
+        flow_lps = flow_slm / 60  # Liter/sec
+        # We track inhale and exhale volume separately. Positive flow means
+        # inhale, and negative flow means exhale. But in order to keep our time
+        # series monotonic we add 0 samples instead of negative/positive sample
+        # for inhale/exhale integrator respectively.
+        self.inspiration_volume.add_sample(timestamp, max(0, flow_lps))
+        self.expiration_volume.add_sample(timestamp, abs(min(0, flow_lps)))
         self._measurements.set_pressure_value(pressure_cmh2o)
         self._measurements.set_flow_value(flow_slm)
         self._measurements.set_saturation_percentage(o2_percentage)
