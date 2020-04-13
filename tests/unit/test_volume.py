@@ -59,10 +59,11 @@ def test_sampler_volume_calculation(events, measurements, config):
         * Simulate constant flow of 1.
         * Validate expected volume.
     """
+    test_samples = 90
     config.min_exp_volume_for_exhale = 0
     this_dir = os.path.dirname(__file__)
     file_path = os.path.join(this_dir, SIMULATION_FOLDER,
-                             "pig_sim_cycle.csv")
+                             "single_cycle_good.csv")
     driver_factory = DriverFactory(simulation_mode=True,
                                    simulation_data=file_path)
 
@@ -73,12 +74,16 @@ def test_sampler_volume_calculation(events, measurements, config):
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       a2d, timer, average_window=1)
 
-    for _ in range(SIMULATION_SAMPLES):
+    for _ in range(test_samples):
         sampler.sampling_iteration()
 
-    expected_volume = 332
+    expected_volume = 842
     msg = f"Expected volume of {expected_volume}, received {measurements.inspiration_volume}"
     assert measurements.inspiration_volume == approx(expected_volume, rel=0.1), msg
+
+    expected_exp_volume = 501
+    msg = f"Expected volume of {expected_exp_volume}, received {measurements.expiration_volume}"
+    assert measurements.expiration_volume == approx(expected_exp_volume, rel=0.1), msg
 
 
 def test_alert_on_exhale_volume(events, measurements, config):

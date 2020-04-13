@@ -25,6 +25,7 @@ def config():
     c.graph_seconds = 12
     c.breathing_threshold = 3.5
     c.log_enabled = False
+    c.min_exp_volume_for_exhale = 0
     return c
 
 

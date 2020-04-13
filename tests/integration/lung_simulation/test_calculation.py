@@ -7,7 +7,6 @@ from pytest import approx
 
 from algo import Sampler, VentilationState
 from application import Application
-from data import alerts
 from data.configurations import Configurations
 from data.events import Events
 from data.measurements import Measurements
@@ -18,8 +17,8 @@ from graphics.configure_alerts_screen import ConfigureAlarmsScreen
 
 SAMPLES_AMOUNT = 604
 EXPERIMENT_BPM = [0, 15, 15, 15, 15, 15, 15, 15]
-EXPERIMENT_VOLUMES = [101, 288, 304, 292, 306, 295, 305, 290,
-                      306, 289, 303, 291, 305, 293, 309]
+EXPERIMENT_VOLUMES = [101, 291, 304, 293, 307, 295, 305, 292,
+                      307, 291, 304, 293, 304, 292, 309]
 
 
 @pytest.fixture
@@ -39,6 +38,8 @@ def config():
     c.graph_seconds = 12
     c.breathing_threshold = 3.5
     c.log_enabled = False
+    c.min_exp_volume_for_exhale = 30
+    c.min_insp_volume_for_inhale = 30
     return c
 
 
