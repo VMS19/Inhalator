@@ -25,6 +25,6 @@ class Timer(object):
             # seconds without 'b
             seconds_parsed = seconds_raw[2:]
             return int(seconds_parsed)
-        except Exception as e:
+        except Exception:
             # get time.time as backup
             return Timer.get_time()
