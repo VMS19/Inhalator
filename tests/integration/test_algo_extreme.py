@@ -1,9 +1,5 @@
-import csv
-import logging
 import os
-from itertools import cycle
 from threading import Event
-from unittest.mock import Mock, patch
 
 import pytest
 from pytest import approx
@@ -30,7 +26,9 @@ def config():
     c.volume_range = VolumeRange(min=0, max=30)
     c.graph_seconds = 12
     c.breathing_threshold = 3.5
+    c.min_exp_volume_for_exhale = 0
     c.log_enabled = False
+    c.boot_alert_grace_time = 0
     return c
 
 
