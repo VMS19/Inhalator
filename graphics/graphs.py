@@ -20,20 +20,15 @@ class BlankGraph(object):
         self.graph_bg = blank_figure.canvas.copy_from_bbox(self.graph_bbox)
 
 class DisplayedGraph(object):
-    LOOSE_GRAPH_FACTOR = 1.2  # Used for calculating the empty space in the Y-axis
+    LOOSE_GRAPH_FACTOR = 3  # Used for calculating the empty space in the Y-axis
 
     # TODO: Move here more similar behaviors between Flow and Pressure graphs
-    def rescale(self, new_miny: float, new_maxy: float, tight: bool=False):
-        """Symmetrically rescale the Y-axis.
-
-        """
+    def rescale(self, new_miny: float, new_maxy: float):
+        """Symmetrically rescale the Y-axis. """
         max_y_difference = max(new_maxy - self.current_max_y, 0)
         min_y_difference = abs(max(self.current_min_y - new_miny, 0))
 
         difference = max(max_y_difference, min_y_difference)
-
-        if not tight:
-            difference *= 1.2
 
         new_miny = self.current_min_y - difference
         new_maxy = self.current_max_y + difference
@@ -44,7 +39,8 @@ class DisplayedGraph(object):
             return
 
         self.current_min_y, self.current_max_y = new_miny, new_maxy
-        self.graph.axes.set_ylim(self.current_min_y, self.current_max_y)
+        self.graph.axes.set_ylim(self.current_min_y - self.LOOSE_GRAPH_FACTOR,
+                                 self.current_max_y + self.LOOSE_GRAPH_FACTOR)
 
         self.render()
 
@@ -138,7 +134,7 @@ class AirPressureGraph(DisplayedGraph):
                                           width=self.width)
 
     def update(self):
-        self.rescale(*self._min_and_max(), tight=False)
+        self.rescale(*self._min_and_max())
         self.figure.canvas.restore_region(self.blank.graph_bg,
                                           bbox=self.blank.graph_bbox,
                                           xy=(0, 0))
@@ -218,7 +214,7 @@ class FlowGraph(DisplayedGraph):
                                           width=self.width)
 
     def update(self):
-        self.rescale(*self._min_and_max(), tight=False)
+        self.rescale(*self._min_and_max())
         self.figure.canvas.restore_region(self.blank.graph_bg,
                                           bbox=self.blank.graph_bbox,
                                           xy=(0, 0))
