@@ -19,8 +19,54 @@ class BlankGraph(object):
         self.graph_bbox = blank_axis.bbox
         self.graph_bg = blank_figure.canvas.copy_from_bbox(self.graph_bbox)
 
+class DisplayedGraph(object):
+    LOOSE_GRAPH_FACTOR = 1.2  # Used for calculating the empty space in the Y-axis
 
-class AirPressureGraph(object):
+    # TODO: Move here more similar behaviors between Flow and Pressure graphs
+    def rescale(self, new_miny: float, new_maxy: float, tight: bool=False):
+        """Symmetrically rescale the Y-axis.
+
+        """
+        max_y_difference = max(new_maxy - self.current_max_y, 0)
+        min_y_difference = abs(max(self.current_min_y - new_miny, 0))
+
+        difference = max(max_y_difference, min_y_difference)
+
+        if not tight:
+            difference *= 1.2
+
+        new_miny = self.current_min_y - difference
+        new_maxy = self.current_max_y + difference
+
+        if new_maxy <= self.current_max_y and new_miny >= self.current_min_y:
+            # We don't zoom back in for the moment,
+            # also no need to re-render every frame
+            return
+
+        self.current_min_y, self.current_max_y = new_miny, new_maxy
+        self.graph.axes.set_ylim(self.current_min_y, self.current_max_y)
+
+        self.render()
+
+    def _min_and_max(self):
+        """Instead of just using min() and max(), which would take 2 iterations,
+        we do it in one single iteration.
+        """
+        min_value = float("inf")
+        max_value = float("-inf")
+
+        for value in self.display_values:
+            if value > max_value:
+                max_value = value
+
+            if value < min_value:
+                min_value = value
+
+        return min_value, max_value
+
+
+
+class AirPressureGraph(DisplayedGraph):
     def __init__(self, parent, measurements, blank):
         self.parent = parent
         self.root = parent.element
@@ -31,70 +77,73 @@ class AirPressureGraph(object):
         self.height = self.parent.height * 0.5
         self.width = self.parent.width
 
-        self.pressure_figure = Figure(figsize=(5, 2), dpi=100,
-                                      facecolor=Theme.active().SURFACE)
-        self.pressure_axis = self.pressure_figure.add_subplot(111,
-                                                              label="pressure")
-        self.pressure_axis.spines["right"].set_visible(False)
-        self.pressure_axis.spines["bottom"].set_visible(False)
-        self.pressure_axis.set_ylabel('Pressure [cmH20]')
+        self.figure = Figure(figsize=(5, 2), dpi=100,
+                             facecolor=Theme.active().SURFACE)
+        self.axis = self.figure.add_subplot(111,
+                                            label="pressure")
+        self.axis.spines["right"].set_visible(False)
+        self.axis.spines["bottom"].set_visible(False)
+        self.axis.set_ylabel('Pressure [cmH20]')
 
         # Calibrate x-axis
-        self.pressure_axis.set_xticks([])
-        self.pressure_axis.set_xticklabels([])
+        self.axis.set_xticks([])
+        self.axis.set_xticklabels([])
 
         amount_of_xs = self.measurements._amount_of_samples_in_graph
         self.x_axis_display_values = [0] * amount_of_xs
         self.x_axis_graph, = \
-            self.pressure_axis.plot(self.measurements.x_axis,
-                                    self.x_axis_display_values,
-                                    color=Theme.active().WHITE,
-                                    animated=True,
-                                    linewidth=1)
+            self.axis.plot(self.measurements.x_axis,
+                           self.x_axis_display_values,
+                           color=Theme.active().WHITE,
+                           animated=True,
+                           linewidth=1)
 
-        self.pressure_canvas = FigureCanvasTkAgg(self.pressure_figure,
-                                                 master=self.root)
+        self.canvas = FigureCanvasTkAgg(self.figure,
+                                        master=self.root)
 
-        self.pressure_display_values = [0] * amount_of_xs
-        self.pressure_graph, = self.pressure_axis.plot(
+        self.display_values = [0] * amount_of_xs
+        self.graph, = self.axis.plot(
             self.measurements.x_axis,
-            self.pressure_display_values,
+            self.display_values,
             color=Theme.active().YELLOW,
             linewidth=1,
             animated=True)
 
-        # Scale y values
-        self.pressure_graph.axes.set_ylim(*self.config.pressure_y_scale)
+        # Scaling
+        self.current_min_y, self.current_max_y = self.config.pressure_y_scale
+        self.graph.axes.set_ylim(self.current_min_y, self.current_max_y)
 
         # Thresholds
         self.pressure_max_threshold_graph, = \
-            self.pressure_axis.plot(self.measurements.x_axis,
-                                    [self.config.pressure_range.max] *
-                                    len(self.measurements.x_axis),
-                                    color=Theme.active().RED,
-                                    animated=True,
-                                    linewidth=1)
+            self.axis.plot(self.measurements.x_axis,
+                           [self.config.pressure_range.max] *
+                           len(self.measurements.x_axis),
+                           color=Theme.active().RED,
+                           animated=True,
+                           linewidth=1)
 
         self.pressure_min_threshold_graph, = \
-            self.pressure_axis.plot(self.measurements.x_axis,
-                                    [self.config.pressure_range.min] *
-                                    len(self.measurements.x_axis),
-                                    color=Theme.active().RED,
-                                    animated=True,
-                                    linewidth=1)
+            self.axis.plot(self.measurements.x_axis,
+                           [self.config.pressure_range.min] *
+                           len(self.measurements.x_axis),
+                           color=Theme.active().RED,
+                           animated=True,
+                           linewidth=1)
+
 
     def render(self):
-        self.pressure_canvas.draw()
-        self.pressure_canvas.get_tk_widget().place(relx=0, rely=0,
-                                                   height=self.height,
-                                                   width=self.width)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().place(relx=0, rely=0,
+                                          height=self.height,
+                                          width=self.width)
 
     def update(self):
-        self.pressure_figure.canvas.restore_region(self.blank.graph_bg,
-                                                   bbox=self.blank.graph_bbox,
-                                                   xy=(0, 0))
+        self.rescale(*self._min_and_max(), tight=False)
+        self.figure.canvas.restore_region(self.blank.graph_bg,
+                                          bbox=self.blank.graph_bbox,
+                                          xy=(0, 0))
 
-        self.pressure_graph.set_ydata(self.pressure_display_values)
+        self.graph.set_ydata(self.display_values)
         # Update threshold lines
         self.pressure_min_threshold_graph.set_ydata([self.config.pressure_range.min] *
                                                     len(self.measurements.x_axis))
@@ -103,20 +152,20 @@ class AirPressureGraph(object):
 
         self.x_axis_graph.set_ydata(self.x_axis_display_values)
 
-        self.pressure_axis.draw_artist(self.pressure_graph)
-        self.pressure_axis.draw_artist(self.pressure_min_threshold_graph)
-        self.pressure_axis.draw_artist(self.pressure_max_threshold_graph)
-        self.pressure_axis.draw_artist(self.x_axis_graph)
+        self.axis.draw_artist(self.graph)
+        self.axis.draw_artist(self.pressure_min_threshold_graph)
+        self.axis.draw_artist(self.pressure_max_threshold_graph)
+        self.axis.draw_artist(self.x_axis_graph)
 
-        self.pressure_figure.canvas.blit(self.pressure_axis.bbox)
-        self.pressure_figure.canvas.flush_events()
+        self.figure.canvas.blit(self.axis.bbox)
+        self.figure.canvas.flush_events()
 
     @property
     def element(self):
-        return self.pressure_canvas
+        return self.canvas
 
 
-class FlowGraph(object):
+class FlowGraph(DisplayedGraph):
     def __init__(self, parent, measurements, blank):
         rcParams.update({'figure.autolayout': True})
         self.parent = parent
@@ -128,21 +177,21 @@ class FlowGraph(object):
         self.height = self.parent.height * 0.5
         self.width = self.parent.width
 
-        self.flow_figure = Figure(figsize=(5, 2),
-                                  dpi=100, facecolor=Theme.active().SURFACE)
-        self.flow_axis = self.flow_figure.add_subplot(111, label="flow")
-        self.flow_axis.spines["right"].set_visible(False)
-        self.flow_axis.spines["bottom"].set_visible(False)
-        self.flow_axis.set_ylabel('Flow [L/min]')
+        self.figure = Figure(figsize=(5, 2),
+                             dpi=100, facecolor=Theme.active().SURFACE)
+        self.axis = self.figure.add_subplot(111, label="flow")
+        self.axis.spines["right"].set_visible(False)
+        self.axis.spines["bottom"].set_visible(False)
+        self.axis.set_ylabel('Flow [L/min]')
 
         # Calibrate x-axis
-        self.flow_axis.set_xticks([])
-        self.flow_axis.set_xticklabels([])
+        self.axis.set_xticks([])
+        self.axis.set_xticklabels([])
 
-        self.flow_display_values = [0] * self.measurements._amount_of_samples_in_graph
-        self.flow_graph, = self.flow_axis.plot(
+        self.display_values = [0] * self.measurements._amount_of_samples_in_graph
+        self.graph, = self.axis.plot(
             self.measurements.x_axis,
-            self.flow_display_values,
+            self.display_values,
             color=Theme.active().LIGHT_BLUE,
             linewidth=1,
             animated=True)
@@ -150,35 +199,37 @@ class FlowGraph(object):
         amount_of_xs = self.measurements._amount_of_samples_in_graph
         self.x_axis_display_values = [0] * amount_of_xs
         self.x_axis_graph, = \
-            self.flow_axis.plot(self.measurements.x_axis,
-                                self.x_axis_display_values,
-                                color=Theme.active().WHITE,
-                                animated=True,
-                                linewidth=1)
+            self.axis.plot(self.measurements.x_axis,
+                           self.x_axis_display_values,
+                           color=Theme.active().WHITE,
+                           animated=True,
+                           linewidth=1)
 
-        self.flow_canvas = FigureCanvasTkAgg(self.flow_figure, master=self.root)
+        self.canvas = FigureCanvasTkAgg(self.figure, master=self.root)
 
-        # Scale y values
-        self.flow_graph.axes.set_ylim(*self.config.flow_y_scale)
+        # Scaling
+        self.current_min_y, self.current_max_y = self.config.flow_y_scale
+        self.graph.axes.set_ylim(self.current_min_y, self.current_max_y)
 
     def render(self):
-        self.flow_canvas.draw()
-        self.flow_canvas.get_tk_widget().place(relx=0, rely=0.5,
-                                               height=self.height,
-                                               width=self.width)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().place(relx=0, rely=0.5,
+                                          height=self.height,
+                                          width=self.width)
 
     def update(self):
-        self.flow_figure.canvas.restore_region(self.blank.graph_bg,
-                                               bbox=self.blank.graph_bbox,
-                                               xy=(0, 0))
+        self.rescale(*self._min_and_max(), tight=False)
+        self.figure.canvas.restore_region(self.blank.graph_bg,
+                                          bbox=self.blank.graph_bbox,
+                                          xy=(0, 0))
 
-        self.flow_graph.set_ydata(self.flow_display_values)
+        self.graph.set_ydata(self.display_values)
         self.x_axis_graph.set_ydata(self.x_axis_display_values)
-        self.flow_axis.draw_artist(self.flow_graph)
-        self.flow_axis.draw_artist(self.x_axis_graph)
-        self.flow_figure.canvas.blit(self.flow_axis.bbox)
-        self.flow_figure.canvas.flush_events()
+        self.axis.draw_artist(self.graph)
+        self.axis.draw_artist(self.x_axis_graph)
+        self.figure.canvas.blit(self.axis.bbox)
+        self.figure.canvas.flush_events()
 
     @property
     def element(self):
-        return self.flow_canvas
+        return self.canvas
