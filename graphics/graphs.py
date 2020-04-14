@@ -20,46 +20,32 @@ class BlankGraph(object):
         self.graph_bg = blank_figure.canvas.copy_from_bbox(self.graph_bbox)
 
 class DisplayedGraph(object):
-    LOOSE_GRAPH_FACTOR = 3  # Used for calculating the empty space in the Y-axis
+    GRAPH_MARGINS = 3  # Used for calculating the empty space in the Y-axis
 
     # TODO: Move here more similar behaviors between Flow and Pressure graphs
-    def rescale(self, new_miny: float, new_maxy: float):
+    def autoscale(self):
         """Symmetrically rescale the Y-axis. """
-        max_y_difference = max(new_maxy - self.current_max_y, 0)
-        min_y_difference = abs(max(self.current_min_y - new_miny, 0))
+        new_max_y = max(self.display_values)
+        new_min_y = min(self.display_values)
+
+        max_y_difference = max(new_max_y - self.current_max_y, 0)
+        min_y_difference = abs(max(self.current_min_y - new_min_y, 0))
 
         difference = max(max_y_difference, min_y_difference)
 
-        new_miny = self.current_min_y - difference
-        new_maxy = self.current_max_y + difference
+        new_min_y = self.current_min_y - difference
+        new_max_y = self.current_max_y + difference
 
-        if new_maxy <= self.current_max_y and new_miny >= self.current_min_y:
+        if new_max_y <= self.current_max_y and new_min_y >= self.current_min_y:
             # We don't zoom back in for the moment,
             # also no need to re-render every frame
             return
 
-        self.current_min_y, self.current_max_y = new_miny, new_maxy
-        self.graph.axes.set_ylim(self.current_min_y - self.LOOSE_GRAPH_FACTOR,
-                                 self.current_max_y + self.LOOSE_GRAPH_FACTOR)
+        self.current_min_y, self.current_max_y = new_min_y, new_max_y
+        self.graph.axes.set_ylim(self.current_min_y - self.GRAPH_MARGINS,
+                                 self.current_max_y + self.GRAPH_MARGINS)
 
         self.render()
-
-    def _min_and_max(self):
-        """Instead of just using min() and max(), which would take 2 iterations,
-        we do it in one single iteration.
-        """
-        min_value = float("inf")
-        max_value = float("-inf")
-
-        for value in self.display_values:
-            if value > max_value:
-                max_value = value
-
-            if value < min_value:
-                min_value = value
-
-        return min_value, max_value
-
 
 
 class AirPressureGraph(DisplayedGraph):
@@ -134,7 +120,7 @@ class AirPressureGraph(DisplayedGraph):
                                           width=self.width)
 
     def update(self):
-        self.rescale(*self._min_and_max())
+        self.autoscale()
         self.figure.canvas.restore_region(self.blank.graph_bg,
                                           bbox=self.blank.graph_bbox,
                                           xy=(0, 0))
@@ -214,7 +200,7 @@ class FlowGraph(DisplayedGraph):
                                           width=self.width)
 
     def update(self):
-        self.rescale(*self._min_and_max())
+        self.autoscale()
         self.figure.canvas.restore_region(self.blank.graph_bg,
                                           bbox=self.blank.graph_bbox,
                                           xy=(0, 0))

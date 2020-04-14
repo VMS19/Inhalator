@@ -32,8 +32,11 @@ def sampler(measurements, events, driver_factory):
     pressure_sensor = driver_factory.acquire_driver("pressure")
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
-    return Sampler(measurements, events, flow_sensor, pressure_sensor,
-                   a2d, timer, average_window=1)
+    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
+                      a2d, timer, average_window=1)
+
+    sampler._config = MagicMock()
+    return sampler
 
 @pytest.fixture
 def pressure_graph(measurements) -> AirPressureGraph:
@@ -46,6 +49,7 @@ def pressure_graph(measurements) -> AirPressureGraph:
     graph = AirPressureGraph(parent=parent, measurements=measurements, blank=blank)
     graph.axis = MagicMock()
     graph.figure = MagicMock()
+    graph.config = MagicMock()
     return graph
 
 
@@ -60,10 +64,11 @@ def flow_graph(measurements) -> FlowGraph:
     graph = FlowGraph(parent=parent, measurements=measurements, blank=blank)
     graph.axis = MagicMock()
     graph.figure = MagicMock()
+    graph.config = MagicMock()
     return graph
 
 
-def test_graph_doesnt_autoscale_when_it_shouldnt(pressure_graph: AirPressureGraph,
+def test_graph_does_not_auto_scale(pressure_graph: AirPressureGraph,
                                                  sampler: Sampler):
     original_min = pressure_graph.current_min_y
     original_max = pressure_graph.current_max_y
@@ -79,7 +84,7 @@ def test_graph_doesnt_autoscale_when_it_shouldnt(pressure_graph: AirPressureGrap
 def test_graph_symmetrically_autoscales_when_value_exceeds_max(pressure_graph: AirPressureGraph):
     pressure_graph.current_min_y = -10.0
     pressure_graph.current_max_y = 10.0
-    pressure_graph.LOOSE_GRAPH_FACTOR = 1.2
+    pressure_graph.GRAPH_MARGINS = 1.2
 
     x = pressure_graph.measurements._amount_of_samples_in_graph
 
@@ -95,7 +100,7 @@ def test_graph_symmetrically_autoscales_when_value_exceeds_max(pressure_graph: A
 def test_graph_symmetrically_autoscales_when_value_exceeds_min(flow_graph: FlowGraph):
     flow_graph.current_min_y = -10.0
     flow_graph.current_max_y = 10.0
-    flow_graph.LOOSE_GRAPH_FACTOR = 1.2
+    flow_graph.GRAPH_MARGINS = 1.2
 
     x = flow_graph.measurements._amount_of_samples_in_graph
 
@@ -112,7 +117,7 @@ def test_loose_graph_behaviour(flow_graph: FlowGraph):
     """Test that we never actually let the graph touch the edge"""
     flow_graph.current_min_y = -10.0
     flow_graph.current_max_y = 10.0
-    flow_graph.LOOSE_GRAPH_FACTOR = 1.2
+    flow_graph.GRAPH_MARGINS = 1.2
 
     x = flow_graph.measurements._amount_of_samples_in_graph
 
