@@ -1,4 +1,5 @@
 import time
+from subprocess import check_output
 
 
 class Timer(object):
@@ -18,7 +19,6 @@ class Timer(object):
 
     @staticmethod
     def get_sys_uptime():
-        from subprocess import check_output
         try:
             out = str(check_output(["cat", "/proc/uptime"]))
             seconds_raw = out.split()[0]
