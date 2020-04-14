@@ -29,6 +29,7 @@ def config():
     c.graph_seconds = 12
     c.breathing_threshold = 3.5
     c.log_enabled = False
+    c.boot_alert_grace_time = 0
     return c
 
 

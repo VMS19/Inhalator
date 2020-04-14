@@ -40,6 +40,7 @@ def config():
     c.log_enabled = False
     c.min_exp_volume_for_exhale = 30
     c.min_insp_volume_for_inhale = 30
+    c.boot_alert_grace_time = 0
     return c
 
 

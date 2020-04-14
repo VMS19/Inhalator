@@ -33,6 +33,7 @@ def config():
     c.breathing_threshold = 3.5
     c.log_enabled = False
     c.min_exp_volume_for_exhale = 0
+    c.boot_alert_grace_time = 0
     return c
 
 
