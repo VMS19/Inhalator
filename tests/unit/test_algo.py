@@ -47,7 +47,9 @@ def test_slope_straight_line_with_noise():
 
 @freezegun.freeze_time("2000-02-12")
 def test_correct_state_transitions():
-    Configurations.instance().min_exp_volume_for_exhale = 0
+    c = Configurations.instance()
+    c.min_exp_volume_for_exhale = 0
+    c.boot_alert_grace_time = 0
     parser = SamplesCSVParser()
     vsm = VentilationStateMachine(Measurements(), Events())
     for t, p, f, o in parser.samples(start=0, end=200):
