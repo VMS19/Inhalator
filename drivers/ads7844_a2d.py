@@ -1,7 +1,7 @@
 import spidev
 import logging
 
-from errors import SPIDriverInitError, SPIIOError
+from errors import SPIDriverInitError, SPIIOError, UnavailableMeasurmentError
 
 log = logging.getLogger(__name__)
 
@@ -26,6 +26,7 @@ class Ads7844A2D(object):
     VOLTAGE_CALIBRATION = (VOLTAGE_REF / VOLTAGE_STEP_COUNT)
     FIRST_READING_BIT_SHIFT = 5
     SECOND_READING_BIT_SHIFT = 3
+    READING_BYTES_COUNT = 3
 
     OXYGEN_CHANNEL = 0
     BATTERY_PERCENTAGE_CHANNEL = 1
@@ -74,6 +75,11 @@ class Ads7844A2D(object):
             sample_raw = self._spi.xfer([start_byte, 0, 0],
                                         self.XFER_SPEED_HZ,
                                         self.PERIPHERAL_MINIMAL_DELAY)
+
+            if len(sample_raw) < self.READING_BYTES_COUNT:
+                raise UnavailableMeasurmentError(
+                    f"A2D sensor returned {len(sample_raw)} bytes."
+                    f"should return {self.READING_BYTES_COUNT}")
 
             sample_reading = (
                 ((sample_raw[1] & 0x7f) << self.FIRST_READING_BIT_SHIFT) |
