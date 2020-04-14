@@ -4,6 +4,7 @@ from enum import IntEnum
 from queue import Queue
 from data.observable import Observable
 from data.configurations import Configurations
+from drivers.timer import Timer
 
 
 class AlertCodes(IntEnum):
@@ -105,7 +106,7 @@ class AlertsQueue(object):
         self.last_alert = Alert(AlertCodes.OK)
         self.observer = Observable()
         self._config = Configurations.instance()
-        self.start_timestamp = time.time()
+        self.start_timestamp = Timer.get_sys_uptime()
 
     def __len__(self):
         return self.queue.qsize()
@@ -115,7 +116,7 @@ class AlertsQueue(object):
             alert = Alert(alert, timestamp)
 
         if self.start_timestamp + self._config.boot_alert_grace_time >\
-           time.time() and alert.is_medical_condition():
+           Timer.get_sys_uptime() and alert.is_medical_condition():
             return
 
         if self.queue.qsize() == self.MAXIMUM_ALERTS_AMOUNT:
