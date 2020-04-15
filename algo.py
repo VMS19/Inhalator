@@ -141,7 +141,7 @@ class VentilationStateMachine(object):
     TELEMETRY_REPORT_MAX_INTERVAL_SEC = 5
     NO_BREATH_ALERT_TIME_SECONDS = 12
 
-    def __init__(self, measurements, events, telemetry_sender):
+    def __init__(self, measurements, events, telemetry_sender=None):
         self._measurements = measurements
         self._events = events
         self.telemetry_sender = telemetry_sender
@@ -251,6 +251,10 @@ class VentilationStateMachine(object):
         pass
 
     def send_telemetry(self, timestamp):
+        self.last_telemetry_report = timestamp
+        if self.telemetry_sender is None:
+            return
+
         self.telemetry_sender.enqueue(
             timestamp=timestamp,
             p_peak=self._measurements.intake_peak_pressure,
@@ -258,7 +262,6 @@ class VentilationStateMachine(object):
             v_te=self._measurements.expiration_volume,
             v_ti=self._measurements.inspiration_volume,
             o2_percent=self._measurements.o2_saturation_percentage)
-        self.last_telemetry_report = timestamp
 
     def reset_peaks(self):
         self._measurements.intake_peak_pressure = self.peak_pressure
@@ -382,7 +385,7 @@ class VentilationStateMachine(object):
 class Sampler(object):
 
     def __init__(self, measurements, events, flow_sensor, pressure_sensor,
-                 a2d, timer, average_window, telemetry_sender,
+                 a2d, timer, average_window, telemetry_sender=None,
                  save_sensor_values=False):
         super(Sampler, self).__init__()
         self.log = logging.getLogger(self.__class__.__name__)
