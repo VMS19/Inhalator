@@ -88,4 +88,8 @@ sed -i 's/8500000 #//g' /usr/lib/raspi-config/init_resize.sh
 # config buzzer io pull up
 echo "gpio=13=pu" >> /boot/config.txt
 
+# create and set permissions to the logs files
+touch /home/pi/Inhalator/headers.csv /home/pi/Inhalator/inhalator.csv /home/pi/Inhalator/inhalator.log
+chmod 646 /home/pi/Inhalator/headers.csv /home/pi/Inhalator/inhalator.csv /home/pi/Inhalator/inhalator.log
+
 echo "setup done. DO NOT REBOOT - USE ONLY SHUTDOWN!!!"
