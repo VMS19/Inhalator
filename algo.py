@@ -150,6 +150,7 @@ class VentilationStateMachine(object):
         self.pressure_slope = RunningSlope(num_samples=7)
         self._config = Configurations.instance()
         self.last_breath_timestamp = None
+        self.last_state = None
         self.current_state = VentilationState.PEEP
 
         # Data structure to record last 100 entry timestamp for each state.
@@ -203,9 +204,15 @@ class VentilationStateMachine(object):
         self.expiration_volume.reset()
 
         # Restart state machine
+        self.last_state = None
         self.current_state = VentilationState.PEEP
 
     def enter_exhale(self, timestamp):
+        if self.last_state == VentilationState.Exhale:
+            self.expiration_volume.reset()
+            return
+
+        self.last_state = VentilationState.Exhale
         return True
 
     def exit_exhale(self, timestamp):
@@ -235,6 +242,11 @@ class VentilationStateMachine(object):
         return True
 
     def enter_inhale(self, timestamp):
+        if self.last_state == VentilationState.Inhale:
+            self.inspiration_volume.reset()
+            return
+
+        self.last_state = VentilationState.Inhale
         self.last_breath_timestamp = timestamp
         self._measurements.bpm = self.breathes_rate_meter.beat(timestamp)
 
