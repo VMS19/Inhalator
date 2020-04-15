@@ -135,8 +135,8 @@ class VentilationState(Enum):
     Hold = 2  # PIP is maintained
     Exhale = 3  # Pressure is relieved, air flowing out and enough volume
     PEEP = 4  # Positive low pressure is maintained until next cycle.
-    Pre_inhale = 5  # Air is flowing to the lungs
-    Pre_exhale = 6  # Pressure is relieved, air flowing out
+    PreInhale = 5  # Air is flowing to the lungs
+    PreExhale = 6  # Pressure is relieved, air flowing out
 
 
 class VentilationStateMachine(object):
@@ -160,23 +160,23 @@ class VentilationStateMachine(object):
             VentilationState.Inhale: deque(maxlen=100),
             VentilationState.Hold: deque(maxlen=100),
             VentilationState.Exhale: deque(maxlen=100),
-            VentilationState.Pre_inhale: deque(maxlen=100),
-            VentilationState.Pre_exhale: deque(maxlen=100)
+            VentilationState.PreInhale: deque(maxlen=100),
+            VentilationState.PreExhale: deque(maxlen=100)
         }
 
         # Function to call when entering a state.
         self.entry_handlers = {
             VentilationState.Inhale: self.enter_inhale,
             VentilationState.Exhale: self.enter_exhale,
-            VentilationState.Pre_inhale: self.enter_pre_inhale,
-            VentilationState.Pre_exhale: self.enter_pre_exhale,
+            VentilationState.PreInhale: self.enter_pre_inhale,
+            VentilationState.PreExhale: self.enter_pre_exhale,
             VentilationState.PEEP: self.enter_peep
         }
         self.exit_handlers = {
             VentilationState.Inhale: self.exit_inhale,
             VentilationState.Exhale: self.exit_exhale,
-            VentilationState.Pre_inhale: self.exit_pre_inhale,
-            VentilationState.Pre_exhale: self.exit_sub_exhale,
+            VentilationState.PreInhale: self.exit_pre_inhale,
+            VentilationState.PreExhale: self.exit_pre_exhale,
             VentilationState.PEEP: self.exit_peep
         }
         self.peak_pressure = 0
@@ -206,7 +206,7 @@ class VentilationStateMachine(object):
         self.current_state = VentilationState.PEEP
 
     def enter_exhale(self, timestamp):
-        self.entry_points_ts[VentilationState.Exhale].append(timestamp)
+        return True
 
     def exit_exhale(self, timestamp):
         # Update final expiration volume
@@ -235,7 +235,6 @@ class VentilationStateMachine(object):
         return True
 
     def enter_inhale(self, timestamp):
-        self.entry_points_ts[VentilationState.Inhale].append(timestamp)
         self.last_breath_timestamp = timestamp
         self._measurements.bpm = self.breathes_rate_meter.beat(timestamp)
 
@@ -253,6 +252,7 @@ class VentilationStateMachine(object):
                     self._measurements.bpm, self._config.resp_rate_range.min)
                 self._events.alerts_queue.enqueue_alert(AlertCodes.BPM_LOW,
                                                         timestamp)
+        return True
 
     def exit_inhale(self, timestamp):
         insp_volume_ml = self.inspiration_volume.integrate() * 1000
@@ -261,24 +261,25 @@ class VentilationStateMachine(object):
         self.inspiration_volume.reset()
         self.insp_volumes.append((timestamp, insp_volume_ml))
         self.reset_peaks()
+        return True
 
     def enter_pre_inhale(self, timestamp):
-        pass
+        return True
 
     def exit_pre_inhale(self, timestamp):
-        pass
+        return True
 
     def enter_pre_exhale(self, timestamp):
-        pass
+        return True
 
-    def exit_sub_exhale(self, timestamp):
-        pass
+    def exit_pre_exhale(self, timestamp):
+        return True
 
     def enter_peep(self, timestamp):
-        pass
+        return True
 
     def exit_peep(self, timestamp):
-        pass
+        return True
 
     def reset_peaks(self):
         self._measurements.intake_peak_pressure = self.peak_pressure
@@ -362,44 +363,44 @@ class VentilationStateMachine(object):
         next_state = self.infer_state(flow_slop, flow_slm, pressure_slope, pressure_cmh2o)
         if next_state != self.current_state:
             exit_handler = self.exit_handlers.get(self.current_state, None)
-            exit_handler(timestamp)
             entry_handler = self.entry_handlers.get(next_state, None)
-            entry_handler(timestamp)
-            self.current_state = next_state
-            self.log.debug("%s -> %s", self.current_state, next_state)
+            if exit_handler(timestamp) and entry_handler(timestamp):
+                self.current_state = next_state
+                self.entry_points_ts[next_state].append(timestamp)
+                self.log.debug("%s -> %s", self.current_state, next_state)
 
     def infer_state(self, flow_slope, flow_slm, pressure_slope, pressure_cmh2o):
         flow_positive_increasing = flow_slope > 3 and flow_slm > 2
         flow_negative_decreasing = flow_slope < -10 and flow_slm < -2
 
         #  either waiting for enough volume for inhale
-        #  or its noise and switching to sub exhale
-        if self.current_state == VentilationState.Pre_inhale:
+        #  or its noise and switching to pre exhale
+        if self.current_state == VentilationState.PreInhale:
             insp_volume = self.inspiration_volume.integrate() * 1000
             if insp_volume >= self._config.min_insp_volume_for_inhale:
                 return VentilationState.Inhale
 
             elif flow_negative_decreasing and pressure_slope < self._config.max_pressure_slope_for_exhale:
-                return VentilationState.Pre_exhale
+                return VentilationState.PreExhale
 
         #  either waiting for enough volume for exhale
-        #  or its noise and switching to sub inhale
-        if self.current_state == VentilationState.Pre_exhale:
+        #  or its noise and switching to pre inhale
+        if self.current_state == VentilationState.PreExhale:
             exp_volume = self.expiration_volume.integrate() * 1000
             if exp_volume >= self._config.min_exp_volume_for_exhale:
                 return VentilationState.Exhale
 
             elif flow_positive_increasing and pressure_slope > self._config.min_pressure_slope_for_inhale:
-                return VentilationState.Pre_inhale
+                return VentilationState.PreInhale
 
-        #  currently at a inhale\exhale state switching reverse sub state
+        #  currently at a inhale\exhale state switching reverse pre state
         if self.current_state != VentilationState.Exhale:
             if flow_negative_decreasing and pressure_slope < self._config.max_pressure_slope_for_exhale:
-                return VentilationState.Pre_exhale
+                return VentilationState.PreExhale
 
         if self.current_state != VentilationState.Inhale:
             if flow_positive_increasing and pressure_slope > self._config.min_pressure_slope_for_inhale:
-                return VentilationState.Pre_inhale
+                return VentilationState.PreInhale
 
         return self.current_state
 
