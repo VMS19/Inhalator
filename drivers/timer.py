@@ -22,8 +22,8 @@ class Timer(object):
             uptime = sh.uptime()
             # uptime format, take only seconds.
             #' 21:10:00 up 1 day,  1:27,  1 user,  load average: 0.61, 0.74, 0.83\n'
-            seconds = uptime[7:9]
-            return int(seconds_parsed)
+            seconds = uptime.stdout[7:9]
+            return int(seconds)
         except Exception:
             # get time.time as backup
             return Timer.get_time()
