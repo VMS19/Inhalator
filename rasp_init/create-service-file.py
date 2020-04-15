@@ -10,7 +10,7 @@ template = """\
 Description=Inhalator Service
 
 [Service]
-ExecStart={python3_executable} {main_path}
+ExecStart={python3_executable} {main_path} -d
 WorkingDirectory={main_dir}
 Environment=DISPLAY={display}
 Environment=XAUTHORITY={xauthority}
@@ -22,7 +22,7 @@ WantedBy=default.target
 """
 
 
-def generate(output_file, python):
+def generate(output_file):
     main_dir = dirname(dirname(abspath(__file__)))
     main_path = join(main_dir, "main.py")
     if not isfile(main_path):
@@ -48,10 +48,6 @@ if __name__ == '__main__':
     parser.add_argument(
         "--output_file", "-o",
         help="The path of the generated service file")
-    parser.add_argument(
-        "--python", "-p",
-        help="The name/path of the python interpreter that will be used to start the service",
-        default="/usr/bin/env python3")
     args = parser.parse_args()
 
-    generate(output_file=args.output_file, python=args.python)
+    generate(output_file=args.output_file)
