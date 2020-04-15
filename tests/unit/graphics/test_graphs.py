@@ -68,33 +68,33 @@ def flow_graph(measurements) -> FlowGraph:
     return graph
 
 
-def test_graph_does_not_auto_scale(pressure_graph: AirPressureGraph,
-                                                 sampler: Sampler):
-    original_min = pressure_graph.current_min_y
-    original_max = pressure_graph.current_max_y
+def test_graph_does_not_auto_scale(flow_graph: FlowGraph,
+                                   sampler: Sampler):
+    original_min = flow_graph.current_min_y
+    original_max = flow_graph.current_max_y
     for _ in range(100):
         sampler.sampling_iteration()
 
-    pressure_graph.update()
+    flow_graph.update()
 
-    assert pressure_graph.current_min_y == original_min
-    assert pressure_graph.current_max_y == original_max
+    assert flow_graph.current_min_y == original_min
+    assert flow_graph.current_max_y == original_max
 
 
-def test_graph_symmetrically_autoscales_when_value_exceeds_max(pressure_graph: AirPressureGraph):
-    pressure_graph.current_min_y = -10.0
-    pressure_graph.current_max_y = 10.0
-    pressure_graph.GRAPH_MARGINS = 1.2
+def test_graph_symmetrically_autoscales_when_value_exceeds_max(flow_graph: FlowGraph):
+    flow_graph.current_min_y = -10.0
+    flow_graph.current_max_y = 10.0
+    flow_graph.GRAPH_MARGINS = 1.2
 
-    x = pressure_graph.measurements._amount_of_samples_in_graph
+    x = flow_graph.measurements._amount_of_samples_in_graph
 
-    pressure_graph.display_values = [10] * x
-    pressure_graph.display_values[1] += 3
+    flow_graph.display_values = [10] * x
+    flow_graph.display_values[1] += 3
 
-    pressure_graph.update()
+    flow_graph.update()
 
-    assert pressure_graph.current_max_y == approx(13)
-    assert pressure_graph.current_min_y == approx(-13)
+    assert flow_graph.current_max_y == approx(13)
+    assert flow_graph.current_min_y == approx(-13)
 
 
 def test_graph_symmetrically_autoscales_when_value_exceeds_min(flow_graph: FlowGraph):
@@ -129,3 +129,18 @@ def test_loose_graph_behaviour(flow_graph: FlowGraph):
     assert flow_graph.current_max_y == approx(13)
     assert flow_graph.graph.axes.get_ylim() == (approx(-13 - 1.2), approx(13 + 1.2))
     assert flow_graph.current_min_y == approx(-13)
+
+def test_pressure_graph_doesnt_autoscale(pressure_graph: AirPressureGraph):
+    pressure_graph.current_min_y = -10.0
+    pressure_graph.current_max_y = 10.0
+    pressure_graph.GRAPH_MARGINS = 1.2
+
+    x = pressure_graph.measurements._amount_of_samples_in_graph
+
+    pressure_graph.display_values = [-10] * x
+    pressure_graph.display_values[1] -= 3
+
+    pressure_graph.update()
+
+    assert pressure_graph.current_max_y == approx(10)
+    assert pressure_graph.current_min_y == approx(-10)

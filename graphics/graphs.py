@@ -36,9 +36,12 @@ class DisplayedGraph(object):
         new_min_y = self.current_min_y - difference
         new_max_y = self.current_max_y + difference
 
+        # As of now (15/4/20) the directive is not to zoom in, and just
+        # zoom-out the graph forever whenever a large value is encountered,
+        # if the directive changes you should replace the >= and <= here with ==
+        # and handle decreasing the min_y and max_y
         if new_max_y <= self.current_max_y and new_min_y >= self.current_min_y:
-            # We don't zoom back in for the moment,
-            # also no need to re-render every frame
+            # no need to re-render
             return
 
         self.current_min_y, self.current_max_y = new_min_y, new_max_y
@@ -120,7 +123,6 @@ class AirPressureGraph(DisplayedGraph):
                                           width=self.width)
 
     def update(self):
-        self.autoscale()
         self.figure.canvas.restore_region(self.blank.graph_bg,
                                           bbox=self.blank.graph_bbox,
                                           xy=(0, 0))
