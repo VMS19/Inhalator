@@ -1,6 +1,5 @@
 import time
-from subprocess import check_output
-
+import sh
 
 class Timer(object):
 
@@ -20,10 +19,10 @@ class Timer(object):
     @staticmethod
     def get_sys_uptime():
         try:
-            out = str(check_output(["cat", "/proc/uptime"]))
-            seconds_raw = out.split()[0]
-            # seconds without 'b
-            seconds_parsed = seconds_raw[2:]
+            uptime = sh.uptime()
+            # uptime format, take only seconds.
+            #' 21:10:00 up 1 day,  1:27,  1 user,  load average: 0.61, 0.74, 0.83\n'
+            seconds = uptime[7:9]
             return int(seconds_parsed)
         except Exception:
             # get time.time as backup
