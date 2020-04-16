@@ -78,8 +78,8 @@ class Ads7844A2D(object):
 
             if len(sample_raw) < self.READING_BYTES_COUNT:
                 raise UnavailableMeasurmentError(
-                    f"A2D sensor returned {len(sample_raw)} bytes."
-                    f"should return {self.READING_BYTES_COUNT}")
+                    f"A2D sensor returned {len(sample_raw)} bytes. "
+                    f"Expected {self.READING_BYTES_COUNT}")
 
             sample_reading = (
                 ((sample_raw[1] & 0x7f) << self.FIRST_READING_BIT_SHIFT) |
