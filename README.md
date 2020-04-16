@@ -1,9 +1,9 @@
-# Breathing Air
+# Medical ventilator monitor
 ![](https://github.com/Reznic/Inhalator/workflows/build/badge.svg) 
 [![Coverage Status](https://coveralls.io/repos/github/Reznic/Inhalator/badge.svg?branch=master)](https://coveralls.io/github/Reznic/Inhalator?branch=master)
 
 
-Turning stupid BiPAP into full-scale inhalators. 
+Monitoring for medical ventilation systems
 
 ## Getting Started
 Make sure to install all of the project's dependencies

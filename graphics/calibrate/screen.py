@@ -116,7 +116,7 @@ class OKCancelSection(object):
                                 bg=Theme.active().SURFACE,
                                 fg=Theme.active().TXT_ON_SURFACE,
                                 state="disabled",
-                                text="OK")
+                                text="Set")
         self.cancel_button = Button(master=self.frame,
                                     bg=Theme.active().SURFACE,
                                     command=self.parent.on_cancel,
