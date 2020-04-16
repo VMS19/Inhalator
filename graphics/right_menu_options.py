@@ -27,7 +27,7 @@ class ClearAlertsButton(object):
             master=self.root,
             image_path=self.IMAGE_PATH,
             command=self.on_click,
-            font=("Roboto", 10),
+            font=("Roboto", 9),
             text="Clear",
             pady=10,
             compound="top",
@@ -59,7 +59,7 @@ class ClearAlertsButton(object):
         self.events.alerts_queue.clear_alerts()
 
     def render(self):
-        self.button.place(relx=0, rely=0.01, relwidth=0.8, relheight=0.2)
+        self.button.place(relx=0, rely=0.27, relwidth=0.8, relheight=0.2)
 
     def update(self):
         pass
@@ -82,7 +82,7 @@ class MuteAlertsButton(object):
             master=self.root,
             image_path=self.PATH_TO_UNMUTED,
             command=self.on_click,
-            font=("Roboto", 10),
+            font=("Roboto", 9),
             relief="flat",
             text="Mute",
             pady=10,
@@ -99,7 +99,7 @@ class MuteAlertsButton(object):
         self.update()
 
     def render(self):
-        self.button.place(relx=0, rely=0.27, relwidth=0.8, relheight=0.2)
+        self.button.place(relx=0, rely=0.01, relwidth=0.8, relheight=0.2)
 
     def update(self):
         if self.events.mute_alerts._alerts_muted:
@@ -127,7 +127,7 @@ class LockThresholdsButton(object):
             command=self.on_click,
             text="Lock",
             relief="flat",
-            font=("Roboto", 10),
+            font=("Roboto", 9),
             bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
             fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
             activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
@@ -158,7 +158,7 @@ class OpenConfigureAlertsScreenButton(object):
             master=self.root,
             image_path=self.IMAGE_PATH,
             command=self.on_click,
-            font=("Roboto", 10),
+            font=("Roboto", 9),
             relief="flat",
             text="Settings",
             pady=10,
@@ -195,7 +195,7 @@ class OpenAlertsHistoryScreenButton(object):
             master=self.root,
             image_path=self.PATH_TO_HISTORY,
             command=self.on_click,
-            font=("Roboto", 10),
+            font=("Roboto", 9),
             relief="flat",
             bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
             fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
