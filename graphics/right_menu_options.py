@@ -17,7 +17,7 @@ RESOURCES_DIRECTORY = os.path.join(os.path.dirname(THIS_DIRECTORY), "resources")
 
 class ClearAlertsButton(object):
     IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY,
-                              "bell-off.png")  # 48x48
+                              "baseline_history_white_48dp.png")
 
     def __init__(self, parent, events):
         self.parent = parent
@@ -42,15 +42,11 @@ class ClearAlertsButton(object):
     def on_alert(self, alert):
         if alert == AlertCodes.OK:
             self.button.configure(
-                bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
-                fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
                 state="disabled",
             )
 
         else:
             self.button.configure(
-                bg=Theme.active().BUTTON_NOTIFIED_BG,
-                fg=Theme.active().BUTTON_NOTIFIED_TXT,
                 state="normal",
             )
 
