@@ -1,14 +1,16 @@
 from tkinter import *
 
 from graphics.alert_bar import IndicatorAlertBar
-from graphics.graphs import FlowGraph, AirPressureGraph, BlankGraph
+from graphics.graphs import FlowGraph, AirPressureGraph
 from graphics.graph_summaries import VolumeSummary, BPMSummary, \
     PressurePeakSummary, O2SaturationSummary
 from graphics.right_menu_options import (MuteAlertsButton,
                                          ClearAlertsButton,
                                          LockThresholdsButton,
-                                         OpenConfigureAlertsScreenButton, OpenAlertsHistoryScreenButton)
+                                         OpenConfigureAlertsScreenButton,
+                                         OpenAlertsHistoryScreenButton)
 from graphics.themes import Theme
+from data.configurations import Configurations
 
 
 class MasterFrame(object):
@@ -97,12 +99,8 @@ class CenterPane(object):
 
         self.frame = Frame(master=self.root, bg=Theme.active().SURFACE,
                            height=self.height, width=self.width)
-        self.flow_blank_graph = BlankGraph(self.frame, self.measurements)
-        self.pressure_blank_graph = BlankGraph(self.frame, self.measurements)
-        self.flow_graph = FlowGraph(self, self.measurements,
-                                    blank=self.flow_blank_graph)
-        self.pressure_graph = AirPressureGraph(self, self.measurements,
-                                               blank=self.pressure_blank_graph)
+        self.flow_graph = FlowGraph(self, self.measurements, self.height/2)
+        self.pressure_graph = AirPressureGraph(self, self.measurements, self.height/2)
 
     def pop_queue_to_list(self, q, lst):
         # pops all queue values into list, returns if items appended to queue
@@ -131,9 +129,9 @@ class CenterPane(object):
         # Get measurments from peripherals
 
         had_pressure_change = self.pop_queue_to_list(self.measurements.pressure_measurements,
-            self.pressure_graph.pressure_display_values)
+            self.pressure_graph.display_values)
         had_flow_change = self.pop_queue_to_list(self.measurements.flow_measurements,
-            self.flow_graph.flow_display_values)
+            self.flow_graph.display_values)
 
         for graph in self.graphs:
             graph.update()
