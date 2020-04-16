@@ -52,6 +52,7 @@ def config():
     c.volume_range = VolumeRange(min=100, max=10000)
     c.graph_seconds = 12
     c.log_enabled = False
+    c.boot_alert_grace_time = 0
     return c
 
 @pytest.fixture

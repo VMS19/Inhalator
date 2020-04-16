@@ -33,8 +33,8 @@
         }
   },
   "state_machine": {
-    "min_insp_volume_for_inhale": 100,
-    "min_exp_volume_for_exhale": 100,
+    "min_insp_volume_for_inhale": 50,
+    "min_exp_volume_for_exhale": 50,
     "min_pressure_slope_for_inhale": 1,
     "max_pressure_slope_for_exhale": 12
   },
