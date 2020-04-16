@@ -97,9 +97,12 @@ class CenterPane(object):
 
         self.frame = Frame(master=self.root, bg=Theme.active().SURFACE,
                            height=self.height, width=self.width)
-        self.blank_graph = BlankGraph(self.frame)
-        self.flow_graph = FlowGraph(self, self.measurements, blank=self.blank_graph)
-        self.pressure_graph = AirPressureGraph(self, self.measurements, blank=self.blank_graph)
+        self.flow_blank_graph = BlankGraph(self.frame, self.measurements)
+        self.pressure_blank_graph = BlankGraph(self.frame, self.measurements)
+        self.flow_graph = FlowGraph(self, self.measurements,
+                                    blank=self.flow_blank_graph)
+        self.pressure_graph = AirPressureGraph(self, self.measurements,
+                                               blank=self.pressure_blank_graph)
 
     def pop_queue_to_list(self, q, lst):
         # pops all queue values into list, returns if items appended to queue

@@ -37,4 +37,5 @@ class WdTask(Thread):
                 self.wd.arm()
                 self.arm_wd_event.clear()
             else:
-                self.log.warning("Application missed checking-in in time!")
+                pass
+                #self.log.warning("Application missed checking-in in time!")

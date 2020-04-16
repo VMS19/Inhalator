@@ -9,13 +9,36 @@ from tkinter import *
 
 
 class BlankGraph(object):
-    def __init__(self, root):
+    def __init__(self, root, measurements):
         self.root = root
+        self.measurements = measurements
 
         blank_figure = Figure(figsize=(15, 6), dpi=100)
         blank_axis = blank_figure.add_subplot(111, label="")
+
+
+        # from ipdb import set_trace; set_trace()
+        offset_min = Configurations.instance().flow_y_scale[0]
+        offset_max = Configurations.instance().flow_y_scale[1]
+        blank_axis.axes.set_ylim(offset_min, offset_max)
+        blank_axis.axhline(y=15, color='purple')
+
+        #amount_of_xs = self.measurements._amount_of_samples_in_graph
+        #self.x_axis_display_values = [-1000] * amount_of_xs
+        # self.x_axis_graph, = \
+        #     blank_axis.plot(self.measurements.x_axis,
+        #                             self.x_axis_display_values,
+        #                             color=Theme.active().WHITE,
+        #                             animated=True,
+        #                             linewidth=1)
+
+        # self.x_axis_graph.set_ydata(self.x_axis_display_values)
+
         blank_canvas = FigureCanvasTkAgg(blank_figure, master=self.root)
         blank_canvas.draw()
+
+        #blank_axis.draw_artist(self.x_axis_graph)
+
         self.graph_bbox = blank_axis.bbox
         self.graph_bg = blank_figure.canvas.copy_from_bbox(self.graph_bbox)
 
@@ -101,12 +124,12 @@ class AirPressureGraph(object):
         self.pressure_max_threshold_graph.set_ydata([self.config.pressure_range.max] *
                                                     len(self.measurements.x_axis))
 
-        self.x_axis_graph.set_ydata(self.x_axis_display_values)
+        #self.x_axis_graph.set_ydata(self.x_axis_display_values)
 
         self.pressure_axis.draw_artist(self.pressure_graph)
         self.pressure_axis.draw_artist(self.pressure_min_threshold_graph)
         self.pressure_axis.draw_artist(self.pressure_max_threshold_graph)
-        self.pressure_axis.draw_artist(self.x_axis_graph)
+        #self.pressure_axis.draw_artist(self.x_axis_graph)
 
         self.pressure_figure.canvas.blit(self.pressure_axis.bbox)
         self.pressure_figure.canvas.flush_events()
@@ -173,9 +196,9 @@ class FlowGraph(object):
                                                xy=(0, 0))
 
         self.flow_graph.set_ydata(self.flow_display_values)
-        self.x_axis_graph.set_ydata(self.x_axis_display_values)
+        #self.x_axis_graph.set_ydata(self.x_axis_display_values)
         self.flow_axis.draw_artist(self.flow_graph)
-        self.flow_axis.draw_artist(self.x_axis_graph)
+        #self.flow_axis.draw_artist(self.x_axis_graph)
         self.flow_figure.canvas.blit(self.flow_axis.bbox)
         self.flow_figure.canvas.flush_events()
 
