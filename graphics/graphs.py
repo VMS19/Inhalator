@@ -19,12 +19,24 @@ class BlankGraph(object):
         self.graph_bbox = blank_axis.bbox
         self.graph_bg = blank_figure.canvas.copy_from_bbox(self.graph_bbox)
 
+
+# TODO: Move here more similar behaviors between Flow and Pressure graphs
 class DisplayedGraph(object):
     GRAPH_MARGINS = 3  # Used for calculating the empty space in the Y-axis
+    AUTOSCALE_FREQUENCY = 50
 
-    # TODO: Move here more similar behaviors between Flow and Pressure graphs
+    def __init__(self):
+        self.current_iteration = 0
+
     def autoscale(self):
         """Symmetrically rescale the Y-axis. """
+        self.current_iteration += 1
+
+        if self.current_iteration % self.AUTOSCALE_FREQUENCY != 0:
+            # We want to calculate new max once every
+            # <self.AUTOSCALE_FREQUENCY> calls
+            return
+
         new_max_y = max(self.display_values)
         new_min_y = min(self.display_values)
 
@@ -53,6 +65,7 @@ class DisplayedGraph(object):
 
 class AirPressureGraph(DisplayedGraph):
     def __init__(self, parent, measurements, blank):
+        super().__init__()
         self.parent = parent
         self.root = parent.element
         self.blank = blank
@@ -151,6 +164,7 @@ class AirPressureGraph(DisplayedGraph):
 
 class FlowGraph(DisplayedGraph):
     def __init__(self, parent, measurements, blank):
+        super().__init__()
         rcParams.update({'figure.autolayout': True})
         self.parent = parent
         self.root = parent.element
