@@ -25,7 +25,8 @@ source $INHALATOR_PATH/.inhalator_env/bin/activate
 pip3 install --upgrade pip
 pip3 install -r $INHALATOR_PATH/requirements.txt
 apt-get install proftpd -y && service proftpd restart
-
+echo "UseReverseDNS off" >> /etc/proftpd/proftpd.conf
+service proftpd restart
 
 # install as service
 $INHALATOR_PATH/rasp_init/install-as-service.sh
