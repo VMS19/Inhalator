@@ -1,7 +1,6 @@
 from unittest.mock import MagicMock
 import pytest
 
-
 from algo import Sampler
 from data.alerts import AlertCodes
 from data.events import Events
@@ -59,9 +58,8 @@ def mock_drivers(fault_sensors, error, read_val=0):
                           (["battery"], UnavailableMeasurmentError)])
 def test_unavailable_measurement_not_crashing(events, measurements,
                                               mock_drivers):
+    """Tests that application handle temporary unavailable sensor read."""
     flow, pressure, a2d, timer = mock_drivers
-    crash_msg = "Application did not handle correctly " \
-                "temporary unavailable sensor measurement, and crashed"
 
     sampler = Sampler(measurements=measurements, events=events,
                       flow_sensor=flow, pressure_sensor=pressure, a2d=a2d,
@@ -70,32 +68,25 @@ def test_unavailable_measurement_not_crashing(events, measurements,
     sampler.sampling_iteration()
     # If no crashing occurred - test passed
 
-"""
-@pytest.mark.skip(reason="fuck")
-@pytest.mark.parametrize('read_method,expected_alert',
-                         [(flow.read, AlertCodes.FLOW_SENSOR_ERROR),
-                          (pressure.read, AlertCodes.PRESSURE_SENSOR_ERROR),
-                          (a2d.read_oxygen, AlertCodes.OXYGEN_SENSOR_ERROR),
-                          (a2d.read_battery_percentage, AlertCodes.NO_BATTERY),
-                          (a2d.read_battery_existence, AlertCodes.NO_BATTERY)])
-def test_sampling_error_raises_alert(events, measurements, read_method,
-                                         expected_alert):
-    crash_msg = "Application did not handle correctly " \
-                "sensor read failure, and crashed"
-    measurement = 0
 
-    read_method = MagicMock(return_value=measurement,
-                            side_effect=Exception(crash_msg))
+@pytest.mark.parametrize('fault_sensors,error,expected_alert',
+                         [(["flow"], Exception, AlertCodes.FLOW_SENSOR_ERROR),
+                          (["pressure"], Exception, AlertCodes.PRESSURE_SENSOR_ERROR),
+                          (["oxygen"], Exception, AlertCodes.OXYGEN_SENSOR_ERROR),
+                          (["battery"], Exception, AlertCodes.NO_BATTERY)])
+def test_sampling_error_raises_alert(events, measurements, mock_drivers,
+                                     expected_alert):
+    """Tests that application handle sensor read error, and notify alert."""
+    flow, pressure, a2d, timer = mock_drivers
 
     sampler = Sampler(measurements=measurements, events=events,
                       flow_sensor=flow, pressure_sensor=pressure, a2d=a2d,
-                      timer=timer, average_window=1)
+                      timer=timer, average_window=10)
 
     assert len(events.alerts_queue) == 0
 
     sampler.sampling_iteration()
 
-    assert any(alert == expected_alert for alert in
-               events.alerts_queue.queue.queue), \
-        "Sensor error did not raise correct alert"
-"""
+    assert len(events.alerts_queue) > 0, "Sensor error did not raise any alert"
+    assert expected_alert in events.alerts_queue.queue.queue, \
+        "Sensor error did not raise the correct alert"
