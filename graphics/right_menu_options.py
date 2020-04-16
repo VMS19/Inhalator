@@ -2,6 +2,7 @@ import os
 
 import time
 
+from data.alerts import AlertCodes
 from graphics.alerts_history_screen import AlertsHistoryScreen
 from graphics.configure_alerts_screen import ConfigureAlarmsScreen
 from graphics.imagebutton import ImageButton
@@ -16,7 +17,7 @@ RESOURCES_DIRECTORY = os.path.join(os.path.dirname(THIS_DIRECTORY), "resources")
 
 class ClearAlertsButton(object):
     IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY,
-                              "baseline_history_white_48dp.png")
+                              "bell-off.png")  # 48x48
 
     def __init__(self, parent, events):
         self.parent = parent
@@ -27,12 +28,32 @@ class ClearAlertsButton(object):
             image_path=self.IMAGE_PATH,
             command=self.on_click,
             font=("Roboto", 10),
+            text="Clear",
+            pady=10,
+            compound="top",
+            state="disabled",
             relief="flat",
             bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
             fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
-            activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
-            activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,
         )
+
+        self.events.alerts_queue.observer.subscribe(self, self.on_alert)
+
+    def on_alert(self, alert):
+        if alert == AlertCodes.OK:
+            self.button.configure(
+                bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
+                fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
+                state="disabled",
+            )
+
+        else:
+            self.button.configure(
+                bg=Theme.active().BUTTON_NOTIFIED_BG,
+                fg=Theme.active().BUTTON_NOTIFIED_TXT,
+                state="normal",
+            )
+
 
     def on_click(self):
         self.events.alerts_queue.clear_alerts()
@@ -63,6 +84,9 @@ class MuteAlertsButton(object):
             command=self.on_click,
             font=("Roboto", 10),
             relief="flat",
+            text="Mute",
+            pady=10,
+            compound="top",
             bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
             fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
             activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
@@ -80,9 +104,12 @@ class MuteAlertsButton(object):
     def update(self):
         if self.events.mute_alerts._alerts_muted:
             self.button.set_image(self.PATH_TO_MUTED)
+            self.button.configure(text="Unmute")
 
         else:
             self.button.set_image(self.PATH_TO_UNMUTED)
+            self.button.configure(text="Mute")
+
 
 
 class LockThresholdsButton(object):
@@ -133,6 +160,9 @@ class OpenConfigureAlertsScreenButton(object):
             command=self.on_click,
             font=("Roboto", 10),
             relief="flat",
+            text="Settings",
+            pady=10,
+            compound="top",
             bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
             fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
             activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
