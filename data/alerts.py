@@ -74,7 +74,7 @@ class Alert(object):
         return self.code == other
 
     def __hash__(self):
-        return self.code.__hash__()
+        return hash(self.code)
 
     def is_medical_condition(self):
         return 0 < self.code <= 1 << 10
