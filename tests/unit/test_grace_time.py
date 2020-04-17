@@ -12,6 +12,8 @@ from data.thresholds import (O2Range, PressureRange,
 from drivers.driver_factory import DriverFactory
 
 GRACE_TIME = 2
+EPSILON = GRACE_TIME / 1000
+
 LOW_THRESHOLD = -50000
 HIGH_THRESHOLD = 50000
 
@@ -60,14 +62,14 @@ def sampler(events, measurements, driver_factory):
 @patch("data.alerts.uptime")
 def test_grace_time_alerts(mocked_uptime, events, config, sampler):
     """Check no alerts in grace time, and alert received after."""
-    mocked_uptime.return_value = GRACE_TIME / 2
+    mocked_uptime.return_value = GRACE_TIME - EPSILON
 
     config.pressure_range = PressureRange(HIGH_THRESHOLD, HIGH_THRESHOLD)
 
     sampler.sampling_iteration()
     assert len(events.alerts_queue) == 0, "shouldn't get any alerts during grace time"
 
-    mocked_uptime.return_value = GRACE_TIME * 2
+    mocked_uptime.return_value = GRACE_TIME + EPSILON
     sampler.sampling_iteration()
     assert len(events.alerts_queue) == 1
 
@@ -77,7 +79,7 @@ def test_grace_time_alerts(mocked_uptime, events, config, sampler):
 
 @patch("data.alerts.uptime")
 @patch("time.time")
-@pytest.mark.parametrize('current_time', [-1 * GRACE_TIME, 10 * GRACE_TIME])
+@pytest.mark.parametrize('current_time', [GRACE_TIME - EPSILON, GRACE_TIME + EPSILON])
 def test_grace_time_alerts_move_time_forward(
         mocked_time, mocked_uptime, events, config, sampler, current_time):
     """Check no alerts in grace time, and alert received after.
@@ -85,7 +87,7 @@ def test_grace_time_alerts_move_time_forward(
     Check that moving time after grace time doesn't cause alert in grace time.
     Check that moving time before grace time doesn't prevent alert after grace time.
     """
-    mocked_uptime.return_value = GRACE_TIME / 2
+    mocked_uptime.return_value = GRACE_TIME - EPSILON
     mocked_time.return_value = current_time
 
     config.pressure_range = PressureRange(HIGH_THRESHOLD, HIGH_THRESHOLD)
@@ -93,7 +95,7 @@ def test_grace_time_alerts_move_time_forward(
     sampler.sampling_iteration()
     assert len(events.alerts_queue) == 0, "shouldn't get any alerts during grace time"
 
-    mocked_uptime.return_value = GRACE_TIME * 2
+    mocked_uptime.return_value = GRACE_TIME + EPSILON
     sampler.sampling_iteration()
     assert len(events.alerts_queue) == 1
 
