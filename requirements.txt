@@ -8,3 +8,4 @@ timeago
 psutil
 RPi.GPIO
 sh
+uptime
