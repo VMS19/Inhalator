@@ -15,6 +15,7 @@ from data.measurements import Measurements
 from data.events import Events
 from application import Application
 from algo import Sampler
+from telemetry.sender import TelemetrySender
 from wd_task import WdTask
 from alert_peripheral_handler import AlertPeripheralHandler
 import errors
@@ -175,12 +176,20 @@ def start_app(args):
             alert_driver.set_system_fault_alert(value=False, mute=False)
 
         AlertPeripheralHandler(events, drivers).subscribe()
-        sampler = Sampler(measurements=measurements, events=events,
+        config = Configurations.instance()
+        telemetry_sender = TelemetrySender(
+            enable=config.telemetry_enable,
+            url=config.telemetry_server_url,
+            api_key=config.telemetry_server_api_key)
+        sampler = Sampler(measurements=measurements,
+                          events=events,
                           flow_sensor=flow_sensor,
                           pressure_sensor=pressure_sensor,
-                          a2d=a2d, timer=timer,
+                          a2d=a2d,
+                          timer=timer,
                           save_sensor_values=args.debug,
-                          average_window=NOISY_DP_SENSOR_SAMPLES)
+                          average_window=NOISY_DP_SENSOR_SAMPLES,
+                          telemetry_sender=telemetry_sender)
 
         app = Application(measurements=measurements,
                           events=events,
@@ -193,6 +202,7 @@ def start_app(args):
 
         watchdog_task = WdTask(watchdog, arm_wd_event)
         watchdog_task.start()
+        telemetry_sender.start()
 
         app.run()
     finally:

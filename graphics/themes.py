@@ -27,6 +27,9 @@ class Theme(object):
     RIGHT_SIDE_BUTTON_BG_ACTIVE = NotImplemented
     RIGHT_SIDE_BUTTON_FG_ACTIVE = NotImplemented
 
+    BUTTON_NOTIFIED_BG = NotImplemented
+    BUTTON_NOTIFIED_TXT = NotImplemented
+
     @classmethod
     def active(cls):
         # This is an abstract Java Factory reduced to a static
@@ -104,3 +107,6 @@ class DarkTheme(Theme):
     RIGHT_SIDE_BUTTON_FG = "#fdfffc"
     RIGHT_SIDE_BUTTON_BG_ACTIVE = "#d7b1f9"
     RIGHT_SIDE_BUTTON_FG_ACTIVE = "#3c3149"
+
+    BUTTON_NOTIFIED_BG = "#7E6795"
+    BUTTON_NOTIFIED_TXT = "#fdfffc"
