@@ -55,7 +55,7 @@ class ClearAlertsButton(object):
         self.events.alerts_queue.clear_alerts()
 
     def render(self):
-        self.button.place(relx=0, rely=0.27, relwidth=1, relheight=0.2)
+        self.button.place(relx=0, rely=0.01, relwidth=1, relheight=0.2)
 
     def update(self):
         pass
@@ -95,7 +95,7 @@ class MuteAlertsButton(object):
         self.update()
 
     def render(self):
-        self.button.place(relx=0, rely=0.01, relwidth=1, relheight=0.2)
+        self.button.place(relx=0, rely=0.27, relwidth=1, relheight=0.2)
 
     def update(self):
         if self.events.mute_alerts._alerts_muted:
