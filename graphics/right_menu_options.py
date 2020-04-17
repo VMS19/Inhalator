@@ -128,11 +128,16 @@ class LockThresholdsButton(object):
             fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
             activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
             activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,
-            state="disabled",
+            # state="disabled",
+            state="normal",
         )
 
     def on_click(self):
-        print("Not Implemented Yet")
+        from graphics.calibrate.recalibration_snackbar import RecalibrationSnackbar
+        # TODO: Don't push this, this is just for testing
+        instance = RecalibrationSnackbar(self.parent.root, self.parent.drivers)
+        instance.show()
+
 
     def render(self):
         self.button.place(relx=0, rely=0.53, relwidth=1, relheight=0.2)
