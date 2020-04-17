@@ -23,7 +23,9 @@ class Graph(object):
         self.height = height
         self.width = self.parent.width
         self.graph_bbox = None
+        self.graph_clean_bg = None
         self.graph_bg = None
+        self.print_index = 0
 
         self.figure = Figure(figsize=(self.width/100.0, self.height/100.0),
                              dpi=100, facecolor=Theme.active().SURFACE)
@@ -62,15 +64,21 @@ class Graph(object):
                                           height=self.height,
                                           width=self.width)
 
+        # self.graph_bbox = self.canvas.figure.bbox
         self.graph_bbox = self.canvas.figure.bbox
+        self.graph_clean_bg = self.canvas.copy_from_bbox(self.graph_bbox)
         self.save_bg()
 
     def update(self):
-        self.figure.canvas.restore_region(self.graph_bg)
+        x1, y1, x2, y2 = self.graph_bg.get_extents()
+        self.figure.canvas.restore_region(self.graph_bg, bbox=(x1+100,y1,x1+110,y2),
+                                          xy=(self.print_index, y1))
         self.graph.set_ydata(self.display_values)
         self.axis.draw_artist(self.graph)
         self.figure.canvas.blit(self.graph_bbox)
         self.figure.canvas.flush_events()
+
+        self.print_index += 1
 
     @property
     def element(self):
