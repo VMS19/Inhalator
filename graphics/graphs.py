@@ -125,7 +125,7 @@ class AirPressureGraph(object):
 class FlowGraph(object):
     GRAPH_MARGINS = 3  # Used for calculating the empty space in the Y-axis
     ZOOM_OUT_FREQUENCY = 50
-    ZOOM_IN_FREQUENCY = 200
+    ZOOM_IN_FREQUENCY = 1000
 
     def __init__(self, parent, measurements, blank):
         super().__init__()
@@ -198,8 +198,8 @@ class FlowGraph(object):
         original_min, original_max = self.scale
 
         if (self.current_iteration % self.ZOOM_IN_FREQUENCY == 0 and
-                new_max_y < original_max < self.current_max_y and
-                new_min_y > original_min > self.current_min_y):
+                new_max_y <= original_max < self.current_max_y and
+                new_min_y >= original_min > self.current_min_y):
 
             self.current_min_y, self.current_max_y = original_min, original_max
             self.graph.axes.set_ylim(self.current_min_y, self.current_max_y)

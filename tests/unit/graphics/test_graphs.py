@@ -68,6 +68,7 @@ def flow_graph(measurements) -> FlowGraph:
     graph.figure = MagicMock()
     graph.config = MagicMock()
     graph.config.autoscale = True
+    graph.config.flow_y_scale = (-10, 10)
     return graph
 
 
@@ -148,7 +149,7 @@ def test_pressure_graph_doesnt_autoscale(pressure_graph: AirPressureGraph):
     pressure_graph.display_values = [-10] * x
     pressure_graph.display_values[1] -= 3
 
-    for i in range(pressure_graph.ZOOM_OUT_FREQUENCY):
+    for i in range(2000):
         pressure_graph.update()
 
     assert pressure_graph.current_max_y == approx(10)
@@ -169,6 +170,31 @@ def test_autoscale_can_be_disabled(flow_graph: FlowGraph):
 
 
     for i in range(flow_graph.ZOOM_OUT_FREQUENCY):
+        flow_graph.update()
+
+    assert flow_graph.current_min_y == approx(-10)
+    assert flow_graph.current_max_y == approx(10)
+
+
+def test_autoscale_zooms_in(flow_graph: FlowGraph):
+    flow_graph.current_min_y = -10.0
+    flow_graph.current_max_y = 10.0
+    flow_graph.GRAPH_MARGINS = 1.2
+
+    x = flow_graph.measurements._amount_of_samples_in_graph
+
+    flow_graph.display_values = [-10] * x
+    flow_graph.display_values[1] -= 3
+
+    for i in range(flow_graph.ZOOM_OUT_FREQUENCY):
+        flow_graph.update()
+
+    assert flow_graph.current_min_y <= -10
+    assert flow_graph.current_max_y >= 10
+
+    flow_graph.display_values = [-10] * x
+
+    for i in range(flow_graph.ZOOM_IN_FREQUENCY):
         flow_graph.update()
 
     assert flow_graph.current_min_y == approx(-10)
