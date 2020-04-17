@@ -83,9 +83,19 @@ echo -e "alias ll='ls -l'\nalias lla='ls -la'" >> /home/pi/.bashrc
 # re-enable file system expansion
 sed -i 's/#init_here/init=\/usr\/lib\/raspi-config\/init_resize.sh/g' /boot/cmdline.txt
 sed -i 's/exit 0 #remove this//g' /etc/rc.local
-sed -i 's/8500000 #//g' /usr/lib/raspi-config/init_resize.sh
+sed -i 's/8700000 #//g' /usr/lib/raspi-config/init_resize.sh
 
 # config buzzer io pull up
 echo "gpio=13=pu" >> /boot/config.txt
 
-echo "setup done. DO NOT REBOOT - USE ONLY SHUTDOWN!!!"
+# enable ftp server
+echo "UseReverseDNS off" >> /etc/proftpd/proftpd.conf
+touch /home/pi/Inhalator/inhalator.log
+touch /home/pi/Inhalator/inhalator.csv
+chown pi:pi /home/pi/Inhalator/inhaltor.*
+chmod 777 /home/pi/Inhalator/inhalator.*
+
+# enable hdmi hotplug
+echo "hdmi_force_hotplug=1" >> /boot/config.txt
+
+echo -e "setup done. DON'T FORGET TO CHANGE THE PASSWORD\nDO NOT REBOOT - USE ONLY SHUTDOWN!!!"
