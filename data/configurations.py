@@ -35,7 +35,7 @@ class Configurations(object):
                  min_insp_volume_for_inhale, min_exp_volume_for_exhale,
                  min_pressure_slope_for_inhale, max_pressure_slope_for_exhale,
                  log_enabled=True, mute_time_limit=120,
-                 low_battery_percentage=15, dp_offset=0, boot_alert_grace_time=7):
+                 low_battery_percentage=15, dp_offset=0, boot_alert_grace_time=10):
         self.o2_range = o2_range
         self.volume_range = volume_range
         self.pressure_range = pressure_range
