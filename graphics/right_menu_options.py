@@ -55,7 +55,7 @@ class ClearAlertsButton(object):
         self.events.alerts_queue.clear_alerts()
 
     def render(self):
-        self.button.place(relx=0, rely=0.27, relwidth=0.8, relheight=0.2)
+        self.button.place(relx=0, rely=0.27, relwidth=1, relheight=0.2)
 
     def update(self):
         pass
@@ -95,7 +95,7 @@ class MuteAlertsButton(object):
         self.update()
 
     def render(self):
-        self.button.place(relx=0, rely=0.01, relwidth=0.8, relheight=0.2)
+        self.button.place(relx=0, rely=0.01, relwidth=1, relheight=0.2)
 
     def update(self):
         if self.events.mute_alerts._alerts_muted:
@@ -135,7 +135,7 @@ class LockThresholdsButton(object):
         print("Not Implemented Yet")
 
     def render(self):
-        self.button.place(relx=0, rely=0.53, relwidth=0.8, relheight=0.2)
+        self.button.place(relx=0, rely=0.53, relwidth=1, relheight=0.2)
 
     def update(self):
         pass
@@ -157,7 +157,7 @@ class OpenConfigureAlertsScreenButton(object):
             font=("Roboto", 9),
             relief="flat",
             text="Settings",
-            pady=10,
+            pady=11,
             compound="top",
             bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
             fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
@@ -172,7 +172,7 @@ class OpenConfigureAlertsScreenButton(object):
         screen.show()
 
     def render(self):
-        self.button.place(relx=0, rely=0.79, relwidth=0.8, relheight=0.2)
+        self.button.place(relx=0, rely=0.79, relwidth=1, relheight=0.2)
 
     def update(self):
         pass
@@ -205,7 +205,7 @@ class OpenAlertsHistoryScreenButton(object):
         screen.show()
 
     def render(self):
-        self.button.place(relx=0, rely=0.79, relwidth=0.8, relheight=0.2)
+        self.button.place(relx=0, rely=0.79, relwidth=1, relheight=0.2)
 
     def update(self):
         pass
