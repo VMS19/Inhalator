@@ -38,7 +38,7 @@ class Alert:
 @dataclass
 class SystemStatus:
     battery_percentage: float = 0
-    uptime: float = field(default_factory=uptime)
+    up_time: float = field(default_factory=uptime)
     cpu_usage: float = field(default_factory=psutil.cpu_percent)
     ram_usage: float = field(default_factory=lambda: psutil.virtual_memory().percent)
     load_avg: tuple = field(default_factory=psutil.getloadavg)
