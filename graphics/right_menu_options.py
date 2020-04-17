@@ -64,9 +64,9 @@ class ClearAlertsButton(object):
 class MuteAlertsButton(object):
 
     PATH_TO_MUTED = os.path.join(RESOURCES_DIRECTORY,
-                                 "baseline_volume_off_white_48dp.png")
+                                 "round_notifications_off_white_48dp.png")
     PATH_TO_UNMUTED = os.path.join(RESOURCES_DIRECTORY,
-                                   "baseline_volume_up_white_48dp.png")
+                                   "baseline_notifications_active_white_48dp.png")
 
     def __init__(self, parent, events):
         self.parent = parent
