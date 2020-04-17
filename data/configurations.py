@@ -35,7 +35,7 @@ class Configurations(object):
                  min_insp_volume_for_inhale, min_exp_volume_for_exhale,
                  min_pressure_slope_for_inhale, max_pressure_slope_for_exhale,
                  log_enabled=True, mute_time_limit=120,
-                 low_battery_percentage=15, dp_offset=0, boot_alert_grace_time=10):
+                 low_battery_percentage=15, dp_offset=0, boot_alert_grace_time=10, flow_calibration_timeout_hrs=5):
         self.o2_range = o2_range
         self.volume_range = volume_range
         self.pressure_range = pressure_range
@@ -55,6 +55,7 @@ class Configurations(object):
         self.oxygen_point1 = oxygen_point1
         self.oxygen_point2 = oxygen_point2
         self.boot_alert_grace_time = boot_alert_grace_time
+        self.flow_calibration_timeout_hrs = flow_calibration_timeout_hrs
 
     def __getitem__(self, item):
         return getattr(self, item)
@@ -136,6 +137,7 @@ class Configurations(object):
             oxygen_point1 = config["calibration"]["oxygen_point1"]
             oxygen_point2 = config["calibration"]["oxygen_point2"]
             boot_alert_grace_time = config["boot_alert_grace_time"]
+            flow_calibration_timeout_hrs = config["flow_calibration_timeout_hrs"]
 
             return cls(o2_range=o2,
                        volume_range=volume,
@@ -155,7 +157,8 @@ class Configurations(object):
                        dp_offset=dp_offset,
                        oxygen_point1=oxygen_point1,
                        oxygen_point2=oxygen_point2,
-                       boot_alert_grace_time=boot_alert_grace_time)
+                       boot_alert_grace_time=boot_alert_grace_time,
+                       flow_calibration_timeout_hrs=flow_calibration_timeout_hrs)
 
         except Exception as e:
             raise ConfigurationFileError(f"Could not load "
@@ -212,7 +215,8 @@ class Configurations(object):
                 "oxygen_point1": self.oxygen_point1,
                 "oxygen_point2": self.oxygen_point2,
             },
-            "boot_alert_grace_time": self.boot_alert_grace_time
+            "boot_alert_grace_time": self.boot_alert_grace_time,
+            "flow_calibration_timeout_hrs": self.flow_calibration_timeout_hrs
         }
 
         with open(config_path, "w") as config_file:
