@@ -71,9 +71,14 @@ class Graph(object):
 
     def update(self):
         x1, y1, x2, y2 = self.graph_bg.get_extents()
+        print(f"{self.print_index}")
+        if self.print_index >= 319:
+            print("------")
+            self.print_index = 0
         self.figure.canvas.restore_region(self.graph_bg, bbox=(x1+100,y1,x1+110,y2),
-                                          xy=(self.print_index, y1))
-        self.graph.set_ydata(self.display_values)
+                                          xy=(self.print_index*3.5, y1))
+        self.graph.set_ydata([self.display_values[-3:-1]])
+        self.graph.set_xdata(range(self.print_index, self.print_index+2))
         self.axis.draw_artist(self.graph)
         self.figure.canvas.blit(self.graph_bbox)
         self.figure.canvas.flush_events()
