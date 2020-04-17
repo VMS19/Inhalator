@@ -9,7 +9,7 @@ from tkinter import *
 
 class Graph(object):
     RELX = NotImplemented
-    RELY= NotImplemented
+    RELY = NotImplemented
     LABEL = NotImplemented
     YLABEL = NotImplemented
     COLOR = NotImplemented
@@ -20,9 +20,10 @@ class Graph(object):
         self.root = parent.element
         self.measurements = measurements
         self.config = Configurations.instance()
-
         self.height = height
         self.width = self.parent.width
+        self.graph_bbox = None
+        self.graph_bg = None
 
         self.figure = Figure(figsize=(self.width/100.0, self.height/100.0),
                              dpi=100, facecolor=Theme.active().SURFACE)
@@ -51,6 +52,10 @@ class Graph(object):
         # Scale y values
         self.graph.axes.set_ylim(*self.y_scale)
 
+    def save_bg(self):
+        """Capture the current drawing of graph, and render it as background."""
+        self.graph_bg = self.canvas.copy_from_bbox(self.graph_bbox)
+
     def render(self):
         self.canvas.draw()
         self.canvas.get_tk_widget().place(relx=self.RELX, rely=self.RELY,
@@ -58,7 +63,7 @@ class Graph(object):
                                           width=self.width)
 
         self.graph_bbox = self.canvas.figure.bbox
-        self.graph_bg = self.canvas.copy_from_bbox(self.graph_bbox)
+        self.save_bg()
 
     def update(self):
         self.figure.canvas.restore_region(self.graph_bg)
@@ -97,10 +102,28 @@ class AirPressureGraph(Graph):
 
     def __init__(self, *args):
         super().__init__(*args)
+        self.config.pressure_range.observer.subscribe(self, self.update_thresholds)
+        self.min_threshold = None
+        self.max_threshold = None
+        self.update_thresholds((self.config.pressure_range.min,
+                                self.config.pressure_range.max))
+
+    def update_thresholds(self, range):
+        min_value, max_value = range
+
+        if self.min_threshold:
+            self.min_threshold.remove()
+        if self.max_threshold:
+            self.max_threshold.remove()
+
         # min threshold line
-        self.axis.axhline(y=self.config.pressure_range.min, color='red', lw=1)
+        self.min_threshold = self.axis.axhline(y=min_value, color='red', lw=1)
         # max threshold line
-        self.axis.axhline(y=self.config.pressure_range.max, color='red', lw=1)
+        self.max_threshold = self.axis.axhline(y=max_value, color='red', lw=1)
+
+        self.canvas.draw()
+        self.save_bg()
+
 
     @property
     def y_scale(self):
