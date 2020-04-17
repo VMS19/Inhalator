@@ -124,7 +124,7 @@ class AirPressureGraph(object):
 class FlowGraph(object):
     GRAPH_MARGINS = 3  # Used for calculating the empty space in the Y-axis
     ZOOM_OUT_FREQUENCY = 50
-    ZOOM_IN_FREQUENCY = 1000
+    ZOOM_IN_FREQUENCY = 500
 
     def __init__(self, parent, measurements, blank):
         rcParams.update({'figure.autolayout': True})
