@@ -42,7 +42,6 @@ class Application(object):
         self.root.title("Inhalator")
         self.root.geometry('800x480')
         self.root.attributes("-fullscreen", True)
-        self.timer = drivers.acquire_driver("timer")
 
         if os.uname()[1] == 'raspberrypi':
             # on production we don't want to see the ugly cursor

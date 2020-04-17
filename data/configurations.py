@@ -27,7 +27,6 @@ class Configurations(object):
     CONFIG_FILE = os.path.abspath(os.path.join(THIS_DIRECTORY, "..", "config.json"))
     DEFAULT_CONFIG_FILE = os.path.abspath(os.path.join(THIS_DIRECTORY, "..", "default_config.json"))
 
-
     __instance = None
 
     def __init__(self, o2_range, volume_range, pressure_range, resp_rate_range,
