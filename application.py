@@ -104,10 +104,6 @@ class Application(object):
                     self.sample()
                     self.last_sample_update_ts = time_now
 
-                if (self.last_dp_calibration_ts +
-                    self.config.dp_calibration_timeout_hrs * self.timer.HOURS_TO_SECONDS)  <= time_now:
-                    pass
-
                 self.arm_wd_event.set()
             except KeyboardInterrupt:
                 break

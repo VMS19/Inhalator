@@ -9,11 +9,11 @@ PRIMARY = "#3700b3"
 
 
 class RecalibrationSnackbar(object):  #
-    def __init__(self, root, drivers):
+    def __init__(self, root, drivers, observer):
         self.root = root
         self.drivers = drivers
         self.config = Configurations.instance()
-
+        self.timer = drivers.acquire_driver("timer")
         self.frame = Frame(master=self.root, background=WHITE)
         self.buttons_frame = Frame(master=self.frame, background=WHITE)
         self.calibrate_button = Button(master=self.buttons_frame,
@@ -43,6 +43,9 @@ class RecalibrationSnackbar(object):  #
                                 font=("Roboto", 16),
                                 foreground=BLACK,
                                 text="")
+        self.observer = observer
+        self.last_dp_calibration_ts = 0
+        observer.subscribe(self, self.on_calibration_done)
 
     def show(self):
         self.frame.place(relx=0.1, rely=0.8, relwidth=0.8, relheight=0.2)
@@ -57,12 +60,22 @@ class RecalibrationSnackbar(object):  #
                                   "Air-Flow sensor was calibrated, please re-calibrate it." %
                                   self.config.dp_calibration_timeout_hrs)
 
+    def on_calibration_done(self, timestamp):
+        self.last_dp_calibration_ts = timestamp
+
+    def update(self):
+        if (self.last_dp_calibration_ts +
+            self.config.dp_calibration_timeout_hrs * self.timer.HOURS_TO_SECONDS)  <= self.timer.get_current_time():
+            self.show()
+
     def on_snooze(self):
         self.hide()
+        self.last_dp_calibration_ts = self.timer.get_current_time()
 
     def on_calibrate(self):
         self.hide()
-        screen = CalibrationScreen(self.root, DifferentialPressureCalibration, self.drivers)
+        self.last_dp_calibration_ts = self.timer.get_current_time()
+        screen = CalibrationScreen(self.root, DifferentialPressureCalibration, self.drivers, self.observer)
         screen.show()
 
     def hide(self):

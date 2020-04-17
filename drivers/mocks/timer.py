@@ -3,6 +3,8 @@ from itertools import cycle
 
 class MockTimer(object):
 
+    HOURS_TO_SECONDS = 60 * 60
+
     def __init__(self, time_series):
         if not hasattr(time_series, "__getitem__"):
             time_series = list(time_series)

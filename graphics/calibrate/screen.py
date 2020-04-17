@@ -14,10 +14,11 @@ class Calibration(object):
     SAMPLING_TIME = 3  # seconds
     SLEEP_IN_BETWEEN = SAMPLING_TIME / 100
 
-    def __init__(self, parent, root, drivers):
+    def __init__(self, parent, root, drivers, observer):
         self.parent = parent
         self.root = root
         self.config = Configurations.instance()
+        self.observer = observer
 
         # State
         self.average_value_found = None
@@ -149,12 +150,12 @@ class Title(object):
 
 
 class CalibrationScreen(object):
-    def __init__(self, root, calibration_class, drivers):
+    def __init__(self, root, calibration_class, drivers, observer):
         self.root = root
         self.calibration_class = calibration_class
 
         self.screen = Frame(master=self.root, bg="red")
-        self.calibration = self.calibration_class(self, self.screen, drivers)
+        self.calibration = self.calibration_class(self, self.screen, drivers, observer)
         self.title = Title(self, self.screen, self.calibration.NAME)
         self.ok_cancel_section = OKCancelSection(self, self.screen)
 
@@ -185,7 +186,6 @@ class DifferentialPressureCalibration(Calibration):
         "Make sure tubes are detached from sensor!"
 
     def __init__(self, *args):
-        self.observer = Observable()
         super().__init__(*args)
 
     def read_raw_value(self):
@@ -273,6 +273,7 @@ class OxygenCalibration(Calibration):
         else:
             self.config.oxygen_point2["x"] = new_calibration_point["x"]
             self.config.oxygen_point2["y"] = new_calibration_point["y"]
+
 
 def calc_calibration_line(point1, point2):
     if point1["x"] > point2["x"]:
