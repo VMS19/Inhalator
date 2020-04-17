@@ -130,7 +130,7 @@ class RunningSlope(object):
 
 
 class VentilationState(Enum):
-    Calibration = 0  # State unknown yet
+    Unknown = 0  # State unknown yet
     Inhale = 1  # Air is flowing to the lungs
     Hold = 2  # PIP is maintained
     Exhale = 3  # Pressure is relieved, air flowing out
@@ -138,22 +138,25 @@ class VentilationState(Enum):
 
 
 class VentilationStateMachine(object):
+    TELEMETRY_REPORT_MAX_INTERVAL_SEC = 5
     NO_BREATH_ALERT_TIME_SECONDS = 12
 
-    def __init__(self, measurements, events):
+    def __init__(self, measurements, events, telemetry_sender=None):
         self._measurements = measurements
         self._events = events
+        self.telemetry_sender = telemetry_sender
         self.log = logging.getLogger(self.__class__.__name__)
         self.flow_slope = RunningSlope(num_samples=7)
         self.pressure_slope = RunningSlope(num_samples=7)
         self._config = Configurations.instance()
         self.last_breath_timestamp = None
+        self.last_telemetry_report = None
         self.current_state = VentilationState.PEEP
 
         # Data structure to record last 100 entry timestamp for each state.
         # Useful for debugging and plotting.
         self.entry_points_ts = {
-            VentilationState.Calibration: deque(maxlen=100),
+            VentilationState.Unknown: deque(maxlen=100),
             VentilationState.PEEP: deque(maxlen=100),
             VentilationState.Inhale: deque(maxlen=100),
             VentilationState.Hold: deque(maxlen=100),
@@ -241,10 +244,30 @@ class VentilationStateMachine(object):
         self._measurements.inspiration_volume = insp_volume_ml
         self.inspiration_volume.reset()
         self.insp_volumes.append((timestamp, insp_volume_ml))
+        self.send_telemetry(timestamp)
         self.reset_peaks()
 
     def enter_peep(self, timestamp):
         pass
+
+    def send_telemetry(self, timestamp):
+        if self.telemetry_sender is not None:
+            self.telemetry_sender.enqueue(
+                timestamp=timestamp,
+                inspiration_volume=self._measurements.inspiration_volume,
+                expiration_volume=self._measurements.expiration_volume,
+                avg_inspiration_volume=self._measurements.avg_insp_volume,
+                avg_expiration_volume=self._measurements.avg_exp_volume,
+                peak_flow=self._measurements.intake_peak_flow,
+                peak_pressure=self._measurements.intake_peak_pressure,
+                min_pressure=self._measurements.peep_min_pressure,
+                bpm=self._measurements.bpm,
+                o2_saturation_percentage=self._measurements.o2_saturation_percentage,
+                current_state=self.current_state,
+                alerts=list(self._events.alerts_queue.active_alerts),
+                battery_percentage=self._measurements.battery_percentage
+            )
+        self.last_telemetry_report = timestamp
 
     def reset_peaks(self):
         self._measurements.intake_peak_pressure = self.peak_pressure
@@ -257,10 +280,13 @@ class VentilationStateMachine(object):
         self.min_pressure = sys.maxsize
 
     def update(self, pressure_cmh2o, flow_slm, o2_percentage, timestamp):
+        # First time initialization. Not done in __init__ to avoid reading
+        # the time in this class, which improves its testability.
         if self.last_breath_timestamp is None:
-            # First time initialization. Not done in __init__ to avoid reading
-            # the time in this class, which improves its testability.
             self.last_breath_timestamp = timestamp
+        if self.last_telemetry_report is None:
+            self.last_telemetry_report = timestamp
+
         # First - check how long it was since last breath
         seconds_from_last_breath = timestamp - self.last_breath_timestamp
         if seconds_from_last_breath >= self.NO_BREATH_ALERT_TIME_SECONDS:
@@ -322,6 +348,10 @@ class VentilationStateMachine(object):
             pressure_cmh2o=pressure_cmh2o,
             timestamp=timestamp)
 
+        since_last_telem = timestamp - self.last_telemetry_report
+        if since_last_telem > self.TELEMETRY_REPORT_MAX_INTERVAL_SEC:
+            self.send_telemetry(timestamp)
+
     def check_transition(self, flow_slm, pressure_cmh2o, timestamp):
         pressure_slope = self.pressure_slope.add_sample(pressure_cmh2o, timestamp)
         flow_slop = self.flow_slope.add_sample(flow_slm, timestamp)
@@ -362,7 +392,8 @@ class VentilationStateMachine(object):
 class Sampler(object):
 
     def __init__(self, measurements, events, flow_sensor, pressure_sensor,
-                 a2d, timer, average_window, save_sensor_values=False):
+                 a2d, timer, average_window, telemetry_sender=None,
+                 save_sensor_values=False):
         super(Sampler, self).__init__()
         self.log = logging.getLogger(self.__class__.__name__)
         self._measurements = measurements
@@ -372,7 +403,7 @@ class Sampler(object):
         self._timer = timer
         self._config = Configurations.instance()
         self._events = events
-        self.vsm = VentilationStateMachine(measurements, events)
+        self.vsm = VentilationStateMachine(measurements, events, telemetry_sender)
         self.storage_handler = SamplesStorage()
         self.save_sensor_values = save_sensor_values
         self.flow_avg = RunningAvg(average_window)
