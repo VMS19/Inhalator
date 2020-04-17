@@ -185,7 +185,7 @@ class FlowGraph(object):
                                           width=self.width)
 
     def autoscale(self):
-        """Symmetrically rescale the Y-axis. """
+        """Symmetrically rescale the Y-axis."""
         self.current_iteration += 1
 
         new_min_y = min(self.display_values)
