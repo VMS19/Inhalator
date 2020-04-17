@@ -55,7 +55,7 @@ class RecalibrationSnackbar(object):  #
 
         self.text_label.configure(text="%d hours have passed since the last time the "
                                   "Air-Flow sensor was calibrated, please re-calibrate it." %
-                                  self.config.flow_calibration_timeout_hrs)
+                                  self.config.dp_calibration_timeout_hrs)
 
     def on_snooze(self):
         self.hide()

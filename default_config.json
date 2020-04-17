@@ -54,5 +54,5 @@
   "low_battery_percentage": 15,
   "mute_time_limit" : 120,
   "boot_alert_grace_time" : 10,
-  "flow_calibration_timeout_hrs": 5
+  "dp_calibration_timeout_hrs": 5
 }
