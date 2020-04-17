@@ -50,6 +50,7 @@ class Application(object):
         # We want to alert that config.json is corrupted
         if Configurations.configuration_state() == ConfigurationState.CONFIG_CORRUPTED:
             events.alerts_queue.enqueue_alert(AlertCodes.NO_CONFIGURATION_FILE)
+            # TODO: Move this logic to Configurations.
             Configurations.instance().save_to_file()  # Create config file for future use.
 
         self.config = Configurations.instance()
