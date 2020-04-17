@@ -102,9 +102,9 @@ class AirPressureGraph(Graph):
 
     def __init__(self, *args):
         super().__init__(*args)
-        self.config.pressure_range.observer.subscribe(self, self.update_thresholds)
         self.min_threshold = None
         self.max_threshold = None
+        self.config.pressure_range.observer.subscribe(self, self.update_thresholds)
         self.update_thresholds((self.config.pressure_range.min,
                                 self.config.pressure_range.max))
 
