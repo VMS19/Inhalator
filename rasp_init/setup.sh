@@ -24,6 +24,8 @@ virtualenv $INHALATOR_PATH/.inhalator_env -p $(which python3)
 source $INHALATOR_PATH/.inhalator_env/bin/activate
 pip3 install --upgrade pip
 pip3 install -r $INHALATOR_PATH/requirements.txt
+
+# enable ftp server
 apt-get install proftpd -y
 echo "UseReverseDNS off" >> /etc/proftpd/proftpd.conf
 service proftpd restart
@@ -89,8 +91,7 @@ sed -i 's/8700000 #//g' /usr/lib/raspi-config/init_resize.sh
 # config buzzer io pull up
 echo "gpio=13=pu" >> /boot/config.txt
 
-# enable ftp server
-echo "UseReverseDNS off" >> /etc/proftpd/proftpd.conf
+# enable ftp server permissions to log files
 touch /home/pi/Inhalator/inhalator.log
 touch /home/pi/Inhalator/inhalator.csv
 chown pi:pi /home/pi/Inhalator/inhaltor.*
