@@ -25,7 +25,8 @@
   "graph_y_scale" : {
         "flow" : {
             "min" : -40,
-            "max" : 50
+            "max" : 50,
+            "autoscale": true
         },
         "pressure" : {
             "min" : -10,

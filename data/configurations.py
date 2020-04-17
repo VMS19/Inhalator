@@ -35,7 +35,8 @@ class Configurations(object):
                  min_insp_volume_for_inhale, min_exp_volume_for_exhale,
                  min_pressure_slope_for_inhale, max_pressure_slope_for_exhale,
                  log_enabled=True, mute_time_limit=120,
-                 low_battery_percentage=15, dp_offset=0, boot_alert_grace_time=7):
+                 low_battery_percentage=15, dp_offset=0,
+                 boot_alert_grace_time=7, autoscale=True):
         self.o2_range = o2_range
         self.volume_range = volume_range
         self.pressure_range = pressure_range
@@ -55,6 +56,7 @@ class Configurations(object):
         self.oxygen_point1 = oxygen_point1
         self.oxygen_point2 = oxygen_point2
         self.boot_alert_grace_time = boot_alert_grace_time
+        self.autoscale = autoscale
 
     def __getitem__(self, item):
         return getattr(self, item)
@@ -119,6 +121,7 @@ class Configurations(object):
 
             flow_y_scale = (config["graph_y_scale"]["flow"]["min"],
                             config["graph_y_scale"]["flow"]["max"])
+            flow_auto_scale = config["graph_y_scale"]["flow"]["autoscale"]
             pressure_y_scale = (config["graph_y_scale"]["pressure"]["min"],
                                 config["graph_y_scale"]["pressure"]["max"])
 
@@ -155,7 +158,8 @@ class Configurations(object):
                        dp_offset=dp_offset,
                        oxygen_point1=oxygen_point1,
                        oxygen_point2=oxygen_point2,
-                       boot_alert_grace_time=boot_alert_grace_time)
+                       boot_alert_grace_time=boot_alert_grace_time,
+                       autoscale=flow_auto_scale)
 
         except Exception as e:
             raise ConfigurationFileError(f"Could not load "
@@ -190,7 +194,8 @@ class Configurations(object):
             "graph_y_scale": {
                 "flow": {
                     "min": self.flow_y_scale[0],
-                    "max": self.flow_y_scale[1]
+                    "max": self.flow_y_scale[1],
+                    "autoscale": self.autoscale
                 },
                 "pressure": {
                     "min": self.pressure_y_scale[0],

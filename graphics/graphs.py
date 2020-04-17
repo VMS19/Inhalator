@@ -20,50 +20,7 @@ class BlankGraph(object):
         self.graph_bg = blank_figure.canvas.copy_from_bbox(self.graph_bbox)
 
 
-# TODO: Move here more similar behaviors between Flow and Pressure graphs
-class DisplayedGraph(object):
-    GRAPH_MARGINS = 3  # Used for calculating the empty space in the Y-axis
-    AUTOSCALE_FREQUENCY = 50
-
-    def __init__(self):
-        self.current_iteration = 0
-
-    def autoscale(self):
-        """Symmetrically rescale the Y-axis. """
-        self.current_iteration += 1
-
-        if self.current_iteration % self.AUTOSCALE_FREQUENCY != 0:
-            # We want to calculate new max once every
-            # <self.AUTOSCALE_FREQUENCY> calls
-            return
-
-        new_max_y = max(self.display_values)
-        new_min_y = min(self.display_values)
-
-        max_y_difference = max(new_max_y - self.current_max_y, 0)
-        min_y_difference = abs(max(self.current_min_y - new_min_y, 0))
-
-        difference = max(max_y_difference, min_y_difference)
-
-        new_min_y = self.current_min_y - difference
-        new_max_y = self.current_max_y + difference
-
-        # As of now (15/4/20) the directive is not to zoom in, and just
-        # zoom-out the graph forever whenever a large value is encountered,
-        # if the directive changes you should replace the >= and <= here with ==
-        # and handle decreasing the min_y and max_y
-        if new_max_y <= self.current_max_y and new_min_y >= self.current_min_y:
-            # no need to re-render
-            return
-
-        self.current_min_y, self.current_max_y = new_min_y, new_max_y
-        self.graph.axes.set_ylim(self.current_min_y - self.GRAPH_MARGINS,
-                                 self.current_max_y + self.GRAPH_MARGINS)
-
-        self.render()
-
-
-class AirPressureGraph(DisplayedGraph):
+class AirPressureGraph(object):
     def __init__(self, parent, measurements, blank):
         super().__init__()
         self.parent = parent
@@ -108,7 +65,7 @@ class AirPressureGraph(DisplayedGraph):
             animated=True)
 
         # Scaling
-        self.current_min_y, self.current_max_y = self.config.pressure_y_scale
+        self.current_min_y, self.current_max_y = self.scale
         self.graph.axes.set_ylim(self.current_min_y, self.current_max_y)
 
         # Thresholds
@@ -128,6 +85,9 @@ class AirPressureGraph(DisplayedGraph):
                            animated=True,
                            linewidth=1)
 
+    @property
+    def scale(self):
+        return self.config.pressure_y_scale
 
     def render(self):
         self.canvas.draw()
@@ -162,7 +122,11 @@ class AirPressureGraph(DisplayedGraph):
         return self.canvas
 
 
-class FlowGraph(DisplayedGraph):
+class FlowGraph(object):
+    GRAPH_MARGINS = 3  # Used for calculating the empty space in the Y-axis
+    ZOOM_OUT_FREQUENCY = 50
+    ZOOM_IN_FREQUENCY = 200
+
     def __init__(self, parent, measurements, blank):
         super().__init__()
         rcParams.update({'figure.autolayout': True})
@@ -206,8 +170,15 @@ class FlowGraph(DisplayedGraph):
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.root)
 
         # Scaling
-        self.current_min_y, self.current_max_y = self.config.flow_y_scale
+        self.current_min_y, self.current_max_y = self.scale
         self.graph.axes.set_ylim(self.current_min_y, self.current_max_y)
+
+        # State
+        self.current_iteration = 0
+
+    @property
+    def scale(self):
+        return self.config.flow_y_scale
 
     def render(self):
         self.canvas.draw()
@@ -215,8 +186,54 @@ class FlowGraph(DisplayedGraph):
                                           height=self.height,
                                           width=self.width)
 
+    def autoscale(self):
+        """Symmetrically rescale the Y-axis. """
+        self.current_iteration += 1
+
+        new_min_y = min(self.display_values)
+        new_max_y = max(self.display_values)
+
+        # Once every <self.ZOOM_IN_FREQUENCY> calls we want to try and
+        # zoom back-in
+        original_min, original_max = self.scale
+
+        if (self.current_iteration % self.ZOOM_IN_FREQUENCY == 0 and
+                new_max_y < original_max < self.current_max_y and
+                new_min_y > original_min > self.current_min_y):
+
+            self.current_min_y, self.current_max_y = original_min, original_max
+            self.graph.axes.set_ylim(self.current_min_y, self.current_max_y)
+
+            self.render()
+            return
+
+        if self.current_iteration % self.ZOOM_OUT_FREQUENCY != 0:
+            # We want to calculate new max once every
+            # <self.ZOOM_OUT_FREQUENCY> calls
+            return
+
+        max_y_difference = max(new_max_y - self.current_max_y, 0)
+        min_y_difference = abs(max(self.current_min_y - new_min_y, 0))
+
+        difference = max(max_y_difference, min_y_difference)
+
+        new_min_y = self.current_min_y - difference
+        new_max_y = self.current_max_y + difference
+
+        if new_max_y <= self.current_max_y and new_min_y >= self.current_min_y:
+            # no need to re-render
+            return
+
+        self.current_min_y, self.current_max_y = new_min_y, new_max_y
+        self.graph.axes.set_ylim(self.current_min_y - self.GRAPH_MARGINS,
+                                 self.current_max_y + self.GRAPH_MARGINS)
+
+        self.render()
+
     def update(self):
-        self.autoscale()
+        if self.config.autoscale:
+            self.autoscale()
+
         self.figure.canvas.restore_region(self.blank.graph_bg,
                                           bbox=self.blank.graph_bbox,
                                           xy=(0, 0))
