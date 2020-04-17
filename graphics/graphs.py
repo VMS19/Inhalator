@@ -123,6 +123,9 @@ class AirPressureGraph(object):
 
 class FlowGraph(object):
     GRAPH_MARGINS = 3  # Used for calculating the empty space in the Y-axis
+
+    # We must pick values that are a multiplication of each other, as we
+    # "trim" the counter with the modulo of the maximal between them
     ZOOM_OUT_FREQUENCY = 50
     ZOOM_IN_FREQUENCY = 500
 
@@ -187,6 +190,8 @@ class FlowGraph(object):
     def autoscale(self):
         """Symmetrically rescale the Y-axis."""
         self.current_iteration += 1
+        self.current_iteration %= max(self.ZOOM_IN_FREQUENCY,
+                                      self.ZOOM_OUT_FREQUENCY)
 
         new_min_y = min(self.display_values)
         new_max_y = max(self.display_values)
