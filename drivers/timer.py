@@ -3,6 +3,8 @@ import time
 
 class Timer(object):
 
+	HOURS_TO_SECONDS = 60 * 60
+
     @staticmethod
     def get_time():
         return time.time()

@@ -184,6 +184,10 @@ class DifferentialPressureCalibration(Calibration):
     PRE_CALIBRATE_ALERT_MSG = \
         "Make sure tubes are detached from sensor!"
 
+    def __init__(self, *args):
+        self.observer = Observable()
+        super().__init__(*args)
+
     def read_raw_value(self):
         return self.sensor_driver.read_differential_pressure()
 
@@ -195,6 +199,7 @@ class DifferentialPressureCalibration(Calibration):
     def configure_new_calibration(self):
         self.config.dp_offset = self.average_value_found
         self.sensor_driver.set_calibration_offset(self.average_value_found)
+        self.observer.publish(self.timer.get_current_time())
 
 
 class OxygenCalibration(Calibration):
