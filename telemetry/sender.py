@@ -1,10 +1,12 @@
 import logging
-from collections import deque
+from collections import deque, namedtuple
 
 import requests
 from threading import Thread, Event
 
 from pydantic import BaseModel, Field
+
+from telemetry.status import VentilationStatus, SystemStatus, StatusReport, Alert
 
 
 class Telemetry(BaseModel):
@@ -50,6 +52,13 @@ def get_device_id():
     return ':'.join(re.findall('..', '%012x' % uuid.getnode()))
 
 
+# Holds the data queued for sending. We don't construct the final `StatusReport`
+# on queuing, because that might be time consuming and we want the queueing
+# operation to be as fast as possible.
+QueueItem = namedtuple(
+    "QueueItem", ("ventilation_status", "system_alerts", "battery_percentage"))
+
+
 class TelemetrySender(Thread):
 
     HEADERS = {
@@ -86,19 +95,57 @@ class TelemetrySender(Thread):
 
     def _flush_queue(self):
         while len(self.queue):
-            tel = self.queue.popleft()
-            self._send_telemetry(tel)
+            item = self.queue.popleft()
+            self._send(item)
 
-    def enqueue(self, timestamp, p_peak, p_min, v_te, v_ti, o2_percent):
-        telemetry = Telemetry(
-            DeviceId=self.device_id, Timestamp=round(timestamp), P_PEAK=p_peak,
-            PEEP=p_min, V_TE=v_te, V_TI=v_ti, O2percent=o2_percent
+    def enqueue(self, timestamp, inspiration_volume, expiration_volume,
+                avg_inspiration_volume, avg_expiration_volume, peak_flow,
+                peak_pressure, min_pressure, bpm, o2_saturation_percentage,
+                current_state, alerts, battery_percentage):
+        # The current implementation does not keep system alerts and
+        # ventilation alerts separate, but it does make more sense to separate
+        # the two.
+        system_alerts = [Alert.from_app_alert(a)
+                         for a in alerts if a.is_system_alert()]
+        medical_alerts = [Alert.from_app_alert(a)
+                          for a in alerts if a.is_medical_condition()]
+        ventilation_status = VentilationStatus(
+            timestamp=timestamp,
+            inspiration_volume=inspiration_volume,
+            expiration_volume=expiration_volume,
+            avg_inspiration_volume=avg_inspiration_volume,
+            avg_expiration_volume=avg_expiration_volume,
+            peak_flow=peak_flow,
+            peak_pressure=peak_pressure,
+            min_pressure=min_pressure,
+            bpm=bpm,
+            o2_saturation_percentage=o2_saturation_percentage,
+            current_state=current_state,
+            alerts=medical_alerts
         )
-        self.queue.append(telemetry)  # `deque.append` is atomic
-        self.event.set()
-        self.log.debug("Telemetry enqueued: %s", telemetry)
 
-    def _send_telemetry(self, telemetry: Telemetry):
+        item = QueueItem(ventilation_status, system_alerts, battery_percentage)
+        self.queue.append(item)  # `deque.append` is atomic
+        self.event.set()
+        self.log.debug("Telemetry enqueued: %s", item)
+
+    @staticmethod
+    def build(item: QueueItem):
+        # Creating the SystemStatus instance is pretty time-consuming operation
+        # because there are a lot of psutil stuff going on.
+        # It is deferred to here, which happens on the Sender thread.
+        system_status = SystemStatus(
+            battery_percentage=item.battery_percentage,
+            alerts=item.system_alerts)
+
+        report = StatusReport(
+            system_status=system_status,
+            ventilation_status=item.ventilation_status
+        )
+        return report
+
+    def _send(self, item: QueueItem):
+        telemetry = self.build(item)
         self.log.debug("Sending telemetry: %s", telemetry)
         try:
             resp = requests.put(

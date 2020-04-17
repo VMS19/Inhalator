@@ -57,6 +57,6 @@
   "telemetry": {
     "enable": false,
     "url": "http://127.0.0.1:5000/telemetry",
-    "api-key": null
+    "api_key": null
   }
 }

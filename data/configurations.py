@@ -144,7 +144,7 @@ class Configurations(object):
             boot_alert_grace_time = config["boot_alert_grace_time"]
             telemetry_enable = config["telemetry"]["enable"]
             telemetry_server_url = config["telemetry"]["url"]
-            telemetry_server_api_key = config["telemetry"]["api-key"]
+            telemetry_server_api_key = config["telemetry"]["api_key"]
 
             return cls(o2_range=o2,
                        volume_range=volume,
@@ -228,7 +228,7 @@ class Configurations(object):
             "telemetry": {
                 "enable": self.telemetry_enable,
                 "url": self.telemetry_server_url,
-                "api-key": self.telemetry_server_api_key
+                "api_key": self.telemetry_server_api_key
             }
         }
 

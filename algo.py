@@ -130,7 +130,7 @@ class RunningSlope(object):
 
 
 class VentilationState(Enum):
-    Calibration = 0  # State unknown yet
+    Unknown = 0  # State unknown yet
     Inhale = 1  # Air is flowing to the lungs
     Hold = 2  # PIP is maintained
     Exhale = 3  # Pressure is relieved, air flowing out
@@ -156,7 +156,7 @@ class VentilationStateMachine(object):
         # Data structure to record last 100 entry timestamp for each state.
         # Useful for debugging and plotting.
         self.entry_points_ts = {
-            VentilationState.Calibration: deque(maxlen=100),
+            VentilationState.Unknown: deque(maxlen=100),
             VentilationState.PEEP: deque(maxlen=100),
             VentilationState.Inhale: deque(maxlen=100),
             VentilationState.Hold: deque(maxlen=100),
@@ -251,17 +251,23 @@ class VentilationStateMachine(object):
         pass
 
     def send_telemetry(self, timestamp):
+        if self.telemetry_sender is not None:
+            self.telemetry_sender.enqueue(
+                timestamp=timestamp,
+                inspiration_volume=self._measurements.inspiration_volume,
+                expiration_volume=self._measurements.expiration_volume,
+                avg_inspiration_volume=self._measurements.avg_insp_volume,
+                avg_expiration_volume=self._measurements.avg_exp_volume,
+                peak_flow=self._measurements.intake_peak_flow,
+                peak_pressure=self._measurements.intake_peak_pressure,
+                min_pressure=self._measurements.peep_min_pressure,
+                bpm=self._measurements.bpm,
+                o2_saturation_percentage=self._measurements.o2_saturation_percentage,
+                current_state=self.current_state,
+                alerts=list(self._events.alerts_queue.active_alerts),
+                battery_percentage=self._measurements.battery_percentage
+            )
         self.last_telemetry_report = timestamp
-        if self.telemetry_sender is None:
-            return
-
-        self.telemetry_sender.enqueue(
-            timestamp=timestamp,
-            p_peak=self._measurements.intake_peak_pressure,
-            p_min=self._measurements.peep_min_pressure,
-            v_te=self._measurements.expiration_volume,
-            v_ti=self._measurements.inspiration_volume,
-            o2_percent=self._measurements.o2_saturation_percentage)
 
     def reset_peaks(self):
         self._measurements.intake_peak_pressure = self.peak_pressure
@@ -342,7 +348,8 @@ class VentilationStateMachine(object):
             pressure_cmh2o=pressure_cmh2o,
             timestamp=timestamp)
 
-        if timestamp - self.last_telemetry_report > self.TELEMETRY_REPORT_MAX_INTERVAL_SEC:
+        since_last_telem = timestamp - self.last_telemetry_report
+        if since_last_telem > self.TELEMETRY_REPORT_MAX_INTERVAL_SEC:
             self.send_telemetry(timestamp)
 
     def check_transition(self, flow_slm, pressure_cmh2o, timestamp):
