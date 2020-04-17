@@ -22,7 +22,6 @@ class BlankGraph(object):
 
 class AirPressureGraph(object):
     def __init__(self, parent, measurements, blank):
-        super().__init__()
         self.parent = parent
         self.root = parent.element
         self.blank = blank
@@ -65,7 +64,7 @@ class AirPressureGraph(object):
             animated=True)
 
         # Scaling
-        self.current_min_y, self.current_max_y = self.scale
+        self.current_min_y, self.current_max_y = self.configured_scale
         self.graph.axes.set_ylim(self.current_min_y, self.current_max_y)
 
         # Thresholds
@@ -86,7 +85,7 @@ class AirPressureGraph(object):
                            linewidth=1)
 
     @property
-    def scale(self):
+    def configured_scale(self):
         return self.config.pressure_y_scale
 
     def render(self):
@@ -128,7 +127,6 @@ class FlowGraph(object):
     ZOOM_IN_FREQUENCY = 1000
 
     def __init__(self, parent, measurements, blank):
-        super().__init__()
         rcParams.update({'figure.autolayout': True})
         self.parent = parent
         self.root = parent.element
@@ -170,14 +168,14 @@ class FlowGraph(object):
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.root)
 
         # Scaling
-        self.current_min_y, self.current_max_y = self.scale
+        self.current_min_y, self.current_max_y = self.configured_scale
         self.graph.axes.set_ylim(self.current_min_y, self.current_max_y)
 
         # State
         self.current_iteration = 0
 
     @property
-    def scale(self):
+    def configured_scale(self):
         return self.config.flow_y_scale
 
     def render(self):
@@ -195,7 +193,7 @@ class FlowGraph(object):
 
         # Once every <self.ZOOM_IN_FREQUENCY> calls we want to try and
         # zoom back-in
-        original_min, original_max = self.scale
+        original_min, original_max = self.configured_scale
 
         if (self.current_iteration % self.ZOOM_IN_FREQUENCY == 0 and
                 new_max_y <= original_max < self.current_max_y and

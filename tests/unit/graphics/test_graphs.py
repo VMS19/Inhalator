@@ -168,7 +168,6 @@ def test_autoscale_can_be_disabled(flow_graph: FlowGraph):
     flow_graph.display_values = [-10] * x
     flow_graph.display_values[1] -= 3
 
-
     for i in range(flow_graph.ZOOM_OUT_FREQUENCY):
         flow_graph.update()
 
@@ -189,8 +188,8 @@ def test_autoscale_zooms_in(flow_graph: FlowGraph):
     for i in range(flow_graph.ZOOM_OUT_FREQUENCY):
         flow_graph.update()
 
-    assert flow_graph.current_min_y <= -10
-    assert flow_graph.current_max_y >= 10
+    assert flow_graph.current_min_y < -10
+    assert flow_graph.current_max_y > 10
 
     flow_graph.display_values = [-10] * x
 
