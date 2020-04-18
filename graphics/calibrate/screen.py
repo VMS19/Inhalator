@@ -204,8 +204,8 @@ class OxygenCalibration(Calibration):
     SAMPLING_TIME = 5  # seconds
     PRE_CALIBRATE_ALERT_MSG = (
         "Please make sure:\n"
-        "    For 21%: detach oxygen tube\n"
-        "    For 100%: feed 100% oxygen")
+        "    For 21% - detach oxygen tube\n"
+        "    For 100% - feed 100% oxygen")
     STEP_2_CALIBRATION_PERCENTAGE = 100
 
     def __init__(self, *args):
