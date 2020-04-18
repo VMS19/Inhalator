@@ -62,7 +62,7 @@ class RecalibrationSnackbar(object):
         self.text_label.configure(
             justify="left",
             text=f"At least {self.config.dp_calibration_timeout_hrs} hours \n"
-                 f"have past without air-flow calibration")
+                 f"have passed without air-flow calibration")
 
     def on_calibration_done(self, timestamp):
         self.last_dp_calibration_ts = timestamp
