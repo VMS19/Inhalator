@@ -38,7 +38,8 @@ class Configurations(object):
                  low_battery_percentage=15, dp_offset=0,
                  boot_alert_grace_time=10,
                  telemetry_server_url=None,
-                 telemetry_server_api_key=None, telemetry_enable=False):
+                 telemetry_server_api_key=None, telemetry_enable=False,
+                 autoscale=True):
         self.o2_range = o2_range
         self.volume_range = volume_range
         self.pressure_range = pressure_range
@@ -61,6 +62,7 @@ class Configurations(object):
         self.telemetry_enable = telemetry_enable
         self.telemetry_server_url = telemetry_server_url
         self.telemetry_server_api_key = telemetry_server_api_key
+        self.autoscale = autoscale
 
     def __getitem__(self, item):
         return getattr(self, item)
@@ -125,6 +127,7 @@ class Configurations(object):
 
             flow_y_scale = (config["graph_y_scale"]["flow"]["min"],
                             config["graph_y_scale"]["flow"]["max"])
+            flow_auto_scale = config["graph_y_scale"]["flow"]["autoscale"]
             pressure_y_scale = (config["graph_y_scale"]["pressure"]["min"],
                                 config["graph_y_scale"]["pressure"]["max"])
 
@@ -167,7 +170,8 @@ class Configurations(object):
                        boot_alert_grace_time=boot_alert_grace_time,
                        telemetry_server_url=telemetry_server_url,
                        telemetry_server_api_key=telemetry_server_api_key,
-                       telemetry_enable=telemetry_enable)
+                       telemetry_enable=telemetry_enable,
+                       autoscale=flow_auto_scale)
 
         except Exception as e:
             raise ConfigurationFileError(f"Could not load "
@@ -202,7 +206,8 @@ class Configurations(object):
             "graph_y_scale": {
                 "flow": {
                     "min": self.flow_y_scale[0],
-                    "max": self.flow_y_scale[1]
+                    "max": self.flow_y_scale[1],
+                    "autoscale": self.autoscale
                 },
                 "pressure": {
                     "min": self.pressure_y_scale[0],

@@ -128,9 +128,9 @@ class CenterPane(object):
         # Get measurments from peripherals
 
         had_pressure_change = self.pop_queue_to_list(self.measurements.pressure_measurements,
-            self.pressure_graph.pressure_display_values)
+                                                     self.pressure_graph.display_values)
         had_flow_change = self.pop_queue_to_list(self.measurements.flow_measurements,
-            self.flow_graph.flow_display_values)
+                                                 self.flow_graph.display_values)
 
         for graph in self.graphs:
             graph.update()
