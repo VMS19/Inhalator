@@ -9,8 +9,8 @@ class RecalibrationSnackbar(object):
 
     def __init__(self, root, drivers, observer):
         self.text_color = Theme.active().WHITE
-        self.background_color = "#6200EE"
-        self.primary_color = "#64b5f6"
+        self.background_color = "#FF6F00"
+        self.primary_color = "#004D40"
 
         self.root = root
         self.drivers = drivers
@@ -51,8 +51,8 @@ class RecalibrationSnackbar(object):
         observer.subscribe(self, self.on_calibration_done)
 
     def show(self):
-        self.frame.place(relx=0.25, rely=0.8, relwidth=0.55, relheight=0.2)
-        self.text_frame.place(relx=0.05, relwidth=0.9, relheight=0.6, rely=0)
+        self.frame.place(relx=0.25, rely=0.85, relwidth=0.55, relheight=0.15)
+        self.text_frame.place(relx=0, relwidth=1, relheight=0.6, rely=0.1)
         self.buttons_frame.place(relx=0, rely=0.6, relwidth=1, relheight=0.4)
 
         self.text_label.pack(anchor=W, fill="both")
@@ -62,8 +62,7 @@ class RecalibrationSnackbar(object):
         self.text_label.configure(
             justify="left",
             text=f"{self.config.dp_calibration_timeout_hrs} hours since last "
-                 f"air-flow calibration.\n"
-                 f"You are encouraged to recalibrate")
+                 f"air-flow calibration")
 
     def on_calibration_done(self, timestamp):
         self.last_dp_calibration_ts = timestamp
