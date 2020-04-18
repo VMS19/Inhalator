@@ -51,7 +51,7 @@ class RecalibrationSnackbar(object):
         observer.subscribe(self, self.on_calibration_done)
 
     def show(self):
-        self.frame.place(relx=0.25, rely=0.85, relwidth=0.55, relheight=0.15)
+        self.frame.place(relx=0.25, rely=0.8, relwidth=0.55, relheight=0.2)
         self.text_frame.place(relx=0, relwidth=1, relheight=0.6, rely=0.1)
         self.buttons_frame.place(relx=0, rely=0.6, relwidth=1, relheight=0.4)
 
