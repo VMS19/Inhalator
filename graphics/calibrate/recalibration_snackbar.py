@@ -8,7 +8,7 @@ WHITE = "#ffffff"
 PRIMARY = "#3700b3"
 
 
-class RecalibrationSnackbar(object):  #
+class RecalibrationSnackbar(object):
     def __init__(self, root, drivers, observer):
         self.root = root
         self.drivers = drivers
@@ -21,7 +21,7 @@ class RecalibrationSnackbar(object):  #
                                        foreground=PRIMARY,
                                        activebackground=WHITE,
                                        activeforeground=PRIMARY,
-                                       font=("Roboto", 20, "bold"),
+                                       font=("Roboto", 14, "bold"),
                                        highlightthickness=0,
                                        bd=0,
                                        command=self.on_calibrate,
@@ -34,13 +34,13 @@ class RecalibrationSnackbar(object):  #
                                     bd=0,
                                     highlightthickness=0,
                                     command=self.on_snooze,
-                                    font=("Roboto", 20, "bold"),
+                                    font=("Roboto", 14, "bold"),
                                     text="NOT NOW")
         self.text_frame = Frame(master=self.frame,
                                 background=WHITE)
         self.text_label = Label(master=self.text_frame,
                                 background=WHITE,
-                                font=("Roboto", 16),
+                                font=("Roboto", 12),
                                 foreground=BLACK,
                                 text="")
         self.observer = observer
@@ -48,17 +48,18 @@ class RecalibrationSnackbar(object):  #
         observer.subscribe(self, self.on_calibration_done)
 
     def show(self):
-        self.frame.place(relx=0.1, rely=0.8, relwidth=0.8, relheight=0.2)
+        self.frame.place(relx=0.25, rely=0.8, relwidth=0.55, relheight=0.2)
         self.text_frame.place(relx=0.05, relwidth=0.9, relheight=0.6, rely=0)
         self.buttons_frame.place(relx=0, rely=0.6, relwidth=1, relheight=0.4)
 
-        self.text_label.pack(anchor="w", side="left", fill="both")
+        self.text_label.pack(anchor=W, fill="both")
         self.calibrate_button.pack(anchor="e", side="right")
         self.snooze_button.pack(anchor="e", side="right")
 
-        self.text_label.configure(text="%d hours have passed since the last time the "
-                                  "Air-Flow sensor was calibrated, please re-calibrate it." %
-                                  self.config.dp_calibration_timeout_hrs)
+        self.text_label.configure(
+            justify="left",
+            text=f"{self.config.dp_calibration_timeout_hrs} hours since last air-flow calibration.\n"
+                 f"You are encouraged to recalibrate")
 
     def on_calibration_done(self, timestamp):
         self.last_dp_calibration_ts = timestamp
