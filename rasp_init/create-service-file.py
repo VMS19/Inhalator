@@ -16,6 +16,7 @@ Environment=DISPLAY={display}
 Environment=XAUTHORITY={xauthority}
 Restart=always
 Type=simple
+User=pi
 
 [Install]
 WantedBy=default.target

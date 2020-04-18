@@ -91,12 +91,6 @@ sed -i 's/8700000 #//g' /usr/lib/raspi-config/init_resize.sh
 # config buzzer io pull up
 echo "gpio=13=pu" >> /boot/config.txt
 
-# enable ftp server permissions to log files
-touch /home/pi/Inhalator/inhalator.log
-touch /home/pi/Inhalator/inhalator.csv
-chown pi:pi /home/pi/Inhalator/inhaltor.*
-chmod 777 /home/pi/Inhalator/inhalator.*
-
 # enable hdmi hotplug
 echo "hdmi_force_hotplug=1" >> /boot/config.txt
 
