@@ -60,7 +60,6 @@ class Application(object):
 
         self.config = Configurations.instance()
 
-
         # Load sensors calibrations
         differential_pressure_driver = self.drivers.acquire_driver("differential_pressure")
         differential_pressure_driver.set_calibration_offset(self.config.dp_offset)
