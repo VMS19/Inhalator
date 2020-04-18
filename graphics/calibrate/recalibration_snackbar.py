@@ -47,7 +47,7 @@ class RecalibrationSnackbar(object):
                                 foreground=self.text_color,
                                 text="")
         self.observer = observer
-        self.last_dp_calibration_ts = 0
+        self.last_dp_calibration_ts = None
         observer.subscribe(self, self.on_calibration_done)
 
     def show(self):
@@ -68,6 +68,11 @@ class RecalibrationSnackbar(object):
         self.last_dp_calibration_ts = timestamp
 
     def update(self):
+        # we don't want to notify about recalibration right away
+        if self.last_dp_calibration_ts is None:
+            self.last_dp_calibration_ts = self.timer.get_current_time()
+            return
+
         next_calibration_time = (
             self.last_dp_calibration_ts +
             self.config.dp_calibration_timeout_hrs * self.timer.HOURS_TO_SECONDS)
