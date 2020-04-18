@@ -201,10 +201,10 @@ class OxygenCalibration(Calibration):
     NAME = "O2 Calibration"
     CALIBRATED_DRIVER = "a2d"
     SAMPLING_TIME = 5  # seconds
-    PRE_CALIBRATE_ALERT_MSG = \
-        "Please make sure before calibrating!:\n" \
-        "For 21%: detach tube from O2 sensor\n" \
-        "For 100%: full oxygen and tube connected"
+    PRE_CALIBRATE_ALERT_MSG = (
+        "Please make sure:\n"
+        "\tFor 21%: detach oxygen tube\n"
+        "\tFor 100%: feed 100% oxygen")
     STEP_2_CALIBRATION_PERCENTAGE = 100
 
     def __init__(self, *args):
