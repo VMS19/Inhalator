@@ -20,11 +20,14 @@ class MasterFrame(object):
 
         self.master_frame = Frame(master=self.root, bg="black")
         self.left_pane = LeftPane(self, measurements=measurements)
-        self.right_pane = RightPane(self, events=events, drivers=drivers, observer=observer)
+        self.right_pane = RightPane(self, events=events, drivers=drivers,
+                                    observer=observer)
         self.center_pane = CenterPane(self, measurements=measurements)
         self.top_pane = TopPane(self, events=events, drivers=drivers,
                                 measurements=measurements)
-        self.recalibration_bar = RecalibrationSnackbar(self.root, drivers, observer)
+        self.recalibration_bar = RecalibrationSnackbar(self.root,
+                                                       drivers,
+                                                       observer)
 
     @property
     def panes(self):
