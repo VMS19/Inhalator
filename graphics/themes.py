@@ -69,6 +69,7 @@ class LightTheme(Theme):
     LIGHT_BLUE = "#2ec4b6"
     RED = "#e71d36"
     YELLOW = "#ff9f1c"
+    GREEN = "#1b5e20"
 
 
 class DarkTheme(Theme):
@@ -81,6 +82,7 @@ class DarkTheme(Theme):
     LIGHT_BLUE = "#2ec4b6"
     RED = "#e71d36"
     YELLOW = "#ff9f1c"
+    GREEN = "#1b5e20"
 
     BACKGROUND = "#191919"
     SURFACE = "#232323"

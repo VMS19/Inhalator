@@ -11,6 +11,7 @@ class RecalibrationSnackbar(object):
         self.text_color = Theme.active().WHITE
         self.background_color = "#FF6F00"
         self.primary_color = "#004D40"
+        self.primary_background_color = "#bdbdbd"
 
         self.root = root
         self.drivers = drivers
@@ -18,22 +19,22 @@ class RecalibrationSnackbar(object):
         self.timer = drivers.acquire_driver("timer")
         self.frame = Frame(master=self.root, background=self.background_color)
         self.buttons_frame = Frame(master=self.frame,
-                                   background=self.background_color)
+                                   background=self.primary_background_color)
         self.calibrate_button = Button(master=self.buttons_frame,
-                                       background=self.background_color,
-                                       foreground=self.primary_color,
-                                       activebackground=self.background_color,
-                                       activeforeground=self.primary_color,
+                                       background=self.primary_background_color,
+                                       foreground=Theme.active().GREEN,
+                                       activebackground=self.primary_background_color,
+                                       activeforeground=Theme.active().GREEN,
                                        font=("Roboto", 14, "bold"),
                                        highlightthickness=0,
                                        bd=0,
                                        command=self.on_calibrate,
                                        text="CALIBRATE")
         self.snooze_button = Button(master=self.buttons_frame,
-                                    background=self.background_color,
-                                    foreground=self.primary_color,
-                                    activebackground=self.background_color,
-                                    activeforeground=self.primary_color,
+                                    background=self.primary_background_color,
+                                    foreground=Theme.active().RED,
+                                    activebackground=self.primary_background_color,
+                                    activeforeground=Theme.active().RED,
                                     bd=0,
                                     highlightthickness=0,
                                     command=self.on_snooze,
