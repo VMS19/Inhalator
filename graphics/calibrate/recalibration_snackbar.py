@@ -2,46 +2,49 @@ from tkinter import *
 
 from data.configurations import Configurations
 from graphics.calibrate.screen import CalibrationScreen, DifferentialPressureCalibration
-
-BLACK = "#000000"
-WHITE = "#ffffff"
-PRIMARY = "#3700b3"
+from graphics.themes import Theme
 
 
 class RecalibrationSnackbar(object):
+
     def __init__(self, root, drivers, observer):
+        self.text_color = Theme.active().WHITE
+        self.background_color = "#6200EE"
+        self.primary_color = "#64b5f6"
+
         self.root = root
         self.drivers = drivers
         self.config = Configurations.instance()
         self.timer = drivers.acquire_driver("timer")
-        self.frame = Frame(master=self.root, background=WHITE)
-        self.buttons_frame = Frame(master=self.frame, background=WHITE)
+        self.frame = Frame(master=self.root, background=self.background_color)
+        self.buttons_frame = Frame(master=self.frame,
+                                   background=self.background_color)
         self.calibrate_button = Button(master=self.buttons_frame,
-                                       background=WHITE,
-                                       foreground=PRIMARY,
-                                       activebackground=WHITE,
-                                       activeforeground=PRIMARY,
+                                       background=self.background_color,
+                                       foreground=self.primary_color,
+                                       activebackground=self.background_color,
+                                       activeforeground=self.primary_color,
                                        font=("Roboto", 14, "bold"),
                                        highlightthickness=0,
                                        bd=0,
                                        command=self.on_calibrate,
                                        text="CALIBRATE")
         self.snooze_button = Button(master=self.buttons_frame,
-                                    background=WHITE,
-                                    foreground=PRIMARY,
-                                    activebackground=WHITE,
-                                    activeforeground=PRIMARY,
+                                    background=self.background_color,
+                                    foreground=self.primary_color,
+                                    activebackground=self.background_color,
+                                    activeforeground=self.primary_color,
                                     bd=0,
                                     highlightthickness=0,
                                     command=self.on_snooze,
                                     font=("Roboto", 14, "bold"),
                                     text="NOT NOW")
         self.text_frame = Frame(master=self.frame,
-                                background=WHITE)
+                                background=self.background_color)
         self.text_label = Label(master=self.text_frame,
-                                background=WHITE,
+                                background=self.background_color,
                                 font=("Roboto", 12),
-                                foreground=BLACK,
+                                foreground=self.text_color,
                                 text="")
         self.observer = observer
         self.last_dp_calibration_ts = 0
@@ -58,15 +61,19 @@ class RecalibrationSnackbar(object):
 
         self.text_label.configure(
             justify="left",
-            text=f"{self.config.dp_calibration_timeout_hrs} hours since last air-flow calibration.\n"
+            text=f"{self.config.dp_calibration_timeout_hrs} hours since last "
+                 f"air-flow calibration.\n"
                  f"You are encouraged to recalibrate")
 
     def on_calibration_done(self, timestamp):
         self.last_dp_calibration_ts = timestamp
 
     def update(self):
-        if (self.last_dp_calibration_ts +
-            self.config.dp_calibration_timeout_hrs * self.timer.HOURS_TO_SECONDS)  <= self.timer.get_current_time():
+        next_calibration_time = (
+            self.last_dp_calibration_ts +
+            self.config.dp_calibration_timeout_hrs * self.timer.HOURS_TO_SECONDS)
+
+        if self.timer.get_current_time() >= next_calibration_time:
             self.show()
 
     def on_snooze(self):
@@ -76,7 +83,10 @@ class RecalibrationSnackbar(object):
     def on_calibrate(self):
         self.hide()
         self.last_dp_calibration_ts = self.timer.get_current_time()
-        screen = CalibrationScreen(self.root, DifferentialPressureCalibration, self.drivers, self.observer)
+        screen = CalibrationScreen(self.root,
+                                   DifferentialPressureCalibration,
+                                   self.drivers,
+                                   self.observer)
         screen.show()
 
     def hide(self):
