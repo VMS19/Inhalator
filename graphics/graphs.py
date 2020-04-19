@@ -14,6 +14,11 @@ class Graph(object):
     YLABEL = NotImplemented
     COLOR = NotImplemented
     DPI = 100  # pixels per inch
+    ERASE_GAP = 50  # pixels
+    CANVAS_WIDTH = 956  # pixel width of canvas
+    GRAPH_BEGIN_OFFSET = 80  # offset from canvas left corner, to begin of graph
+    GRAPH_END_OFFSET = 19  # offset from canvas right corner to end of graph
+    GRAPH_WIDTH = CANVAS_WIDTH - GRAPH_BEGIN_OFFSET - GRAPH_END_OFFSET
 
     def __init__(self, parent, measurements, width, height):
         rcParams.update({'figure.autolayout': True})
@@ -25,7 +30,7 @@ class Graph(object):
         self.width = width
         self.graph_bbox = None
         self.graph_clean_bg = None
-        self.graph_bg = None
+        self.eraser_bg = None
         self.print_index = 0
         self.current_min_y, self.current_max_y = self.configured_scale
 
@@ -45,10 +50,12 @@ class Graph(object):
         self.axis.axhline(y=0, color='white', lw=1)
 
         # Configure graph
-        self.display_values = [0] * self.measurements._amount_of_samples_in_graph
+        self.display_values = [0] * self.GRAPH_WIDTH
         self.graph, = self.axis.plot(
-            self.measurements.x_axis,
+            # self.measurements.x_axis,
+            range(0, self.GRAPH_WIDTH),
             self.display_values,
+            # self.display_values,
             color=self.COLOR,
             linewidth=1,
             animated=True)
@@ -60,7 +67,11 @@ class Graph(object):
 
     def save_bg(self):
         """Capture the current drawing of graph, and render it as background."""
-        self.graph_bg = self.canvas.copy_from_bbox(self.graph_bbox)
+        x1, y1, x2, y2 = self.graph_clean_bg.get_extents()
+
+        # Capture column of 1 pixel width, from middle of the clean background
+        bbox = (x1 + 200, y1, x1 + 201, y2)
+        self.eraser_bg = self.canvas.copy_from_bbox(bbox)
 
     def render(self):
         self.canvas.draw()
@@ -72,13 +83,12 @@ class Graph(object):
         self.save_bg()
 
     def update(self):
-        x1, y1, x2, y2 = self.graph_bg.get_extents()
-        print(f"{self.print_index}")
-        if self.print_index >= 319:
-            print("------")
-            self.print_index = 0
-        self.figure.canvas.restore_region(self.graph_bg, bbox=(x1+100,y1,x1+110,y2),
-                                          xy=(self.print_index*3.5, y1))
+        self.print_index %= self.GRAPH_WIDTH
+        erase_index = ((self.print_index + self.ERASE_GAP) % self.GRAPH_WIDTH) \
+                      + self.GRAPH_BEGIN_OFFSET
+
+        self.figure.canvas.restore_region(self.eraser_bg,
+                                          xy=(erase_index, 0))
         self.graph.set_ydata([self.display_values[-3:-1]])
         self.graph.set_xdata(range(self.print_index, self.print_index+2))
         self.axis.draw_artist(self.graph)
@@ -183,8 +193,9 @@ class AirPressureGraph(Graph):
         self.min_threshold = None
         self.max_threshold = None
         self.config.pressure_range.observer.subscribe(self, self.update_thresholds)
-        self.update_thresholds((self.config.pressure_range.min,
-                                self.config.pressure_range.max))
+        # Todo: find way to run this at start
+        # self.update_thresholds((self.config.pressure_range.min,
+        #                         self.config.pressure_range.max))
 
     def update_thresholds(self, range):
         min_value, max_value = range
