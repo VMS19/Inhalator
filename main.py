@@ -197,6 +197,7 @@ def start_app(args):
                           drivers=drivers,
                           sampler=sampler,
                           simulation=simulation,
+                          timer=timer,
                           fps=args.fps,
                           sample_rate=args.sample_rate)
 

@@ -26,7 +26,7 @@ class Application(object):
         return cls.__instance
 
     def __init__(self, measurements, events, arm_wd_event, drivers, sampler,
-                 simulation=False, fps=10, sample_rate=70):
+                 timer, simulation=False, fps=20, sample_rate=10):
         self.should_run = True
         self.drivers = drivers
         self.arm_wd_event = arm_wd_event
@@ -42,6 +42,12 @@ class Application(object):
         self.root.title("Inhalator")
         self.root.geometry('800x480')
         self.root.attributes("-fullscreen", True)
+        self._timer = timer
+        self.sps_counter = 0
+        self.sps_timer = 0
+        self.fps_counter = 0
+        self.fps_timer = 0
+        self.debug_sample = 1
 
         if os.uname()[1] == 'raspberrypi':
             # on production we don't want to see the ugly cursor
@@ -76,20 +82,38 @@ class Application(object):
         self.master_frame.render()
 
     def gui_update(self):
+        if self.debug_sample == 1:
+            cur_time = time.time()
+            if (self.fps_timer + 1) >= cur_time:
+                self.fps_counter += 1
+            else:
+                print("fps: {}".format(self.fps_counter))
+                self.fps_counter = 1
+                self.fps_timer = cur_time
+
         self.root.update()
         self.root.update_idletasks()
         self.master_frame.update()
 
     def sample(self):
+        if self.debug_sample == 1:
+            cur_time = time.time()
+            if (self.sps_timer + 1) >= cur_time:
+                self.sps_counter += 1
+            else:
+                print("sps: {}".format(self.sps_counter))
+                self.sps_counter = 1
+                self.sps_timer = cur_time
+
         self.sampler.sampling_iteration()
 
     @property
     def next_render(self):
-        return self.frame_interval - (time.time() - self.last_gui_update_ts)
+        return self.frame_interval - (self._timer.get_time() - self.last_gui_update_ts)
 
     @property
     def next_sample(self):
-        return self.sample_interval - (time.time() - self.last_sample_update_ts)
+        return self.sample_interval - (self._timer.get_time() - self.last_sample_update_ts)
 
     def run(self):
         self.render()
