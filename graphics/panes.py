@@ -48,7 +48,6 @@ class MasterFrame(object):
         for pane in self.panes:
             pane.render()
 
-
     def update(self):
         for pane in self.panes:
             pane.update()
