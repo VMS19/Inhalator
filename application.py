@@ -1,5 +1,6 @@
 import os
 import time
+from uptime import uptime
 from tkinter import Tk
 
 from graphics.panes import MasterFrame
@@ -74,6 +75,7 @@ class Application(object):
 
     def render(self):
         self.master_frame.render()
+        self.master_frame.initial_uptime = uptime()
 
     def gui_update(self):
         self.root.update()
