@@ -24,8 +24,11 @@ virtualenv $INHALATOR_PATH/.inhalator_env -p $(which python3)
 source $INHALATOR_PATH/.inhalator_env/bin/activate
 pip3 install --upgrade pip
 pip3 install -r $INHALATOR_PATH/requirements.txt
-apt-get install proftpd -y && service proftpd restart
 
+# enable ftp server
+apt-get install proftpd -y
+echo "UseReverseDNS off" >> /etc/proftpd/proftpd.conf
+service proftpd restart
 
 # install as service
 $INHALATOR_PATH/rasp_init/install-as-service.sh
@@ -83,9 +86,12 @@ echo -e "alias ll='ls -l'\nalias lla='ls -la'" >> /home/pi/.bashrc
 # re-enable file system expansion
 sed -i 's/#init_here/init=\/usr\/lib\/raspi-config\/init_resize.sh/g' /boot/cmdline.txt
 sed -i 's/exit 0 #remove this//g' /etc/rc.local
-sed -i 's/8500000 #//g' /usr/lib/raspi-config/init_resize.sh
+sed -i 's/8700000 #//g' /usr/lib/raspi-config/init_resize.sh
 
 # config buzzer io pull up
 echo "gpio=13=pu" >> /boot/config.txt
 
-echo "setup done. DO NOT REBOOT - USE ONLY SHUTDOWN!!!"
+# enable hdmi hotplug
+echo "hdmi_force_hotplug=1" >> /boot/config.txt
+
+echo -e "setup done. DON'T FORGET TO CHANGE THE PASSWORD\nDO NOT REBOOT - USE ONLY SHUTDOWN!!!"

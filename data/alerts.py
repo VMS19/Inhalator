@@ -1,7 +1,11 @@
 import time
 import datetime
+from collections import deque
 from enum import IntEnum
 from queue import Queue
+
+from uptime import uptime
+
 from data.observable import Observable
 from data.configurations import Configurations
 
@@ -69,6 +73,9 @@ class Alert(object):
     def __eq__(self, other):
         return self.code == other
 
+    def __hash__(self):
+        return hash(self.code)
+
     def is_medical_condition(self):
         return 0 < self.code <= 1 << 10
 
@@ -102,10 +109,20 @@ class AlertsQueue(object):
 
     def __init__(self):
         self.queue = Queue(maxsize=self.MAXIMUM_ALERTS_AMOUNT)
+        # We need `active_alerts` for the telemetry feature. Without it there is
+        # no way to get the active alerts in the system, since Queue is not
+        # iterable and cannot be converted to a list without emptying it.
+        # I intentionally DID NOT change the current workings of AlertsQueue,
+        # in order to avoid changing critical parts of the system in such a
+        # late stage.
+        # TODO: For v2.0 maybe, replace self.queue with a proper data structure
+        #  such as `deque` and call it `active_alerts`.
+        self.active_alerts = deque(maxlen=self.MAXIMUM_HISTORY_COUNT)
+        self.active_alerts_set = set()  # Keeps track for duplicates.
         self.last_alert = Alert(AlertCodes.OK)
         self.observer = Observable()
         self._config = Configurations.instance()
-        self.start_timestamp = time.time()
+        self.initial_uptime = uptime()
 
     def __len__(self):
         return self.queue.qsize()
@@ -114,8 +131,8 @@ class AlertsQueue(object):
         if not isinstance(alert, Alert):
             alert = Alert(alert, timestamp)
 
-        if self.start_timestamp + self._config.boot_alert_grace_time >\
-           time.time() and alert.is_medical_condition():
+        grace_time = self.initial_uptime + self._config.boot_alert_grace_time
+        if alert.is_medical_condition() and uptime() < grace_time:
             return
 
         if self.queue.qsize() == self.MAXIMUM_ALERTS_AMOUNT:
@@ -125,6 +142,9 @@ class AlertsQueue(object):
 
         self.observer.publish(self.last_alert)
         self.queue.put(alert)
+        if alert not in self.active_alerts_set:
+            self.active_alerts.append(alert)
+            self.active_alerts_set.add(alert)
 
     def dequeue_alert(self):
         alert = self.queue.get()
@@ -136,6 +156,8 @@ class AlertsQueue(object):
     def clear_alerts(self):
         # Note that emptying a queue is not thread-safe
         self.queue.queue.clear()
+        self.active_alerts.clear()
+        self.active_alerts_set.clear()
 
         self.last_alert = Alert(AlertCodes.OK)
         self.observer.publish(self.last_alert)
