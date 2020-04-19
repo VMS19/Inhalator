@@ -1,1 +1,6 @@
-__version__ = "a"
+import sh
+
+try:
+    __version__ = sh.git.describe(tags=True, dirty=True, abbrev=1).replace("dirty", "*").strip()
+except sh.ErrorReturnCode_128:
+    __version__ = "Cannot read version!"

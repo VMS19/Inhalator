@@ -8,3 +8,6 @@ timeago
 psutil
 RPi.GPIO
 sh
+uptime
+requests
+pydantic~=1.4

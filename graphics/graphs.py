@@ -13,22 +13,25 @@ class Graph(object):
     LABEL = NotImplemented
     YLABEL = NotImplemented
     COLOR = NotImplemented
+    DPI = 100  # pixels per inch
 
-    def __init__(self, parent, measurements, height):
+    def __init__(self, parent, measurements, width, height):
         rcParams.update({'figure.autolayout': True})
         self.parent = parent
         self.root = parent.element
         self.measurements = measurements
         self.config = Configurations.instance()
         self.height = height
-        self.width = self.parent.width
+        self.width = width
         self.graph_bbox = None
         self.graph_clean_bg = None
         self.graph_bg = None
         self.print_index = 0
+        self.current_min_y, self.current_max_y = self.configured_scale
 
-        self.figure = Figure(figsize=(self.width/100.0, self.height/100.0),
-                             dpi=100, facecolor=Theme.active().SURFACE)
+        self.figure = Figure(figsize=(self.width/self.DPI,
+                                      self.height/self.DPI),
+                             dpi=self.DPI, facecolor=Theme.active().SURFACE)
         self.axis = self.figure.add_subplot(111, label=self.LABEL)
         self.axis.spines["right"].set_visible(False)
         self.axis.spines["bottom"].set_visible(False)
@@ -38,9 +41,10 @@ class Graph(object):
         self.axis.set_xticks([])
         self.axis.set_xticklabels([])
 
-        # X axis
+        # Draw X axis
         self.axis.axhline(y=0, color='white', lw=1)
 
+        # Configure graph
         self.display_values = [0] * self.measurements._amount_of_samples_in_graph
         self.graph, = self.axis.plot(
             self.measurements.x_axis,
@@ -51,8 +55,8 @@ class Graph(object):
 
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.root)
 
-        # Scale y values
-        self.graph.axes.set_ylim(*self.y_scale)
+        # Scaling
+        self.graph.axes.set_ylim(*self.configured_scale)
 
     def save_bg(self):
         """Capture the current drawing of graph, and render it as background."""
@@ -63,8 +67,6 @@ class Graph(object):
         self.canvas.get_tk_widget().place(relx=self.RELX, rely=self.RELY,
                                           height=self.height,
                                           width=self.width)
-
-        # self.graph_bbox = self.canvas.figure.bbox
         self.graph_bbox = self.canvas.figure.bbox
         self.graph_clean_bg = self.canvas.copy_from_bbox(self.graph_bbox)
         self.save_bg()
@@ -90,8 +92,8 @@ class Graph(object):
         return self.canvas
 
     @property
-    def y_scale(self):
-        raise NotImplemented
+    def configured_scale(self):
+        raise NotImplementedError()
 
 
 class FlowGraph(Graph):
@@ -100,10 +102,73 @@ class FlowGraph(Graph):
     LABEL = "flow"
     YLABEL = 'Flow [L/min]'
     COLOR = Theme.active().LIGHT_BLUE
+    GRAPH_MARGINS = 3  # Used for calculating the empty space in the Y-axis
+
+    # We must pick values that are a multiplication of each other, as we
+    # "trim" the counter with the modulo of the maximal between them
+    ZOOM_OUT_FREQUENCY = 50
+    ZOOM_IN_FREQUENCY = 500
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # State
+        self.current_iteration = 0
 
     @property
-    def y_scale(self):
+    def configured_scale(self):
         return self.config.flow_y_scale
+
+    def autoscale(self):
+        """Symmetrically rescale the Y-axis."""
+        self.current_iteration += 1
+        self.current_iteration %= max(self.ZOOM_IN_FREQUENCY,
+                                      self.ZOOM_OUT_FREQUENCY)
+
+        new_min_y = min(self.display_values)
+        new_max_y = max(self.display_values)
+
+        # Once every <self.ZOOM_IN_FREQUENCY> calls we want to try and
+        # zoom back-in
+        original_min, original_max = self.configured_scale
+
+        if (self.current_iteration % self.ZOOM_IN_FREQUENCY == 0 and
+                new_max_y <= original_max < self.current_max_y and
+                new_min_y >= original_min > self.current_min_y):
+
+            self.current_min_y, self.current_max_y = original_min, original_max
+            self.graph.axes.set_ylim(self.current_min_y, self.current_max_y)
+
+            self.render()
+            return
+
+        if self.current_iteration % self.ZOOM_OUT_FREQUENCY != 0:
+            # We want to calculate new max once every
+            # <self.ZOOM_OUT_FREQUENCY> calls
+            return
+
+        max_y_difference = max(new_max_y - self.current_max_y, 0)
+        min_y_difference = abs(max(self.current_min_y - new_min_y, 0))
+
+        difference = max(max_y_difference, min_y_difference)
+
+        new_min_y = self.current_min_y - difference
+        new_max_y = self.current_max_y + difference
+
+        if new_max_y <= self.current_max_y and new_min_y >= self.current_min_y:
+            # no need to re-render
+            return
+
+        self.current_min_y, self.current_max_y = new_min_y, new_max_y
+        self.graph.axes.set_ylim(self.current_min_y - self.GRAPH_MARGINS,
+                                 self.current_max_y + self.GRAPH_MARGINS)
+
+        self.render()
+
+    def update(self):
+        if self.config.autoscale:
+            self.autoscale()
+
+        super().update()
 
 
 class AirPressureGraph(Graph):
@@ -113,8 +178,8 @@ class AirPressureGraph(Graph):
     YLABEL = 'Pressure [cmH20]'
     COLOR = Theme.active().YELLOW
 
-    def __init__(self, *args):
-        super().__init__(*args)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.min_threshold = None
         self.max_threshold = None
         self.config.pressure_range.observer.subscribe(self, self.update_thresholds)
@@ -137,7 +202,10 @@ class AirPressureGraph(Graph):
         self.canvas.draw()
         self.save_bg()
 
+    @property
+    def configured_scale(self):
+        return self.config.pressure_y_scale
 
     @property
-    def y_scale(self):
-        return self.config.pressure_y_scale
+    def element(self):
+        return self.canvas

@@ -47,17 +47,18 @@ class Application(object):
             # on production we don't want to see the ugly cursor
             self.root.config(cursor="none")
 
-        # We want to alert that config.json is corrupted
-        if Configurations.configuration_state() == ConfigurationState.CONFIG_CORRUPTED:
-            events.alerts_queue.enqueue_alert(AlertCodes.NO_CONFIGURATION_FILE)
-            Configurations.instance().save_to_file()  # Create config file for future use.
-
-        self.config = Configurations.instance()
-
         self.master_frame = MasterFrame(self.root,
                                         measurements=measurements,
                                         events=events,
                                         drivers=drivers)
+
+        # We want to alert that config.json is corrupted
+        if Configurations.configuration_state() == ConfigurationState.CONFIG_CORRUPTED:
+            events.alerts_queue.enqueue_alert(AlertCodes.NO_CONFIGURATION_FILE)
+            # TODO: Move this logic to Configurations.
+            Configurations.instance().save_to_file()  # Create config file for future use.
+
+        self.config = Configurations.instance()
 
         # Load sensors calibrations
         differential_pressure_driver = self.drivers.acquire_driver("differential_pressure")
@@ -97,12 +98,10 @@ class Application(object):
                 time_now = time.time()
                 if (time_now - self.last_gui_update_ts) >= self.frame_interval:
                     self.gui_update()
-                    print(f"fps:{1/(time_now - self.last_gui_update_ts)}")
                     self.last_gui_update_ts = time_now
 
                 if (time_now - self.last_sample_update_ts) >= self.sample_interval:
                     self.sample()
-                    print(f"    sample:{1/(time_now - self.last_sample_update_ts)}")
                     self.last_sample_update_ts = time_now
 
                 self.arm_wd_event.set()
