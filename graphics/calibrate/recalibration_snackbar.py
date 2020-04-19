@@ -66,9 +66,10 @@ class RecalibrationSnackbar(object):
 
         self.text_label = Label(master=self.text_frame,
                                 background=self.background_color,
-                                font=("Arial", 12),
+                                font=("Arial", 14),
                                 anchor="w",
                                 padx=20,
+                                width=80,
                                 justify="left",
                                 foreground=self.text_color,
                                 text="")
@@ -78,7 +79,7 @@ class RecalibrationSnackbar(object):
 
         self.title_label = Label(master=self.title_frame,
                                  background=self.title_background,
-                                 font=("Roboto", 28),
+                                 font=("Roboto", 22),
                                  anchor="w",
                                  padx=20,
                                  foreground=self.title_foreground,
@@ -99,7 +100,7 @@ class RecalibrationSnackbar(object):
 
     def show(self):
         self.shown = True
-        self.frame.place(relx=0.25, rely=0.785, relwidth=0.55, relheight=0.2)
+        self.frame.place(relx=0.075, rely=0.655, relwidth=0.85, relheight=0.3)
         self.title_frame.place(relx=0, relwidth=1, relheight=(1/3), rely=0)
         self.text_frame.place(relx=0, relwidth=1, relheight=(1/3), rely=(1/3))
         self.buttons_frame.place(relx=0, rely=(2/3), relwidth=1, relheight=(1/3))
@@ -157,9 +158,8 @@ class RecalibrationSnackbar(object):
 
         now_dt = datetime.datetime.fromtimestamp(time.time())
 
-        textual = timeago.format(now_dt - last_calibration_dt)
+        time_ago = timeago.format(now_dt - last_calibration_dt)
 
         self.text_label.configure(
-            text=f"Last air-flow calibration was {textual}.\n"
-                 f"You have to perform an air-flow calibration, "
-                 f"because the sensor results might drift in time.")
+            text=f"Last air-flow calibration was {time_ago}.\n"
+                 f"You have to perform an air-flow calibration.")
