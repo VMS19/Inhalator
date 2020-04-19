@@ -128,9 +128,8 @@ class RecalibrationSnackbar(object):
             self.last_dp_calibration_ts +
             self.config.dp_calibration_timeout_hrs * self.timer.HOURS_TO_SECONDS)
 
-        if now >= next_calibration_time:
-            if not self.shown:
-                self.show()
+        if not self.shown and now >= next_calibration_time:
+            self.show()
 
         if self.shown:
             self.update_label()
