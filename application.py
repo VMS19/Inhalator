@@ -98,12 +98,10 @@ class Application(object):
                 time_now = time.time()
                 if (time_now - self.last_gui_update_ts) >= self.frame_interval:
                     self.gui_update()
-                    print(f"fps:{1/(time_now - self.last_gui_update_ts)}")
                     self.last_gui_update_ts = time_now
 
                 if (time_now - self.last_sample_update_ts) >= self.sample_interval:
                     self.sample()
-                    print(f"    sample:{1/(time_now - self.last_sample_update_ts)}")
                     self.last_sample_update_ts = time_now
 
                 self.arm_wd_event.set()
