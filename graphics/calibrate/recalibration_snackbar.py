@@ -7,7 +7,6 @@ from tkinter import *
 
 from data.configurations import Configurations
 from graphics.calibrate.screen import CalibrationScreen, DifferentialPressureCalibration
-from graphics.themes import Theme
 
 
 THIS_FILE = __file__
@@ -22,7 +21,6 @@ class RecalibrationSnackbar(object):
                                       "baseline_warning_white_24dp.png")
 
     def __init__(self, root, drivers, observer):
-        self.text_color = Theme.active().WHITE
         self.background_color = "lightgray"
         self.text_color = "black"
         self.calibrate_button_color = "#77216F"

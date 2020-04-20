@@ -185,9 +185,6 @@ class DifferentialPressureCalibration(Calibration):
     PRE_CALIBRATE_ALERT_MSG = \
         "Make sure tubes are detached from sensor!"
 
-    def __init__(self, *args):
-        super().__init__(*args)
-
     def read_raw_value(self):
         return self.sensor_driver.read_differential_pressure()
 
