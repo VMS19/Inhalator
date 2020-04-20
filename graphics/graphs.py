@@ -15,12 +15,11 @@ class Graph(object):
     YLABEL = NotImplemented
     COLOR = NotImplemented
     DPI = 100  # pixels per inch
-    ERASE_GAP = 20  # samples to be cleaned from tail, ahead of new sample print
+    ERASE_GAP = 10  # samples to be cleaned from tail, ahead of new sample print
     GRAPH_BEGIN_OFFSET = 80  # pixel offset from canvas edge, to begin of graph
 
     def __init__(self, parent, measurements, width, height):
         rcParams.update({'figure.autolayout': True})
-        rcParams.update({'lines.antialiased': True})
         self.parent = parent
         self.root = parent.element
         self.measurements = measurements
@@ -104,7 +103,7 @@ class Graph(object):
             + self.GRAPH_BEGIN_OFFSET) + 1
 
         self.figure.canvas.restore_region(self.eraser_bg,
-                                          xy=(erase_index, -1))
+                                          xy=(erase_index, 0))
 
         self.graph.set_ydata([self.display_values[-2:]])
         self.graph.set_xdata([self.print_index, self.print_index + 1])
