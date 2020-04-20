@@ -1,6 +1,7 @@
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from matplotlib import rcParams
+from math import ceil
 
 from data.configurations import Configurations
 from graphics.themes import Theme
@@ -14,11 +15,8 @@ class Graph(object):
     YLABEL = NotImplemented
     COLOR = NotImplemented
     DPI = 100  # pixels per inch
-    ERASE_GAP = 50  # pixels
-    CANVAS_WIDTH = 956  # pixel width of canvas
-    GRAPH_BEGIN_OFFSET = 80  # offset from canvas left corner, to begin of graph
-    GRAPH_END_OFFSET = 19  # offset from canvas right corner to end of graph
-    GRAPH_WIDTH = CANVAS_WIDTH - GRAPH_BEGIN_OFFSET - GRAPH_END_OFFSET
+    ERASE_GAP = 20  # samples to be cleaned from tail, ahead of new sample print
+    GRAPH_BEGIN_OFFSET = 80  # pixel offset from canvas edge, to begin of graph
 
     def __init__(self, parent, measurements, width, height):
         rcParams.update({'figure.autolayout': True})
@@ -31,6 +29,7 @@ class Graph(object):
         self.graph_bbox = None
         self.graph_clean_bg = None
         self.eraser_bg = None
+        self.pixels_per_sample = None
         self.print_index = 0
         self.current_min_y, self.current_max_y = self.configured_scale
 
@@ -50,12 +49,11 @@ class Graph(object):
         self.axis.axhline(y=0, color='white', lw=1)
 
         # Configure graph
-        self.display_values = [0] * self.GRAPH_WIDTH
+        self.samples_width = self.measurements._amount_of_samples_in_graph
+        self.display_values = [0] * self.samples_width
         self.graph, = self.axis.plot(
-            # self.measurements.x_axis,
-            range(0, self.GRAPH_WIDTH),
+            self.measurements.x_axis,
             self.display_values,
-            # self.display_values,
             color=self.COLOR,
             linewidth=1,
             animated=True)
@@ -65,12 +63,21 @@ class Graph(object):
         # Scaling
         self.graph.axes.set_ylim(*self.configured_scale)
 
+    @property
+    def graph_width(self):
+        """Return the pixel width of the graph axis."""
+        boundaries = self.axis.get_position() * \
+                     self.axis.get_figure().get_size_inches() * self.DPI
+        width, height = boundaries[1] - boundaries[0]
+        return ceil(float(width))
+
     def save_bg(self):
         """Capture the current drawing of graph, and render it as background."""
         x1, y1, x2, y2 = self.graph_clean_bg.get_extents()
 
-        # Capture column of 1 pixel width, from middle of the clean background
-        bbox = (x1 + 200, y1, x1 + 201, y2)
+        # Capture column of pixels, from middle of the clean background,
+        # This column will be pasted cyclically on the graph, to clean it.
+        bbox = (x1 + 200, y1, ceil(x1 + 200 + self.pixels_per_sample), y2)
         self.eraser_bg = self.canvas.copy_from_bbox(bbox)
 
     def render(self):
@@ -80,12 +87,19 @@ class Graph(object):
                                           width=self.width)
         self.graph_bbox = self.canvas.figure.bbox
         self.graph_clean_bg = self.canvas.copy_from_bbox(self.graph_bbox)
+
+        self.pixels_per_sample = float(self.graph_width) / self.samples_width
+
         self.save_bg()
 
     def update(self):
-        self.print_index %= self.GRAPH_WIDTH
-        erase_index = ((self.print_index + self.ERASE_GAP) % self.GRAPH_WIDTH) \
-                      + self.GRAPH_BEGIN_OFFSET
+        # print position advances cyclically
+        self.print_index %= self.samples_width
+
+        # Calculate which pixels to erase
+        erase_index = \
+            int(((self.print_index + self.ERASE_GAP) * self.pixels_per_sample) % self.graph_width \
+            + self.GRAPH_BEGIN_OFFSET) + 1
 
         self.figure.canvas.restore_region(self.eraser_bg,
                                           xy=(erase_index, 0))
@@ -193,9 +207,6 @@ class AirPressureGraph(Graph):
         self.min_threshold = None
         self.max_threshold = None
         self.config.pressure_range.observer.subscribe(self, self.update_thresholds)
-        # Todo: find way to run this at start
-        # self.update_thresholds((self.config.pressure_range.min,
-        #                         self.config.pressure_range.max))
 
     def update_thresholds(self, range):
         min_value, max_value = range
@@ -212,6 +223,11 @@ class AirPressureGraph(Graph):
 
         self.canvas.draw()
         self.save_bg()
+
+    def render(self):
+        super().render()
+        self.update_thresholds((self.config.pressure_range.min,
+                                self.config.pressure_range.max))
 
     @property
     def configured_scale(self):
