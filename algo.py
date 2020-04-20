@@ -392,7 +392,7 @@ class VentilationStateMachine(object):
 class Sampler(object):
 
     def __init__(self, measurements, events, flow_sensor, pressure_sensor,
-                 a2d, timer, average_window, telemetry_sender=None,
+                 a2d, timer, average_window, undervoltage, telemetry_sender=None,
                  save_sensor_values=False):
         super(Sampler, self).__init__()
         self.log = logging.getLogger(self.__class__.__name__)
@@ -401,6 +401,7 @@ class Sampler(object):
         self._pressure_sensor = pressure_sensor
         self._a2d = a2d
         self._timer = timer
+        self._undervoltage = undervoltage
         self._config = Configurations.instance()
         self._events = events
         self.vsm = VentilationStateMachine(measurements, events, telemetry_sender)
@@ -459,6 +460,10 @@ class Sampler(object):
         except Exception as e:
             self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BATTERY, timestamp)
             self.log.error(e)
+
+        undervoltage = self._undervoltage.read()
+        if undervoltage:
+            self._events._alerts_queue.enqueue_alert(AlertCodes.UNDERVOLTAGE, timestamp)
 
         data = (flow_avg_sample, pressure_cmh2o, o2_saturation_percentage)
         return [x if x is not None else 0 for x in data]

@@ -33,6 +33,7 @@ class AlertCodes(IntEnum):
     PRESSURE_SENSOR_ERROR = 1 << 13
     OXYGEN_SENSOR_ERROR = 1 << 14
     NO_BATTERY = 1 << 15
+    UNDERVOLTAGE = 1 << 16
 
     def __getitem__(self, item):
         return getattr(self, item)
@@ -60,6 +61,7 @@ class Alert(object):
         AlertCodes.PRESSURE_SENSOR_ERROR: "Pressure Sensor Error",
         AlertCodes.OXYGEN_SENSOR_ERROR: "Oxygen Sensor Error",
         AlertCodes.NO_BATTERY: "No Battery",
+        AlertCodes.UNDERVOLTAGE: "Under Voltage",
     }
 
     def __init__(self, alert_code, timestamp=None):

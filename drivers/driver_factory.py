@@ -209,6 +209,11 @@ class DriverFactory(object):
         from drivers.mux_i2c import MuxI2C
         return MuxI2C()
 
+    @staticmethod
+    def get_undervoltage_driver():
+        from drivers.undervoltage import UnderVoltage
+        return UnderVoltage()
+
     def get_mock_differential_pressure_driver(self):
         from drivers.mocks.sensor import MockSensor
         simulation_data = self.simulation_data
@@ -285,3 +290,8 @@ class DriverFactory(object):
     def get_mock_mux_driver():
         from unittest.mock import MagicMock
         return MagicMock()
+
+    @staticmethod
+    def get_mock_undervoltage_driver():
+        from drivers.mocks.mock_undervoltage import UnderVoltage
+        return UnderVoltage()

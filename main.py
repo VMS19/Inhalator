@@ -170,6 +170,7 @@ def start_app(args):
             rtc = drivers.acquire_driver("null")
 
         alert_driver = drivers.acquire_driver("alert")
+        undervoltage = drivers.acquire_driver("undervoltage")
 
         if any(isinstance(driver, NullDriver)
                for driver in (pressure_sensor, flow_sensor, watchdog, a2d, rtc)):
@@ -189,6 +190,7 @@ def start_app(args):
                           timer=timer,
                           save_sensor_values=args.debug,
                           average_window=NOISY_DP_SENSOR_SAMPLES,
+                          undervoltage=undervoltage,
                           telemetry_sender=telemetry_sender)
 
         app = Application(measurements=measurements,
