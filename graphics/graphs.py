@@ -63,6 +63,7 @@ class Graph(object):
 
         # Scaling
         self.graph.axes.set_ylim(*self.configured_scale)
+        self.figure.tight_layout()
 
     @property
     def graph_width(self):
@@ -103,7 +104,7 @@ class Graph(object):
             + self.GRAPH_BEGIN_OFFSET) + 1
 
         self.figure.canvas.restore_region(self.eraser_bg,
-                                          xy=(erase_index, 0))
+                                          xy=(erase_index, -1))
 
         self.graph.set_ydata([self.display_values[-2:]])
         self.graph.set_xdata([self.print_index, self.print_index + 1])
