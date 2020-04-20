@@ -1,17 +1,6 @@
 import os
-import platform
 
-from cached_property import cached_property
-
-# Tkinter stuff
-from data.alerts import Alert, AlertCodes
-from data.configurations import Configurations
-
-if platform.python_version() < '3':
-    from Tkinter import *
-
-else:
-    from tkinter import *
+from tkinter import Frame, Label
 
 from graphics.imagebutton import ImageButton
 from graphics.themes import Theme
@@ -51,14 +40,15 @@ class BottomBar(object):
         self.parent = parent
         self.root = root
         self.frame = Frame(master=self.root, bg=Theme.active().BACKGROUND)
-        self.back_btn = ImageButton(master=self.frame,
-                               bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
-                               image_path=self.BACK_IMAGE_PATH,
-                               font=("Roboto", 20),
-                               command=self.on_click,
-                               fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
-                               activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
-                               activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE)
+        self.back_btn = ImageButton(
+            master=self.frame,
+            bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
+            image_path=self.BACK_IMAGE_PATH,
+            font=("Roboto", 20),
+            command=self.on_click,
+            fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
+            activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
+            activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE)
 
     def on_click(self):
         self.parent.on_back_button_click()
@@ -87,8 +77,8 @@ class EntriesContainer(object):
         for entry in self.entries:
             entry.render()
 
-class ScrollUpDownContainer(object):
 
+class ScrollUpDownContainer(object):
     DOWN_IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY, "baseline_less_white_36dp.png")
     UP_IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY, "baseline_more_white_36dp.png")
 
@@ -181,7 +171,6 @@ class AlertsHistoryScreen(object):
         self.index -= 1
         self.update_entries()
 
-
     def on_scroll_down(self):
         if len(self.alerts) - self.index <= self.ALERTS_ON_SCREEN:
             return
@@ -202,7 +191,6 @@ class AlertsHistoryScreen(object):
         self.entries_container.set_entries(
             alerts=self.alerts[self.index:self.index + self.ALERTS_ON_SCREEN]
         )
-
 
     def show(self):
         self.alerts_history_screen.place(relx=0.2, rely=0, relwidth=0.8, relheight=1)

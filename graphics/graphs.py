@@ -5,8 +5,6 @@ from matplotlib import rcParams
 from data.configurations import Configurations
 from graphics.themes import Theme
 
-from tkinter import *
-
 
 class BlankGraph(object):
     def __init__(self, root):

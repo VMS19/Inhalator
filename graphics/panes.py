@@ -1,4 +1,4 @@
-from tkinter import *
+from tkinter import Frame
 
 from graphics.alert_bar import IndicatorAlertBar
 from graphics.graphs import FlowGraph, AirPressureGraph, BlankGraph
@@ -7,7 +7,7 @@ from graphics.graph_summaries import VolumeSummary, BPMSummary, \
 from graphics.right_menu_options import (MuteAlertsButton,
                                          ClearAlertsButton,
                                          LockThresholdsButton,
-                                         OpenConfigureAlertsScreenButton, OpenAlertsHistoryScreenButton)
+                                         OpenConfigureAlertsScreenButton)
 from graphics.calibrate.recalibration_snackbar import RecalibrationSnackbar
 from graphics.themes import Theme
 from data.observable import Observable
@@ -137,14 +137,12 @@ class CenterPane(object):
         for graph in self.graphs:
             graph.render()
 
-
     def update(self):
-        # Get measurments from peripherals
-
-        had_pressure_change = self.pop_queue_to_list(self.measurements.pressure_measurements,
-                                                     self.pressure_graph.display_values)
-        had_flow_change = self.pop_queue_to_list(self.measurements.flow_measurements,
-                                                 self.flow_graph.display_values)
+        # Get measurements from peripherals
+        self.pop_queue_to_list(self.measurements.pressure_measurements,
+                               self.pressure_graph.display_values)
+        self.pop_queue_to_list(self.measurements.flow_measurements,
+                               self.flow_graph.display_values)
 
         for graph in self.graphs:
             graph.update()

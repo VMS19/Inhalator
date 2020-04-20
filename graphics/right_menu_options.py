@@ -1,13 +1,11 @@
 import os
 
-import time
-
 from data.alerts import AlertCodes
 from graphics.alerts_history_screen import AlertsHistoryScreen
 from graphics.configure_alerts_screen import ConfigureAlarmsScreen
 from graphics.imagebutton import ImageButton
 
-from tkinter import *
+# from tkinter import *
 
 from graphics.themes import Theme
 
@@ -50,7 +48,6 @@ class ClearAlertsButton(object):
                 state="normal",
             )
 
-
     def on_click(self):
         self.events.alerts_queue.clear_alerts()
 
@@ -63,10 +60,12 @@ class ClearAlertsButton(object):
 
 class MuteAlertsButton(object):
 
-    PATH_TO_MUTED = os.path.join(RESOURCES_DIRECTORY,
-                                 "round_notifications_off_white_48dp.png")
-    PATH_TO_UNMUTED = os.path.join(RESOURCES_DIRECTORY,
-                                   "baseline_notifications_active_white_48dp.png")
+    PATH_TO_MUTED = os.path.join(
+        RESOURCES_DIRECTORY,
+        "round_notifications_off_white_48dp.png")
+    PATH_TO_UNMUTED = os.path.join(
+        RESOURCES_DIRECTORY,
+        "baseline_notifications_active_white_48dp.png")
 
     def __init__(self, parent, events):
         self.parent = parent
@@ -91,7 +90,6 @@ class MuteAlertsButton(object):
 
     def on_click(self):
         self.events.mute_alerts.mute_alerts()
-
         self.update()
 
     def render(self):
@@ -107,9 +105,7 @@ class MuteAlertsButton(object):
             self.button.configure(text="Mute")
 
 
-
 class LockThresholdsButton(object):
-
     IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY,
                               "baseline_lock_open_white_48dp.png")
 
@@ -133,7 +129,6 @@ class LockThresholdsButton(object):
 
     def on_click(self):
         raise NotImplementedError
-
 
     def render(self):
         self.button.place(relx=0, rely=0.53, relwidth=1, relheight=0.2)

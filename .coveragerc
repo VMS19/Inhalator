@@ -4,6 +4,7 @@ branch = True
 omit =
     tests/*
     drivers/mocks/*
+    drivers/debug/*
     .tox/*
 
 

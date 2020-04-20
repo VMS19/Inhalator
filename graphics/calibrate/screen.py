@@ -1,6 +1,6 @@
 import math
 import statistics
-from tkinter import *
+from tkinter import Frame, Label, Button
 
 from data.configurations import Configurations
 from graphics.themes import Theme
@@ -41,21 +41,21 @@ class Calibration(object):
 
     def create_calibration_menu(self):
         button = Button(master=self.frame,
-                             bg=Theme.active().SURFACE,
-                             command=self.calibrate,
-                             fg=Theme.active().TXT_ON_SURFACE,
-                             text="Calibrate")
+                        bg=Theme.active().SURFACE,
+                        command=self.calibrate,
+                        fg=Theme.active().TXT_ON_SURFACE,
+                        text="Calibrate")
         self.calibration_buttons = [button]
 
     def read_raw_value(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     def get_difference(self):
         """Get offset drift."""
-        raise NotImplemented
+        raise NotImplementedError
 
     def configure_new_calibration(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     def save(self):
         try:
@@ -103,7 +103,7 @@ class Calibration(object):
         self.label.place(relx=0, rely=0, relheight=0.5, relwidth=1)
         calibration_button_width = 1 / len(self.calibration_buttons)
         for i, btn in enumerate(self.calibration_buttons):
-            btn.place(relx=i*calibration_button_width,
+            btn.place(relx=i * calibration_button_width,
                       rely=0.5, relheight=0.5,
                       relwidth=calibration_button_width)
 
@@ -216,13 +216,15 @@ class OxygenCalibration(Calibration):
         super().__init__(*args)
 
     def create_calibration_menu(self):
-        self.calibrate_point1_button = Button(master=self.frame,
+        self.calibrate_point1_button = Button(
+            master=self.frame,
             bg=Theme.active().SURFACE,
             command=self.calibrate_point1,
             fg=Theme.active().TXT_ON_SURFACE,
             text=f"Calibrate {self.config.oxygen_point1['x']}%")
 
-        self.calibrate_point2_button = Button(master=self.frame,
+        self.calibrate_point2_button = Button(
+            master=self.frame,
             bg=Theme.active().SURFACE,
             command=self.calibrate_level2_point,
             fg=Theme.active().TXT_ON_SURFACE,

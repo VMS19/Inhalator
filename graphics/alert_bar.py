@@ -3,7 +3,7 @@ import time
 
 import timeago
 import datetime
-from tkinter import *
+from tkinter import Frame, Label, PhotoImage
 
 from data.alerts import Alert, AlertCodes
 from graphics.themes import Theme
@@ -21,7 +21,7 @@ class IndicatorAlertBar(object):
     BATTERY_LOW_PATH = os.path.join(RESOURCES_DIRECTORY,
                                     "baseline_battery_alert_white_18dp.png")
     BATTERY_MISSING_PATH = os.path.join(RESOURCES_DIRECTORY,
-                                    "baseline_battery_unknown_white_18dp.png")
+                                        "baseline_battery_unknown_white_18dp.png")
 
     def __init__(self, parent, events, drivers, measurements):
         self.parent = parent
@@ -136,7 +136,7 @@ class IndicatorAlertBar(object):
         # Change text colors
         for label in self.textual:
             label.config(bg=Theme.active().ALERT_BAR_OK,
-                                      fg=Theme.active().ALERT_BAR_OK_TXT)
+                         fg=Theme.active().ALERT_BAR_OK_TXT)
 
         self.message_label.configure(text="OK")
         self.timestamp_label.configure(text="")

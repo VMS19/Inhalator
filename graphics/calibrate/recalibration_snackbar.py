@@ -3,7 +3,7 @@ import logging
 import datetime
 
 import timeago
-from tkinter import *
+from tkinter import Frame, Label, Button, PhotoImage, E, W
 
 from consts import HOURS_TO_SECONDS
 from data.configurations import Configurations
@@ -68,7 +68,7 @@ class RecalibrationSnackbar(object):
         self.text_label = Label(master=self.text_frame,
                                 background=self.background_color,
                                 font=("Arial", 14),
-                                anchor="w",
+                                anchor=W,
                                 padx=20,
                                 width=80,
                                 justify="left",
@@ -81,7 +81,7 @@ class RecalibrationSnackbar(object):
         self.title_label = Label(master=self.title_frame,
                                  background=self.title_background,
                                  font=("Roboto", 22),
-                                 anchor="w",
+                                 anchor=W,
                                  padx=20,
                                  foreground=self.title_foreground,
                                  text="WARNING!")
@@ -90,7 +90,7 @@ class RecalibrationSnackbar(object):
         self.title_image_container = Label(master=self.title_frame,
                                            background=self.title_background,
                                            padx=20,
-                                           anchor="e",
+                                           anchor=E,
                                            image=self.title_image)
 
         self.observer = observer
@@ -107,9 +107,9 @@ class RecalibrationSnackbar(object):
 
         self.shown = True
         self.frame.place(relx=0.075, rely=0.655, relwidth=0.85, relheight=0.3)
-        self.title_frame.place(relx=0, relwidth=1, relheight=(1/3), rely=0)
-        self.text_frame.place(relx=0, relwidth=1, relheight=(1/3), rely=(1/3))
-        self.buttons_frame.place(relx=0, rely=(2/3), relwidth=1, relheight=(1/3))
+        self.title_frame.place(relx=0, relwidth=1, relheight=(1 / 3), rely=0)
+        self.text_frame.place(relx=0, relwidth=1, relheight=(1 / 3), rely=(1 / 3))
+        self.buttons_frame.place(relx=0, rely=(2 / 3), relwidth=1, relheight=(1 / 3))
 
         self.title_image_container.pack(anchor=W,
                                         fill="y", padx=(20, 0),
@@ -117,8 +117,8 @@ class RecalibrationSnackbar(object):
         self.title_label.pack(anchor=W, fill="both", side="left")
 
         self.text_label.pack(anchor=W, fill="both")
-        self.calibrate_button.pack(anchor="e", side="right")
-        self.snooze_button.pack(anchor="e", side="right")
+        self.calibrate_button.pack(anchor=E, side="right")
+        self.snooze_button.pack(anchor=E, side="right")
 
     def on_calibration_done(self, timestamp):
         self.last_dp_calibration_ts = timestamp

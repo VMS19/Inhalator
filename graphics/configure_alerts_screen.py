@@ -4,7 +4,7 @@ from cached_property import cached_property
 
 from data.configurations import Configurations
 
-from tkinter import *
+from tkinter import Frame, Button, Label
 
 from graphics.calibrate.screen import CalibrationScreen, \
     DifferentialPressureCalibration, OxygenCalibration
@@ -224,7 +224,7 @@ class ConfirmCancelSection(object):
                                           compound="center",
                                           bg=Theme.active().OK,
                                           activebackground=Theme.active().OK_ACTIVE,
-                                          command = self.parent.confirm)
+                                          command=self.parent.confirm)
 
         self.cancel_button = ImageButton(master=self.frame,
                                          image_path=self.CANCEL_IMAGE_PATH,
@@ -304,7 +304,6 @@ class ConfigureAlarmsScreen(object):
 
         for section in self.threshold_sections:
             section.update()
-
 
     @cached_property
     def threshold_buttons(self):

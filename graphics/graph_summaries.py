@@ -1,6 +1,6 @@
 from graphics.themes import Theme
 
-from tkinter import *
+from tkinter import Frame, Label
 
 
 class GraphSummary(object):
@@ -65,7 +65,7 @@ class PressurePeakSummary(GraphSummary):
         return Theme.active().YELLOW
 
     def render(self):
-        self.frame.place(relx=0, rely=0, relheight=(1/4), relwidth=1)
+        self.frame.place(relx=0, rely=0, relheight=(1 / 4), relwidth=1)
         super(PressurePeakSummary, self).render()
 
 
@@ -85,7 +85,7 @@ class VolumeSummary(GraphSummary):
         return Theme.active().LIGHT_BLUE
 
     def render(self):
-        self.frame.place(relx=0, rely=(1/4), relheight=(1/4), relwidth=1)
+        self.frame.place(relx=0, rely=(1 / 4), relheight=(1 / 4), relwidth=1)
         super(VolumeSummary, self).render()
 
 
@@ -103,7 +103,7 @@ class BPMSummary(GraphSummary):
         return Theme.active().LIGHT_BLUE
 
     def render(self):
-        self.frame.place(relx=0, rely=(2/4), relheight=(1/4), relwidth=1)
+        self.frame.place(relx=0, rely=(2 / 4), relheight=(1 / 4), relwidth=1)
         super(BPMSummary, self).render()
 
 
@@ -121,5 +121,5 @@ class O2SaturationSummary(GraphSummary):
         return Theme.active().WHITE
 
     def render(self):
-        self.frame.place(relx=0, rely=(3/4), relheight=(1/4), relwidth=1)
+        self.frame.place(relx=0, rely=(3 / 4), relheight=(1 / 4), relwidth=1)
         super(O2SaturationSummary, self).render()
