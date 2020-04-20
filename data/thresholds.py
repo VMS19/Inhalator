@@ -1,17 +1,14 @@
-from data.observable import Observable
+from pydantic.dataclasses import dataclass
 
 
-class Range(object):
+@dataclass
+class Range:
     NAME = NotImplemented
     UNIT = NotImplemented
-    MINIMAL_VALUE = 0
 
-    def __init__(self, min=None, max=None, step=0.5):
-        self.min = min
-        self.max = max
-        self.step = step
-        self.temporary_min = min
-        self.temporary_max = max
+    min: float = None
+    max: float = None
+    step: float = 0.5
 
     def __setattr__(self, key, value):
         # We want to limit the precision of thresholds to 3 after the dot
@@ -38,10 +35,6 @@ class Range(object):
         """
         return self.max is not None and value > self.max
 
-    def load_from(self, other):
-        self.min = other.min
-        self.max = other.max
-
     def increase_min(self):
         if self.temporary_min + self.step <= self.temporary_max:
             self.temporary_min += self.step
@@ -55,14 +48,6 @@ class Range(object):
     def decrease_max(self):
         if self.temporary_max - self.step >= self.temporary_min:
             self.temporary_max -= self.step
-
-    def confirm(self):
-        self.max = self.temporary_max
-        self.min = self.temporary_min
-
-    def cancel(self):
-        self.temporary_max = self.max
-        self.temporary_min = self.min
 
 
 class O2Range(Range):
@@ -79,15 +64,7 @@ class PressureRange(Range):
     NAME = "Pressure"
     UNIT = "cmH2O"
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.observer = Observable()
-
-    def confirm(self, *args, **kwargs):
-        super().confirm(*args, **kwargs)
-        self.observer.publish((self.min, self.max))
-
 
 class RespiratoryRateRange(Range):
     NAME = "Rate"
-    UNIT = "per min"
+    UNIT = "BPM"
