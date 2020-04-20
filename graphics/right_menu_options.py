@@ -5,8 +5,6 @@ from graphics.alerts_history_screen import AlertsHistoryScreen
 from graphics.configure_alerts_screen import ConfigureAlarmsScreen
 from graphics.imagebutton import ImageButton
 
-# from tkinter import *
-
 from graphics.themes import Theme
 
 THIS_DIRECTORY = os.path.dirname(__file__)
