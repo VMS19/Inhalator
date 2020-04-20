@@ -54,7 +54,7 @@
   "graph_seconds": 12.0,
   "low_battery_percentage": 15,
   "mute_time_limit" : 120,
-  "boot_alert_grace_time" : 10,
+  "boot_alert_grace_time" : 7,
   "dp_calibration_timeout_hrs": 5,
   "telemetry": {
     "enable": false,
