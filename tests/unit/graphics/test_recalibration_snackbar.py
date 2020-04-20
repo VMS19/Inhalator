@@ -1,3 +1,4 @@
+import time
 from unittest.mock import MagicMock
 
 import pytest
@@ -11,6 +12,12 @@ from drivers.driver_factory import DriverFactory
 from graphics.calibrate.recalibration_snackbar import RecalibrationSnackbar
 
 
+def time_mock():
+    """Return original time result, as freezegun mocks it specifically."""
+    import time
+    return time.time()
+
+
 @pytest.fixture()
 def snackbar():
     Theme.ACTIVE_THEME = DarkTheme
@@ -20,6 +27,8 @@ def snackbar():
                                      observer=Observable())
 
     instance.config = MagicMock(spec=Configurations)
+    instance.timer.get_time = time_mock
+
     return instance
 
 

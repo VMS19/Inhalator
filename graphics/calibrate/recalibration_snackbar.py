@@ -1,10 +1,11 @@
-import time
-import timeago
-import datetime
 import os
+import logging
+import datetime
 
+import timeago
 from tkinter import *
 
+from consts import HOURS_TO_SECONDS
 from data.configurations import Configurations
 from graphics.calibrate.screen import CalibrationScreen, DifferentialPressureCalibration
 
@@ -32,6 +33,8 @@ class RecalibrationSnackbar(object):
         self.drivers = drivers
         self.config = Configurations.instance()
         self.timer = drivers.acquire_driver("timer")
+        self.log = logging.getLogger(__name__)
+
         self.frame = Frame(master=self.root,
                            background=self.background_color)
         self.buttons_frame = Frame(master=self.frame,
@@ -97,6 +100,7 @@ class RecalibrationSnackbar(object):
         self.shown = False
 
     def show(self):
+        self.log.warning("Flow recalibration notice has been popped-up")
         self.shown = True
         self.frame.place(relx=0.075, rely=0.655, relwidth=0.85, relheight=0.3)
         self.title_frame.place(relx=0, relwidth=1, relheight=(1/3), rely=0)
@@ -116,15 +120,17 @@ class RecalibrationSnackbar(object):
         self.last_dp_calibration_ts = timestamp
 
     def update(self):
-        # we don't want to notify about recalibration right away
-        now = time.time()
+        # we don't want to notify about recalibration right away when
+        # the program have just been started or when one of the actions
+        # in the snackbar has been chosen
+        now = self.timer.get_time()
         if self.last_dp_calibration_ts is None:
             self.last_dp_calibration_ts = now
             return
 
         next_calibration_time = (
             self.last_dp_calibration_ts +
-            self.config.dp_calibration_timeout_hrs * self.timer.HOURS_TO_SECONDS)
+            self.config.dp_calibration_timeout_hrs * HOURS_TO_SECONDS)
 
         if not self.shown and now >= next_calibration_time:
             self.show()
@@ -134,11 +140,11 @@ class RecalibrationSnackbar(object):
 
     def on_snooze(self):
         self.hide()
-        self.last_dp_calibration_ts = time.time()
+        self.last_dp_calibration_ts = None
 
     def on_calibrate(self):
         self.hide()
-        self.last_dp_calibration_ts = time.time()
+        self.last_dp_calibration_ts = None
         screen = CalibrationScreen(self.root,
                                    DifferentialPressureCalibration,
                                    self.drivers,
@@ -153,7 +159,7 @@ class RecalibrationSnackbar(object):
         last_calibration_dt = datetime.datetime.fromtimestamp(
             self.last_dp_calibration_ts)
 
-        now_dt = datetime.datetime.fromtimestamp(time.time())
+        now_dt = datetime.datetime.fromtimestamp(self.timer.get_time())
 
         time_ago = timeago.format(now_dt - last_calibration_dt)
 
