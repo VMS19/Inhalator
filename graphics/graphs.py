@@ -59,8 +59,6 @@ class Graph(object):
             linewidth=1,
             animated=True)
 
-        self.scat = self.axis.scatter([0], [0], s=1, color="red", animated=True)
-
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.root)
 
         # Scaling
@@ -107,11 +105,9 @@ class Graph(object):
         self.figure.canvas.restore_region(self.eraser_bg,
                                           xy=(erase_index, 0))
 
-        self.scat.set_offsets([self.print_index+1, self.display_values[-1]])
         self.graph.set_ydata([self.display_values[-2:]])
         self.graph.set_xdata([self.print_index, self.print_index + 1])
         self.axis.draw_artist(self.graph)
-        self.axis.draw_artist(self.scat)
         self.figure.canvas.blit(self.graph_bbox)
         self.figure.canvas.flush_events()
 
