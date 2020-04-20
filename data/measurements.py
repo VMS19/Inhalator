@@ -42,6 +42,14 @@ class Measurements(object):
         with self.lock:
             self.pressure_measurements.append(new_value)
 
+    def get_flow_value(self):
+        with self.lock:
+            return (self.flow_measurements[-2], self.flow_measurements[-1])
+
+    def get_pressure_value(self):
+        with self.lock:
+            return (self.pressure_measurements[-2], self.pressure_measurements[-1])
+
     def set_intake_peaks(self, flow, pressure, volume):
         self.intake_peak_flow = flow
         self.intake_peak_pressure = pressure
@@ -56,4 +64,6 @@ class Measurements(object):
     @property
     def samples_in_graph(self):
         config = Configurations.instance()
-        return int(config.graph_seconds / self.sample_interval)
+        samples_in_graph = int(config.graph_seconds / self.sample_interval)
+        # samples in graph MUST BE EVEN. Because they are drawn in pairs
+        return samples_in_graph + (samples_in_graph % 2)
