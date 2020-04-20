@@ -100,7 +100,11 @@ class RecalibrationSnackbar(object):
         self.shown = False
 
     def show(self):
-        self.log.warning("Flow recalibration notice has been popped-up")
+        self.log.warning(f"User has not calibrated air-flow sensor for at "
+                         f"least {self.config.dp_calibration_timeout_hrs} "
+                         f"hours. Flow recalibration notice has been "
+                         f"popped-up")
+
         self.shown = True
         self.frame.place(relx=0.075, rely=0.655, relwidth=0.85, relheight=0.3)
         self.title_frame.place(relx=0, relwidth=1, relheight=(1/3), rely=0)
