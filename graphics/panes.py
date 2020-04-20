@@ -8,24 +8,35 @@ from graphics.right_menu_options import (MuteAlertsButton,
                                          ClearAlertsButton,
                                          LockThresholdsButton,
                                          OpenConfigureAlertsScreenButton, OpenAlertsHistoryScreenButton)
+from graphics.calibrate.recalibration_snackbar import RecalibrationSnackbar
 from graphics.themes import Theme
+from data.observable import Observable
 
 
 class MasterFrame(object):
     def __init__(self, root, drivers, events, measurements):
         self.root = root
+        observer = Observable()
 
         self.master_frame = Frame(master=self.root, bg="black")
         self.left_pane = LeftPane(self, measurements=measurements)
-        self.right_pane = RightPane(self, events=events, drivers=drivers)
+        self.right_pane = RightPane(self, events=events, drivers=drivers,
+                                    observer=observer)
         self.center_pane = CenterPane(self, measurements=measurements)
         self.top_pane = TopPane(self, events=events, drivers=drivers,
                                 measurements=measurements)
+        self.recalibration_bar = RecalibrationSnackbar(self.root,
+                                                       drivers,
+                                                       observer)
 
     @property
     def panes(self):
         return [self.top_pane, self.center_pane,
                 self.left_pane, self.right_pane]
+
+    @property
+    def bars(self):
+        return [self.recalibration_bar]
 
     @property
     def element(self):
@@ -40,6 +51,9 @@ class MasterFrame(object):
     def update(self):
         for pane in self.panes:
             pane.update()
+
+        for bar in self.bars:
+            bar.update()
 
 
 class LeftPane(object):
@@ -137,7 +151,7 @@ class CenterPane(object):
 
 
 class RightPane(object):
-    def __init__(self, parent, events, drivers):
+    def __init__(self, parent, events, drivers, observer):
         self.parent = parent
         self.events = events
         self.drivers = drivers
@@ -156,7 +170,7 @@ class RightPane(object):
         self.clear_alerts_btn = ClearAlertsButton(parent=self, events=self.events)
         self.lock_thresholds_btn = LockThresholdsButton(parent=self)
         self.configure_alerts_btn = OpenConfigureAlertsScreenButton(
-            self, drivers=self.drivers)
+            self, drivers=self.drivers, observer=observer)
         # self.alerts_history_btn = OpenAlertsHistoryScreenButton(self, events=self.events)
 
     @property
@@ -213,4 +227,3 @@ class TopPane(object):
 
     def update(self):
         self.alerts_bar.update()
-

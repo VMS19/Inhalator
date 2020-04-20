@@ -9,6 +9,7 @@ from data import alerts
 from data.configurations import Configurations
 from data.events import Events
 from data.measurements import Measurements
+from data.observable import Observable
 from data.thresholds import O2Range, PressureRange, RespiratoryRateRange, \
     VolumeRange
 from drivers.driver_factory import DriverFactory
@@ -79,7 +80,8 @@ def test_sampler_alerts_when_sensor_exceeds_maximum(events, measurements, config
     assert len(events.alerts_queue) == 0
 
     configure_alerts_screen = ConfigureAlarmsScreen(app.master_frame.element,
-                                                    drivers=driver_factory)
+                                                    drivers=driver_factory,
+                                                    observer=Observable())
     configure_alerts_screen.show()
     getattr(configure_alerts_screen, f"{alert_type}_section").max_button.publish()
     app.gui_update()
@@ -139,7 +141,8 @@ def test_sampler_alerts_when_sensor_exceeds_minimum(events, measurements, config
     assert len(events.alerts_queue) == 0
 
     configure_alerts_screen = ConfigureAlarmsScreen(app.master_frame.element,
-                                                    drivers=driver_factory)
+                                                    drivers=driver_factory,
+                                                    observer=Observable())
     configure_alerts_screen.show()
     getattr(configure_alerts_screen, f"{alert_type}_section").min_button.publish()
     app.gui_update()

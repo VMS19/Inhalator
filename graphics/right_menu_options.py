@@ -128,11 +128,12 @@ class LockThresholdsButton(object):
             fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
             activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
             activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,
-            state="disabled",
+            state="disabled"
         )
 
     def on_click(self):
-        print("Not Implemented Yet")
+        raise NotImplementedError
+
 
     def render(self):
         self.button.place(relx=0, rely=0.53, relwidth=1, relheight=0.2)
@@ -145,10 +146,11 @@ class OpenConfigureAlertsScreenButton(object):
     IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY,
                               "baseline_settings_white_48dp.png")
 
-    def __init__(self, parent, drivers):
+    def __init__(self, parent, drivers, observer):
         self.parent = parent
         self.root = parent.element
         self.drivers = drivers
+        self.observer = observer
 
         self.button = ImageButton(
             master=self.root,
@@ -168,7 +170,8 @@ class OpenConfigureAlertsScreenButton(object):
     def on_click(self):
         master_frame = self.parent.parent.element
         screen = ConfigureAlarmsScreen(master_frame,
-                                       drivers=self.drivers)
+                                       drivers=self.drivers,
+                                       observer=self.observer)
         screen.show()
 
     def render(self):
