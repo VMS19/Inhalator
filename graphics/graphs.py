@@ -26,6 +26,7 @@ class Graph(object):
         self.config = Configurations.instance()
         self.height = height
         self.width = width
+        self.graph_width = None
         self.graph_bbox = None
         self.graph_clean_bg = None
         self.eraser_bg = None
@@ -49,8 +50,6 @@ class Graph(object):
         self.axis.axhline(y=0, color='white', lw=1)
 
         # Configure graph
-        self.samples_width = self.measurements._amount_of_samples_in_graph
-        self.display_values = [0] * self.samples_width
         self.graph, = self.axis.plot(
             self.measurements.x_axis,
             self.display_values,
@@ -64,8 +63,7 @@ class Graph(object):
         self.graph.axes.set_ylim(*self.configured_scale)
         self.figure.tight_layout()
 
-    @property
-    def graph_width(self):
+    def get_graph_width(self):
         """Return the pixel width of the graph axis."""
         boundaries = self.axis.get_position() * \
                      self.axis.get_figure().get_size_inches() * self.DPI
@@ -82,20 +80,25 @@ class Graph(object):
         self.eraser_bg = self.canvas.copy_from_bbox(bbox)
 
     def render(self):
+        """Called only once - to render the graph"""
         self.canvas.draw()
         self.canvas.get_tk_widget().place(relx=self.RELX, rely=self.RELY,
                                           height=self.height,
                                           width=self.width)
         self.graph_bbox = self.canvas.figure.bbox
         self.graph_clean_bg = self.canvas.copy_from_bbox(self.graph_bbox)
-
-        self.pixels_per_sample = float(self.graph_width) / self.samples_width
-
+        self.graph_width = self.get_graph_width()
+        self.pixels_per_sample = \
+            float(self.graph_width) / self.measurements.samples_in_graph
         self.save_bg()
+
+    def rerender(self):
+        """Called when graph properties changed, and re-render required."""
+        self.render()
 
     def update(self):
         # print position advances cyclically
-        self.print_index %= self.samples_width
+        self.print_index %= self.measurements.samples_in_graph
 
         # Calculate which pixels to erase
         erase_index = \
@@ -105,7 +108,7 @@ class Graph(object):
         self.figure.canvas.restore_region(self.eraser_bg,
                                           xy=(erase_index, 0))
 
-        self.graph.set_ydata([self.display_values[-2:]])
+        self.graph.set_ydata([self.display_values[-2], self.display_values[-1]])
         self.graph.set_xdata([self.print_index, self.print_index + 1])
         self.axis.draw_artist(self.graph)
         self.figure.canvas.blit(self.graph_bbox)
@@ -119,6 +122,10 @@ class Graph(object):
 
     @property
     def configured_scale(self):
+        raise NotImplementedError()
+
+    @property
+    def display_values(self):
         raise NotImplementedError()
 
 
@@ -143,6 +150,10 @@ class FlowGraph(Graph):
     @property
     def configured_scale(self):
         return self.config.flow_y_scale
+
+    @property
+    def display_values(self):
+        return self.measurements.flow_measurements
 
     def autoscale(self):
         """Symmetrically rescale the Y-axis."""
@@ -208,7 +219,8 @@ class AirPressureGraph(Graph):
         super().__init__(*args, **kwargs)
         self.min_threshold = None
         self.max_threshold = None
-        self.config.pressure_range.observer.subscribe(self, self.update_thresholds)
+        self.config.pressure_range.observer.subscribe(self,
+                                                      self.update_thresholds)
 
     def update_thresholds(self, range):
         min_value, max_value = range
@@ -236,5 +248,5 @@ class AirPressureGraph(Graph):
         return self.config.pressure_y_scale
 
     @property
-    def element(self):
-        return self.canvas
+    def display_values(self):
+        return self.measurements.pressure_measurements

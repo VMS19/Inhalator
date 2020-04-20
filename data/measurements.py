@@ -1,4 +1,4 @@
-from queue import Queue
+from collections import deque
 from threading import Lock
 
 from data.configurations import Configurations
@@ -10,10 +10,13 @@ class Measurements(object):
         self.expiration_volume = 0
         self.avg_insp_volume = 0
         self.avg_exp_volume = 0
-        self.flow_measurements = Queue(maxsize=40)  # TODO: Rename?
-        self.pressure_measurements = Queue(maxsize=40)  # TODO: Rename?
         self.sample_interval = 1 / sample_rate
-        self.x_axis = range(0, self._amount_of_samples_in_graph)
+        self.flow_measurements = deque(maxlen=self.samples_in_graph)  # TODO: Rename?
+        self.pressure_measurements = deque(maxlen=self.samples_in_graph)  # TODO: Rename?
+        for _ in range(self.samples_in_graph):
+            self.flow_measurements.append(0)
+            self.pressure_measurements.append(0)
+        self.x_axis = range(0, self.samples_in_graph)
         self.intake_peak_flow = 0
         self.intake_peak_pressure = 0
         self.peep_min_pressure = 0
@@ -35,24 +38,24 @@ class Measurements(object):
     def set_flow_value(self, new_value):
         with self.lock:
             # pop last item if queue is full
-            if self.flow_measurements.full():
-                self.flow_measurements.get()
-            self.flow_measurements.put(new_value)
+            if len(self.flow_measurements) == self.samples_in_graph:
+                self.flow_measurements.popleft()
+            self.flow_measurements.append(new_value)
 
     def set_pressure_value(self, new_value):
         with self.lock:
             # pop last item if queue is full
-            if self.pressure_measurements.full():
-                self.pressure_measurements.get()
-            self.pressure_measurements.put(new_value)
+            if len(self.pressure_measurements) == self.samples_in_graph:
+                self.pressure_measurements.popleft()
+            self.pressure_measurements.append(new_value)
 
-    def get_flow_value(self, new_value):
+    def get_flow_value(self):
         with self.lock:
-            self.flow_measurements.get(new_value)
+            return self.flow_measurements[-1]
 
-    def get_pressure_value(self, new_value):
+    def get_pressure_value(self):
         with self.lock:
-            self.pressure_measurements.get(new_value)
+            return self.pressure_measurements[-1]
 
     def set_intake_peaks(self, flow, pressure, volume):
         self.intake_peak_flow = flow
@@ -66,6 +69,6 @@ class Measurements(object):
         self.battery_percentage = percentage
 
     @property
-    def _amount_of_samples_in_graph(self):
+    def samples_in_graph(self):
         config = Configurations.instance()
         return int(config.graph_seconds / self.sample_interval)
