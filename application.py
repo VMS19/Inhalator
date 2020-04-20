@@ -97,12 +97,10 @@ class Application(object):
             try:
                 time_now = time.time()
                 if (time_now - self.last_gui_update_ts) >= self.frame_interval:
-                    self.gui_update()
-                    self.last_gui_update_ts = time_now
-
-                if (time_now - self.last_sample_update_ts) >= self.sample_interval:
                     self.sample()
                     self.last_sample_update_ts = time_now
+                    self.gui_update()
+                    self.last_gui_update_ts = time_now
 
                 self.arm_wd_event.set()
             except KeyboardInterrupt:

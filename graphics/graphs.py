@@ -52,7 +52,7 @@ class Graph(object):
         # Configure graph
         self.graph, = self.axis.plot(
             self.measurements.x_axis,
-            self.display_values,
+            [0] * len(self.measurements.x_axis),
             color=self.COLOR,
             linewidth=1,
             animated=True)
@@ -108,9 +108,7 @@ class Graph(object):
         self.figure.canvas.restore_region(self.eraser_bg,
                                           xy=(erase_index, 0))
 
-        last = self.display_values.popleft()
-
-        self.graph.set_ydata([last, self.display_values[0]])
+        self.graph.set_ydata([self.display_values[-2], self.display_values[-1]])
         self.graph.set_xdata([self.print_index, self.print_index + 1])
 
         self.axis.draw_artist(self.graph)
