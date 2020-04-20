@@ -463,7 +463,7 @@ class Sampler(object):
 
         undervoltage = self._undervoltage.read()
         if undervoltage:
-            self._events._alerts_queue.enqueue_alert(AlertCodes.UNDERVOLTAGE, timestamp)
+            self._events.alerts_queue.enqueue_alert(AlertCodes.UNDERVOLTAGE, timestamp)
 
         data = (flow_avg_sample, pressure_cmh2o, o2_saturation_percentage)
         return [x if x is not None else 0 for x in data]
