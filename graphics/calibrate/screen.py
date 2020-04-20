@@ -31,7 +31,7 @@ class Calibration(object):
         self.label = Label(master=self.frame,
                            text=self.PRE_CALIBRATE_ALERT_MSG,
                            font=("Roboto", 16),
-                           justify="left",
+                           justify="center",
                            bg=Theme.active().BACKGROUND,
                            fg=Theme.active().TXT_ON_BG)
 
@@ -182,8 +182,9 @@ class CalibrationScreen(object):
 class DifferentialPressureCalibration(Calibration):
     NAME = "Flow Calibration"
     CALIBRATED_DRIVER = "differential_pressure"
-    PRE_CALIBRATE_ALERT_MSG = \
-        "Make sure tubes are detached from sensor!"
+    PRE_CALIBRATE_ALERT_MSG = (
+        "Please make sure\n"
+        "tubes are detached from sensor!")
 
     def read_raw_value(self):
         return self.sensor_driver.read_differential_pressure()
@@ -203,9 +204,9 @@ class OxygenCalibration(Calibration):
     CALIBRATED_DRIVER = "a2d"
     SAMPLING_TIME = 5  # seconds
     PRE_CALIBRATE_ALERT_MSG = (
-        "Please make sure:\n"
-        "    For 21% - detach oxygen tube\n"
-        "    For 100% - feed 100% oxygen")
+        "Please make sure\n"
+        "For 21% - detach oxygen tube\n"
+        "For 100% - feed 100% oxygen")
     STEP_2_CALIBRATION_PERCENTAGE = 100
 
     def __init__(self, *args):
