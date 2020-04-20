@@ -32,7 +32,8 @@ class Graph(object):
         self.eraser_bg = None
         self.pixels_per_sample = None
         self.print_index = 0
-        self.current_min_y, self.current_max_y = self.configured_scale
+        self.draw_batch_size = 2
+        self.draw_batch = []
 
         self.figure = Figure(figsize=(self.width/self.DPI,
                                       self.height/self.DPI),
@@ -60,6 +61,7 @@ class Graph(object):
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.root)
 
         # Scaling
+        self.current_min_y, self.current_max_y = self.configured_scale
         self.graph.axes.set_ylim(*self.configured_scale)
         self.figure.tight_layout()
 
@@ -70,13 +72,16 @@ class Graph(object):
         width, height = boundaries[1] - boundaries[0]
         return ceil(float(width))
 
-    def save_bg(self):
-        """Capture the current drawing of graph, and render it as background."""
+    def save_eraser_bg(self):
+        """Capture background for eraser of cyclic graph."""
+        # graph boundary points
         x1, y1, x2, y2 = self.graph_clean_bg.get_extents()
 
         # Capture column of pixels, from middle of the clean background,
         # This column will be pasted cyclically on the graph, to clean it.
-        bbox = (x1 + 200, y1, ceil(x1 + 200 + self.pixels_per_sample), y2)
+        capture_offset = x1 + (self.graph_width / 2)
+        eraser_width = ceil(self.pixels_per_sample * self.draw_batch_size)
+        bbox = (capture_offset, y1, capture_offset + eraser_width, y2)
         self.eraser_bg = self.canvas.copy_from_bbox(bbox)
 
     def render(self):
@@ -90,33 +95,43 @@ class Graph(object):
         self.graph_width = self.get_graph_width()
         self.pixels_per_sample = \
             float(self.graph_width) / self.measurements.samples_in_graph
-        self.save_bg()
+        self.save_eraser_bg()
 
     def rerender(self):
         """Called when graph properties changed, and re-render required."""
         self.render()
+        # Todo: print entire graph, except erased part
 
     def update(self):
+        self.draw_batch.append(self.display_values[-1])
+        if len(self.draw_batch) < self.draw_batch_size:
+            # Wait for batch to fill, before drawing it
+            return
+
         # print position advances cyclically
         self.print_index %= self.measurements.samples_in_graph
 
-        # Calculate which pixels to erase
+        # Calculate pixel offset to erase at
         erase_index = \
             int(((self.print_index + self.ERASE_GAP) * self.pixels_per_sample) % self.graph_width \
-            + self.GRAPH_BEGIN_OFFSET) + 1
+                + self.GRAPH_BEGIN_OFFSET) + 1
 
         self.figure.canvas.restore_region(self.eraser_bg,
                                           xy=(erase_index, 0))
 
-        last = self.display_values.popleft()
-
-        self.graph.set_ydata([last, self.display_values[0]])
-        self.graph.set_xdata([self.print_index, self.print_index + 1])
+        # xdata = list(range(self.print_index,
+        #                    self.print_index + self.draw_batch_size))
+        # n = self.measurements.get_flow_value()
+        # print("-2,-1:" + str(n))
+        # print("batch:" + str(self.draw_batch))
+        self.graph.set_ydata(self.draw_batch)
+        self.graph.set_xdata([self.print_index, self.print_index+1])
 
         self.axis.draw_artist(self.graph)
         self.figure.canvas.blit(self.graph_bbox)
         self.figure.canvas.flush_events()
 
+        self.draw_batch = self.draw_batch[1:]
         self.print_index += 1
 
     @property
@@ -164,8 +179,12 @@ class FlowGraph(Graph):
         self.current_iteration %= max(self.ZOOM_IN_FREQUENCY,
                                       self.ZOOM_OUT_FREQUENCY)
 
-        new_min_y = min(self.display_values)
-        new_max_y = max(self.display_values)
+        if len(self.display_values):
+            new_min_y = min(self.display_values)
+            new_max_y = max(self.display_values)
+        else:
+            new_min_y = 0
+            new_max_y = 0
 
         # Once every <self.ZOOM_IN_FREQUENCY> calls we want to try and
         # zoom back-in
@@ -239,7 +258,7 @@ class AirPressureGraph(Graph):
         self.max_threshold = self.axis.axhline(y=max_value, color='red', lw=1)
 
         self.canvas.draw()
-        self.save_bg()
+        self.save_eraser_bg()
 
     def render(self):
         super().render()
