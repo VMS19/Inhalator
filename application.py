@@ -1,5 +1,6 @@
 import os
 import time
+from uptime import uptime
 from tkinter import Tk
 
 from graphics.panes import MasterFrame
@@ -32,6 +33,7 @@ class Application(object):
         self.arm_wd_event = arm_wd_event
         self.sampler = sampler
         self.simulation = simulation
+        self.events = events
         self.frame_interval = 1 / fps
         self.sample_interval = 1 / sample_rate
         self.last_sample_update_ts = 0
@@ -74,6 +76,7 @@ class Application(object):
 
     def render(self):
         self.master_frame.render()
+        self.events.alerts_queue.initial_uptime = uptime()
 
     def gui_update(self):
         self.root.update()
