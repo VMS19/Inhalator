@@ -110,7 +110,7 @@ class LockThresholdsButton(BaseButton):
                                      "baseline_lock_open_white_48dp.png")
     LOCK_IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY,
                                    "outline_lock_white_24dp.png")
-                              
+
     def __init__(self, parent):
         self.parent = parent
         self.root = parent.element
