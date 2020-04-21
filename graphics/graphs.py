@@ -50,6 +50,7 @@ class Graph(object):
         # Calibrate x-axis
         self.axis.set_xticks([])
         self.axis.set_xticklabels([])
+        self.axis.tick_params(direction='out', length=0, width=0, colors='w')
 
         # Draw X axis
         self.axis.axhline(y=0, color='white', lw=1)
@@ -100,7 +101,6 @@ class Graph(object):
         self.graph_bbox = self.canvas.figure.bbox
         self.graph_clean_bg = self.canvas.copy_from_bbox(self.graph_bbox)
         self.graph_width = self.get_graph_width()
-        print(f"begin offset: {self.width - self.graph_width}")
         self.pixels_per_sample = \
             float(self.graph_width) / self.measurements.samples_in_graph
         self.save_eraser_bg()
@@ -121,11 +121,12 @@ class Graph(object):
             # Normal case: during draw cycle
             # |~~~ ~~~|
             draw_ranges = [(0, print_index),
-                           (self.erase_index+1, self.measurements.samples_in_graph)]
+                           (self.erase_index+5, self.measurements.samples_in_graph)]
+
         elif self.print_index > self.erase_index:
             # Draw cycle at the right edge. started erasing the left edge
             # | ~~~~ |
-            draw_ranges = [(self.erase_index+1, print_index)]
+            draw_ranges = [(self.erase_index+5, print_index)]
 
         # Draw all graph parts
         for start_index, end_index in draw_ranges:
