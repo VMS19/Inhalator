@@ -14,8 +14,22 @@ from graphics.themes import Theme
 THIS_DIRECTORY = os.path.dirname(__file__)
 RESOURCES_DIRECTORY = os.path.join(os.path.dirname(THIS_DIRECTORY), "resources")
 
+class BaseButton(object):
+    def enable_button(self):
+        self.button.configure(
+            state="normal",
+        )
+    
+    def disable_button(self):
+        self.button.configure(
+            state="disabled",
+        )
 
-class ClearAlertsButton(object):
+    def update(self):
+        pass
+
+
+class ClearAlertsButton(BaseButton):
     IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY,
                               "baseline_history_white_48dp.png")
 
@@ -57,11 +71,8 @@ class ClearAlertsButton(object):
     def render(self):
         self.button.place(relx=0, rely=0.01, relwidth=1, relheight=0.2)
 
-    def update(self):
-        pass
 
-
-class MuteAlertsButton(object):
+class MuteAlertsButton(BaseButton):
 
     PATH_TO_MUTED = os.path.join(RESOURCES_DIRECTORY,
                                  "round_notifications_off_white_48dp.png")
@@ -106,18 +117,8 @@ class MuteAlertsButton(object):
             self.button.set_image(self.PATH_TO_UNMUTED)
             self.button.configure(text="Mute")
 
-    def enable_button(self):
-        self.button.configure(
-            state="normal",
-        )
-    
-    def disable_button(self):
-        self.button.configure(
-            state="disabled",
-        )
 
-
-class LockThresholdsButton(object):
+class LockThresholdsButton(BaseButton):
 
     UNLOCK_IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY,
                                      "baseline_lock_open_white_48dp.png")
@@ -161,11 +162,8 @@ class LockThresholdsButton(object):
     def render(self):
         self.button.place(relx=0, rely=0.53, relwidth=1, relheight=0.2)
 
-    def update(self):
-        pass
 
-
-class OpenConfigureAlertsScreenButton(object):
+class OpenConfigureAlertsScreenButton(BaseButton):
     IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY,
                               "baseline_settings_white_48dp.png")
 
@@ -200,21 +198,8 @@ class OpenConfigureAlertsScreenButton(object):
     def render(self):
         self.button.place(relx=0, rely=0.79, relwidth=1, relheight=0.2)
 
-    def update(self):
-        pass
 
-    def enable_button(self):
-        self.button.configure(
-            state="normal",
-        )
-    
-    def disable_button(self):
-        self.button.configure(
-            state="disabled",
-        )
-
-
-class OpenAlertsHistoryScreenButton(object):
+class OpenAlertsHistoryScreenButton(BaseButton):
     PATH_TO_HISTORY = os.path.join(RESOURCES_DIRECTORY,
                                    "baseline_history_white_24dp.png")
 
@@ -243,5 +228,3 @@ class OpenAlertsHistoryScreenButton(object):
     def render(self):
         self.button.place(relx=0, rely=0.79, relwidth=1, relheight=0.2)
 
-    def update(self):
-        pass
