@@ -19,9 +19,10 @@ class LockSnackbar(BaseSnackbar):
         
         self.text_label = Label(master=self.text_frame,
                                 background=self.background_color,
-                                font=("Arial", 14),
+                                font=("Arial", 15),
                                 anchor="w",
                                 padx=20,
+                                pady=20,
                                 width=80,
                                 justify="left",
                                 foreground=self.text_color,
