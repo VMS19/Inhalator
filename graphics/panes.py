@@ -185,10 +185,12 @@ class RightPane(object):
         if not self.is_buttons_locked:
             self.mute_alerts_btn.disable_button()
             self.configure_alerts_btn.disable_button()
+            self.lock_thresholds_btn.unlock_button()
             self.is_buttons_locked = True
         else:
             self.mute_alerts_btn.enable_button()
             self.configure_alerts_btn.enable_button()
+            self.lock_thresholds_btn.lock_button()
             self.is_buttons_locked = False
 
 

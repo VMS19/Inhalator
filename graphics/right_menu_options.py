@@ -119,16 +119,18 @@ class MuteAlertsButton(object):
 
 class LockThresholdsButton(object):
 
-    IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY,
+    UNLOCK_IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY,
                               "baseline_lock_open_white_48dp.png")
-
+    LOCK_IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY,
+                              "outline_lock_white_24dp.png")
+                              
     def __init__(self, parent):
         self.parent = parent
         self.root = parent.element
 
         self.button = ImageButton(
             master=self.root,
-            image_path=self.IMAGE_PATH,
+            image_path=self.UNLOCK_IMAGE_PATH,
             command=self.on_click,
             text="Lock",
             relief="flat",
@@ -144,6 +146,17 @@ class LockThresholdsButton(object):
 
     def on_click(self):
         self.parent.lock_buttons()
+
+    def lock_button(self):
+        self.button.configure(text="Lock")
+        self.button.set_image(self.LOCK_IMAGE_PATH)
+
+
+    def unlock_button(self):
+        self.button.configure(
+            text = "Unlock"
+        )
+        self.button.set_image(self.UNLOCK_IMAGE_PATH)
 
     def render(self):
         self.button.place(relx=0, rely=0.53, relwidth=1, relheight=0.2)
