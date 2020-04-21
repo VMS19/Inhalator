@@ -174,7 +174,6 @@ class RightPane(object):
         self.lock_thresholds_btn = LockThresholdsButton(parent=self)
         self.configure_alerts_btn = OpenConfigureAlertsScreenButton(
             self, drivers=self.drivers, observer=observer)
-        # self.alerts_history_btn = OpenAlertsHistoryScreenButton(self, events=self.events)
         self.is_buttons_locked = False
 
     @property
@@ -182,7 +181,6 @@ class RightPane(object):
         return (self.mute_alerts_btn,
                 self.clear_alerts_btn,
                 self.configure_alerts_btn,
-                # self.alerts_history_btn,
                 self.lock_thresholds_btn)
 
     @property
@@ -202,13 +200,13 @@ class RightPane(object):
         if not self.is_buttons_locked:
             self.mute_alerts_btn.disable_button()
             self.configure_alerts_btn.disable_button()
-            self.lock_thresholds_btn.unlock_button()
+            self.lock_thresholds_btn.lock_button()
             self.is_buttons_locked = True
             self.parent.lock_bar.show()
         else:
             self.mute_alerts_btn.enable_button()
             self.configure_alerts_btn.enable_button()
-            self.lock_thresholds_btn.lock_button()
+            self.lock_thresholds_btn.unlock_button()
             self.is_buttons_locked = False
             self.parent.lock_bar.hide()
 
