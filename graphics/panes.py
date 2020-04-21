@@ -12,6 +12,8 @@ from graphics.calibrate.recalibration_snackbar import RecalibrationSnackbar
 from graphics.themes import Theme
 from data.observable import Observable
 
+from graphics.base_snackbar import LockSnackbar
+
 
 class MasterFrame(object):
     def __init__(self, root, drivers, events, measurements):
@@ -28,6 +30,7 @@ class MasterFrame(object):
         self.recalibration_bar = RecalibrationSnackbar(self.root,
                                                        drivers,
                                                        observer)
+        self.lock_bar = LockSnackbar(self.root)
 
     @property
     def panes(self):
@@ -201,12 +204,13 @@ class RightPane(object):
             self.configure_alerts_btn.disable_button()
             self.lock_thresholds_btn.unlock_button()
             self.is_buttons_locked = True
+            self.parent.lock_bar.show()
         else:
             self.mute_alerts_btn.enable_button()
             self.configure_alerts_btn.enable_button()
             self.lock_thresholds_btn.lock_button()
             self.is_buttons_locked = False
-
+            self.parent.lock_bar.hide()
 
 class TopPane(object):
     def __init__(self, parent, events, drivers, measurements):
