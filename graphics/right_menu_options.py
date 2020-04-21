@@ -19,7 +19,7 @@ class BaseButton(object):
         self.button.configure(
             state="normal",
         )
-    
+
     def disable_button(self):
         self.button.configure(
             state="disabled",
@@ -50,8 +50,6 @@ class ClearAlertsButton(BaseButton):
             bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
             fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
         )
-
-        # self.events.alerts_queue.observer.subscribe(self, self.on_alert)
 
     def on_click(self):
         self.events.alerts_queue.clear_alerts()
