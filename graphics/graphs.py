@@ -1,6 +1,5 @@
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-from matplotlib import rcParams
 
 from data.configurations import Configurations
 from graphics.themes import Theme
@@ -37,7 +36,7 @@ class AirPressureGraph(object):
                                             label="pressure")
         self.axis.spines["right"].set_visible(False)
         self.axis.spines["bottom"].set_visible(False)
-        self.axis.set_ylabel('Pressure [cmH20]')
+        self.axis.set_ylabel('Pressure [cmH20]', labelpad=5)
 
         # Calibrate x-axis
         self.axis.set_xticks([])
@@ -130,7 +129,6 @@ class FlowGraph(object):
     ZOOM_IN_FREQUENCY = 500
 
     def __init__(self, parent, measurements, blank):
-        rcParams.update({'figure.autolayout': True})
         self.parent = parent
         self.root = parent.element
         self.measurements = measurements
@@ -145,7 +143,7 @@ class FlowGraph(object):
         self.axis = self.figure.add_subplot(111, label="flow")
         self.axis.spines["right"].set_visible(False)
         self.axis.spines["bottom"].set_visible(False)
-        self.axis.set_ylabel('Flow [L/min]')
+        self.axis.set_ylabel('Flow [L/min]', labelpad=-2)
 
         # Calibrate x-axis
         self.axis.set_xticks([])
