@@ -1,14 +1,12 @@
-import os
-import logging
 import datetime
 
 import timeago
 from tkinter import *
 
 from consts import HOURS_TO_SECONDS
-from data.configurations import Configurations
 from graphics.calibrate.screen import CalibrationScreen, DifferentialPressureCalibration
 from graphics.snackbar.base_snackbar import BaseSnackbar
+
 
 class RecalibrationSnackbar(BaseSnackbar):
     def __init__(self, root, drivers, observer):
@@ -42,7 +40,6 @@ class RecalibrationSnackbar(BaseSnackbar):
         self.last_dp_calibration_ts = None
         observer.subscribe(self, self.on_calibration_done)
 
-
     def show(self):
         super().show()
 
@@ -56,6 +53,7 @@ class RecalibrationSnackbar(BaseSnackbar):
 
     def on_calibration_done(self, timestamp):
         self.last_dp_calibration_ts = timestamp
+        self.hide()
 
     def update(self):
         # we don't want to notify about recalibration right away when
