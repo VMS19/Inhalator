@@ -34,7 +34,8 @@ class RecalibrationSnackbar(BaseSnackbar):
                                     command=self.on_snooze,
                                     font=("Roboto", 14, "bold"),
                                     text="NOT NOW")
-                                    
+
+        self.drivers = drivers
         self.timer = drivers.acquire_driver("timer")
         self.observer = observer
         self.last_dp_calibration_ts = None
