@@ -10,6 +10,7 @@ from data.alerts import AlertCodes
 from graphics.calibrate.screen import calc_calibration_line
 from graphics.constants import SCREEN_WIDTH, SCREEN_HEIGHT
 
+
 class Application(object):
     """The Inhalator application"""
     TEXT_SIZE = 10
