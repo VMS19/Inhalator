@@ -174,7 +174,7 @@ class RightPane(object):
         self.lock_thresholds_btn = LockThresholdsButton(parent=self)
         self.configure_alerts_btn = OpenConfigureAlertsScreenButton(
             self, drivers=self.drivers, observer=observer)
-        self.is_buttons_locked = False
+        self.are_buttons_locked = False
 
     @property
     def buttons(self):
@@ -197,18 +197,18 @@ class RightPane(object):
             btn.update()
 
     def lock_buttons(self):
-        if not self.is_buttons_locked:
-            self.mute_alerts_btn.disable_button()
-            self.configure_alerts_btn.disable_button()
-            self.lock_thresholds_btn.lock_button()
-            self.is_buttons_locked = True
-            self.parent.lock_bar.show()
-        else:
+        if self.are_buttons_locked:
             self.mute_alerts_btn.enable_button()
             self.configure_alerts_btn.enable_button()
             self.lock_thresholds_btn.unlock_button()
-            self.is_buttons_locked = False
+            self.are_buttons_locked = False
             self.parent.lock_bar.hide()
+        else:
+            self.mute_alerts_btn.disable_button()
+            self.configure_alerts_btn.disable_button()
+            self.lock_thresholds_btn.lock_button()
+            self.are_buttons_locked = True
+            self.parent.lock_bar.show()
 
 class TopPane(object):
     def __init__(self, parent, events, drivers, measurements):

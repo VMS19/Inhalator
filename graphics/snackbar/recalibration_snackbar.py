@@ -12,7 +12,8 @@ from graphics.snackbar.base_snackbar import BaseSnackbar
 
 class RecalibrationSnackbar(BaseSnackbar):
     def __init__(self, root, drivers, observer):
-        BaseSnackbar.__init__(self, root)
+        super().__init__(root)
+
         self.calibrate_button = Button(master=self.buttons_frame,
                                        background=self.background_color,
                                        foreground=self.calibrate_button_color,

@@ -4,14 +4,13 @@ from graphics.snackbar.base_snackbar import BaseSnackbar
 
 class LockSnackbar(BaseSnackbar):
     def __init__(self, root):
+        super().__init__(root)
 
-        BaseSnackbar.__init__(self, root)
-
-        self.snooze_button = Button(master=self.buttons_frame,
+        self.hide_button = Button(master=self.buttons_frame,
                             background=self.background_color,
-                            foreground=self.snooze_button_color,
+                            foreground=self.hide_button_color,
                             activebackground=self.background_color,
-                            activeforeground=self.snooze_button_color,
+                            activeforeground=self.hide_button_color,
                             bd=0,
                             highlightthickness=0,
                             command=self.on_hide,
@@ -33,4 +32,4 @@ class LockSnackbar(BaseSnackbar):
 
     def show(self):
         super().show()
-        self.snooze_button.pack(anchor="e", side="right")
+        self.hide_button.pack(anchor="e", side="right")

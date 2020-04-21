@@ -131,7 +131,7 @@ class LockThresholdsButton(object):
         self.button = ImageButton(
             master=self.root,
             image_path=self.UNLOCK_IMAGE_PATH,
-            command=self.on_click,
+            command=self.parent.lock_buttons,
             text="Lock",
             relief="flat",
             font=("Roboto", 9),
@@ -144,12 +144,13 @@ class LockThresholdsButton(object):
             state="normal",
         )
 
-    def on_click(self):
-        self.parent.lock_buttons()
-
     def lock_button(self):
-        self.button.configure(text="Lock")
-        self.button.set_image(self.LOCK_IMAGE_PATH)
+        self.button.configure(
+            text="Lock"
+        )
+        self.button.set_image(
+            self.LOCK_IMAGE_PATH
+        )
 
     def unlock_button(self):
         self.button.configure(

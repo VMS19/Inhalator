@@ -23,6 +23,7 @@ class BaseSnackbar(object):
         self.text_color = "black"
         self.calibrate_button_color = "#77216F"
         self.snooze_button_color = "#333333"
+        self.hide_button_color = "#333333"
         self.title_background = "orange"
         self.title_foreground = "white"
 
