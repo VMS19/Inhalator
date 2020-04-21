@@ -89,6 +89,9 @@ class Graph(object):
         self.eraser_bg = self.canvas.copy_from_bbox(bbox)
 
     def render(self):
+        self._redraw_frame()
+
+    def _redraw_frame(self):
         """Called only once - to render the graph"""
         self.canvas.draw()
         self.canvas.get_tk_widget().place(relx=self.RELX, rely=self.RELY,
@@ -102,7 +105,7 @@ class Graph(object):
             float(self.graph_width) / self.measurements.samples_in_graph
         self.save_eraser_bg()
 
-    def redraw(self):
+    def redraw_graph(self):
         """Redraw entire graph. Called when graph properties changed."""
         print_index = self.print_index + 2
 
@@ -123,9 +126,6 @@ class Graph(object):
             # Draw cycle at the right edge. started erasing the left edge
             # | ~~~~ |
             draw_ranges = [(self.erase_index+1, print_index)]
-
-        # Re-render clean graph frame
-        self.render()
 
         # Draw all graph parts
         for start_index, end_index in draw_ranges:
@@ -219,7 +219,8 @@ class FlowGraph(Graph):
             self.current_min_y, self.current_max_y = original_min, original_max
             self.graph.axes.set_ylim(self.current_min_y, self.current_max_y)
 
-            self.redraw()
+            self._redraw_frame()
+            self.redraw_graph()
             return
 
         if self.current_iteration % self.ZOOM_OUT_FREQUENCY != 0:
@@ -243,7 +244,8 @@ class FlowGraph(Graph):
         self.graph.axes.set_ylim(self.current_min_y - self.GRAPH_MARGINS,
                                  self.current_max_y + self.GRAPH_MARGINS)
 
-        self.redraw()
+        self._redraw_frame()
+        self.redraw_graph()
 
     def update(self):
         super().update()
@@ -265,7 +267,7 @@ class AirPressureGraph(Graph):
         self.config.pressure_range.observer.subscribe(self,
                                                       self.update_thresholds)
 
-    def update_thresholds(self, pressure_range):
+    def update_thresholds(self, pressure_range, redraw_graph=True):
         min_value, max_value = pressure_range
 
         if self.min_threshold:
@@ -278,14 +280,14 @@ class AirPressureGraph(Graph):
         # max threshold line
         self.max_threshold = self.axis.axhline(y=max_value, color='red', lw=1)
 
-        # self.canvas.draw()
-        # self.save_eraser_bg()
-        self.redraw()
+        self._redraw_frame()
+        if redraw_graph:
+            self.redraw_graph()
 
     def render(self):
-        super().render()
-        # self.update_thresholds((self.config.pressure_range.min,
-        #                         self.config.pressure_range.max))
+        self.update_thresholds((self.config.pressure_range.min,
+                                self.config.pressure_range.max),
+                               redraw_graph=False)
 
     @property
     def configured_scale(self):
