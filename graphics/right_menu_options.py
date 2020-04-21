@@ -151,7 +151,6 @@ class LockThresholdsButton(object):
         self.button.configure(text="Lock")
         self.button.set_image(self.LOCK_IMAGE_PATH)
 
-
     def unlock_button(self):
         self.button.configure(
             text = "Unlock"
@@ -169,10 +168,11 @@ class OpenConfigureAlertsScreenButton(object):
     IMAGE_PATH = os.path.join(RESOURCES_DIRECTORY,
                               "baseline_settings_white_48dp.png")
 
-    def __init__(self, parent, drivers):
+    def __init__(self, parent, drivers, observer):
         self.parent = parent
         self.root = parent.element
         self.drivers = drivers
+        self.observer = observer
 
         self.button = ImageButton(
             master=self.root,
@@ -192,7 +192,8 @@ class OpenConfigureAlertsScreenButton(object):
     def on_click(self):
         master_frame = self.parent.parent.element
         screen = ConfigureAlarmsScreen(master_frame,
-                                       drivers=self.drivers)
+                                       drivers=self.drivers,
+                                       observer=self.observer)
         screen.show()
 
     def render(self):

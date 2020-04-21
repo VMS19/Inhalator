@@ -120,9 +120,10 @@ class Section(object):
 class SectionWithCalibrate(Section):
     CALIBRATION_CLASS = NotImplemented
 
-    def __init__(self, parent, root, drivers):
+    def __init__(self, parent, root, drivers, observer):
         super().__init__(parent, root)
         self.drivers = drivers
+        self.observer = observer
         self.calibrate_button = Button(master=self.minmax_divider)
         self.calibrate_button.configure(bg="#3c3149", fg="#d7b1f9",
                                         text="Calibrate",
@@ -139,7 +140,8 @@ class SectionWithCalibrate(Section):
     def on_calibrate(self):
         screen = CalibrationScreen(self.parent.root,
                                    self.CALIBRATION_CLASS,
-                                   drivers=self.drivers)
+                                   drivers=self.drivers,
+                                   observer=self.observer)
         screen.show()
 
 
@@ -238,7 +240,7 @@ class ConfirmCancelSection(object):
 
 
 class ConfigureAlarmsScreen(object):
-    def __init__(self, root, drivers):
+    def __init__(self, root, drivers, observer):
         self.root = root
 
         # Screen state
@@ -249,10 +251,10 @@ class ConfigureAlarmsScreen(object):
 
         # Sections
         self.oxygen_section = O2Section(self, self.configure_alerts_screen,
-                                        drivers=drivers)
+                                        drivers=drivers, observer=observer)
         self.volume_section = VolumeSection(self,
                                             self.configure_alerts_screen,
-                                            drivers=drivers)
+                                            drivers=drivers, observer=observer)
         self.pressure_section = PressureSection(self, self.configure_alerts_screen)
         self.resp_rate_section = RespRateSection(self, self.configure_alerts_screen)
 
