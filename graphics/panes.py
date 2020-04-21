@@ -1,4 +1,5 @@
 from tkinter import *
+from matplotlib import rcParams
 
 from graphics.alert_bar import IndicatorAlertBar
 from graphics.graphs import FlowGraph, AirPressureGraph, BlankGraph
@@ -9,10 +10,10 @@ from graphics.right_menu_options import (MuteAlertsButton,
                                          LockThresholdsButton,
                                          OpenConfigureAlertsScreenButton, OpenAlertsHistoryScreenButton)
 from graphics.snackbar.recalibration_snackbar import RecalibrationSnackbar
+from graphics.snackbar.lock_snackbar import LockSnackbar
+from graphics.constants import SCREEN_HEIGHT, SCREEN_WIDTH
 from graphics.themes import Theme
 from data.observable import Observable
-
-from graphics.snackbar.lock_snackbar import LockSnackbar
 
 
 class MasterFrame(object):
@@ -64,8 +65,8 @@ class LeftPane(object):
         self.measurements = measurements
         self.root = parent.element
 
-        self.screen_height = self.root.winfo_screenheight()
-        self.screen_width = self.root.winfo_screenwidth()
+        self.screen_height = SCREEN_HEIGHT
+        self.screen_width = SCREEN_WIDTH
 
         self.height = self.screen_height * 0.85
         self.width = self.screen_width * 0.2
@@ -105,8 +106,8 @@ class CenterPane(object):
         self.measurements = measurements
 
         self.root = parent.element
-        self.screen_height = self.root.winfo_screenheight()
-        self.screen_width = self.root.winfo_screenwidth()
+        self.screen_height = SCREEN_HEIGHT
+        self.screen_width = SCREEN_WIDTH
 
         self.height = self.screen_height * 0.85
         self.width = self.screen_width * 0.7
@@ -135,6 +136,7 @@ class CenterPane(object):
 
     def render(self):
         self.frame.grid(row=1, column=1)
+        rcParams.update({'figure.autolayout': True})
 
         for graph in self.graphs:
             graph.render()
@@ -159,8 +161,8 @@ class RightPane(object):
         self.drivers = drivers
 
         self.root = parent.element
-        self.screen_height = self.root.winfo_screenheight()
-        self.screen_width = self.root.winfo_screenwidth()
+        self.screen_height = SCREEN_HEIGHT
+        self.screen_width = SCREEN_WIDTH
 
         self.height = self.screen_height * 0.85
         self.width = self.screen_width * 0.1
@@ -215,8 +217,8 @@ class TopPane(object):
         self.events = events
 
         self.root = parent.element
-        self.screen_height = self.root.winfo_screenheight()
-        self.screen_width = self.root.winfo_screenwidth()
+        self.screen_height = SCREEN_HEIGHT
+        self.screen_width = SCREEN_WIDTH
 
         self.height = self.screen_height * 0.15
         self.width = self.screen_width
