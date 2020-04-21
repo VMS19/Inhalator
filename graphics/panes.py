@@ -158,6 +158,7 @@ class RightPane(object):
         self.configure_alerts_btn = OpenConfigureAlertsScreenButton(
             self, drivers=self.drivers)
         # self.alerts_history_btn = OpenAlertsHistoryScreenButton(self, events=self.events)
+        self.is_buttons_locked = False
 
     @property
     def buttons(self):
@@ -179,6 +180,16 @@ class RightPane(object):
     def update(self):
         for btn in self.buttons:
             btn.update()
+
+    def lock_buttons(self):
+        if not self.is_buttons_locked:
+            self.mute_alerts_btn.disable_button()
+            self.configure_alerts_btn.disable_button()
+            self.is_buttons_locked = True
+        else:
+            self.mute_alerts_btn.enable_button()
+            self.configure_alerts_btn.enable_button()
+            self.is_buttons_locked = False
 
 
 class TopPane(object):

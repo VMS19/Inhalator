@@ -106,6 +106,15 @@ class MuteAlertsButton(object):
             self.button.set_image(self.PATH_TO_UNMUTED)
             self.button.configure(text="Mute")
 
+    def enable_button(self):
+        self.button.configure(
+            state="normal",
+        )
+    
+    def disable_button(self):
+        self.button.configure(
+            state="disabled",
+        )
 
 
 class LockThresholdsButton(object):
@@ -124,15 +133,17 @@ class LockThresholdsButton(object):
             text="Lock",
             relief="flat",
             font=("Roboto", 9),
+            pady=10,
+            compound="top",
             bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
             fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
             activebackground=Theme.active().RIGHT_SIDE_BUTTON_BG_ACTIVE,
             activeforeground=Theme.active().RIGHT_SIDE_BUTTON_FG_ACTIVE,
-            state="disabled",
+            state="normal",
         )
 
     def on_click(self):
-        print("Not Implemented Yet")
+        self.parent.lock_buttons()
 
     def render(self):
         self.button.place(relx=0, rely=0.53, relwidth=1, relheight=0.2)
@@ -176,6 +187,16 @@ class OpenConfigureAlertsScreenButton(object):
 
     def update(self):
         pass
+
+    def enable_button(self):
+        self.button.configure(
+            state="normal",
+        )
+    
+    def disable_button(self):
+        self.button.configure(
+            state="disabled",
+        )
 
 
 class OpenAlertsHistoryScreenButton(object):
