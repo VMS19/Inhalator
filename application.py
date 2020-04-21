@@ -8,7 +8,7 @@ from graphics.themes import Theme
 from data.configurations import Configurations, ConfigurationState
 from data.alerts import AlertCodes
 from graphics.calibrate.screen import calc_calibration_line
-
+from graphics.constants import SCREEN_WIDTH, SCREEN_HEIGHT
 
 class Application(object):
     """The Inhalator application"""
@@ -42,12 +42,14 @@ class Application(object):
         self.theme = Theme.choose_theme()  # TODO: Make this configurable
         self.root.protocol("WM_DELETE_WINDOW", self.exit)  # Catches Alt-F4
         self.root.title("Inhalator")
-        self.root.geometry('800x480')
-        self.root.attributes("-fullscreen", True)
+        self.root.geometry(f'{SCREEN_WIDTH}x{SCREEN_HEIGHT}')
 
         if os.uname()[1] == 'raspberrypi':
             # on production we don't want to see the ugly cursor
             self.root.config(cursor="none")
+
+            # We want fullscreen only the raspberry-pi
+            self.root.attributes("-fullscreen", True)
 
         self.master_frame = MasterFrame(self.root,
                                         measurements=measurements,
