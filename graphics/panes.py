@@ -1,4 +1,5 @@
 from tkinter import *
+from matplotlib import rcParams
 
 from graphics.alert_bar import IndicatorAlertBar
 from graphics.graphs import FlowGraph, AirPressureGraph, BlankGraph
@@ -135,7 +136,6 @@ class CenterPane(object):
 
     def render(self):
         self.frame.grid(row=1, column=1)
-        from matplotlib import rcParams
         rcParams.update({'figure.autolayout': True})
 
         for graph in self.graphs:
