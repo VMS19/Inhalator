@@ -8,11 +8,11 @@ from graphics.right_menu_options import (MuteAlertsButton,
                                          ClearAlertsButton,
                                          LockThresholdsButton,
                                          OpenConfigureAlertsScreenButton, OpenAlertsHistoryScreenButton)
-from graphics.calibrate.recalibration_snackbar import RecalibrationSnackbar
+from graphics.snackbar.recalibration_snackbar import RecalibrationSnackbar
 from graphics.themes import Theme
 from data.observable import Observable
 
-from graphics.base_snackbar import LockSnackbar
+from graphics.snackbar.lock_snackbar import LockSnackbar
 
 
 class MasterFrame(object):

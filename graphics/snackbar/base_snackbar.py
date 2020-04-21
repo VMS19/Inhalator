@@ -10,8 +10,8 @@ from data.configurations import Configurations
 
 THIS_FILE = __file__
 THIS_DIRECTORY = os.path.dirname(THIS_FILE)
-RESOURCES_DIRECTORY = os.path.join(
-    os.path.dirname(THIS_DIRECTORY), "resources")
+RESOURCES_DIRECTORY = os.path.join(os.path.dirname(
+    os.path.dirname(THIS_DIRECTORY)), "resources")
 
 
 class BaseSnackbar(object):
@@ -87,36 +87,3 @@ class BaseSnackbar(object):
     def hide(self):
         self.frame.place_forget()
         self.shown = False
-
-class LockSnackbar(BaseSnackbar):
-    def __init__(self, root):
-
-        BaseSnackbar.__init__(self, root)
-
-        self.snooze_button = Button(master=self.buttons_frame,
-                            background=self.background_color,
-                            foreground=self.snooze_button_color,
-                            activebackground=self.background_color,
-                            activeforeground=self.snooze_button_color,
-                            bd=0,
-                            highlightthickness=0,
-                            command=self.on_hide,
-                            font=("Roboto", 14, "bold"),
-                            text="Hide")
-        
-        self.text_label = Label(master=self.text_frame,
-                                background=self.background_color,
-                                font=("Arial", 14),
-                                anchor="w",
-                                padx=20,
-                                width=80,
-                                justify="left",
-                                foreground=self.text_color,
-                                text="Lock screen is on")
-
-    def on_hide(self):
-        self.hide()
-
-    def show(self):
-        super().show()
-        self.snooze_button.pack(anchor="e", side="right")
