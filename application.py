@@ -48,7 +48,7 @@ class Application(object):
             # on production we don't want to see the ugly cursor
             self.root.config(cursor="none")
 
-            # We want fullscreen only the raspberry-pi
+            # We want fullscreen only for the raspberry-pi
             self.root.attributes("-fullscreen", True)
 
         self.master_frame = MasterFrame(self.root,
