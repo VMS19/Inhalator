@@ -9,11 +9,11 @@ from graphics.right_menu_options import (MuteAlertsButton,
                                          ClearAlertsButton,
                                          LockThresholdsButton,
                                          OpenConfigureAlertsScreenButton, OpenAlertsHistoryScreenButton)
-from graphics.calibrate.recalibration_snackbar import RecalibrationSnackbar
+from graphics.snackbar.recalibration_snackbar import RecalibrationSnackbar
+from graphics.snackbar.lock_snackbar import LockSnackbar
+from graphics.constants import SCREEN_HEIGHT, SCREEN_WIDTH
 from graphics.themes import Theme
 from data.observable import Observable
-
-from graphics.constants import SCREEN_HEIGHT, SCREEN_WIDTH
 
 
 class MasterFrame(object):
@@ -175,14 +175,14 @@ class RightPane(object):
         self.lock_thresholds_btn = LockThresholdsButton(parent=self)
         self.configure_alerts_btn = OpenConfigureAlertsScreenButton(
             self, drivers=self.drivers, observer=observer)
-        # self.alerts_history_btn = OpenAlertsHistoryScreenButton(self, events=self.events)
-
+        self.are_buttons_locked = False
+        self.lockable_buttons = [self.mute_alerts_btn, self.configure_alerts_btn,
+                                 self.clear_alerts_btn]
     @property
     def buttons(self):
         return (self.mute_alerts_btn,
                 self.clear_alerts_btn,
                 self.configure_alerts_btn,
-                # self.alerts_history_btn,
                 self.lock_thresholds_btn)
 
     @property
@@ -198,6 +198,18 @@ class RightPane(object):
         for btn in self.buttons:
             btn.update()
 
+    def lock_buttons(self):
+        if self.are_buttons_locked:
+            for button in self.lockable_buttons:
+                button.enable_button()
+            self.lock_thresholds_btn.lock_button()
+            self.are_buttons_locked = False
+
+        else:
+            for button in self.lockable_buttons:
+                button.disable_button()
+            self.lock_thresholds_btn.unlock_button()
+            self.are_buttons_locked = True
 
 class TopPane(object):
     def __init__(self, parent, events, drivers, measurements):

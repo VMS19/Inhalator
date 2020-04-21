@@ -9,7 +9,7 @@ from graphics.themes import Theme, DarkTheme
 from data.configurations import Configurations
 from data.observable import Observable
 from drivers.driver_factory import DriverFactory
-from graphics.calibrate.recalibration_snackbar import RecalibrationSnackbar
+from graphics.snackbar.recalibration_snackbar import RecalibrationSnackbar
 
 
 def time_mock():
