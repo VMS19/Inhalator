@@ -16,7 +16,7 @@ class Graph(object):
     COLOR = NotImplemented
     DPI = 100  # pixels per inch
     ERASE_GAP = 10  # samples to be cleaned from tail, ahead of new sample print
-    GRAPH_BEGIN_OFFSET = 80  # pixel offset from canvas edge, to begin of graph
+    GRAPH_BEGIN_OFFSET = 83  # pixel offset from canvas edge, to begin of graph
 
     def __init__(self, parent, measurements, width, height):
         rcParams.update({'figure.autolayout': True})
@@ -26,12 +26,18 @@ class Graph(object):
         self.config = Configurations.instance()
         self.height = height
         self.width = width
+
+        # pixel width of graph draw area, without axes
         self.graph_width = None
         self.graph_bbox = None
+        # snapshot of graph frame, in clean state
         self.graph_clean_bg = None
+        # snapshot of 1 sample-width column, from clean graph
         self.eraser_bg = None
         self.pixels_per_sample = None
-        self.print_index = 0
+        # index of last updated sample
+        self.print_index = -1
+        self.erase_index = None
 
         self.figure = Figure(figsize=(self.width/self.DPI,
                                       self.height/self.DPI),
@@ -91,34 +97,64 @@ class Graph(object):
         self.graph_bbox = self.canvas.figure.bbox
         self.graph_clean_bg = self.canvas.copy_from_bbox(self.graph_bbox)
         self.graph_width = self.get_graph_width()
+        print(f"begin offset: {self.width - self.graph_width}")
         self.pixels_per_sample = \
             float(self.graph_width) / self.measurements.samples_in_graph
         self.save_eraser_bg()
 
-    def rerender(self):
-        """Called when graph properties changed, and re-render required."""
+    def redraw(self):
+        """Redraw entire graph. Called when graph properties changed."""
+        print_index = self.print_index + 2
+
+        # Clone and reorder samples list, to match the draw order
+        recovery_y_values = self.display_values.copy()
+        recovery_y_values.rotate(print_index)
+        recovery_y_values = list(recovery_y_values)
+
+        # Ranges of graph parts to redraw
+        draw_ranges = []
+
+        if self.print_index < self.erase_index:
+            # Normal case: during draw cycle
+            # |~~~ ~~~|
+            draw_ranges = [(0, print_index),
+                           (self.erase_index+1, self.measurements.samples_in_graph)]
+        elif self.print_index > self.erase_index:
+            # Draw cycle at the right edge. started erasing the left edge
+            # | ~~~~ |
+            draw_ranges = [(self.erase_index+1, print_index)]
+
+        # Re-render clean graph frame
         self.render()
-        # Todo: print entire graph, except erased part
+
+        # Draw all graph parts
+        for start_index, end_index in draw_ranges:
+            self.graph.set_ydata(recovery_y_values[start_index:end_index])
+            self.graph.set_xdata(self.measurements.x_axis[start_index:end_index])
+            self.axis.draw_artist(self.graph)
 
     def update(self):
-        # print position advances cyclically
+        # drawn sample index advances cyclically
+        self.print_index += 1
         self.print_index %= self.measurements.samples_in_graph
 
         # Calculate pixel offset to erase at
-        erase_index = \
-            int(((self.print_index + self.ERASE_GAP) * self.pixels_per_sample) % self.graph_width \
-                + self.GRAPH_BEGIN_OFFSET) + 1
+        self.erase_index = (self.print_index + self.ERASE_GAP) % \
+            self.measurements.samples_in_graph
+        erase_offset = int(self.erase_index * self.pixels_per_sample) \
+            % self.graph_width + self.GRAPH_BEGIN_OFFSET
 
+        # Paste eraser column background, to erase tail sample
         self.figure.canvas.restore_region(self.eraser_bg,
-                                          xy=(erase_index, 0))
+                                          xy=(erase_offset, 0))
 
+        # Draw line between 2 most recent samples
         self.graph.set_ydata([self.display_values[-2], self.display_values[-1]])
         self.graph.set_xdata([self.print_index, self.print_index + 1])
 
         self.axis.draw_artist(self.graph)
         self.figure.canvas.blit(self.graph_bbox)
         self.figure.canvas.flush_events()
-        self.print_index += 1
 
     @property
     def element(self):
@@ -183,7 +219,7 @@ class FlowGraph(Graph):
             self.current_min_y, self.current_max_y = original_min, original_max
             self.graph.axes.set_ylim(self.current_min_y, self.current_max_y)
 
-            self.render()
+            self.redraw()
             return
 
         if self.current_iteration % self.ZOOM_OUT_FREQUENCY != 0:
@@ -207,13 +243,12 @@ class FlowGraph(Graph):
         self.graph.axes.set_ylim(self.current_min_y - self.GRAPH_MARGINS,
                                  self.current_max_y + self.GRAPH_MARGINS)
 
-        self.render()
+        self.redraw()
 
     def update(self):
+        super().update()
         if self.config.autoscale:
             self.autoscale()
-
-        super().update()
 
 
 class AirPressureGraph(Graph):
@@ -230,8 +265,8 @@ class AirPressureGraph(Graph):
         self.config.pressure_range.observer.subscribe(self,
                                                       self.update_thresholds)
 
-    def update_thresholds(self, range):
-        min_value, max_value = range
+    def update_thresholds(self, pressure_range):
+        min_value, max_value = pressure_range
 
         if self.min_threshold:
             self.min_threshold.remove()
@@ -243,13 +278,14 @@ class AirPressureGraph(Graph):
         # max threshold line
         self.max_threshold = self.axis.axhline(y=max_value, color='red', lw=1)
 
-        self.canvas.draw()
-        self.save_eraser_bg()
+        # self.canvas.draw()
+        # self.save_eraser_bg()
+        self.redraw()
 
     def render(self):
         super().render()
-        self.update_thresholds((self.config.pressure_range.min,
-                                self.config.pressure_range.max))
+        # self.update_thresholds((self.config.pressure_range.min,
+        #                         self.config.pressure_range.max))
 
     @property
     def configured_scale(self):

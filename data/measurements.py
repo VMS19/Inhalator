@@ -64,6 +64,4 @@ class Measurements(object):
     @property
     def samples_in_graph(self):
         config = Configurations.instance()
-        samples_in_graph = int(config.graph_seconds / self.sample_interval)
-        # samples in graph MUST BE EVEN. Because they are drawn in pairs
-        return samples_in_graph + (samples_in_graph % 2)
+        return int(config.graph_seconds / self.sample_interval)
