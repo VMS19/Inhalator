@@ -30,7 +30,6 @@ class MasterFrame(object):
         self.recalibration_bar = RecalibrationSnackbar(self.root,
                                                        drivers,
                                                        observer)
-        self.lock_bar = LockSnackbar(self.root)
 
     @property
     def panes(self):
@@ -175,7 +174,8 @@ class RightPane(object):
         self.configure_alerts_btn = OpenConfigureAlertsScreenButton(
             self, drivers=self.drivers, observer=observer)
         self.are_buttons_locked = False
-        self.lockable_buttons = [self.mute_alerts_btn, self.configure_alerts_btn]
+        self.lockable_buttons = [self.mute_alerts_btn, self.configure_alerts_btn,
+                                 self.clear_alerts_btn]
     @property
     def buttons(self):
         return (self.mute_alerts_btn,
@@ -200,14 +200,13 @@ class RightPane(object):
         if self.are_buttons_locked:
             for button in self.lockable_buttons:
                 button.enable_button()
-            self.parent.lock_bar.hide()
+            self.lock_thresholds_btn.lock_button()
             self.are_buttons_locked = False
 
         else:
             for button in self.lockable_buttons:
                 button.disable_button()
-            self.lock_thresholds_btn.lock_button()
-            self.parent.lock_bar.show()
+            self.lock_thresholds_btn.unlock_button()
             self.are_buttons_locked = True
 
 class TopPane(object):

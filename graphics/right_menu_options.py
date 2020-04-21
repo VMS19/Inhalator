@@ -45,25 +45,13 @@ class ClearAlertsButton(BaseButton):
             text="Clear",
             pady=10,
             compound="top",
-            state="disabled",
+            state="normal",
             relief="flat",
             bg=Theme.active().RIGHT_SIDE_BUTTON_BG,
             fg=Theme.active().RIGHT_SIDE_BUTTON_FG,
         )
 
-        self.events.alerts_queue.observer.subscribe(self, self.on_alert)
-
-    def on_alert(self, alert):
-        if alert == AlertCodes.OK:
-            self.button.configure(
-                state="disabled",
-            )
-
-        else:
-            self.button.configure(
-                state="normal",
-            )
-
+        # self.events.alerts_queue.observer.subscribe(self, self.on_alert)
 
     def on_click(self):
         self.events.alerts_queue.clear_alerts()
