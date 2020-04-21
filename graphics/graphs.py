@@ -1,6 +1,7 @@
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from matplotlib import rcParams
+from matplotlib.transforms import Bbox
 from math import ceil
 
 from data.configurations import Configurations
@@ -29,6 +30,7 @@ class Graph(object):
 
         # pixel width of graph draw area, without axes
         self.graph_width = None
+        self.graph_height = None
         self.graph_bbox = None
         # snapshot of graph frame, in clean state
         self.graph_clean_bg = None
@@ -85,8 +87,9 @@ class Graph(object):
         # Capture column of pixels, from middle of the clean background,
         # This column will be pasted cyclically on the graph, to clean it.
         capture_offset = x1 + (self.graph_width / 2)
-        eraser_width = ceil(self.pixels_per_sample)
-        bbox = (capture_offset, y1, capture_offset + eraser_width, y2)
+        self.eraser_width = ceil(self.pixels_per_sample)
+        self.graph_height = y2 - y1
+        bbox = (capture_offset, y1, capture_offset + self.eraser_width, y2)
         self.eraser_bg = self.canvas.copy_from_bbox(bbox)
 
     def render(self):
@@ -134,6 +137,8 @@ class Graph(object):
             self.graph.set_xdata(self.measurements.x_axis[start_index:end_index])
             self.axis.draw_artist(self.graph)
 
+        self.figure.canvas.blit(self.graph_bbox)
+
     def update(self):
         # drawn sample index advances cyclically
         self.print_index += 1
@@ -144,6 +149,8 @@ class Graph(object):
             self.measurements.samples_in_graph
         erase_offset = int(self.erase_index * self.pixels_per_sample) \
             % self.graph_width + self.GRAPH_BEGIN_OFFSET
+        print_offset = int(self.print_index * self.pixels_per_sample) \
+                       % self.graph_width + self.GRAPH_BEGIN_OFFSET
 
         # Paste eraser column background, to erase tail sample
         self.figure.canvas.restore_region(self.eraser_bg,
@@ -154,7 +161,12 @@ class Graph(object):
         self.graph.set_xdata([self.print_index, self.print_index + 1])
 
         self.axis.draw_artist(self.graph)
-        self.figure.canvas.blit(self.graph_bbox)
+        self.figure.canvas.blit(Bbox.from_bounds(x0=print_offset, y0=0,
+                                                 width=self.pixels_per_sample,
+                                                 height=self.graph_height))
+        self.figure.canvas.blit(Bbox.from_bounds(x0=erase_offset, y0=0,
+                                                 width=self.pixels_per_sample,
+                                                 height=self.graph_height))
         self.figure.canvas.flush_events()
 
     @property
