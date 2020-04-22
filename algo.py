@@ -533,22 +533,26 @@ class Sampler(object):
                                        min(o2_saturation_percentage, 100))
 
         if self.interval_start_time is None or self.window_start_time is None:
+            self.log.info("Initializing auto calibration timers")
             self.interval_start_time = ts
             self.window_start_time = ts
 
         if ts - self.window_start_time < self.auto_calibration_window:
             self.tail_detector.add_sample(flow_slm, ts)
         else:
+            self.log.info("Done accumulating within tail window")
             self.tails_average.process(self.tail_detector.process())
             self.tail_detector = TailDetector(self._flow_sensor)
 
         if ts - self.interval_start_time >= self.auto_calibration_interval:
-            dp_offset = self.tails_average.process(None)
+            self.log.info("Done accumulating within tail interval")
+            flow_offset = self.tails_average.process(None)
+            self.log.info(f"Found offset of {flow_offset} L/min")
             self.tails_average.reset()
 
-            dp = self._flow_sensor.flow_to_pressure(flow_slm) - dp_offset
-            self._config.dp_offset = dp
-            self._flow_sensor.set_calibration_offset = dp
+            dp_offset = self._flow_sensor.flow_to_pressure(flow_offset)
+            self._flow_sensor.set_calibration_offset(dp_offset)
+            self._config.dp_offset = dp_offset
             self._config.save_to_file()
 
         self.vsm.update(
