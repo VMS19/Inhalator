@@ -63,7 +63,7 @@ def test_unavailable_measurement_not_crashing(events, measurements,
 
     sampler = Sampler(measurements=measurements, events=events,
                       flow_sensor=flow, pressure_sensor=pressure, a2d=a2d,
-                      timer=timer, average_window=10)
+                      timer=timer)
 
     sampler.sampling_iteration()
     # If no crashing occurred - test passed
@@ -81,7 +81,7 @@ def test_sampling_error_raises_alert(events, measurements, mock_drivers,
 
     sampler = Sampler(measurements=measurements, events=events,
                       flow_sensor=flow, pressure_sensor=pressure, a2d=a2d,
-                      timer=timer, average_window=10)
+                      timer=timer)
 
     assert len(events.alerts_queue) == 0
 

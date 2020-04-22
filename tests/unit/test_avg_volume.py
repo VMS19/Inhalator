@@ -67,7 +67,7 @@ def test_sampler_avg_volume_calculation(events, measurements, config):
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer, average_window=1)
+                      a2d, timer)
 
     for _ in range(samples_in_file):
         sampler.sampling_iteration()
@@ -103,7 +103,7 @@ def test_sampler_avg_volume_calculation_multi_cycles(events, measurements, confi
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer, average_window=1)
+                      a2d, timer)
 
     for _ in range(samples_in_file):
         sampler.sampling_iteration()
@@ -134,7 +134,7 @@ def test_no_breath(events, measurements, config):
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer, average_window=1)
+                      a2d, timer)
 
     time_intervals = 1 / driver_factory.MOCK_SAMPLE_RATE_HZ
     num_of_samples = int(NO_BREATH_TIME / time_intervals)

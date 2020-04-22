@@ -44,7 +44,7 @@ def test_sampler_inserts_pressure_measurement_to_store(events, measurements, con
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer, average_window=1)
+                      a2d, timer)
     assert measurements.pressure_measurements.qsize() == 0
     sampler.sampling_iteration()
     assert measurements.pressure_measurements.qsize() == 1
@@ -58,7 +58,7 @@ def test_sampler_alerts_when_pressure_exceeds_maximum(events, measurements, conf
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer, average_window=1)
+                      a2d, timer)
     assert len(events.alerts_queue) == 0
     sampler.sampling_iteration()
     assert len(events.alerts_queue) == 0
@@ -75,7 +75,7 @@ def test_sampler_alerts_when_pressure_exceeds_minimum(events, measurements, conf
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer, average_window=1)
+                      a2d, timer)
     assert len(events.alerts_queue) == 0
     sampler.sampling_iteration()
     assert len(events.alerts_queue) == 0
