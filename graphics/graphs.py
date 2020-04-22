@@ -13,6 +13,7 @@ class Graph(object):
     YLABEL = NotImplemented
     COLOR = NotImplemented
     DPI = 100  # pixels per inch
+    Y_TICKS_STEP = 20  # step between y axis value labels
 
     def __init__(self, parent, measurements, width, height):
         rcParams.update({'figure.autolayout': True})
@@ -29,11 +30,17 @@ class Graph(object):
         self.figure = Figure(figsize=(self.width/self.DPI,
                                       self.height/self.DPI),
                              dpi=self.DPI, facecolor=Theme.active().SURFACE)
+
         self.axis = self.figure.add_subplot(111, label=self.LABEL)
-        self.axis.spines["right"].set_visible(False)
-        self.axis.spines["bottom"].set_visible(False)
         self.axis.set_ylabel(self.YLABEL)
 
+        # Remove white lines around graph frame
+        self.axis.spines["right"].set_visible(False)
+        self.axis.spines["bottom"].set_visible(False)
+        self.axis.spines["left"].set_visible(False)
+        self.axis.spines["top"].set_visible(False)
+
+        self.axis.tick_params(direction='out', length=3, width=1, colors='w')
         # Calibrate x-axis
         self.axis.set_xticks([])
         self.axis.set_xticklabels([])
@@ -54,6 +61,12 @@ class Graph(object):
 
         # Scaling
         self.graph.axes.set_ylim(*self.configured_scale)
+        self.set_y_ticks()
+
+    def set_y_ticks(self):
+        yticks = list(range(self.current_min_y, 0, self.Y_TICKS_STEP)) + \
+                 list(range(0, self.current_max_y + 1, self.Y_TICKS_STEP))
+        self.axis.set_yticks(yticks)
 
     def save_bg(self):
         """Capture the current drawing of graph, and render it as background."""
@@ -125,7 +138,7 @@ class FlowGraph(Graph):
 
             self.current_min_y, self.current_max_y = original_min, original_max
             self.graph.axes.set_ylim(self.current_min_y, self.current_max_y)
-
+            self.set_y_ticks()
             self.render()
             return
 
@@ -149,6 +162,7 @@ class FlowGraph(Graph):
         self.current_min_y, self.current_max_y = new_min_y, new_max_y
         self.graph.axes.set_ylim(self.current_min_y - self.GRAPH_MARGINS,
                                  self.current_max_y + self.GRAPH_MARGINS)
+        self.set_y_ticks()
 
         self.render()
 
