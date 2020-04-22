@@ -104,6 +104,7 @@ class FlowGraph(Graph):
         self.current_iteration = 0
         self.offset_line = None
         self.dp_sensor = DriverFactory.instance().acquire_driver("differential_pressure")
+        self.prev_offset = None
 
     @property
     def configured_scale(self):
@@ -156,6 +157,9 @@ class FlowGraph(Graph):
         self.render()
 
     def update_offset_line(self):
+        if self.prev_offset is not None and self.prev_offset == self.config.dp_offset:
+            return
+        self.prev_offset = self.config.dp_offset
         if self.offset_line:
             self.offset_line.remove()
 

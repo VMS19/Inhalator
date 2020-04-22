@@ -33,7 +33,7 @@ class HscPressureSensor(HoneywellPressureSensor):
 
     def set_calibration_offset(self, offset):
         # self._calibration_offset = offset
-        log.info(f"calibration offset set to: {self._calibration_offset}")
+        log.info(f"calibration offset set to: {offset}")
 
     def pressure_to_flow(self, pressure_cmh2o):
         # Convert to flow value
