@@ -121,7 +121,7 @@ class FlowGraph(Graph):
     # We must pick values that are a multiplication of each other, as we
     # "trim" the counter with the modulo of the maximal between them
     ZOOM_OUT_FREQUENCY = 50
-    ZOOM_IN_FREQUENCY = 500
+    ZOOM_IN_FREQUENCY = 200
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
