@@ -543,12 +543,14 @@ class Sampler(object):
             self.log.info("Done accumulating within tail window")
             self.tails_average.process(self.tail_detector.process())
             self.tail_detector = TailDetector(self._flow_sensor)
+            self.window_start_time = ts
 
         if ts - self.interval_start_time >= self.auto_calibration_interval:
             self.log.info("Done accumulating within tail interval")
             flow_offset = self.tails_average.process(None)
             self.log.info(f"Found offset of {flow_offset} L/min")
             self.tails_average.reset()
+            self.interval_start_time = ts
 
             dp_offset = self._flow_sensor.flow_to_pressure(flow_offset)
             self._flow_sensor.set_calibration_offset(dp_offset)
