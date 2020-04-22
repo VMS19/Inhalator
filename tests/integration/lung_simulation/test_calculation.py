@@ -17,7 +17,7 @@ from graphics.configure_alerts_screen import ConfigureAlarmsScreen
 
 SAMPLES_AMOUNT = 604
 EXPERIMENT_BPM = [0, 15, 15, 15, 15, 15, 15, 15]
-EXPERIMENT_VOLUMES = [101, 291, 304, 293, 307, 295, 305, 292,
+EXPERIMENT_VOLUMES = [291, 405, 293, 307, 295, 306, 292,
                       307, 291, 304, 293, 304, 292, 309]
 
 
@@ -71,20 +71,29 @@ def test_sampler_volume_calculation(events, measurements, config, driver_factory
                       simulation=True,)
 
     app.render()
-    current_state = sampler.vsm.current_state
     for expected_volume in EXPERIMENT_VOLUMES:
-        while current_state == sampler.vsm.current_state:
+        start_state = sampler.vsm.current_state
+        is_pre_inhale = sampler.vsm.current_state == VentilationState.PreInhale
+        is_pre_exahle = sampler.vsm.current_state == VentilationState.PreExhale
+        is_pre = is_pre_inhale or is_pre_exahle
+        while start_state == sampler.vsm.current_state or is_pre:
+            app.run_iterations(1, render=False)
+            is_pre_inhale = sampler.vsm.current_state == VentilationState.PreInhale
+            is_pre_exahle = sampler.vsm.current_state == VentilationState.PreExhale
+            is_pre = is_pre_inhale or is_pre_exahle
+
+        breathing_state = sampler.vsm.current_state
+        while breathing_state == sampler.vsm.current_state:
             app.run_iterations(1, render=False)
 
-        current_state = sampler.vsm.current_state
-        if current_state == VentilationState.Inhale:
+        if breathing_state == VentilationState.Exhale:
             volume = measurements.expiration_volume
 
         else:
             volume = measurements.inspiration_volume
 
         msg = f"Received volume of {volume}, expected {expected_volume}"
-        assert volume == approx(expected_volume, 0.2), msg
+        assert volume == approx(expected_volume, 0.1), msg
 
     app.root.destroy()
 
