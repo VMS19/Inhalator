@@ -182,9 +182,7 @@ class AirPressureGraph(Graph):
         if self.max_threshold:
             self.max_threshold.remove()
 
-        # min threshold line
         self.min_threshold = self.axis.axhline(y=min_value, color='red', lw=1)
-        # max threshold line
         self.max_threshold = self.axis.axhline(y=max_value, color='red', lw=1)
 
         self.canvas.draw()
