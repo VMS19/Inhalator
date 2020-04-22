@@ -8,7 +8,6 @@ from collections import deque
 from numpy import trapz
 from scipy.stats import linregress
 
-from converter import flow_to_pressure, pressure_to_flow
 from data.alerts import AlertCodes
 from data.configurations import Configurations
 from sample_storage import SamplesStorage
@@ -453,7 +452,7 @@ class Sampler(object):
         self.calibrate = True
         self.calibration_count = 600
         self.dp_offset = 0
-        self.tail_detector = TailDetector()
+        self.tail_detector = TailDetector(self._flow_sensor)
 
     def run_calibration(self, samples_amount):
         self.calibrate = True
@@ -541,8 +540,8 @@ class Sampler(object):
                 self.calibrate = False
                 self.dp_offset = self.tail_detector.process()
 
-        dp = flow_to_pressure(flow_slm) - self.dp_offset
-        flow_slm = pressure_to_flow(dp)
+        dp = self._flow_sensor.flow_to_pressure(flow_slm) - self.dp_offset
+        flow_slm = self._flow_sensor.pressure_to_flow(dp)
         self.vsm.update(
             pressure_cmh2o=pressure_cmh2o,
             flow_slm=flow_slm,

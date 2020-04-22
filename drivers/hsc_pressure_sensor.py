@@ -1,4 +1,5 @@
 import logging
+from math import copysign
 
 from computation import RunningAvg
 from .honeywell_pressure_sensor import HoneywellPressureSensor
@@ -35,14 +36,11 @@ class HscPressureSensor(HoneywellPressureSensor):
         self._calibration_offset = offset
 
     def pressure_to_flow(self, pressure_cmh2o):
-        # Convert to flow value
         flow = (abs(pressure_cmh2o) ** 0.5) * self.SYSTEM_RATIO_SCALE
+        return copysign(flow, pressure_cmh2o)
 
-        # Add sign for flow direction
-        if pressure_cmh2o < 0:
-            flow = -flow
-
-        return flow
+    def flow_to_pressure(self, flow):
+        return copysign((flow / self.SYSTEM_RATIO_SCALE) ** 2, flow)
 
     def read_differential_pressure(self):
         return super(HscPressureSensor, self).read()
