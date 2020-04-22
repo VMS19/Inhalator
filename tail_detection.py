@@ -104,7 +104,7 @@ class NewTailDetector:
 
             else:
                 self.check_close_up(index, in_grace=True)
-
+        self.tail_indices = self.tail_indices[len(self.tail_indices) / 10:]
         indices = np.array(self.tail_indices)
         dp = np.array([flow_to_pressure(f) for f in self.samples])
         tails_dp = dp[indices]
