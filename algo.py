@@ -222,6 +222,7 @@ class VentilationStateMachine(object):
     def exit_inhale(self, timestamp):
         insp_volume_ml = self.inspiration_volume.integrate() * 1000
         self.log.debug("TV insp: : %sml", insp_volume_ml)
+        self._measurements.avg_insp_volume = self.avg_insp_volume.process(insp_volume_ml)
         self._measurements.inspiration_volume = insp_volume_ml
         self.inspiration_volume.reset()
         self.insp_volumes.append((timestamp, insp_volume_ml))
