@@ -67,7 +67,7 @@ def test_sampler_alerts_when_sensor_exceeds_maximum(events, measurements, config
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer, average_window=1)
+                      a2d, timer)
 
     app = Application(measurements=measurements,
                       events=events,
@@ -128,7 +128,7 @@ def test_sampler_alerts_when_sensor_exceeds_minimum(events, measurements, config
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer, average_window=1)
+                      a2d, timer)
 
     app = Application(measurements=measurements,
                       events=events,

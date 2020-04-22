@@ -14,6 +14,7 @@ from data.thresholds import (O2Range, PressureRange,
 from drivers.driver_factory import DriverFactory
 
 SAMPLES_AMOUNT = 118
+CYCLE_SAMPLES = 300
 SIMULATION_FOLDER = "simulation"
 
 
@@ -56,7 +57,7 @@ def test_sampler_dead_min_max(events, measurements, config):
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer, average_window=1)
+                      a2d, timer)
 
     app = Application(measurements=measurements,
                       events=events,
@@ -94,7 +95,7 @@ def test_sampler_sinus_min_max(events, measurements, config):
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer, average_window=1)
+                      a2d, timer)
 
     app = Application(measurements=measurements,
                       events=events,
@@ -103,7 +104,7 @@ def test_sampler_sinus_min_max(events, measurements, config):
                       sampler=sampler,
                       simulation=True)
 
-    app.run_iterations(SAMPLES_AMOUNT)
+    app.run_iterations(CYCLE_SAMPLES)
     app.root.destroy()
 
     expected_min_pressure = driver_factory.MOCK_PEEP
@@ -163,7 +164,7 @@ def test_sampler_pig_min_max(events, measurements, config):
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer, average_window=1)
+                      a2d, timer)
 
     app = Application(measurements=measurements,
                       events=events,
@@ -174,11 +175,6 @@ def test_sampler_pig_min_max(events, measurements, config):
 
     app.run_iterations(SAMPLES_AMOUNT)
     app.root.destroy()
-
-    expected_min_pressure = approx(0.240899428, rel=0.01)
-    min_pressure_msg = f"Expected min pressure of {expected_min_pressure}, " \
-                       f"received {measurements.peep_min_pressure}"
-    assert measurements.peep_min_pressure == expected_min_pressure, min_pressure_msg
 
     expected_max_pressure = approx(20.40648936, rel=0.1)
     max_pressure_msg = f"Expected max pressure of {expected_max_pressure}, " \
