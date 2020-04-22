@@ -39,7 +39,7 @@ class Configurations(object):
                  boot_alert_grace_time=10, dp_calibration_timeout_hrs=5,
                  telemetry_server_url=None,
                  telemetry_server_api_key=None, telemetry_enable=False,
-                 autoscale=True):
+                 autoscale=True, flow_recalibration_reminder=True):
         self.o2_range = o2_range
         self.volume_range = volume_range
         self.pressure_range = pressure_range
@@ -64,6 +64,7 @@ class Configurations(object):
         self.telemetry_server_url = telemetry_server_url
         self.telemetry_server_api_key = telemetry_server_api_key
         self.autoscale = autoscale
+        self.flow_recalibration_reminder = flow_recalibration_reminder
 
     def __getitem__(self, item):
         return getattr(self, item)
@@ -145,8 +146,10 @@ class Configurations(object):
             dp_offset = config["calibration"]["dp_offset"]
             oxygen_point1 = config["calibration"]["oxygen_point1"]
             oxygen_point2 = config["calibration"]["oxygen_point2"]
+            dp_calibration_timeout_hrs = config["calibration"]["dp_calibration_timeout_hrs"]
+            flow_recalibration_reminder = config["calibration"]["flow_recalibration_reminder"]
+
             boot_alert_grace_time = config["boot_alert_grace_time"]
-            dp_calibration_timeout_hrs = config["dp_calibration_timeout_hrs"]
             telemetry_enable = config["telemetry"]["enable"]
             telemetry_server_url = config["telemetry"]["url"]
             telemetry_server_api_key = config["telemetry"]["api_key"]
@@ -174,6 +177,7 @@ class Configurations(object):
                        telemetry_server_url=telemetry_server_url,
                        telemetry_server_api_key=telemetry_server_api_key,
                        telemetry_enable=telemetry_enable,
+                       flow_recalibration_reminder=flow_recalibration_reminder,
                        autoscale=flow_auto_scale)
 
         except Exception as e:
@@ -231,9 +235,10 @@ class Configurations(object):
                 "dp_offset": self.dp_offset,
                 "oxygen_point1": self.oxygen_point1,
                 "oxygen_point2": self.oxygen_point2,
+                "dp_calibration_timeout_hrs": self.dp_calibration_timeout_hrs,
+                "flow_recalibration_reminder": self.flow_recalibration_reminder,
             },
             "boot_alert_grace_time": self.boot_alert_grace_time,
-            "dp_calibration_timeout_hrs": self.dp_calibration_timeout_hrs,
             "telemetry": {
                 "enable": self.telemetry_enable,
                 "url": self.telemetry_server_url,

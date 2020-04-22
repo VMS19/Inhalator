@@ -56,6 +56,9 @@ class RecalibrationSnackbar(BaseSnackbar):
         self.hide()
 
     def update(self):
+        if not self.config.flow_recalibration_reminder:
+            return
+
         # we don't want to notify about recalibration right away when
         # the program have just been started or when one of the actions
         # in the snackbar has been chosen

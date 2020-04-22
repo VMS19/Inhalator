@@ -27,6 +27,8 @@ def snackbar():
                                      observer=Observable())
 
     instance.config = MagicMock(spec=Configurations)
+    instance.config.flow_recalibration_reminder = True
+
     instance.timer.get_time = time_mock
 
     return instance
@@ -133,3 +135,19 @@ def test_time_ago_label_updates(snackbar):
     with freeze_time("13th Feb 2000 00:00:00"):
         snackbar.update()
         assert "1 day" in snackbar.text_label.cget("text")
+
+
+def test_recalibration_snackbar_can_be_disabled(snackbar):
+    snackbar.config.flow_recalibration_reminder = False
+
+    snackbar.config.dp_calibration_timeout_hrs = 5
+    snackbar.show = MagicMock(side_effect=snackbar.show)
+
+    with freeze_time("12th Feb 2000 00:00:00"):
+        snackbar.update()
+
+    with freeze_time("12th Feb 2000 05:00:00"):
+        snackbar.update()
+
+    snackbar.show.assert_not_called()
+    assert not snackbar.shown
