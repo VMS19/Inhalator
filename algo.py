@@ -8,12 +8,13 @@ from collections import deque
 from numpy import trapz
 from scipy.stats import linregress
 
+from converter import flow_to_pressure, pressure_to_flow
 from data.alerts import AlertCodes
 from data.configurations import Configurations
 from sample_storage import SamplesStorage
 from errors import UnavailableMeasurmentError
 from computation import RunningAvg
-
+from tail_detection import NewTailDetector
 
 TRACE = logging.DEBUG - 1
 logging.addLevelName(TRACE, 'TRACE')
@@ -117,10 +118,11 @@ class VentilationState(Enum):
     Unknown = 0  # State unknown yet
     Inhale = 1  # Air is flowing to the lungs
     Hold = 2  # PIP is maintained
-    Exhale = 3  # Pressure is relieved, air flowing out
-    PEEP = 4  # Positive low pressure is maintained until next cycle.
-    PreInhale = 5  # Pressure is accumulated
-    PreExhale = 6  # Pressure is relieved
+    PreExhale = 3  # Pressure is relieved
+    Exhale = 4  # Pressure is relieved, air flowing out
+    PEEP = 5  # Positive low pressure is maintained until next cycle.
+    Tail = 6
+    PreInhale = 7  # Pressure is accumulated
 
 
 class VentilationStateMachine(object):
@@ -149,7 +151,8 @@ class VentilationStateMachine(object):
             VentilationState.Hold: deque(maxlen=100),
             VentilationState.Exhale: deque(maxlen=100),
             VentilationState.PreInhale: deque(maxlen=100),
-            VentilationState.PreExhale: deque(maxlen=100)
+            VentilationState.PreExhale: deque(maxlen=100),
+            VentilationState.Tail: deque(maxlen=100)
         }
 
         # Function to call when entering a state.
@@ -158,14 +161,16 @@ class VentilationStateMachine(object):
             VentilationState.Exhale: self.enter_exhale,
             VentilationState.PreInhale: self.enter_pre_inhale,
             VentilationState.PreExhale: self.enter_pre_exhale,
-            VentilationState.PEEP: self.enter_peep
+            VentilationState.PEEP: self.enter_peep,
+            VentilationState.Tail: self.enter_tail,
         }
         self.exit_handlers = {
             VentilationState.Inhale: self.exit_inhale,
             VentilationState.Exhale: self.exit_exhale,
             VentilationState.PreInhale: self.exit_pre_inhale,
             VentilationState.PreExhale: self.exit_pre_exhale,
-            VentilationState.PEEP: self.exit_peep
+            VentilationState.PEEP: self.exit_peep,
+            VentilationState.Tail: self.exit_tail,
         }
         self.peak_pressure = 0
         self.min_pressure = sys.maxsize
@@ -193,6 +198,12 @@ class VentilationStateMachine(object):
         # Restart state machine
         self.last_state = None
         self.current_state = VentilationState.PEEP
+
+    def enter_tail(self, timestamp):
+        pass
+
+    def exit_tail(self, timestamp):
+        pass
 
     def enter_inhale(self, timestamp):
         if self.last_state == VentilationState.Inhale:
@@ -449,6 +460,14 @@ class Sampler(object):
         self.vsm = VentilationStateMachine(measurements, events, telemetry_sender)
         self.storage_handler = SamplesStorage()
         self.save_sensor_values = save_sensor_values
+        self.calibrate = True
+        self.calibration_count = 600
+        self.dp_offset = 0
+        self.tail_detector = NewTailDetector()
+
+    def run_calibration(self, samples_amount):
+        self.calibrate = True
+        self.calibration_count = samples_amount
 
     def read_single_sensor(self, sensor, alert_code, timestamp):
         try:
@@ -524,6 +543,16 @@ class Sampler(object):
         o2_saturation_percentage = max(0,
                                        min(o2_saturation_percentage, 100))
 
+        if self.calibrate:
+            self.tail_detector.add_sample(flow_slm, ts)
+            self.calibration_count -= 1
+
+            if self.calibration_count == 0:
+                self.calibrate = False
+                self.dp_offset = self.tail_detector.process()
+
+        dp = flow_to_pressure(flow_slm) - self.dp_offset
+        flow_slm = pressure_to_flow(dp)
         self.vsm.update(
             pressure_cmh2o=pressure_cmh2o,
             flow_slm=flow_slm,

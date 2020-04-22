@@ -51,8 +51,14 @@ def draw_flow(axes, samples, timestamps, vsm):
     axes.set_ylabel("Air Flow (L/m)")
     axes.plot(timestamps, samples, "black")
     axes.vlines(
+        vsm.entry_points_ts[VentilationState.PreInhale],
+        ymin=-40, ymax=40, colors="b", linestyle="dashed")
+    axes.vlines(
         vsm.entry_points_ts[VentilationState.Inhale],
         ymin=-40, ymax=40, colors="g", linestyle="dashed")
+    axes.vlines(
+        vsm.entry_points_ts[VentilationState.PreExhale],
+        ymin=-40, ymax=40, colors="pink", linestyle="dashed")
     axes.vlines(
         vsm.entry_points_ts[VentilationState.Exhale],
         ymin=-40, ymax=40, colors="r", linestyle="dashed")

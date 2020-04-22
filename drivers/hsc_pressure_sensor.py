@@ -1,7 +1,10 @@
 import logging
 
 from computation import RunningAvg
+from tail_detection import TailDetector
+from .driver_factory import DriverFactory
 from .honeywell_pressure_sensor import HoneywellPressureSensor
+from .timer import Timer
 
 log = logging.getLogger(__name__)
 
@@ -27,9 +30,9 @@ class HscPressureSensor(HoneywellPressureSensor):
     def __init__(self):
         super().__init__()
         self._calibration_offset = 0
-        log.info("HSC pressure sensor initialized")
-
+        self.tail_detector = TailDetector()
         self._avg_dp_cmh2o = RunningAvg(max_samples=NOISY_DP_SENSOR_SAMPLES)
+        log.info("HSC pressure sensor initialized")
 
     def set_calibration_offset(self, offset):
         self._calibration_offset = offset
@@ -50,4 +53,6 @@ class HscPressureSensor(HoneywellPressureSensor):
     def read(self):
         dp_cmh2o = self.read_differential_pressure()
         avg_dp_chmh2o = self._avg_dp_cmh2o.process(dp_cmh2o)
-        return self.pressure_to_flow(avg_dp_chmh2o - self._calibration_offset)
+        ts = DriverFactory(simulation_mode=True).acquire_driver("timer").get_current_time()
+        offset = self.tail_detector.process(avg_dp_chmh2o - self._calibration_offset, ts)
+        return self.pressure_to_flow(avg_dp_chmh2o - offset)

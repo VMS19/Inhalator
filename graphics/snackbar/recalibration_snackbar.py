@@ -59,7 +59,7 @@ class RecalibrationSnackbar(BaseSnackbar):
         # we don't want to notify about recalibration right away when
         # the program have just been started or when one of the actions
         # in the snackbar has been chosen
-        now = self.timer.get_time()
+        now = self.timer.get_current_time()
         if self.last_dp_calibration_ts is None:
             self.last_dp_calibration_ts = now
             return
