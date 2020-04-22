@@ -121,8 +121,7 @@ class VentilationState(Enum):
     PreExhale = 3  # Pressure is relieved
     Exhale = 4  # Pressure is relieved, air flowing out
     PEEP = 5  # Positive low pressure is maintained until next cycle.
-    Tail = 6
-    PreInhale = 7  # Pressure is accumulated
+    PreInhale = 6  # Pressure is accumulated
 
 
 class VentilationStateMachine(object):
@@ -152,7 +151,6 @@ class VentilationStateMachine(object):
             VentilationState.Exhale: deque(maxlen=100),
             VentilationState.PreInhale: deque(maxlen=100),
             VentilationState.PreExhale: deque(maxlen=100),
-            VentilationState.Tail: deque(maxlen=100)
         }
 
         # Function to call when entering a state.
@@ -162,7 +160,6 @@ class VentilationStateMachine(object):
             VentilationState.PreInhale: self.enter_pre_inhale,
             VentilationState.PreExhale: self.enter_pre_exhale,
             VentilationState.PEEP: self.enter_peep,
-            VentilationState.Tail: self.enter_tail,
         }
         self.exit_handlers = {
             VentilationState.Inhale: self.exit_inhale,
@@ -170,7 +167,6 @@ class VentilationStateMachine(object):
             VentilationState.PreInhale: self.exit_pre_inhale,
             VentilationState.PreExhale: self.exit_pre_exhale,
             VentilationState.PEEP: self.exit_peep,
-            VentilationState.Tail: self.exit_tail,
         }
         self.peak_pressure = 0
         self.min_pressure = sys.maxsize
@@ -198,12 +194,6 @@ class VentilationStateMachine(object):
         # Restart state machine
         self.last_state = None
         self.current_state = VentilationState.PEEP
-
-    def enter_tail(self, timestamp):
-        pass
-
-    def exit_tail(self, timestamp):
-        pass
 
     def enter_inhale(self, timestamp):
         if self.last_state == VentilationState.Inhale:
