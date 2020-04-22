@@ -135,8 +135,8 @@ class VentilationState(Enum):
     Hold = 2  # PIP is maintained
     Exhale = 3  # Pressure is relieved, air flowing out
     PEEP = 4  # Positive low pressure is maintained until next cycle.
-    PreInhale = 5  # Air is flowing to the lungs
-    PreExhale = 6  # Pressure is relieved, air flowing out
+    PreInhale = 5  # Pressure is accumulated
+    PreExhale = 6  # Pressure is relieved
 
 
 class VentilationStateMachine(object):
@@ -417,8 +417,8 @@ class VentilationStateMachine(object):
         flow_positive_increasing = flow_slope > 3 and flow_slm > 2
         flow_negative_decreasing = flow_slope < -10 and flow_slm < -2
 
-        #  either waiting for enough volume for inhale
-        #  or its noise and switching to pre exhale
+        # either waiting for enough volume for inhale
+        # or it's noise and switching to pre exhale
         if self.current_state == VentilationState.PreInhale:
             insp_volume = self.inspiration_volume.integrate() * 1000
             if insp_volume >= self._config.min_insp_volume_for_inhale:
@@ -427,8 +427,8 @@ class VentilationStateMachine(object):
             elif flow_negative_decreasing and pressure_slope < self._config.max_pressure_slope_for_exhale:
                 return VentilationState.PreExhale
 
-        #  either waiting for enough volume for exhale
-        #  or its noise and switching to pre inhale
+        # either waiting for enough volume for exhale
+        # or it's noise and switching to pre inhale
         if self.current_state == VentilationState.PreExhale:
             exp_volume = self.expiration_volume.integrate() * 1000
             if exp_volume >= self._config.min_exp_volume_for_exhale:
@@ -437,7 +437,7 @@ class VentilationStateMachine(object):
             elif flow_positive_increasing and pressure_slope > self._config.min_pressure_slope_for_inhale:
                 return VentilationState.PreInhale
 
-        #  currently at a inhale\exhale state switching reverse pre state
+        # currently at a inhale\exhale state switching reverse pre state
         if self.current_state != VentilationState.Exhale:
             if flow_negative_decreasing and pressure_slope < self._config.max_pressure_slope_for_exhale:
                 return VentilationState.PreExhale
