@@ -2,11 +2,10 @@ import time
 from tkinter import Frame
 
 import pytest
-from unittest.mock import MagicMock
 
-from data.alerts import Alert, AlertCodes
 from data.configurations import Configurations
 from data.measurements import Measurements
+from data.observable import Observable
 from drivers.driver_factory import DriverFactory
 from graphics.configure_alerts_screen import ConfigureAlarmsScreen
 from graphics.themes import Theme, DarkTheme
@@ -18,7 +17,9 @@ def screen() -> ConfigureAlarmsScreen:
     measurements = Measurements()
     drivers = DriverFactory(simulation_mode=True, simulation_data='sinus')
 
-    return ConfigureAlarmsScreen(root=Frame(), drivers=drivers)
+    return ConfigureAlarmsScreen(root=Frame(),
+                                 drivers=drivers,
+                                 observer=Observable())
 
 
 def test_changing_threshold_using_max_button(screen: ConfigureAlarmsScreen):

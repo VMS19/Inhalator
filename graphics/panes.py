@@ -9,25 +9,37 @@ from graphics.right_menu_options import (MuteAlertsButton,
                                          LockThresholdsButton,
                                          OpenConfigureAlertsScreenButton,
                                          OpenAlertsHistoryScreenButton)
+from graphics.snackbar.recalibration_snackbar import RecalibrationSnackbar
+from graphics.snackbar.lock_snackbar import LockSnackbar
+from graphics.constants import SCREEN_HEIGHT, SCREEN_WIDTH
 from graphics.themes import Theme
-from data.configurations import Configurations
+from data.observable import Observable
 
 
 class MasterFrame(object):
     def __init__(self, root, drivers, events, measurements):
         self.root = root
+        observer = Observable()
 
         self.master_frame = Frame(master=self.root, bg="black")
         self.left_pane = LeftPane(self, measurements=measurements)
-        self.right_pane = RightPane(self, events=events, drivers=drivers)
+        self.right_pane = RightPane(self, events=events, drivers=drivers,
+                                    observer=observer)
         self.center_pane = CenterPane(self, measurements=measurements)
         self.top_pane = TopPane(self, events=events, drivers=drivers,
                                 measurements=measurements)
+        self.recalibration_bar = RecalibrationSnackbar(self.root,
+                                                       drivers,
+                                                       observer)
 
     @property
     def panes(self):
         return [self.top_pane, self.center_pane,
                 self.left_pane, self.right_pane]
+
+    @property
+    def bars(self):
+        return [self.recalibration_bar]
 
     @property
     def element(self):
@@ -43,6 +55,9 @@ class MasterFrame(object):
         for pane in self.panes:
             pane.update()
 
+        for bar in self.bars:
+            bar.update()
+
 
 class LeftPane(object):
     def __init__(self, parent, measurements):
@@ -50,8 +65,8 @@ class LeftPane(object):
         self.measurements = measurements
         self.root = parent.element
 
-        self.screen_height = self.root.winfo_screenheight()
-        self.screen_width = self.root.winfo_screenwidth()
+        self.screen_height = SCREEN_HEIGHT
+        self.screen_width = SCREEN_WIDTH
 
         self.height = self.screen_height * 0.85
         self.width = self.screen_width * 0.2
@@ -91,8 +106,8 @@ class CenterPane(object):
         self.measurements = measurements
 
         self.root = parent.element
-        self.screen_height = self.root.winfo_screenheight()
-        self.screen_width = self.root.winfo_screenwidth()
+        self.screen_height = SCREEN_HEIGHT
+        self.screen_width = SCREEN_WIDTH
 
         self.height = self.screen_height * 0.85
         self.width = self.screen_width * 0.7
@@ -140,14 +155,14 @@ class CenterPane(object):
 
 
 class RightPane(object):
-    def __init__(self, parent, events, drivers):
+    def __init__(self, parent, events, drivers, observer):
         self.parent = parent
         self.events = events
         self.drivers = drivers
 
         self.root = parent.element
-        self.screen_height = self.root.winfo_screenheight()
-        self.screen_width = self.root.winfo_screenwidth()
+        self.screen_height = SCREEN_HEIGHT
+        self.screen_width = SCREEN_WIDTH
 
         self.height = self.screen_height * 0.85
         self.width = self.screen_width * 0.1
@@ -159,15 +174,15 @@ class RightPane(object):
         self.clear_alerts_btn = ClearAlertsButton(parent=self, events=self.events)
         self.lock_thresholds_btn = LockThresholdsButton(parent=self)
         self.configure_alerts_btn = OpenConfigureAlertsScreenButton(
-            self, drivers=self.drivers)
-        # self.alerts_history_btn = OpenAlertsHistoryScreenButton(self, events=self.events)
-
+            self, drivers=self.drivers, observer=observer)
+        self.are_buttons_locked = False
+        self.lockable_buttons = [self.mute_alerts_btn, self.configure_alerts_btn,
+                                 self.clear_alerts_btn]
     @property
     def buttons(self):
         return (self.mute_alerts_btn,
                 self.clear_alerts_btn,
                 self.configure_alerts_btn,
-                # self.alerts_history_btn,
                 self.lock_thresholds_btn)
 
     @property
@@ -183,6 +198,18 @@ class RightPane(object):
         for btn in self.buttons:
             btn.update()
 
+    def lock_buttons(self):
+        if self.are_buttons_locked:
+            for button in self.lockable_buttons:
+                button.enable_button()
+            self.lock_thresholds_btn.lock_button()
+            self.are_buttons_locked = False
+
+        else:
+            for button in self.lockable_buttons:
+                button.disable_button()
+            self.lock_thresholds_btn.unlock_button()
+            self.are_buttons_locked = True
 
 class TopPane(object):
     def __init__(self, parent, events, drivers, measurements):
@@ -190,8 +217,8 @@ class TopPane(object):
         self.events = events
 
         self.root = parent.element
-        self.screen_height = self.root.winfo_screenheight()
-        self.screen_width = self.root.winfo_screenwidth()
+        self.screen_height = SCREEN_HEIGHT
+        self.screen_width = SCREEN_WIDTH
 
         self.height = self.screen_height * 0.15
         self.width = self.screen_width
@@ -216,4 +243,3 @@ class TopPane(object):
 
     def update(self):
         self.alerts_bar.update()
-
