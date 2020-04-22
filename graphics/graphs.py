@@ -1,6 +1,7 @@
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from matplotlib import rcParams
+from matplotlib import ticker
 
 from data.configurations import Configurations
 from graphics.themes import Theme
@@ -13,7 +14,6 @@ class Graph(object):
     YLABEL = NotImplemented
     COLOR = NotImplemented
     DPI = 100  # pixels per inch
-    Y_TICKS_STEP = 20  # step between y axis value labels
 
     def __init__(self, parent, measurements, width, height):
         rcParams.update({'figure.autolayout': True})
@@ -32,7 +32,7 @@ class Graph(object):
                              dpi=self.DPI, facecolor=Theme.active().SURFACE)
 
         self.axis = self.figure.add_subplot(111, label=self.LABEL)
-        self.axis.set_ylabel(self.YLABEL)
+        self.axis.set_ylabel(self.YLABEL, labelpad=0)
 
         # Remove white lines around graph frame
         self.axis.spines["right"].set_visible(False)
@@ -40,10 +40,16 @@ class Graph(object):
         self.axis.spines["left"].set_visible(False)
         self.axis.spines["top"].set_visible(False)
 
-        self.axis.tick_params(direction='out', length=3, width=1, colors='w')
+        self.axis.tick_params(axis='y', direction='out', length=3, width=1, colors='w')
         # Calibrate x-axis
         self.axis.set_xticks([])
         self.axis.set_xticklabels([])
+        # Set max number of tick labels in y axis to 7
+        self.axis.yaxis.set_major_locator(ticker.MaxNLocator(nbins=7,
+                                                             integer=True))
+
+        # Make y axis labels aligned
+        self.axis.yaxis.set_major_formatter(self.tick_aligned_format)
 
         # Draw X axis
         self.axis.axhline(y=0, color='white', lw=1)
@@ -61,12 +67,19 @@ class Graph(object):
 
         # Scaling
         self.graph.axes.set_ylim(*self.configured_scale)
-        self.set_y_ticks()
+        self.figure.tight_layout()
 
-    def set_y_ticks(self):
-        yticks = list(range(0, int(self.current_min_y), -self.Y_TICKS_STEP)) + \
-                 list(range(0, int(self.current_max_y) + 1, self.Y_TICKS_STEP))
-        self.axis.set_yticks(yticks)
+    @staticmethod
+    @ticker.FuncFormatter
+    def tick_aligned_format(x, pos):
+        """Print positive tick numbers with space placeholder,
+           to align with minus sign of negative numbers
+        """
+        label = f"{x:.0f}"
+        if x >= 0:
+            label = " " + label
+
+        return label
 
     def save_bg(self):
         """Capture the current drawing of graph, and render it as background."""
@@ -138,7 +151,6 @@ class FlowGraph(Graph):
 
             self.current_min_y, self.current_max_y = original_min, original_max
             self.graph.axes.set_ylim(self.current_min_y, self.current_max_y)
-            self.set_y_ticks()
             self.render()
             return
 
@@ -162,7 +174,6 @@ class FlowGraph(Graph):
         self.current_min_y, self.current_max_y = new_min_y, new_max_y
         self.graph.axes.set_ylim(self.current_min_y - self.GRAPH_MARGINS,
                                  self.current_max_y + self.GRAPH_MARGINS)
-        self.set_y_ticks()
 
         self.render()
 
