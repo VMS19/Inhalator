@@ -546,23 +546,26 @@ class Sampler(object):
             self.log.info("Done accumulating within tail window")
             tail_average = self.tail_detector.process()
             self.log.info(f"Tail average is {tail_average}")
-            self.tails_average.process(tail_average)
+            if tail_average is not None:
+                self.tails_average.process(tail_average)
+
             self.tail_detector = TailDetector(self._flow_sensor)
             self.window_start_time = None
 
         if ts - self.interval_start_time >= self.auto_calibration_interval:
             self.log.info("Done accumulating within tail interval")
-            dp_offset = self.tails_average.process(None)
-            flow_offset = self._flow_sensor.flow_to_pressure(dp_offset)
+            if len(self.tails_average.samples) > 0:
+                dp_offset = self.tails_average.process(None)
+                flow_offset = self._flow_sensor.flow_to_pressure(dp_offset)
 
-            self.log.info(f"DP offset of {dp_offset}")
-            self.log.info(f"Flow offset of {flow_offset} L/min")
+                self.log.info(f"DP offset of {dp_offset}")
+                self.log.info(f"Flow offset of {flow_offset} L/min")
+                self._flow_sensor.set_calibration_offset(dp_offset)
+                self._config.dp_offset = dp_offset
+                self._config.save_to_file()
+
             self.tails_average.reset()
             self.interval_start_time = None
-
-            self._flow_sensor.set_calibration_offset(dp_offset)
-            self._config.dp_offset = dp_offset
-            self._config.save_to_file()
 
         self.vsm.update(
             pressure_cmh2o=pressure_cmh2o,
