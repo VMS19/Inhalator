@@ -435,8 +435,7 @@ class VentilationStateMachine(object):
 class Sampler(object):
 
     def __init__(self, measurements, events, flow_sensor, pressure_sensor,
-                 a2d, timer, telemetry_sender=None,
-                 save_sensor_values=False):
+                 a2d, timer, telemetry_sender=None, save_sensor_values=False):
         super(Sampler, self).__init__()
         self.log = logging.getLogger(self.__class__.__name__)
         self._measurements = measurements
@@ -449,14 +448,15 @@ class Sampler(object):
         self.vsm = VentilationStateMachine(measurements, events, telemetry_sender)
         self.storage_handler = SamplesStorage()
         self.save_sensor_values = save_sensor_values
-        self.calibrate = True
-        self.calibration_count = 600
-        self.dp_offset = 0
-        self.tail_detector = TailDetector(self._flow_sensor)
 
-    def run_calibration(self, samples_amount):
-        self.calibrate = True
-        self.calibration_count = samples_amount
+        self.enable_auto_calibration = True
+        self.auto_calibration_interval = 3 * 60
+        self.auto_calibration_window = 1 * 60
+
+        self.interval_start_time = None
+        self.window_start_time = None
+        self.tails_average = RunningAvg(max_samples=1000)
+        self.tail_detector = TailDetector(self._flow_sensor)
 
     def read_single_sensor(self, sensor, alert_code, timestamp):
         try:
@@ -532,16 +532,25 @@ class Sampler(object):
         o2_saturation_percentage = max(0,
                                        min(o2_saturation_percentage, 100))
 
-        if self.calibrate:
+        if self.interval_start_time is None or self.window_start_time is None:
+            self.interval_start_time = ts
+            self.window_start_time = ts
+
+        if ts - self.window_start_time < self.auto_calibration_window:
             self.tail_detector.add_sample(flow_slm, ts)
-            self.calibration_count -= 1
+        else:
+            self.tails_average.process(self.tail_detector.process())
+            self.tail_detector = TailDetector(self._flow_sensor)
 
-            if self.calibration_count == 0:
-                self.calibrate = False
-                self.dp_offset = self.tail_detector.process()
+        if ts - self.interval_start_time >= self.auto_calibration_interval:
+            dp_offset = self.tails_average.process(None)
+            self.tails_average.reset()
 
-        dp = self._flow_sensor.flow_to_pressure(flow_slm) - self.dp_offset
-        flow_slm = self._flow_sensor.pressure_to_flow(dp)
+            dp = self._flow_sensor.flow_to_pressure(flow_slm) - dp_offset
+            self._config.dp_offset = dp
+            self._flow_sensor.set_calibration_offset = dp
+            self._config.save_to_file()
+
         self.vsm.update(
             pressure_cmh2o=pressure_cmh2o,
             flow_slm=flow_slm,
