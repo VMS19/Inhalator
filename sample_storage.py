@@ -17,7 +17,8 @@ class SamplesStorage:
                'peep',
                'tv_insp',
                'tv_exp',
-               'bpm']
+               'bpm',
+               'state']
     HEADERS_FILE = 'headers.csv'
 
     def __init__(self, file_name_template='inhalator.csv',
@@ -52,8 +53,10 @@ class SamplesStorage:
             self.first_ts = timestamp
         return (timestamp - self.first_ts).total_seconds()
 
-    def write(self, flow, pressure, oxygen, pip=None, peep=None, tv_insp=None, tv_exp=None, bpm=None):
+    def write(self, flow, pressure, oxygen, pip=None, peep=None, tv_insp=None,
+              tv_exp=None, bpm=None, state=None):
         timestamp = datetime.datetime.now()
         unix_time = timestamp.timestamp() * 1000
         time_diff = self._time_diff(timestamp)
-        self._write_row([timestamp, unix_time, time_diff, flow, pressure, oxygen, pip, peep, tv_insp, tv_exp, bpm])
+        self._write_row([timestamp, unix_time, time_diff, flow, pressure,
+                         oxygen, pip, peep, tv_insp, tv_exp, bpm, state])
