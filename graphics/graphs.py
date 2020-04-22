@@ -1,126 +1,95 @@
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
+from matplotlib import rcParams
 
 from data.configurations import Configurations
 from graphics.themes import Theme
 
-from tkinter import *
 
+class Graph(object):
+    RELX = NotImplemented
+    RELY = NotImplemented
+    LABEL = NotImplemented
+    YLABEL = NotImplemented
+    COLOR = NotImplemented
+    DPI = 100  # pixels per inch
 
-class BlankGraph(object):
-    def __init__(self, root):
-        self.root = root
-
-        blank_figure = Figure(figsize=(15, 6), dpi=100)
-        blank_axis = blank_figure.add_subplot(111, label="")
-        blank_canvas = FigureCanvasTkAgg(blank_figure, master=self.root)
-        blank_canvas.draw()
-        self.graph_bbox = blank_axis.bbox
-        self.graph_bg = blank_figure.canvas.copy_from_bbox(self.graph_bbox)
-
-
-class AirPressureGraph(object):
-    def __init__(self, parent, measurements, blank):
+    def __init__(self, parent, measurements, width, height):
+        rcParams.update({'figure.autolayout': True})
         self.parent = parent
         self.root = parent.element
-        self.blank = blank
         self.measurements = measurements
         self.config = Configurations.instance()
+        self.height = height
+        self.width = width
+        self.graph_bbox = None
+        self.graph_bg = None
+        self.current_min_y, self.current_max_y = self.configured_scale
 
-        self.height = self.parent.height * 0.5
-        self.width = self.parent.width
-
-        self.figure = Figure(figsize=(5, 2), dpi=100,
-                             facecolor=Theme.active().SURFACE)
-        self.axis = self.figure.add_subplot(111,
-                                            label="pressure")
+        self.figure = Figure(figsize=(self.width/self.DPI,
+                                      self.height/self.DPI),
+                             dpi=self.DPI, facecolor=Theme.active().SURFACE)
+        self.axis = self.figure.add_subplot(111, label=self.LABEL)
         self.axis.spines["right"].set_visible(False)
         self.axis.spines["bottom"].set_visible(False)
-        self.axis.set_ylabel('Pressure [cmH20]', labelpad=5)
+        self.axis.set_ylabel(self.YLABEL)
 
         # Calibrate x-axis
         self.axis.set_xticks([])
         self.axis.set_xticklabels([])
 
-        amount_of_xs = self.measurements._amount_of_samples_in_graph
-        self.x_axis_display_values = [0] * amount_of_xs
-        self.x_axis_graph, = \
-            self.axis.plot(self.measurements.x_axis,
-                           self.x_axis_display_values,
-                           color=Theme.active().WHITE,
-                           animated=True,
-                           linewidth=1)
+        # Draw X axis
+        self.axis.axhline(y=0, color='white', lw=1)
 
-        self.canvas = FigureCanvasTkAgg(self.figure,
-                                        master=self.root)
-
-        self.display_values = [0] * amount_of_xs
+        # Configure graph
+        self.display_values = [0] * self.measurements._amount_of_samples_in_graph
         self.graph, = self.axis.plot(
             self.measurements.x_axis,
             self.display_values,
-            color=Theme.active().YELLOW,
+            color=self.COLOR,
             linewidth=1,
             animated=True)
 
+        self.canvas = FigureCanvasTkAgg(self.figure, master=self.root)
+
         # Scaling
-        self.current_min_y, self.current_max_y = self.configured_scale
-        self.graph.axes.set_ylim(self.current_min_y, self.current_max_y)
+        self.graph.axes.set_ylim(*self.configured_scale)
 
-        # Thresholds
-        self.pressure_max_threshold_graph, = \
-            self.axis.plot(self.measurements.x_axis,
-                           [self.config.pressure_range.max] *
-                           len(self.measurements.x_axis),
-                           color=Theme.active().RED,
-                           animated=True,
-                           linewidth=1)
-
-        self.pressure_min_threshold_graph, = \
-            self.axis.plot(self.measurements.x_axis,
-                           [self.config.pressure_range.min] *
-                           len(self.measurements.x_axis),
-                           color=Theme.active().RED,
-                           animated=True,
-                           linewidth=1)
-
-    @property
-    def configured_scale(self):
-        return self.config.pressure_y_scale
+    def save_bg(self):
+        """Capture the current drawing of graph, and render it as background."""
+        self.graph_bg = self.canvas.copy_from_bbox(self.graph_bbox)
 
     def render(self):
         self.canvas.draw()
-        self.canvas.get_tk_widget().place(relx=0, rely=0,
+        self.canvas.get_tk_widget().place(relx=self.RELX, rely=self.RELY,
                                           height=self.height,
                                           width=self.width)
+        self.graph_bbox = self.canvas.figure.bbox
+        self.save_bg()
 
     def update(self):
-        self.figure.canvas.restore_region(self.blank.graph_bg,
-                                          bbox=self.blank.graph_bbox,
-                                          xy=(0, 0))
-
+        # Restore the saved background, and redraw the graph
+        self.figure.canvas.restore_region(self.graph_bg)
         self.graph.set_ydata(self.display_values)
-        # Update threshold lines
-        self.pressure_min_threshold_graph.set_ydata([self.config.pressure_range.min] *
-                                                    len(self.measurements.x_axis))
-        self.pressure_max_threshold_graph.set_ydata([self.config.pressure_range.max] *
-                                                    len(self.measurements.x_axis))
-
-        self.x_axis_graph.set_ydata(self.x_axis_display_values)
-
         self.axis.draw_artist(self.graph)
-        self.axis.draw_artist(self.pressure_min_threshold_graph)
-        self.axis.draw_artist(self.pressure_max_threshold_graph)
-        self.axis.draw_artist(self.x_axis_graph)
-
-        self.figure.canvas.blit(self.axis.bbox)
+        self.figure.canvas.blit(self.graph_bbox)
         self.figure.canvas.flush_events()
 
     @property
     def element(self):
         return self.canvas
 
+    @property
+    def configured_scale(self):
+        raise NotImplementedError()
 
-class FlowGraph(object):
+
+class FlowGraph(Graph):
+    RELX = 0
+    RELY = 0.5
+    LABEL = "flow"
+    YLABEL = 'Flow [L/min]'
+    COLOR = Theme.active().LIGHT_BLUE
     GRAPH_MARGINS = 3  # Used for calculating the empty space in the Y-axis
 
     # We must pick values that are a multiplication of each other, as we
@@ -128,62 +97,14 @@ class FlowGraph(object):
     ZOOM_OUT_FREQUENCY = 50
     ZOOM_IN_FREQUENCY = 500
 
-    def __init__(self, parent, measurements, blank):
-        self.parent = parent
-        self.root = parent.element
-        self.measurements = measurements
-        self.blank = blank
-        self.config = Configurations.instance()
-
-        self.height = self.parent.height * 0.5
-        self.width = self.parent.width
-
-        self.figure = Figure(figsize=(5, 2),
-                             dpi=100, facecolor=Theme.active().SURFACE)
-        self.axis = self.figure.add_subplot(111, label="flow")
-        self.axis.spines["right"].set_visible(False)
-        self.axis.spines["bottom"].set_visible(False)
-        self.axis.set_ylabel('Flow [L/min]', labelpad=-2)
-
-        # Calibrate x-axis
-        self.axis.set_xticks([])
-        self.axis.set_xticklabels([])
-
-        self.display_values = [0] * self.measurements._amount_of_samples_in_graph
-        self.graph, = self.axis.plot(
-            self.measurements.x_axis,
-            self.display_values,
-            color=Theme.active().LIGHT_BLUE,
-            linewidth=1,
-            animated=True)
-
-        amount_of_xs = self.measurements._amount_of_samples_in_graph
-        self.x_axis_display_values = [0] * amount_of_xs
-        self.x_axis_graph, = \
-            self.axis.plot(self.measurements.x_axis,
-                           self.x_axis_display_values,
-                           color=Theme.active().WHITE,
-                           animated=True,
-                           linewidth=1)
-
-        self.canvas = FigureCanvasTkAgg(self.figure, master=self.root)
-
-        # Scaling
-        self.current_min_y, self.current_max_y = self.configured_scale
-        self.graph.axes.set_ylim(self.current_min_y, self.current_max_y)
-
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         # State
         self.current_iteration = 0
 
     @property
     def configured_scale(self):
         return self.config.flow_y_scale
-
-    def render(self):
-        self.canvas.draw()
-        self.canvas.get_tk_widget().place(relx=0, rely=0.5,
-                                          height=self.height,
-                                          width=self.width)
 
     def autoscale(self):
         """Symmetrically rescale the Y-axis."""
@@ -235,16 +156,41 @@ class FlowGraph(object):
         if self.config.autoscale:
             self.autoscale()
 
-        self.figure.canvas.restore_region(self.blank.graph_bg,
-                                          bbox=self.blank.graph_bbox,
-                                          xy=(0, 0))
+        super().update()
 
-        self.graph.set_ydata(self.display_values)
-        self.x_axis_graph.set_ydata(self.x_axis_display_values)
-        self.axis.draw_artist(self.graph)
-        self.axis.draw_artist(self.x_axis_graph)
-        self.figure.canvas.blit(self.axis.bbox)
-        self.figure.canvas.flush_events()
+
+class AirPressureGraph(Graph):
+    RELX = 0
+    RELY = 0
+    LABEL = "pressure"
+    YLABEL = 'Pressure [cmH20]'
+    COLOR = Theme.active().YELLOW
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.min_threshold = None
+        self.max_threshold = None
+        self.config.pressure_range.observer.subscribe(self, self.update_thresholds)
+        self.update_thresholds((self.config.pressure_range.min,
+                                self.config.pressure_range.max))
+
+    def update_thresholds(self, range):
+        min_value, max_value = range
+
+        if self.min_threshold:
+            self.min_threshold.remove()
+        if self.max_threshold:
+            self.max_threshold.remove()
+
+        self.min_threshold = self.axis.axhline(y=min_value, color='red', lw=1)
+        self.max_threshold = self.axis.axhline(y=max_value, color='red', lw=1)
+
+        self.canvas.draw()
+        self.save_bg()
+
+    @property
+    def configured_scale(self):
+        return self.config.pressure_y_scale
 
     @property
     def element(self):

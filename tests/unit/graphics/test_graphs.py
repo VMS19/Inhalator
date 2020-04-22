@@ -9,7 +9,7 @@ from algo import Sampler
 from data.events import Events
 from data.measurements import Measurements
 from drivers.driver_factory import DriverFactory
-from graphics.graphs import AirPressureGraph, FlowGraph, BlankGraph
+from graphics.graphs import AirPressureGraph, FlowGraph
 from graphics.themes import Theme, DarkTheme
 
 
@@ -45,8 +45,8 @@ def pressure_graph(measurements) -> AirPressureGraph:
     parent = MagicMock()
     parent.element = root
 
-    blank = BlankGraph(root)
-    graph = AirPressureGraph(parent=parent, measurements=measurements, blank=blank)
+    graph = AirPressureGraph(parent=parent, measurements=measurements,
+                             width=parent.width, height=parent.height)
     graph.axis = MagicMock()
     graph.figure = MagicMock()
     graph.config = MagicMock()
@@ -62,8 +62,8 @@ def flow_graph(measurements) -> FlowGraph:
     parent = MagicMock()
     parent.element = root
 
-    blank = BlankGraph(root)
-    graph = FlowGraph(parent=parent, measurements=measurements, blank=blank)
+    graph = FlowGraph(parent=parent, measurements=measurements,
+                      width=parent.width, height=parent.height)
     graph.axis = MagicMock()
     graph.figure = MagicMock()
     graph.config = MagicMock()

@@ -1,3 +1,6 @@
+from data.observable import Observable
+
+
 class Range(object):
     NAME = NotImplemented
     UNIT = NotImplemented
@@ -75,6 +78,14 @@ class VolumeRange(Range):
 class PressureRange(Range):
     NAME = "Pressure"
     UNIT = "cmH2O"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.observer = Observable()
+
+    def confirm(self, *args, **kwargs):
+        super().confirm(*args, **kwargs)
+        self.observer.publish((self.min, self.max))
 
 
 class RespiratoryRateRange(Range):

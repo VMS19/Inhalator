@@ -1,14 +1,14 @@
 from tkinter import *
-from matplotlib import rcParams
 
 from graphics.alert_bar import IndicatorAlertBar
-from graphics.graphs import FlowGraph, AirPressureGraph, BlankGraph
+from graphics.graphs import FlowGraph, AirPressureGraph
 from graphics.graph_summaries import VolumeSummary, BPMSummary, \
     PressurePeakSummary, O2SaturationSummary
 from graphics.right_menu_options import (MuteAlertsButton,
                                          ClearAlertsButton,
                                          LockThresholdsButton,
-                                         OpenConfigureAlertsScreenButton, OpenAlertsHistoryScreenButton)
+                                         OpenConfigureAlertsScreenButton,
+                                         OpenAlertsHistoryScreenButton)
 from graphics.snackbar.recalibration_snackbar import RecalibrationSnackbar
 from graphics.snackbar.lock_snackbar import LockSnackbar
 from graphics.constants import SCREEN_HEIGHT, SCREEN_WIDTH
@@ -114,9 +114,10 @@ class CenterPane(object):
 
         self.frame = Frame(master=self.root, bg=Theme.active().SURFACE,
                            height=self.height, width=self.width)
-        self.blank_graph = BlankGraph(self.frame)
-        self.flow_graph = FlowGraph(self, self.measurements, blank=self.blank_graph)
-        self.pressure_graph = AirPressureGraph(self, self.measurements, blank=self.blank_graph)
+        self.flow_graph = FlowGraph(self, self.measurements, self.width,
+                                    self.height/2)
+        self.pressure_graph = AirPressureGraph(self, self.measurements,
+                                               self.width, self.height/2)
 
     def pop_queue_to_list(self, q, lst):
         # pops all queue values into list, returns if items appended to queue
@@ -136,7 +137,6 @@ class CenterPane(object):
 
     def render(self):
         self.frame.grid(row=1, column=1)
-        rcParams.update({'figure.autolayout': True})
 
         for graph in self.graphs:
             graph.render()
@@ -145,10 +145,10 @@ class CenterPane(object):
     def update(self):
         # Get measurments from peripherals
 
-        had_pressure_change = self.pop_queue_to_list(self.measurements.pressure_measurements,
-                                                     self.pressure_graph.display_values)
-        had_flow_change = self.pop_queue_to_list(self.measurements.flow_measurements,
-                                                 self.flow_graph.display_values)
+        self.pop_queue_to_list(self.measurements.pressure_measurements,
+            self.pressure_graph.display_values)
+        self.pop_queue_to_list(self.measurements.flow_measurements,
+            self.flow_graph.display_values)
 
         for graph in self.graphs:
             graph.update()
