@@ -1,8 +1,13 @@
 import logging
 
+from computation import RunningAvg
 from .honeywell_pressure_sensor import HoneywellPressureSensor
 
 log = logging.getLogger(__name__)
+
+# the Honeywell differential pressure sensor is very noisy, so we've applied
+# some averaging of the last samples to make the graph smoother
+NOISY_DP_SENSOR_SAMPLES = 6
 
 
 class HscPressureSensor(HoneywellPressureSensor):
@@ -24,6 +29,8 @@ class HscPressureSensor(HoneywellPressureSensor):
         self._calibration_offset = 0
         log.info("HSC pressure sensor initialized")
 
+        self._avg_dp_cmh2o = RunningAvg(max_samples=NOISY_DP_SENSOR_SAMPLES)
+
     def set_calibration_offset(self, offset):
         self._calibration_offset = offset
 
@@ -42,4 +49,5 @@ class HscPressureSensor(HoneywellPressureSensor):
 
     def read(self):
         dp_cmh2o = self.read_differential_pressure()
-        return self.pressure_to_flow(dp_cmh2o - self._calibration_offset)
+        avg_dp_chmh2o = self._avg_dp_cmh2o.process(dp_cmh2o)
+        return self.pressure_to_flow(avg_dp_chmh2o - self._calibration_offset)
