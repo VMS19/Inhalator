@@ -64,7 +64,7 @@ class Graph(object):
         self.set_y_ticks()
 
     def set_y_ticks(self):
-        yticks = list(range(int(self.current_min_y), 0, self.Y_TICKS_STEP)) + \
+        yticks = list(range(0, int(self.current_min_y), -self.Y_TICKS_STEP)) + \
                  list(range(0, int(self.current_max_y) + 1, self.Y_TICKS_STEP))
         self.axis.set_yticks(yticks)
 
