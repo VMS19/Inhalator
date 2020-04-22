@@ -544,9 +544,11 @@ class Sampler(object):
             self.tail_detector.add_sample(flow_slm, ts)
         else:
             self.log.info("Done accumulating within tail window")
-            self.tails_average.process(self.tail_detector.process())
+            tail_average = self.tail_detector.process()
+            self.log.info(f"Tail average is {tail_average}")
+            self.tails_average.process(tail_average)
             self.tail_detector = TailDetector(self._flow_sensor)
-            self.window_start_time = ts
+            self.window_start_time = None
 
         if ts - self.interval_start_time >= self.auto_calibration_interval:
             self.log.info("Done accumulating within tail interval")
@@ -554,9 +556,9 @@ class Sampler(object):
             flow_offset = self._flow_sensor.flow_to_pressure(dp_offset)
 
             self.log.info(f"DP offset of {dp_offset}")
-            self.log.info(f"Found offset of {flow_offset} L/min")
+            self.log.info(f"Flow offset of {flow_offset} L/min")
             self.tails_average.reset()
-            self.interval_start_time = ts
+            self.interval_start_time = None
 
             self._flow_sensor.set_calibration_offset(dp_offset)
             self._config.dp_offset = dp_offset
