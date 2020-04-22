@@ -135,8 +135,8 @@ class VentilationState(Enum):
     Hold = 2  # PIP is maintained
     Exhale = 3  # Pressure is relieved, air flowing out
     PEEP = 4  # Positive low pressure is maintained until next cycle.
-    PreInhale = 5  # Air is flowing to the lungs
-    PreExhale = 6  # Pressure is relieved, air flowing out
+    PreInhale = 5  # Pressure is accumulated
+    PreExhale = 6  # Pressure is relieved
 
 
 class VentilationStateMachine(object):
