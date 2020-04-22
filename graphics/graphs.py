@@ -4,6 +4,7 @@ from matplotlib import rcParams
 
 from data.configurations import Configurations
 from graphics.themes import Theme
+from drivers.driver_factory import DriverFactory
 
 
 class Graph(object):
@@ -101,6 +102,8 @@ class FlowGraph(Graph):
         super().__init__(*args, **kwargs)
         # State
         self.current_iteration = 0
+        self.offset_line = None
+        self.dp_sensor = DriverFactory.instance().acquire_driver("differential_pressure")
 
     @property
     def configured_scale(self):
@@ -152,10 +155,21 @@ class FlowGraph(Graph):
 
         self.render()
 
+    def update_offset_line(self):
+        if self.offset_line:
+            self.offset_line.remove()
+
+        offset = self.dp_sensor.pressure_to_flow(self.config.dp_offset)
+        self.offset_line = self.axis.axhline(y=offset, color='purple', lw=1)
+
+        self.canvas.draw()
+        self.save_bg()
+
     def update(self):
         if self.config.autoscale:
             self.autoscale()
 
+        self.update_offset_line()
         super().update()
 
 
