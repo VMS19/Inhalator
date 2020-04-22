@@ -2,7 +2,7 @@ import sys
 import time
 import logging
 from enum import Enum
-from statistics import mean
+
 from collections import deque
 
 from numpy import trapz
@@ -12,6 +12,8 @@ from data.alerts import AlertCodes
 from data.configurations import Configurations
 from sample_storage import SamplesStorage
 from errors import UnavailableMeasurmentError
+from computation import RunningAvg
+
 
 TRACE = logging.DEBUG - 1
 logging.addLevelName(TRACE, 'TRACE')
@@ -34,24 +36,6 @@ class Accumulator(object):
     def reset(self):
         self.samples.clear()
         self.timestamps.clear()
-
-
-class RunningAvg(object):
-
-    def __init__(self, max_samples):
-        self.samples = deque(maxlen=max_samples)
-
-    def reset(self):
-        self.samples.clear()
-
-    def process(self, value):
-        if value is not None:
-            self.samples.append(value)
-
-        if len(self.samples) == 0:
-            return 0
-
-        return mean(self.samples)
 
 
 class RateMeter(object):
@@ -172,8 +156,6 @@ class VentilationStateMachine(object):
         self.peak_pressure = 0
         self.min_pressure = sys.maxsize
         self.peak_flow = 0
-        # No good reason for 1000 max samples. Sounds enough.
-        self.peep_avg_calculator = RunningAvg(max_samples=1000)
         self.breathes_rate_meter = RateMeter(time_span_seconds=60,
                                              max_samples=4)
         self.inspiration_volume = Accumulator()
@@ -392,7 +374,7 @@ class VentilationStateMachine(object):
 class Sampler(object):
 
     def __init__(self, measurements, events, flow_sensor, pressure_sensor,
-                 a2d, timer, average_window, telemetry_sender=None,
+                 a2d, timer, telemetry_sender=None,
                  save_sensor_values=False):
         super(Sampler, self).__init__()
         self.log = logging.getLogger(self.__class__.__name__)
@@ -406,7 +388,6 @@ class Sampler(object):
         self.vsm = VentilationStateMachine(measurements, events, telemetry_sender)
         self.storage_handler = SamplesStorage()
         self.save_sensor_values = save_sensor_values
-        self.flow_avg = RunningAvg(average_window)
 
     def read_single_sensor(self, sensor, alert_code, timestamp):
         try:
@@ -430,8 +411,6 @@ class Sampler(object):
         """
         flow_slm = self.read_single_sensor(
             self._flow_sensor, AlertCodes.FLOW_SENSOR_ERROR, timestamp)
-
-        flow_avg_sample = self.flow_avg.process(flow_slm)
 
         pressure_cmh2o = self.read_single_sensor(
             self._pressure_sensor, AlertCodes.PRESSURE_SENSOR_ERROR, timestamp)
@@ -460,7 +439,7 @@ class Sampler(object):
             self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BATTERY, timestamp)
             self.log.error(e)
 
-        data = (flow_avg_sample, pressure_cmh2o, o2_saturation_percentage)
+        data = (flow_slm, pressure_cmh2o, o2_saturation_percentage)
         return [x if x is not None else 0 for x in data]
 
     def sampling_iteration(self):
