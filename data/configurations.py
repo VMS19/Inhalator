@@ -72,7 +72,7 @@ class Configurations(object):
         self.auto_cal_interval = auto_cal_interval
         self.auto_cal_window = auto_cal_window
         self.auto_cal_sample_threshold = auto_cal_sample_threshold
-        self.auto_cal_slope_threshold= auto_cal_slope_threshold
+        self.auto_cal_slope_threshold = auto_cal_slope_threshold
         self.auto_cal_min_tail = auto_cal_min_tail
         self.auto_cal_grace_length = auto_cal_grace_length
 
@@ -171,7 +171,6 @@ class Configurations(object):
             auto_cal_slope_threshold = config["calibration"]["auto_calibration"]["slope_threshold"]
             auto_cal_min_tail = config["calibration"]["auto_calibration"]["min_tail"]
             auto_cal_grace_length = config["calibration"]["auto_calibration"]["grace_length"]
-
 
             return cls(o2_range=o2,
                        volume_range=volume,
