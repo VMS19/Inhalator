@@ -1,8 +1,14 @@
 #!/bin/bash
 
+# append a line to a file only if it doesn't already exist.
+# parameters: line to append, file to append to
+function idempotent_append {
+	grep -xqF "$1" "$2" || echo -e "$1" >> "$2"
+}
+
 # exit if not running on a rpi
 uname -a | grep -q raspberrypi && RPI="1"
-if [ -z $RPI ];
+if [ -z $RPI ]
 then
 	echo "This script should only be run on a raspberrypi!"
 	exit 1
@@ -15,30 +21,39 @@ then
 	exit 1
 fi
 
+# check if this is running as an installation or as an update
+grep -q "exit 0 #remove this" /etc/rc.local && SETUP="1"
+
+
 INHALATOR_PATH=$(realpath $(dirname $(realpath $0))/..)
 
-# install dependencies
-apt-get update
-apt-get install --assume-yes virtualenv libatlas-base-dev pigpio python3-dev vim
-virtualenv $INHALATOR_PATH/.inhalator_env -p $(which python3)
-source $INHALATOR_PATH/.inhalator_env/bin/activate
-pip3 install --upgrade pip
-pip3 install -r $INHALATOR_PATH/requirements.txt
-
-# enable ftp server
-apt-get install proftpd -y
-echo "UseReverseDNS off" >> /etc/proftpd/proftpd.conf
-service proftpd restart
+if [ $SETUP ]
+then
+	# install dependencies
+	apt-get update
+	apt install --assume-yes virtualenv libatlas-base-dev pigpio python3-dev vim
+	virtualenv $INHALATOR_PATH/.inhalator_env -p $(which python3)
+	source $INHALATOR_PATH/.inhalator_env/bin/activate
+	pip3 install --upgrade pip
+	pip3 install -r $INHALATOR_PATH/requirements.txt
+	apt-get install proftpd -y
+fi
 
 # install as service
 $INHALATOR_PATH/rasp_init/install-as-service.sh
+
+# enable ftp server
+idempotent_append "UseReverseDNS off" /etc/proftpd/proftpd.conf
+service proftpd restart
 
 # enable ssh
 systemctl enable ssh
 systemctl start ssh
 
 # configure network
-echo -e "auto eth0\niface eth0 inet static\naddress 192.168.1.253/24\nnetmask 255.255.255.0" >> /etc/network/interfaces
+grep -qF "192.168.1.253" /etc/network/interfaces || echo -e \
+	"auto eth0\niface eth0 inet static\naddress 192.168.1.253/24\nnetmask 255.255.255.0" \
+	>> /etc/network/interfaces
 
 # set the wallpaper
 cp $INHALATOR_PATH/resources/wallpaper.png /usr/share/rpd-wallpaper/temple.jpg
@@ -62,7 +77,7 @@ sed -i 's/#xserver-command=X/xserver-command=X -nocursor/g' /etc/lightdm/lightdm
 rm -f /etc/xdg/autostart/piwiz.desktop
 
 # disable BT
-echo "dtoverlay=disable-bt" >> /boot/config.txt
+idempotent_append "dtoverlay=disable-bt" /boot/config.txt
 
 # set keyboard layout
 raspi-config nonint do_change_locale en_US.UTF-8
@@ -78,10 +93,11 @@ sudo raspi-config nonint do_spi 0
 timedatectl set-timezone 'Asia/Jerusalem'
 
 # add the interpreter from the venv to PATH
-echo "source /home/pi/Inhalator/.inhalator_env/bin/activate" >> /home/pi/.bashrc
+idempotent_append "source /home/pi/Inhalator/.inhalator_env/bin/activate" /home/pi/.bashrc
 
 # add ll and lla to bashrc
-echo -e "alias ll='ls -l'\nalias lla='ls -la'" >> /home/pi/.bashrc
+idempotent_append "alias ll='ls -l'" /home/pi/.bashrc
+idempotent_append "alias lla='ls -la'" /home/pi/.bashrc
 
 # re-enable file system expansion
 sed -i 's/#init_here/init=\/usr\/lib\/raspi-config\/init_resize.sh/g' /boot/cmdline.txt
@@ -89,9 +105,12 @@ sed -i 's/exit 0 #remove this//g' /etc/rc.local
 sed -i 's/8700000 #//g' /usr/lib/raspi-config/init_resize.sh
 
 # config buzzer io pull up
-echo "gpio=13=pu" >> /boot/config.txt
+idempotent_append "gpio=13=pu" /boot/config.txt
 
 # enable hdmi hotplug
-echo "hdmi_force_hotplug=1" >> /boot/config.txt
+idempotent_append "hdmi_force_hotplug=1" /boot/config.txt
 
-echo -e "setup done. DON'T FORGET TO CHANGE THE PASSWORD\nDO NOT REBOOT - USE ONLY SHUTDOWN!!!"
+if [ $SETUP ]
+then
+	echo -e "setup done. DON'T FORGET TO CHANGE THE PASSWORD\nDO NOT REBOOT - USE ONLY SHUTDOWN!!!"
+fi
