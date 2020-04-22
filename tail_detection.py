@@ -3,7 +3,7 @@ import numpy as np
 from converter import flow_to_pressure
 
 
-class NewTailDetector:
+class TailDetector:
     # TODO: move to config
     TAIL_THRESHOLD = 5  # absolute flow value
     SLOPE_THRESHOLD = 10  # absolute flow slope

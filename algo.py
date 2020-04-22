@@ -14,7 +14,7 @@ from data.configurations import Configurations
 from sample_storage import SamplesStorage
 from errors import UnavailableMeasurmentError
 from computation import RunningAvg
-from tail_detection import NewTailDetector
+from tail_detection import TailDetector
 
 TRACE = logging.DEBUG - 1
 logging.addLevelName(TRACE, 'TRACE')
@@ -463,7 +463,7 @@ class Sampler(object):
         self.calibrate = True
         self.calibration_count = 600
         self.dp_offset = 0
-        self.tail_detector = NewTailDetector()
+        self.tail_detector = TailDetector()
 
     def run_calibration(self, samples_amount):
         self.calibrate = True
