@@ -13,7 +13,7 @@ from data.configurations import Configurations
 from sample_storage import SamplesStorage
 from errors import UnavailableMeasurmentError
 from computation import RunningAvg
-from tail_detection import TailDetector
+from logic.tail_detection import TailDetector
 
 TRACE = logging.DEBUG - 1
 logging.addLevelName(TRACE, 'TRACE')
