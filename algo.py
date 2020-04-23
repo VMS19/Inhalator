@@ -450,12 +450,13 @@ class Sampler(object):
         self.save_sensor_values = save_sensor_values
 
         self.enable_auto_calibration = True
-        self.auto_calibration_interval = 20
-        self.auto_calibration_window = 20
+        self.interval_between_calibrations = 60 # hour
+        self.calibration_iterations = 4  # 7
+        self.calibration_length = 10  # 30
 
         self.interval_start_time = None
         self.window_start_time = None
-        self.tails_average = RunningAvg(max_samples=1000)
+        self.calibration_counter = 0
         self.tail_detector = TailDetector(self._flow_sensor)
 
     def read_single_sensor(self, sensor, alert_code, timestamp):
@@ -540,35 +541,28 @@ class Sampler(object):
             self.log.info("Starting auto calibration window")
             self.window_start_time = ts
 
-        if ts - self.window_start_time < self.auto_calibration_window:
-            self.tail_detector.add_sample(flow_slm, ts)
-        else:
-            self.log.info("Done accumulating within tail window")
-            tail_average = self.tail_detector.process()
-            if tail_average is not None:
-                self.log.info(f"Tail average is {tail_average} DP")
-                self.log.info(f"Tail average is {self._flow_sensor.pressure_to_flow(tail_average)} L/min")
-                self.tails_average.process(tail_average)
+        if ts - self.interval_start_time >= self.interval_between_calibrations:
+            if ts - self.window_start_time < self.calibration_length:
+                self.tail_detector.add_sample(flow_slm, ts)
+            else:
+                self.log.info("Done accumulating within tail window")
+                tail_offset = self.tail_detector.process()
+                if tail_offset is not None:
+                    self.log.info(f"Tail offset is {tail_offset} DP")
+                    self.log.info(f"Tail offset is {self._flow_sensor.pressure_to_flow(tail_offset)} L/min")
+                    flow_offset = self._flow_sensor.pressure_to_flow(tail_offset)
+                    self._flow_sensor.set_calibration_offset(flow_offset)
 
-            self.tail_detector = TailDetector(self._flow_sensor)
-            self.window_start_time = None
+                self.window_start_time = None
+                self.tail_detector = TailDetector(self._flow_sensor)
+                self.calibration_counter += 1
 
-        if ts - self.interval_start_time >= self.auto_calibration_interval:
-            self.log.info("Done accumulating within tail interval")
-            if len(self.tails_average.samples) > 0:
-                dp_offset = self.tails_average.process(None)
-                flow_offset = self._flow_sensor.pressure_to_flow(dp_offset)
-
-                self.log.info(f"Old DP offset: {self._config.dp_offset}")
-                self.log.info(f"DP offset of {dp_offset}")
-                self.log.info(f"Old Flow offset: {self._flow_sensor.pressure_to_flow(self._config.dp_offset)}")
-                self.log.info(f"Flow offset of {flow_offset} L/min")
-                self._flow_sensor.set_calibration_offset(dp_offset)
-                self._config.dp_offset = dp_offset
-                self._config.save_to_file()
-
-            self.tails_average.reset()
-            self.interval_start_time = None
+                if self.calibration_counter >= self.calibration_iterations:
+                    self.log.info("Done accumulating within tail interval")
+                    self.calibration_counter = 0
+                    self.interval_start_time = None
+                    self._config.dp_offset = self._flow_sensor.get_calibration_offset()
+                    self._config.save_to_file()
 
         self.vsm.update(
             pressure_cmh2o=pressure_cmh2o,

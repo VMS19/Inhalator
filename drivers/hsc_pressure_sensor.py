@@ -35,6 +35,9 @@ class HscPressureSensor(HoneywellPressureSensor):
     def set_calibration_offset(self, offset):
         self._calibration_offset = offset
 
+    def get_calibration_offset(self):
+        return self._calibration_offset
+
     def pressure_to_flow(self, pressure_cmh2o):
         flow = (abs(pressure_cmh2o) ** 0.5) * self.SYSTEM_RATIO_SCALE
         return copysign(flow, pressure_cmh2o)
