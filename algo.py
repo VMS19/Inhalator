@@ -450,7 +450,7 @@ class Sampler(object):
         self.save_sensor_values = save_sensor_values
 
         self.enable_auto_calibration = True
-        self.interval_between_calibrations = 1  # hour
+        self.interval_between_calibrations = 60  # hour
         self.calibration_iterations = 4  # 7
         self.calibration_length = 10  # 30
 
