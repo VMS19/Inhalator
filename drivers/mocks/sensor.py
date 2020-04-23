@@ -2,7 +2,7 @@ from math import copysign
 from itertools import cycle
 from numpy import random
 
-from computation import RunningAvg
+from logic.computations import RunningAvg
 
 
 class MockSensor(object):

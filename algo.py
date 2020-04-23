@@ -12,7 +12,7 @@ from data.alerts import AlertCodes
 from data.configurations import Configurations
 from sample_storage import SamplesStorage
 from errors import UnavailableMeasurmentError
-from computation import RunningAvg
+from logic.computations import RunningAvg
 from logic.tail_detection import TailDetector
 
 TRACE = logging.DEBUG - 1

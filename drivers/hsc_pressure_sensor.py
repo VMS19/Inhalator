@@ -1,7 +1,7 @@
 import logging
 from math import copysign
 
-from computation import RunningAvg
+from logic.computations import RunningAvg
 from .honeywell_pressure_sensor import HoneywellPressureSensor
 
 log = logging.getLogger(__name__)
