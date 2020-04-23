@@ -39,7 +39,10 @@ class Configurations(object):
                  boot_alert_grace_time=10, dp_calibration_timeout_hrs=5,
                  telemetry_server_url=None,
                  telemetry_server_api_key=None, telemetry_enable=False,
-                 autoscale=True):
+                 autoscale=True, flow_recalibration_reminder=True,
+                 auto_cal_enable=True, auto_cal_interval=3, auto_cal_window=1,
+                 auto_cal_sample_threshold=5, auto_cal_slope_threshold=10,
+                 auto_cal_min_tail=12, auto_cal_grace_length=5):
         self.o2_range = o2_range
         self.volume_range = volume_range
         self.pressure_range = pressure_range
@@ -64,6 +67,14 @@ class Configurations(object):
         self.telemetry_server_url = telemetry_server_url
         self.telemetry_server_api_key = telemetry_server_api_key
         self.autoscale = autoscale
+        self.flow_recalibration_reminder = flow_recalibration_reminder
+        self.auto_cal_enable = auto_cal_enable
+        self.auto_cal_interval = auto_cal_interval
+        self.auto_cal_window = auto_cal_window
+        self.auto_cal_sample_threshold = auto_cal_sample_threshold
+        self.auto_cal_slope_threshold = auto_cal_slope_threshold
+        self.auto_cal_min_tail = auto_cal_min_tail
+        self.auto_cal_grace_length = auto_cal_grace_length
 
     def __getitem__(self, item):
         return getattr(self, item)
@@ -145,11 +156,21 @@ class Configurations(object):
             dp_offset = config["calibration"]["dp_offset"]
             oxygen_point1 = config["calibration"]["oxygen_point1"]
             oxygen_point2 = config["calibration"]["oxygen_point2"]
+            dp_calibration_timeout_hrs = config["calibration"]["dp_calibration_timeout_hrs"]
+            flow_recalibration_reminder = config["calibration"]["flow_recalibration_reminder"]
+
             boot_alert_grace_time = config["boot_alert_grace_time"]
-            dp_calibration_timeout_hrs = config["dp_calibration_timeout_hrs"]
             telemetry_enable = config["telemetry"]["enable"]
             telemetry_server_url = config["telemetry"]["url"]
             telemetry_server_api_key = config["telemetry"]["api_key"]
+
+            auto_cal_enable = config["calibration"]["auto_calibration"]["enable"]
+            auto_cal_interval = config["calibration"]["auto_calibration"]["interval"]
+            auto_cal_window = config["calibration"]["auto_calibration"]["window"]
+            auto_cal_sample_threshold = config["calibration"]["auto_calibration"]["sample_threshold"]
+            auto_cal_slope_threshold = config["calibration"]["auto_calibration"]["slope_threshold"]
+            auto_cal_min_tail = config["calibration"]["auto_calibration"]["min_tail"]
+            auto_cal_grace_length = config["calibration"]["auto_calibration"]["grace_length"]
 
             return cls(o2_range=o2,
                        volume_range=volume,
@@ -174,7 +195,15 @@ class Configurations(object):
                        telemetry_server_url=telemetry_server_url,
                        telemetry_server_api_key=telemetry_server_api_key,
                        telemetry_enable=telemetry_enable,
-                       autoscale=flow_auto_scale)
+                       flow_recalibration_reminder=flow_recalibration_reminder,
+                       autoscale=flow_auto_scale,
+                       auto_cal_enable=auto_cal_enable,
+                       auto_cal_interval=auto_cal_interval,
+                       auto_cal_window=auto_cal_window,
+                       auto_cal_sample_threshold=auto_cal_sample_threshold,
+                       auto_cal_slope_threshold=auto_cal_slope_threshold,
+                       auto_cal_min_tail=auto_cal_min_tail,
+                       auto_cal_grace_length=auto_cal_grace_length)
 
         except Exception as e:
             raise ConfigurationFileError(f"Could not load "
@@ -229,11 +258,21 @@ class Configurations(object):
             "low_battery_percentage": self.low_battery_percentage,
             "calibration": {
                 "dp_offset": self.dp_offset,
+                "auto_calibration": {
+                    "enable": self.auto_cal_enable,
+                    "interval": self.auto_cal_interval,
+                    "window": self.auto_cal_window,
+                    "sample_threshold": self.auto_cal_sample_threshold,
+                    "slope_threshold": self.auto_cal_slope_threshold,
+                    "min_tail": self.auto_cal_min_tail,
+                    "grace_length": self.auto_cal_grace_length
+                },
                 "oxygen_point1": self.oxygen_point1,
                 "oxygen_point2": self.oxygen_point2,
+                "dp_calibration_timeout_hrs": self.dp_calibration_timeout_hrs,
+                "flow_recalibration_reminder": self.flow_recalibration_reminder,
             },
             "boot_alert_grace_time": self.boot_alert_grace_time,
-            "dp_calibration_timeout_hrs": self.dp_calibration_timeout_hrs,
             "telemetry": {
                 "enable": self.telemetry_enable,
                 "url": self.telemetry_server_url,
