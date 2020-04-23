@@ -13,7 +13,7 @@ pip3 install -r requirements.txt
 
 Configure your `Raspberry Pi` using the the shell scripts found under the `rasp_init` directory.
 
-Make sure you are running `Python 3.6+`, then simply run it using
+Make sure you are running `Python 3.7+`, then simply run it using
 ```shell script
 python3 main.py
 ```
