@@ -57,7 +57,8 @@ class TailDetector:
         if len(self.tail_indices) < self.MIN_TAIL_LENGTH:
             return None
 
-        dp = np.array([self.dp_driver.flow_to_pressure(f)
+        dp = np.array([self.dp_driver.flow_to_pressure(f) +
+                       self.dp_driver.get_calibration_offset()
                        for f in self.samples])
 
         tails_dp = dp[indices]

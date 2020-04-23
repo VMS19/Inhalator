@@ -43,7 +43,7 @@ class HscPressureSensor(HoneywellPressureSensor):
         return copysign(flow, pressure_cmh2o)
 
     def flow_to_pressure(self, flow):
-        return copysign((flow / self.SYSTEM_RATIO_SCALE) ** 2, flow) + self._calibration_offset
+        return copysign((flow / self.SYSTEM_RATIO_SCALE) ** 2, flow)
 
     def read_differential_pressure(self):
         return super(HscPressureSensor, self).read()
