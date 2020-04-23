@@ -94,7 +94,7 @@ class RecalibrationSnackbar(BaseSnackbar):
         last_calibration_dt = datetime.datetime.fromtimestamp(
             self.last_dp_calibration_ts)
 
-        now_dt = datetime.datetime.fromtimestamp(self.timer.get_time())
+        now_dt = datetime.datetime.fromtimestamp(self.timer.get_current_time())
 
         time_ago = timeago.format(now_dt - last_calibration_dt)
 

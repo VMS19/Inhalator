@@ -2,8 +2,6 @@ from math import copysign
 from itertools import cycle
 from numpy import random
 
-from logic.computations import RunningAvg
-
 
 class MockSensor(object):
     """
@@ -15,7 +13,6 @@ class MockSensor(object):
         self.data = cycle(seq)
         self._calibration_offset = 0
         self.error_probability = error_probability
-        self.average = RunningAvg(max_samples=6)
 
     def set_calibration_offset(self, offset):
         self._calibraion_offset = offset
@@ -30,7 +27,7 @@ class MockSensor(object):
     def read(self, *args, **kwargs):
         # We read the sample from the data before raising the exception so that
         # IF an exception will be raise - that sample will be lost.
-        sample = self.average.process(next(self.data))
+        sample = next(self.data)
 
         if random.random() < self.error_probability:
             raise self.random_error()
