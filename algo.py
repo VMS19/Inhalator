@@ -556,7 +556,7 @@ class Sampler(object):
             self.log.info("Done accumulating within tail interval")
             if len(self.tails_average.samples) > 0:
                 dp_offset = self.tails_average.process(None)
-                flow_offset = self._flow_sensor.flow_to_pressure(dp_offset)
+                flow_offset = self._flow_sensor.pressure_to_flow(dp_offset)
 
                 self.log.info(f"DP offset of {dp_offset}")
                 self.log.info(f"Flow offset of {flow_offset} L/min")
