@@ -49,6 +49,9 @@ class TailDetector:
                 self.check_close_up(index, in_grace=True)
 
         indices = np.array(self.tail_indices)
+        if len(indices) == 0:
+            return None
+
         dp = np.array([self.dp_driver.flow_to_pressure(f)
                        for f in self.samples])
         tails_dp = dp[indices]
