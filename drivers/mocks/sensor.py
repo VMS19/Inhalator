@@ -2,6 +2,8 @@ from math import copysign
 from itertools import cycle
 from numpy import random
 
+from computation import RunningAvg
+
 
 class MockSensor(object):
     """
@@ -16,7 +18,6 @@ class MockSensor(object):
         self.average = RunningAvg(max_samples=6)
 
     def set_calibration_offset(self, offset):
-        pass
         self._calibraion_offset = offset
 
     def get_calibration_offset(self):
