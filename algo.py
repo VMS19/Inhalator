@@ -450,7 +450,7 @@ class Sampler(object):
         self.save_sensor_values = save_sensor_values
 
         self.enable_auto_calibration = True
-        self.interval_between_calibrations = 60 # hour
+        self.interval_between_calibrations = 1  # hour
         self.calibration_iterations = 4  # 7
         self.calibration_length = 10  # 30
 
@@ -550,8 +550,7 @@ class Sampler(object):
                 if tail_offset is not None:
                     self.log.info(f"Tail offset is {tail_offset} DP")
                     self.log.info(f"Tail offset is {self._flow_sensor.pressure_to_flow(tail_offset)} L/min")
-                    flow_offset = self._flow_sensor.pressure_to_flow(tail_offset)
-                    self._flow_sensor.set_calibration_offset(flow_offset)
+                    self._flow_sensor.set_calibration_offset(tail_offset)
 
                 self.window_start_time = None
                 self.tail_detector = TailDetector(self._flow_sensor)
