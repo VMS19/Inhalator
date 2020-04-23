@@ -1,6 +1,8 @@
 from statistics import mean
 from collections import deque
 
+from numpy import trapz
+
 
 class RunningAvg(object):
 
@@ -18,3 +20,20 @@ class RunningAvg(object):
             return 0
 
         return mean(self.samples)
+
+
+class Accumulator(object):
+    def __init__(self):
+        self.samples = deque()
+        self.timestamps = deque()
+
+    def add_sample(self, timestamp, value):
+        self.samples.append(value)
+        self.timestamps.append(timestamp)
+
+    def integrate(self):
+        return trapz(self.samples, x=self.timestamps)
+
+    def reset(self):
+        self.samples.clear()
+        self.timestamps.clear()

@@ -5,37 +5,19 @@ from enum import Enum
 
 from collections import deque
 
-from numpy import trapz
 from scipy.stats import linregress
 
 from data.alerts import AlertCodes
 from data.configurations import Configurations
 from sample_storage import SamplesStorage
 from errors import UnavailableMeasurmentError
-from logic.computations import RunningAvg
+from logic.computations import RunningAvg, Accumulator
 from logic.tail_detection import TailDetector
 
 TRACE = logging.DEBUG - 1
 logging.addLevelName(TRACE, 'TRACE')
 
 BYTES_IN_GB = 2 ** 30
-
-
-class Accumulator(object):
-    def __init__(self):
-        self.samples = deque()
-        self.timestamps = deque()
-
-    def add_sample(self, timestamp, value):
-        self.samples.append(value)
-        self.timestamps.append(timestamp)
-
-    def integrate(self):
-        return trapz(self.samples, x=self.timestamps)
-
-    def reset(self):
-        self.samples.clear()
-        self.timestamps.clear()
 
 
 class RateMeter(object):
