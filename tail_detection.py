@@ -52,6 +52,7 @@ class TailDetector:
         if len(indices) == 0:
             return None
 
+        indices = indices[:-len(indices) // 4]
         dp = np.array([self.dp_driver.flow_to_pressure(f)
                        for f in self.samples])
         tails_dp = dp[indices]
