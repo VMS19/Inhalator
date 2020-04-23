@@ -450,8 +450,8 @@ class Sampler(object):
         self.save_sensor_values = save_sensor_values
 
         self.enable_auto_calibration = True
-        self.auto_calibration_interval = 3 * 60
-        self.auto_calibration_window = 1 * 60
+        self.auto_calibration_interval = 20
+        self.auto_calibration_window = 20
 
         self.interval_start_time = None
         self.window_start_time = None
@@ -545,8 +545,9 @@ class Sampler(object):
         else:
             self.log.info("Done accumulating within tail window")
             tail_average = self.tail_detector.process()
-            self.log.info(f"Tail average is {tail_average}")
             if tail_average is not None:
+                self.log.info(f"Tail average is {tail_average} DP")
+                self.log.info(f"Tail average is {self._flow_sensor.pressure_to_flow(tail_average)} L/min")
                 self.tails_average.process(tail_average)
 
             self.tail_detector = TailDetector(self._flow_sensor)
@@ -558,7 +559,9 @@ class Sampler(object):
                 dp_offset = self.tails_average.process(None)
                 flow_offset = self._flow_sensor.pressure_to_flow(dp_offset)
 
+                self.log.info(f"Old DP offset: {self._config.dp_offset}")
                 self.log.info(f"DP offset of {dp_offset}")
+                self.log.info(f"Old Flow offset: {self._flow_sensor.pressure_to_flow(self._config.dp_offset)}")
                 self.log.info(f"Flow offset of {flow_offset} L/min")
                 self._flow_sensor.set_calibration_offset(dp_offset)
                 self._config.dp_offset = dp_offset

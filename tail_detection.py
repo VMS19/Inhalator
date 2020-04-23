@@ -3,7 +3,7 @@ import numpy as np
 
 class TailDetector:
     # TODO: move to config
-    TAIL_THRESHOLD = 5  # absolute flow value
+    TAIL_THRESHOLD = 8  # absolute flow value
     SLOPE_THRESHOLD = 10  # absolute flow slope
     MIN_TAIL_LENGTH = 12  # samples
     GRACE_LENGTH = 5  # samples
@@ -25,8 +25,9 @@ class TailDetector:
     def check_close_up(self, current_index, in_grace=False):
         if len(self.samples) > 0 and (self. grace_count >= self.GRACE_LENGTH or
                                       current_index == len(self.samples) - 1):
-            if len(self.samples) >= self.MIN_TAIL_LENGTH:
-                self.tail_indices += self.candidate_indices[:-self.grace_count]
+            tail = self.candidate_indices[:-self.grace_count]
+            if len(tail) >= self.MIN_TAIL_LENGTH:
+                self.tail_indices += tail[int(len(tail) * 3 / 4):]
 
             self.grace_count = 0
             self.candidate_indices = []
@@ -46,14 +47,18 @@ class TailDetector:
                 self.grace_count = 0
 
             else:
+                self.candidate_indices.append(index)
                 self.check_close_up(index, in_grace=True)
 
         indices = np.array(self.tail_indices)
         if len(indices) == 0:
             return None
 
-        indices = indices[:-len(indices) // 4]
+        if len(self.tail_indices) < self.MIN_TAIL_LENGTH:
+            return None
+
         dp = np.array([self.dp_driver.flow_to_pressure(f)
                        for f in self.samples])
+
         tails_dp = dp[indices]
         return np.average(tails_dp)
