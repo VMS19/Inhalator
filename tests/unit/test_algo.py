@@ -5,8 +5,8 @@ import freezegun
 from pytest import approx
 
 
-from algo import RunningSlope, VentilationStateMachine, VentilationState, \
-    Sampler
+from algo import VentilationStateMachine, VentilationState, Sampler
+from logic.computations import RunningSlope
 from data.alerts import AlertCodes
 from data.configurations import Configurations
 from data.events import Events

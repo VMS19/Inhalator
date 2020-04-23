@@ -5,13 +5,11 @@ from enum import Enum
 
 from collections import deque
 
-from scipy.stats import linregress
-
 from data.alerts import AlertCodes
 from data.configurations import Configurations
 from sample_storage import SamplesStorage
 from errors import UnavailableMeasurmentError
-from logic.computations import RunningAvg, Accumulator
+from logic.computations import RunningAvg, Accumulator, RunningSlope
 from logic.tail_detection import TailDetector
 
 TRACE = logging.DEBUG - 1
@@ -70,29 +68,6 @@ class RateMeter(object):
         has_timespan_passed = \
             time.time() - self.start_timestamp > self.time_span_seconds
         return has_timespan_passed or len(self.samples) >= 2
-
-
-class RunningSlope(object):
-
-    def __init__(self, num_samples=10, period_ms=100):
-        self.period_ms = period_ms
-        self.max_samples = num_samples
-        self.data = deque(maxlen=num_samples)
-        self.ts = deque(maxlen=num_samples)
-
-    def reset(self):
-        self.data.clear()
-        self.ts.clear()
-
-    def add_sample(self, value, timestamp=None):
-        if timestamp is None:
-            timestamp = time.time()
-        self.data.append(value)
-        self.ts.append(timestamp)
-        if len(self.data) < self.max_samples:
-            return None  # Not enough data to infer.
-        slope, _, _, _, _ = linregress(self.ts, self.data)
-        return slope
 
 
 class VentilationState(Enum):
