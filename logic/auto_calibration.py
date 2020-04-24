@@ -40,7 +40,7 @@ class AutoFlowCalibrator:
                     self.dp_driver.set_calibration_offset(tail_offset)
 
                 self.window_start_time = None
-                self.tail_detector = TailDetector(self.dp_driver)
+                self.tail_detector.reset()
                 self.iterations_count += 1
 
                 if self.iterations_count >= self.iterations:
@@ -66,7 +66,13 @@ class TailDetector:
         self.timestamps = []
         self.tail_indices = []
         self.candidate_indices = []
+        self.grace_count = 0
 
+    def reset(self):
+        self.samples = []
+        self.timestamps = []
+        self.tail_indices = []
+        self.candidate_indices = []
         self.grace_count = 0
 
     def add_sample(self, sample, timestamp):
