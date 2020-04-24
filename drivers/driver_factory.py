@@ -49,7 +49,7 @@ class DriverFactory(object):
     def acquire_driver(self, driver_name):
         """
         Get a driver by its name. The drivers are lazily created and cached.
-        :param driver_name: The driver name. E.g "aux", "wd", "pressure"
+        :param driver_name: The driver name. E.g "wd", "pressure"
         :return: The appropriate driver object.
         """
         key = (driver_name, self.mock)
@@ -190,11 +190,6 @@ class DriverFactory(object):
         return AlertDriver()
 
     @staticmethod
-    def get_aux_driver():
-        from drivers.aux_sound import SoundViaAux
-        return SoundViaAux.instance()
-
-    @staticmethod
     def get_differential_pressure_driver():
         from drivers.hsc_pressure_sensor import HscPressureSensor
         return HscPressureSensor()
@@ -265,11 +260,6 @@ class DriverFactory(object):
     def get_mock_alert_driver():
         from drivers.mocks.mock_alert_driver import MockAlertDriver
         return MockAlertDriver()
-
-    @staticmethod
-    def get_mock_aux_driver():
-        from drivers.aux_sound import SoundViaAux
-        return SoundViaAux.instance()
 
     @staticmethod
     def get_null_driver():
