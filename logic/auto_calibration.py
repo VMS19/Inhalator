@@ -19,23 +19,24 @@ class AutoFlowCalibrator:
 
     def get_offset(self, flow_slm, ts):
         if self.interval_start_time is None:
-            self.log.info("Starting auto calibration interval")
+            self.log.debug("Starting auto calibration interval")
             self.interval_start_time = ts
 
         if self.window_start_time is None:
-            self.log.info("Starting auto calibration window")
+            self.log.debug("Starting auto calibration window")
             self.window_start_time = ts
 
         if ts - self.interval_start_time >= self.interval_between_calibrations:
             if ts - self.window_start_time < self.calibration_length:
                 self.tail_detector.add_sample(flow_slm, ts)
             else:
-                self.log.info("Done accumulating within tail window")
+                self.log.debug("Done accumulating within tail window")
                 tail_offset = self.tail_detector.process()
                 if tail_offset is not None:
-                    self.log.info(f"Tail offset is {tail_offset} DP")
-                    self.log.info(
-                        f"Tail offset is {self.dp_driver.pressure_to_flow(tail_offset)} L/min")
+                    self.log.debug("Tail offset is %f DP", tail_offset)
+                    self.log.debug(
+                        "Tail offset is %f L/min",
+                        self.dp_driver.pressure_to_flow(tail_offset))
                     self.dp_driver.set_calibration_offset(tail_offset)
 
                 self.window_start_time = None
