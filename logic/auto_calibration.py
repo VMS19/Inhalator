@@ -49,6 +49,8 @@ class AutoFlowCalibrator:
                     self.interval_start_time = None
                     return self.dp_driver.get_calibration_offset()
 
+        return None
+
 
 class TailDetector:
     # TODO: move to config

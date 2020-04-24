@@ -491,6 +491,7 @@ class Sampler(object):
                                                      ts=ts)
 
             if offset is not None:
+                self.log.info("Writing DP offset of %f to config", offset)
                 self._config.dp_offset = offset
                 self._config.save_to_file()
 

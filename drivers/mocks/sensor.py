@@ -15,7 +15,7 @@ class MockSensor(object):
         self.error_probability = error_probability
 
     def set_calibration_offset(self, offset):
-        self._calibraion_offset = offset
+        self._calibration_offset = offset
 
     def get_calibration_offset(self):
         return self._calibration_offset
