@@ -1,4 +1,52 @@
+import logging
+
 import numpy as np
+
+
+class AutoFlowCalibrator:
+    def __init__(self, dp_driver, interval_between_calibrations,
+                 calibration_length, iterations):
+        self.dp_driver = dp_driver
+        self.interval_between_calibrations = interval_between_calibrations
+        self.calibration_length = calibration_length
+        self.iterations = iterations
+
+        self.log = logging.getLogger(__name__)
+        self.interval_start_time = None
+        self.window_start_time = None
+        self.iterations_count = 0
+        self.tail_detector = TailDetector(dp_driver=dp_driver)
+
+    def get_offset(self, flow_slm, ts):
+        if self.interval_start_time is None:
+            self.log.info("Starting auto calibration interval")
+            self.interval_start_time = ts
+
+        if self.window_start_time is None:
+            self.log.info("Starting auto calibration window")
+            self.window_start_time = ts
+
+        if ts - self.interval_start_time >= self.interval_between_calibrations:
+            if ts - self.window_start_time < self.calibration_length:
+                self.tail_detector.add_sample(flow_slm, ts)
+            else:
+                self.log.info("Done accumulating within tail window")
+                tail_offset = self.tail_detector.process()
+                if tail_offset is not None:
+                    self.log.info(f"Tail offset is {tail_offset} DP")
+                    self.log.info(
+                        f"Tail offset is {self.dp_driver.pressure_to_flow(tail_offset)} L/min")
+                    self.dp_driver.set_calibration_offset(tail_offset)
+
+                self.window_start_time = None
+                self.tail_detector = TailDetector(self.dp_driver)
+                self.iterations_count += 1
+
+                if self.iterations_count >= self.iterations:
+                    self.log.info("Done accumulating within tail interval")
+                    self.iterations_count = 0
+                    self.interval_start_time = None
+                    return self.dp_driver.get_calibration_offset()
 
 
 class TailDetector:

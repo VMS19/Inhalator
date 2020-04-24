@@ -2,15 +2,14 @@ import sys
 import time
 import logging
 from enum import Enum
-
 from collections import deque
 
 from data.alerts import AlertCodes
-from data.configurations import Configurations
 from sample_storage import SamplesStorage
 from errors import UnavailableMeasurmentError
+from data.configurations import Configurations
+from logic.auto_calibration import AutoFlowCalibrator
 from logic.computations import RunningAvg, Accumulator, RunningSlope
-from logic.tail_detection import TailDetector
 
 TRACE = logging.DEBUG - 1
 logging.addLevelName(TRACE, 'TRACE')
@@ -406,14 +405,12 @@ class Sampler(object):
         self.storage_handler = SamplesStorage()
         self.save_sensor_values = save_sensor_values
 
-        self.interval_between_calibrations = 60  # hour
-        self.calibration_iterations = 4  # 7
-        self.calibration_length = 10  # 30
-
-        self.interval_start_time = None
-        self.window_start_time = None
-        self.calibration_counter = 0
-        self.tail_detector = TailDetector(self._flow_sensor)
+        self.auto_calibrator = AutoFlowCalibrator(
+            dp_driver=self._flow_sensor,
+            interval_between_calibrations=60,  # hour
+            calibration_length=10,  # 30
+            iterations=4  # 7
+        )
 
     def read_single_sensor(self, sensor, alert_code, timestamp):
         try:
@@ -490,35 +487,12 @@ class Sampler(object):
                                        min(o2_saturation_percentage, 100))
 
         if self._config.auto_cal_enable:
-            if self.interval_start_time is None:
-                self.log.info("Starting auto calibration interval")
-                self.interval_start_time = ts
+            offset = self.auto_calibrator.get_offset(flow_slm=flow_slm,
+                                                     ts=ts)
 
-            if self.window_start_time is None:
-                self.log.info("Starting auto calibration window")
-                self.window_start_time = ts
-
-            if ts - self.interval_start_time >= self.interval_between_calibrations:
-                if ts - self.window_start_time < self.calibration_length:
-                    self.tail_detector.add_sample(flow_slm, ts)
-                else:
-                    self.log.info("Done accumulating within tail window")
-                    tail_offset = self.tail_detector.process()
-                    if tail_offset is not None:
-                        self.log.info(f"Tail offset is {tail_offset} DP")
-                        self.log.info(f"Tail offset is {self._flow_sensor.pressure_to_flow(tail_offset)} L/min")
-                        self._flow_sensor.set_calibration_offset(tail_offset)
-
-                    self.window_start_time = None
-                    self.tail_detector = TailDetector(self._flow_sensor)
-                    self.calibration_counter += 1
-
-                    if self.calibration_counter >= self.calibration_iterations:
-                        self.log.info("Done accumulating within tail interval")
-                        self.calibration_counter = 0
-                        self.interval_start_time = None
-                        self._config.dp_offset = self._flow_sensor.get_calibration_offset()
-                        self._config.save_to_file()
+            if offset is not None:
+                self._config.dp_offset = offset
+                self._config.save_to_file()
 
         self.vsm.update(
             pressure_cmh2o=pressure_cmh2o,
