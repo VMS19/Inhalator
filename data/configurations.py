@@ -40,7 +40,8 @@ class Configurations(object):
                  telemetry_server_url=None,
                  telemetry_server_api_key=None, telemetry_enable=False,
                  autoscale=True, flow_recalibration_reminder=True,
-                 auto_cal_enable=True, auto_cal_interval=3, auto_cal_window=1,
+                 auto_cal_enable=True, auto_cal_interval=3,
+                 auto_cal_iterations=1, auto_cal_iteration_length=30,
                  auto_cal_sample_threshold=5, auto_cal_slope_threshold=10,
                  auto_cal_min_tail=12, auto_cal_grace_length=5):
         self.o2_range = o2_range
@@ -70,7 +71,8 @@ class Configurations(object):
         self.flow_recalibration_reminder = flow_recalibration_reminder
         self.auto_cal_enable = auto_cal_enable
         self.auto_cal_interval = auto_cal_interval
-        self.auto_cal_window = auto_cal_window
+        self.auto_cal_iterations = auto_cal_iterations
+        self.auto_cal_iteration_length = auto_cal_iteration_length
         self.auto_cal_sample_threshold = auto_cal_sample_threshold
         self.auto_cal_slope_threshold = auto_cal_slope_threshold
         self.auto_cal_min_tail = auto_cal_min_tail
@@ -166,7 +168,8 @@ class Configurations(object):
 
             auto_cal_enable = config["calibration"]["auto_calibration"]["enable"]
             auto_cal_interval = config["calibration"]["auto_calibration"]["interval"]
-            auto_cal_window = config["calibration"]["auto_calibration"]["window"]
+            auto_cal_iterations = config["calibration"]["auto_calibration"]["iterations"]
+            auto_cal_iteration_length = config["calibration"]["auto_calibration"]["iteration_length"]
             auto_cal_sample_threshold = config["calibration"]["auto_calibration"]["sample_threshold"]
             auto_cal_slope_threshold = config["calibration"]["auto_calibration"]["slope_threshold"]
             auto_cal_min_tail = config["calibration"]["auto_calibration"]["min_tail"]
@@ -199,7 +202,8 @@ class Configurations(object):
                        autoscale=flow_auto_scale,
                        auto_cal_enable=auto_cal_enable,
                        auto_cal_interval=auto_cal_interval,
-                       auto_cal_window=auto_cal_window,
+                       auto_cal_iterations=auto_cal_iterations,
+                       auto_cal_iteration_length=auto_cal_iteration_length,
                        auto_cal_sample_threshold=auto_cal_sample_threshold,
                        auto_cal_slope_threshold=auto_cal_slope_threshold,
                        auto_cal_min_tail=auto_cal_min_tail,
@@ -261,7 +265,8 @@ class Configurations(object):
                 "auto_calibration": {
                     "enable": self.auto_cal_enable,
                     "interval": self.auto_cal_interval,
-                    "window": self.auto_cal_window,
+                    "iterations": self.auto_cal_iterations,
+                    "iteration_length": self.auto_cal_iteration_length,
                     "sample_threshold": self.auto_cal_sample_threshold,
                     "slope_threshold": self.auto_cal_slope_threshold,
                     "min_tail": self.auto_cal_min_tail,

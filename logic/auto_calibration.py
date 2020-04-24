@@ -4,18 +4,23 @@ import numpy as np
 
 
 class AutoFlowCalibrator:
-    def __init__(self, dp_driver, interval_between_calibrations,
-                 calibration_length, iterations):
+    def __init__(self, dp_driver, interval_length, iterations,
+                 iteration_length, sample_threshold, slope_threshold,
+                 min_tail_length, grace_length):
         self.dp_driver = dp_driver
-        self.interval_between_calibrations = interval_between_calibrations
-        self.calibration_length = calibration_length
+        self.interval_length = interval_length
         self.iterations = iterations
+        self.iteration_length = iteration_length
 
         self.log = logging.getLogger(__name__)
         self.interval_start_time = None
         self.window_start_time = None
         self.iterations_count = 0
-        self.tail_detector = TailDetector(dp_driver=dp_driver)
+        self.tail_detector = TailDetector(dp_driver=dp_driver,
+                                          sample_threshold=sample_threshold,
+                                          slope_threshold=slope_threshold,
+                                          min_tail_length=min_tail_length,
+                                          grace_length=grace_length)
 
     def get_offset(self, flow_slm, ts):
         if self.interval_start_time is None:
@@ -26,8 +31,8 @@ class AutoFlowCalibrator:
             self.log.debug("Starting auto calibration window")
             self.window_start_time = ts
 
-        if ts - self.interval_start_time >= self.interval_between_calibrations:
-            if ts - self.window_start_time < self.calibration_length:
+        if ts - self.interval_start_time >= self.interval_length:
+            if ts - self.window_start_time < self.iteration_length:
                 self.tail_detector.add_sample(flow_slm, ts)
             else:
                 self.log.debug("Done accumulating within tail window")
@@ -53,14 +58,13 @@ class AutoFlowCalibrator:
 
 
 class TailDetector:
-    # TODO: move to config
-    TAIL_THRESHOLD = 8  # absolute flow value
-    SLOPE_THRESHOLD = 10  # absolute flow slope
-    MIN_TAIL_LENGTH = 12  # samples
-    GRACE_LENGTH = 5  # samples
-
-    def __init__(self, dp_driver):
+    def __init__(self, dp_driver, sample_threshold, slope_threshold,
+                 min_tail_length, grace_length):
         self.dp_driver = dp_driver
+        self.sample_threshold = sample_threshold
+        self.slope_threshold = slope_threshold
+        self.min_tail_length = min_tail_length
+        self.grace_length = grace_length
 
         self.samples = []
         self.timestamps = []
@@ -80,10 +84,10 @@ class TailDetector:
         self.timestamps.append(timestamp)
 
     def check_close_up(self, current_index, in_grace=False):
-        if len(self.samples) > 0 and (self. grace_count >= self.GRACE_LENGTH or
+        if len(self.samples) > 0 and (self. grace_count >= self.grace_length or
                                       current_index == len(self.samples) - 1):
             tail = self.candidate_indices[:-self.grace_count]
-            if len(tail) >= self.MIN_TAIL_LENGTH:
+            if len(tail) >= self.min_tail_length:
                 self.tail_indices += tail[int(len(tail) * 3 / 4):]
 
             self.grace_count = 0
@@ -96,10 +100,10 @@ class TailDetector:
         for index in range(1, len(self.samples)):
             slope = ((self.samples[index] - self.samples[index - 1]) /
                      (self.timestamps[index] - self.timestamps[index - 1]))
-            if abs(self.samples[index]) >= self.TAIL_THRESHOLD:
+            if abs(self.samples[index]) >= self.sample_threshold:
                 self.check_close_up(index)
 
-            elif abs(slope) < self.SLOPE_THRESHOLD:
+            elif abs(slope) < self.slope_threshold:
                 self.candidate_indices.append(index)
                 self.grace_count = 0
 
@@ -111,7 +115,7 @@ class TailDetector:
         if len(indices) == 0:
             return None
 
-        if len(self.tail_indices) < self.MIN_TAIL_LENGTH:
+        if len(self.tail_indices) < self.min_tail_length:
             return None
 
         dp = np.array([self.dp_driver.flow_to_pressure(f) +

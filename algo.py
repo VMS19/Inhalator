@@ -407,9 +407,13 @@ class Sampler(object):
 
         self.auto_calibrator = AutoFlowCalibrator(
             dp_driver=self._flow_sensor,
-            interval_between_calibrations=60,  # hour
-            calibration_length=10,  # 30
-            iterations=4  # 7
+            interval_length=self._config.auto_cal_interval,
+            iterations=self._config.auto_cal_iterations,
+            iteration_length=self._config.auto_cal_iteration_length,
+            sample_threshold=self._config.auto_cal_sample_threshold,
+            slope_threshold=self._config.auto_cal_slope_threshold,
+            min_tail_length=self._config.auto_cal_min_tail,
+            grace_length=self._config.auto_cal_grace_length,
         )
 
     def read_single_sensor(self, sensor, alert_code, timestamp):

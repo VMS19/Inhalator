@@ -43,9 +43,10 @@
     "dp_offset": 0.026,
     "auto_calibration": {
       "enable": true,
-      "interval": 3,
-      "window": 1,
-      "sample_threshold": 5,
+      "interval": 3600,
+      "iterations": 7,
+      "iteration_length": 30,
+      "sample_threshold": 8,
       "slope_threshold": 10,
       "min_tail": 12,
       "grace_length": 5
