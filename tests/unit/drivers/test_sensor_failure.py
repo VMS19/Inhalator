@@ -3,20 +3,8 @@ import pytest
 
 from algo import Sampler
 from data.alerts import AlertCodes
-from data.events import Events
-from data.measurements import Measurements
 from drivers.driver_factory import DriverFactory
 from errors import UnavailableMeasurmentError
-
-
-@pytest.fixture
-def events():
-    return Events()
-
-
-@pytest.fixture
-def measurements():
-    return Measurements()
 
 
 @pytest.fixture
@@ -51,17 +39,26 @@ def mock_drivers(fault_sensors, error, read_val=0):
     return flow, pressure, a2d, timer
 
 
+@pytest.fixture
+def config(default_config):
+    c = default_config
+    # Suppress unwanted alerts.
+    c.thresholds.pressure.min = 0
+    c.thresholds.o2.min = 0
+    return c
+
+
 @pytest.mark.parametrize('fault_sensors,error',
                          [(["flow"], UnavailableMeasurmentError),
                           (["pressure"], UnavailableMeasurmentError),
                           (["oxygen"], UnavailableMeasurmentError),
                           (["battery"], UnavailableMeasurmentError)])
-def test_unavailable_measurement_not_crashing(events, measurements,
+def test_unavailable_measurement_not_crashing(config, events, measurements,
                                               mock_drivers):
     """Tests that application handle temporary unavailable sensor read."""
     flow, pressure, a2d, timer = mock_drivers
 
-    sampler = Sampler(measurements=measurements, events=events,
+    sampler = Sampler(config, measurements=measurements, events=events,
                       flow_sensor=flow, pressure_sensor=pressure, a2d=a2d,
                       timer=timer)
 
@@ -74,12 +71,12 @@ def test_unavailable_measurement_not_crashing(events, measurements,
                           (["pressure"], Exception, AlertCodes.PRESSURE_SENSOR_ERROR),
                           (["oxygen"], Exception, AlertCodes.OXYGEN_SENSOR_ERROR),
                           (["battery"], Exception, AlertCodes.NO_BATTERY)])
-def test_sampling_error_raises_alert(events, measurements, mock_drivers,
+def test_sampling_error_raises_alert(config, events, measurements, mock_drivers,
                                      expected_alert):
     """Tests that application handle sensor read error, and notify alert."""
     flow, pressure, a2d, timer = mock_drivers
 
-    sampler = Sampler(measurements=measurements, events=events,
+    sampler = Sampler(config, measurements=measurements, events=events,
                       flow_sensor=flow, pressure_sensor=pressure, a2d=a2d,
                       timer=timer)
 

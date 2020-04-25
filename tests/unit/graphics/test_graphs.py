@@ -5,79 +5,48 @@ from tkinter import *
 
 from pytest import approx
 
-from algo import Sampler
-from data.events import Events
-from data.measurements import Measurements
-from drivers.driver_factory import DriverFactory
+from data.configurations import GraphYAxisConfig
 from graphics.graphs import AirPressureGraph, FlowGraph
 from graphics.themes import Theme, DarkTheme
 
 
 @pytest.fixture
-def events():
-    return Events()
-
-@pytest.fixture
-def measurements():
-    return Measurements()
-
-@pytest.fixture
-def driver_factory():
-    return DriverFactory(simulation_mode=True,
-                         simulation_data="sinus")
-
-@pytest.fixture
-def sampler(measurements, events, driver_factory):
-    flow_sensor = driver_factory.acquire_driver("flow")
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    a2d = driver_factory.acquire_driver("a2d")
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
-
-    sampler._config = MagicMock()
-    return sampler
-
-@pytest.fixture
-def pressure_graph(measurements) -> AirPressureGraph:
+def pressure_graph(measurements, config) -> AirPressureGraph:
+    config.graph_y_scale.flow.autoscale = True
     Theme.ACTIVE_THEME = DarkTheme()
     root = Frame()
     parent = MagicMock()
     parent.element = root
-
-    graph = AirPressureGraph(parent=parent, measurements=measurements,
-                             width=parent.width, height=parent.height)
+    graph = AirPressureGraph(
+        parent=parent, measurements=measurements,
+        config=config, width=parent.width, height=parent.height)
     graph.axis = MagicMock()
     graph.figure = MagicMock()
-    graph.config = MagicMock()
-    graph.config.autoscale = True
-
     return graph
 
 
 @pytest.fixture
-def flow_graph(measurements) -> FlowGraph:
+def flow_graph(measurements, config) -> FlowGraph:
+    config.graph_y_scale.flow = GraphYAxisConfig(
+        min=-10, max=10, autoscale=True)
     Theme.ACTIVE_THEME = DarkTheme()
     root = Frame()
     parent = MagicMock()
     parent.element = root
-
-    graph = FlowGraph(parent=parent, measurements=measurements,
-                      width=parent.width, height=parent.height)
+    graph = FlowGraph(
+        parent=parent, measurements=measurements, config=config,
+        width=parent.width, height=parent.height)
     graph.axis = MagicMock()
     graph.figure = MagicMock()
-    graph.config = MagicMock()
-    graph.config.autoscale = True
-    graph.config.flow_y_scale = (-10, 10)
     return graph
 
 
-def test_graph_does_not_auto_scale(flow_graph: FlowGraph,
-                                   sampler: Sampler):
+@pytest.mark.parametrize("data", ["sinus"])
+def test_graph_does_not_auto_scale(flow_graph: FlowGraph, sim_sampler, data):
     original_min = flow_graph.current_min_y
     original_max = flow_graph.current_max_y
     for _ in range(100):
-        sampler.sampling_iteration()
+        sim_sampler.sampling_iteration()
 
     for i in range(flow_graph.ZOOM_OUT_FREQUENCY):
         flow_graph.update()
@@ -91,7 +60,7 @@ def test_graph_symmetrically_autoscales_when_value_exceeds_max(flow_graph: FlowG
     flow_graph.current_max_y = 10.0
     flow_graph.GRAPH_MARGINS = 1.2
 
-    x = flow_graph.measurements._amount_of_samples_in_graph
+    x = flow_graph.measurements.max_samples
 
     flow_graph.display_values = [10] * x
     flow_graph.display_values[1] += 3
@@ -108,7 +77,7 @@ def test_graph_symmetrically_autoscales_when_value_exceeds_min(flow_graph: FlowG
     flow_graph.current_max_y = 10.0
     flow_graph.GRAPH_MARGINS = 1.2
 
-    x = flow_graph.measurements._amount_of_samples_in_graph
+    x = flow_graph.measurements.max_samples
 
     flow_graph.display_values = [-10] * x
     flow_graph.display_values[1] -= 3
@@ -126,7 +95,7 @@ def test_loose_graph_behaviour(flow_graph: FlowGraph):
     flow_graph.current_max_y = 10.0
     flow_graph.GRAPH_MARGINS = 1.2
 
-    x = flow_graph.measurements._amount_of_samples_in_graph
+    x = flow_graph.measurements.max_samples
 
     flow_graph.display_values = [-10] * x
     flow_graph.display_values[1] -= 3
@@ -144,7 +113,7 @@ def test_pressure_graph_doesnt_autoscale(pressure_graph: AirPressureGraph):
     pressure_graph.current_max_y = 10.0
     pressure_graph.GRAPH_MARGINS = 1.2
 
-    x = pressure_graph.measurements._amount_of_samples_in_graph
+    x = pressure_graph.measurements.max_samples
 
     pressure_graph.display_values = [-10] * x
     pressure_graph.display_values[1] -= 3
@@ -156,14 +125,14 @@ def test_pressure_graph_doesnt_autoscale(pressure_graph: AirPressureGraph):
     assert pressure_graph.current_min_y == approx(-10)
 
 
-def test_autoscale_can_be_disabled(flow_graph: FlowGraph):
-    flow_graph.config.autoscale = False
+def test_autoscale_can_be_disabled(flow_graph: FlowGraph, config):
+    config.graph_y_scale.flow.autoscale = False
 
     flow_graph.current_min_y = -10.0
     flow_graph.current_max_y = 10.0
     flow_graph.GRAPH_MARGINS = 1.2
 
-    x = flow_graph.measurements._amount_of_samples_in_graph
+    x = flow_graph.measurements.max_samples
 
     flow_graph.display_values = [-10] * x
     flow_graph.display_values[1] -= 3
@@ -180,7 +149,7 @@ def test_autoscale_zooms_in(flow_graph: FlowGraph):
     flow_graph.current_max_y = 10.0
     flow_graph.GRAPH_MARGINS = 1.2
 
-    x = flow_graph.measurements._amount_of_samples_in_graph
+    x = flow_graph.measurements.max_samples
 
     flow_graph.display_values = [-10] * x
     flow_graph.display_values[1] -= 3

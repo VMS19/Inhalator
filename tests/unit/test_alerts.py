@@ -4,23 +4,10 @@ import pytest
 
 from algo import Sampler
 from data import alerts
-from data.alerts import Alert
-from data.events import Events
-from data.measurements import Measurements
-from drivers.driver_factory import DriverFactory
+from data.alerts import Alert, AlertCodes
 from drivers.null_driver import NullDriver
 
 ALERTS = Alert.ALERT_CODE_TO_MESSAGE.keys()
-
-
-@pytest.fixture
-def measurements():
-    return Measurements()
-
-
-@pytest.fixture
-def events():
-    return Events()
 
 
 @pytest.mark.parametrize("alert1, alert2", product(ALERTS, ALERTS))
@@ -35,64 +22,40 @@ def test_alert_contains(alert1, alert2):
     assert Alert(alert1).contains(alert2) == expected_results
 
 
-def test_invalid_flow_driver_initialization(events, measurements):
-    driver_factory = DriverFactory(simulation_mode=True)
-    flow_sensor = NullDriver()
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    a2d = driver_factory.acquire_driver("a2d")
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
+@pytest.fixture
+def data():
+    return "sinus"
 
+
+@pytest.fixture
+def config(default_config):
+    default_config.thresholds.pressure.min = 0  # Fits sinus
+    return default_config
+
+
+@pytest.fixture
+def sampler(config, driver_factory, measurements, events, null_driver):
+    driver_names = {"flow_sensor", "pressure_sensor", "a2d", "timer"}
+    drivers = {name: driver_factory.acquire_driver(name.replace("_sensor", ""))
+               for name in driver_names}
+    if null_driver in driver_names:
+        drivers[null_driver] = NullDriver()
+    sampler = Sampler(config, measurements, events, **drivers)
+    return sampler
+
+
+@pytest.mark.parametrize(
+    ["null_driver", "expected_alerts"],
+    [("flow_sensor", {AlertCodes.FLOW_SENSOR_ERROR}),
+     ("pressure_sensor", {AlertCodes.PRESSURE_SENSOR_ERROR}),
+     ("a2d", {AlertCodes.OXYGEN_SENSOR_ERROR, AlertCodes.NO_BATTERY})])
+def test_invalid_flow_driver_initialization(events, sampler, null_driver, expected_alerts):
     sampler.sampling_iteration()
-
-    all_alerts = list(events.alerts_queue.queue.queue)
-    assert alerts.AlertCodes.FLOW_SENSOR_ERROR in all_alerts
+    assert expected_alerts.issubset(events.alerts_queue.active_alert_set)
 
 
-def test_invalid_pressure_driver_initialization(events, measurements):
-    driver_factory = DriverFactory(simulation_mode=True)
-    flow_sensor = driver_factory.acquire_driver("flow")
-    pressure_sensor = NullDriver()
-    a2d = driver_factory.acquire_driver("a2d")
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
-
+@pytest.mark.parametrize("null_driver", [None])
+def test_battery_does_not_exist(events, sampler, null_driver):
+    sampler._a2d.battery_existence = False
     sampler.sampling_iteration()
-
-    all_alerts = list(events.alerts_queue.queue.queue)
-    assert alerts.AlertCodes.PRESSURE_SENSOR_ERROR in all_alerts
-
-
-@pytest.mark.xfail(reason="Alert queue is too small to contain alert")
-def test_invalid_a2d_driver_initialization(events, measurements):
-    driver_factory = DriverFactory(simulation_mode=True)
-    flow_sensor = driver_factory.acquire_driver("flow")
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    a2d = NullDriver
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
-
-    sampler.sampling_iteration()
-
-    all_alerts = list(events.alerts_queue.queue.queue)
-    assert alerts.AlertCodes.OXYGEN_SENSOR_ERROR in all_alerts
-    assert alerts.AlertCodes.NO_BATTERY in all_alerts
-
-
-def test_battery_does_not_exist(events, measurements):
-    driver_factory = DriverFactory(simulation_mode=True)
-    flow_sensor = driver_factory.acquire_driver("flow")
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    a2d = driver_factory.acquire_driver("a2d")
-    a2d.battery_existence = False
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
-
-    sampler.sampling_iteration()
-
-    all_alerts = list(events.alerts_queue.queue.queue)
-    assert alerts.AlertCodes.NO_BATTERY in all_alerts
+    assert alerts.AlertCodes.NO_BATTERY in events.alerts_queue.active_alerts

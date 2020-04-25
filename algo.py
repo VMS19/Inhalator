@@ -5,9 +5,9 @@ from enum import Enum
 from collections import deque
 
 from data.alerts import AlertCodes
+from data.configurations import ConfigurationManager
 from sample_storage import SamplesStorage
 from errors import UnavailableMeasurmentError
-from data.configurations import Configurations
 from logic.auto_calibration import AutoFlowCalibrator
 from logic.computations import RunningAvg, Accumulator, RunningSlope
 
@@ -90,7 +90,7 @@ class VentilationStateMachine(object):
         self.log = logging.getLogger(self.__class__.__name__)
         self.flow_slope = RunningSlope(num_samples=7)
         self.pressure_slope = RunningSlope(num_samples=7)
-        self._config = Configurations.instance()
+        self._config = ConfigurationManager.instance().config
         self.last_breath_timestamp = None
         self.last_telemetry_report = None
         self.last_state = None
@@ -161,16 +161,16 @@ class VentilationStateMachine(object):
 
         if self.breathes_rate_meter.is_stable():
             # Check bpm thresholds
-            if self._config.resp_rate_range.over(self._measurements.bpm):
+            if self._config.thresholds.respiratory_rate.over(self._measurements.bpm):
                 self.log.warning(
                     "BPM too high %s, top threshold %s",
-                    self._measurements.bpm, self._config.resp_rate_range.max)
+                    self._measurements.bpm, self._config.thresholds.respiratory_rate.max)
                 self._events.alerts_queue.enqueue_alert(AlertCodes.BPM_HIGH,
                                                         timestamp)
-            elif self._config.resp_rate_range.below(self._measurements.bpm):
+            elif self._config.thresholds.respiratory_rate.below(self._measurements.bpm):
                 self.log.warning(
                     "BPM too low %s, bottom threshold %s",
-                    self._measurements.bpm, self._config.resp_rate_range.min)
+                    self._measurements.bpm, self._config.thresholds.respiratory_rate.min)
                 self._events.alerts_queue.enqueue_alert(AlertCodes.BPM_LOW,
                                                         timestamp)
         return True
@@ -202,17 +202,17 @@ class VentilationStateMachine(object):
         self.expiration_volume.reset()
         self.exp_volumes.append((timestamp, exp_volume_ml))
 
-        if self._config.volume_range.below(self._measurements.avg_exp_volume):
+        if self._config.thresholds.volume.below(self._measurements.avg_exp_volume):
             self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_LOW, timestamp)
             self.log.warning(
                 "average volume too low %s, bottom threshold %s",
-                self._measurements.avg_exp_volume, self._config.volume_range.min)
-        elif self._config.volume_range.over(self._measurements.avg_exp_volume):
-            self._events.alerts_queue.enqueue_alert(AlertCodes.VOLUME_HIGH,
-                                                    timestamp)
+                self._measurements.avg_exp_volume, self._config.thresholds.volume.min)
+        elif self._config.thresholds.volume.over(self._measurements.avg_exp_volume):
+            self._events.alerts_queue.enqueue_alert(
+                AlertCodes.VOLUME_HIGH, timestamp)
             self.log.warning(
                 "average volume too high %s, top threshold %s",
-                self._measurements.avg_exp_volume, self._config.volume_range.max)
+                self._measurements.avg_exp_volume, self._config.thresholds.volume.max)
 
         self.reset_min_values()
         return True
@@ -300,31 +300,31 @@ class VentilationStateMachine(object):
         self.peak_flow = max(self.peak_flow, flow_slm)
 
         # Publish alerts for Pressure
-        if self._config.pressure_range.over(pressure_cmh2o):
+        if self._config.thresholds.pressure.over(pressure_cmh2o):
             self.log.warning(
                 "pressure too high %s, top threshold %s",
-                pressure_cmh2o, self._config.pressure_range.max)
+                pressure_cmh2o, self._config.thresholds.pressure.max)
             self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_HIGH, timestamp)
-        elif self._config.pressure_range.below(pressure_cmh2o):
+        elif self._config.thresholds.pressure.below(pressure_cmh2o):
             self.log.warning(
                 "pressure too low %s, bottom threshold %s",
-                pressure_cmh2o, self._config.pressure_range.min)
+                pressure_cmh2o, self._config.thresholds.pressure.min)
             self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW, timestamp)
 
         # Publish alerts for Oxygen
         # Oxygen too high
-        if self._config.o2_range.over(o2_percentage):
+        if self._config.thresholds.o2.over(o2_percentage):
             self.log.warning(
                 f"Oxygen percentage too high "
-                f"({o2_percentage}% > {self._config.o2_range.max}%)")
+                f"({o2_percentage}% > {self._config.thresholds.o2.max}%)")
             self._events.alerts_queue.enqueue_alert(
                 AlertCodes.OXYGEN_HIGH, timestamp)
 
             # Oxygen too low
-        elif self._config.o2_range.below(o2_percentage):
+        elif self._config.thresholds.o2.below(o2_percentage):
             self.log.warning(
                 f"Oxygen percentage too low "
-                f"({o2_percentage}% < {self._config.o2_range.min}%)")
+                f"({o2_percentage}% < {self._config.thresholds.o2.min}%)")
             self._events.alerts_queue.enqueue_alert(
                 AlertCodes.OXYGEN_LOW, timestamp)
 
@@ -358,48 +358,50 @@ class VentilationStateMachine(object):
 
         # either waiting for enough volume for inhale
         # or it's noise and switching to pre exhale
+        smc = self._config.state_machine
         if self.current_state == VentilationState.PreInhale:
             insp_volume = self.inspiration_volume.integrate() * 1000
-            if insp_volume >= self._config.min_insp_volume_for_inhale:
+            if insp_volume >= smc.min_insp_volume_for_inhale:
                 return VentilationState.Inhale
 
-            elif flow_negative_decreasing and pressure_slope < self._config.max_pressure_slope_for_exhale:
+            elif (flow_negative_decreasing and
+                  pressure_slope < smc.max_pressure_slope_for_exhale):
                 return VentilationState.PreExhale
 
         # either waiting for enough volume for exhale
         # or it's noise and switching to pre inhale
         if self.current_state == VentilationState.PreExhale:
             exp_volume = self.expiration_volume.integrate() * 1000
-            if exp_volume >= self._config.min_exp_volume_for_exhale:
+            if exp_volume >= smc.min_exp_volume_for_exhale:
                 return VentilationState.Exhale
 
-            elif flow_positive_increasing and pressure_slope > self._config.min_pressure_slope_for_inhale:
+            elif (flow_positive_increasing and
+                  pressure_slope > smc.min_pressure_slope_for_inhale):
                 return VentilationState.PreInhale
 
         # currently at a inhale\exhale state switching reverse pre state
         if self.current_state != VentilationState.Exhale:
-            if flow_negative_decreasing and pressure_slope < self._config.max_pressure_slope_for_exhale:
+            if flow_negative_decreasing and pressure_slope < smc.max_pressure_slope_for_exhale:
                 return VentilationState.PreExhale
 
         if self.current_state != VentilationState.Inhale:
-            if flow_positive_increasing and pressure_slope > self._config.min_pressure_slope_for_inhale:
+            if flow_positive_increasing and pressure_slope > smc.min_pressure_slope_for_inhale:
                 return VentilationState.PreInhale
 
         return self.current_state
 
 
 class Sampler(object):
-
-    def __init__(self, measurements, events, flow_sensor, pressure_sensor,
-                 a2d, timer, telemetry_sender=None, save_sensor_values=False):
-        super(Sampler, self).__init__()
+    def __init__(self, config, measurements, events, flow_sensor, pressure_sensor,
+                 a2d, timer, telemetry_sender=None,
+                 save_sensor_values=False):
         self.log = logging.getLogger(self.__class__.__name__)
         self._measurements = measurements
         self._flow_sensor = flow_sensor
         self._pressure_sensor = pressure_sensor
         self._a2d = a2d
         self._timer = timer
-        self._config = Configurations.instance()
+        self._config = config
         self._events = events
         self.vsm = VentilationStateMachine(measurements, events, telemetry_sender)
         self.storage_handler = SamplesStorage()

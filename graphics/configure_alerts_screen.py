@@ -1,11 +1,13 @@
 import os
 
-from cached_property import cached_property
+from copy import copy
+from functools import partial
 
-from data.configurations import Configurations
+from cached_property import cached_property
 
 from tkinter import *
 
+from data.configurations import ConfigurationManager
 from graphics.calibrate.screen import CalibrationScreen, \
     DifferentialPressureCalibration, OxygenCalibration
 
@@ -25,9 +27,7 @@ class ThresholdButton(Button):
         self.configure(bg="#3c3149", fg="#d7b1f9",
                        activebackground="#433850",
                        activeforeground="#e3e1e5",
-                       borderwidth=0, relief="flat",
-                       command=self.publish)
-        self.subscribers = {}
+                       borderwidth=0, relief="flat",)
 
     @property
     def selected(self):
@@ -45,16 +45,6 @@ class ThresholdButton(Button):
                        activebackground="#433850",
                        activeforeground="#e3e1e5",)
 
-    def subscribe(self, object, callback):
-        self.subscribers[object] = callback
-
-    def unsubscribe(self):
-        del self.subscribers[object]
-
-    def publish(self):
-        for callback in self.subscribers.values():
-            callback(self)
-
 
 class Section(object):
     INDEX = NotImplemented
@@ -63,6 +53,7 @@ class Section(object):
     def __init__(self, parent, root):
         self.parent = parent
         self.root = root
+        self.draft_range = self.create_draft_range()
 
         self.frame = Frame(self.root, bg="red")
         self.name_label = Label(master=self.frame, font=("Roboto", 15),
@@ -81,26 +72,37 @@ class Section(object):
                                           is_min=True,
                                           font=("Roboto", 20))
 
-        self.max_button.subscribe(self.parent, self.parent.on_threshold_button_click)
-        self.min_button.subscribe(self.parent, self.parent.on_threshold_button_click)
+        self.max_button.configure(
+            command=partial(self.parent.on_threshold_button_click, self.max_button))
+        self.min_button.configure(
+            command=partial(self.parent.on_threshold_button_click, self.min_button))
+
+    def create_draft_range(self):
+        self.draft_range = copy(self.range)
+        return self.draft_range
 
     @property
     def config(self):
-        return Configurations.instance()
+        return ConfigurationManager.instance().config
 
     @property
     def range(self):
         raise NotImplementedError()
 
+    @range.setter
+    def range(self, other):
+        raise NotImplementedError
+
     def confirm(self):
-        self.range.confirm()
+        self.range = copy(self.draft_range)
+        self.draft_range = None
 
     def cancel(self):
-        self.range.cancel()
+        self.draft_range = None
 
     def update(self):
-        self.max_button.configure(text=f"MAX\n{self.range.temporary_max}")
-        self.min_button.configure(text=f"MIN\n{self.range.temporary_min}")
+        self.max_button.configure(text=f"MAX\n{self.draft_range.max}")
+        self.min_button.configure(text=f"MIN\n{self.draft_range.min}")
 
     def render(self):
         self.frame.place(relx=(0.2) * self.INDEX,
@@ -113,8 +115,8 @@ class Section(object):
 
         self.name_label.configure(text=self.range.NAME)
         self.unit_label.configure(text=self.range.UNIT)
-        self.max_button.configure(text=f"MAX\n{self.range.temporary_max}")
-        self.min_button.configure(text=f"MIN\n{self.range.temporary_min}")
+        self.max_button.configure(text=f"MAX\n{self.draft_range.max}")
+        self.min_button.configure(text=f"MIN\n{self.draft_range.min}")
 
 
 class SectionWithCalibrate(Section):
@@ -151,7 +153,11 @@ class O2Section(SectionWithCalibrate):
 
     @property
     def range(self):
-        return self.config.o2_range
+        return self.config.thresholds.o2
+
+    @range.setter
+    def range(self, other):
+        self.config.thresholds.o2 = other
 
 
 class VolumeSection(SectionWithCalibrate):
@@ -160,7 +166,11 @@ class VolumeSection(SectionWithCalibrate):
 
     @property
     def range(self):
-        return self.config.volume_range
+        return self.config.thresholds.volume
+
+    @range.setter
+    def range(self, other):
+        self.config.thresholds.volume = other
 
 
 class PressureSection(Section):
@@ -168,7 +178,11 @@ class PressureSection(Section):
 
     @property
     def range(self):
-        return self.config.pressure_range
+        return self.config.thresholds.pressure
+
+    @range.setter
+    def range(self, other):
+        self.config.thresholds.pressure = other
 
 
 class RespRateSection(Section):
@@ -176,7 +190,11 @@ class RespRateSection(Section):
 
     @property
     def range(self):
-        return self.config.resp_rate_range
+        return self.config.thresholds.respiratory_rate
+
+    @range.setter
+    def range(self, other):
+        self.config.thresholds.respiratory_rate = other
 
 
 class UpOrDownSection(object):
@@ -224,7 +242,7 @@ class ConfirmCancelSection(object):
                                           compound="center",
                                           bg=Theme.active().OK,
                                           activebackground=Theme.active().OK_ACTIVE,
-                                          command = self.parent.confirm)
+                                          command=self.parent.confirm)
 
         self.cancel_button = ImageButton(master=self.frame,
                                          image_path=self.CANCEL_IMAGE_PATH,
@@ -244,7 +262,7 @@ class ConfigureAlarmsScreen(object):
         self.root = root
 
         # Screen state
-        self.selected_threshold = None
+        self.selected_range = None
         self.is_min = None
 
         self.configure_alerts_screen = Frame(master=self.root)
@@ -269,42 +287,41 @@ class ConfigureAlarmsScreen(object):
             irrelevant_button.deselect()
 
         # Toggle selected threshold
-        if (self.selected_threshold, self.is_min) == (button.parent.range, is_min):
-            self.selected_threshold = None
+        if (self.selected_range, self.is_min) == (button.parent.draft_range, is_min):
+            self.selected_range = None
             self.is_min = False
             button.deselect()
 
         else:
-            self.selected_threshold = button.parent.range
+            self.selected_range = button.parent.create_draft_range()
             self.is_min = is_min
             button.select()
 
     def on_up_button_click(self):
-        if self.selected_threshold is None:  # Dummy-proof GUI
+        if self.selected_range is None:  # Dummy-proof GUI
             return
 
         if self.is_min:
-            self.selected_threshold.increase_min()
+            self.selected_range.increase_min()
 
         else:
-            self.selected_threshold.increase_max()
+            self.selected_range.increase_max()
 
         for section in self.threshold_sections:
             section.update()
 
     def on_down_button_click(self):
-        if self.selected_threshold is None:  # Dummy-proof GUI
+        if self.selected_range is None:  # Dummy-proof GUI
             return
 
         if self.is_min:
-            self.selected_threshold.decrease_min()
+            self.selected_range.decrease_min()
 
         else:
-            self.selected_threshold.decrease_max()
+            self.selected_range.decrease_max()
 
         for section in self.threshold_sections:
             section.update()
-
 
     @cached_property
     def threshold_buttons(self):
@@ -338,7 +355,7 @@ class ConfigureAlarmsScreen(object):
     def confirm(self):
         for section in self.threshold_sections:
             section.confirm()
-        Configurations.instance().save_to_file()
+        ConfigurationManager.instance().save()
         self.hide()
 
     def cancel(self):

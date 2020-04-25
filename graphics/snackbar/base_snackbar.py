@@ -1,11 +1,9 @@
 import os
 import logging
-import datetime
 
-import timeago
 from tkinter import *
 
-from data.configurations import Configurations
+from data.configurations import ConfigurationManager
 
 
 THIS_FILE = __file__
@@ -28,15 +26,15 @@ class BaseSnackbar(object):
         self.title_foreground = "white"
 
         self.root = root
-        self.config = Configurations.instance()
- 
+        self.config = ConfigurationManager.instance().config
+
         self.log = logging.getLogger(__name__)
 
         self.frame = Frame(master=self.root,
                            background=self.background_color)
         self.buttons_frame = Frame(master=self.frame,
                                    background=self.background_color)
- 
+
         self.text_frame = Frame(master=self.frame,
                                 background=self.background_color)
 
@@ -70,7 +68,7 @@ class BaseSnackbar(object):
 
         self.shown = False
 
-    def show(self):        
+    def show(self):
         self.shown = True
         self.frame.place(relx=0.075, rely=0.655, relwidth=0.85, relheight=0.3)
         self.title_frame.place(relx=0, relwidth=1, relheight=(1/3), rely=0)
@@ -83,7 +81,6 @@ class BaseSnackbar(object):
         self.title_label.pack(anchor=W, fill="both", side="left")
 
         self.text_label.pack(anchor=W, fill="both")
-       
 
     def hide(self):
         self.frame.place_forget()

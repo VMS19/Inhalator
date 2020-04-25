@@ -7,7 +7,7 @@ from tkinter import *
 
 from data.alerts import Alert, AlertCodes
 from graphics.themes import Theme
-from data.configurations import Configurations
+from data.configurations import ConfigurationManager
 from graphics.version import __version__
 
 THIS_DIRECTORY = os.path.dirname(__file__)
@@ -20,14 +20,15 @@ class IndicatorAlertBar(object):
                                    "baseline_battery_full_white_18dp.png")
     BATTERY_LOW_PATH = os.path.join(RESOURCES_DIRECTORY,
                                     "baseline_battery_alert_white_18dp.png")
-    BATTERY_MISSING_PATH = os.path.join(RESOURCES_DIRECTORY,
-                                    "baseline_battery_unknown_white_18dp.png")
+    BATTERY_MISSING_PATH = os.path.join(
+        RESOURCES_DIRECTORY,
+        "baseline_battery_unknown_white_18dp.png")
 
     def __init__(self, parent, events, drivers, measurements):
         self.parent = parent
         self.root = parent.element
         self.events = events
-        self.configs = Configurations.instance()
+        self.config = ConfigurationManager.instance().config
         self.drivers = drivers
         self.measurements = measurements
 
@@ -105,7 +106,7 @@ class IndicatorAlertBar(object):
         # Check mute time limit
         if self.events.mute_alerts._alerts_muted and\
                 (time.time() - self.events.mute_alerts.mute_time) >\
-                self.configs.mute_time_limit:
+                self.config.mute_time_limit:
             self.events.mute_alerts.mute_alerts(False)
         last_alert_in_queue = self.events.alerts_queue.last_alert
 
@@ -136,7 +137,7 @@ class IndicatorAlertBar(object):
         # Change text colors
         for label in self.textual:
             label.config(bg=Theme.active().ALERT_BAR_OK,
-                                      fg=Theme.active().ALERT_BAR_OK_TXT)
+                         fg=Theme.active().ALERT_BAR_OK_TXT)
 
         self.message_label.configure(text="OK")
         self.timestamp_label.configure(text="")
@@ -174,7 +175,7 @@ class IndicatorAlertBar(object):
 
     def update_battery(self):
         current_battery = self.measurements.battery_percentage
-        battery_is_low = current_battery < self.configs.low_battery_percentage
+        battery_is_low = current_battery < self.config.low_battery_percentage
         battry_is_missing = self.current_alert.contains(AlertCodes.NO_BATTERY)
 
         if battry_is_missing:

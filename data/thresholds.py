@@ -36,18 +36,18 @@ class Range:
         return self.max is not None and value > self.max
 
     def increase_min(self):
-        if self.temporary_min + self.step <= self.temporary_max:
-            self.temporary_min += self.step
+        if self.min + self.step <= self.max:
+            self.min += self.step
 
     def increase_max(self):
-        self.temporary_max += self.step
+        self.max += self.step
 
     def decrease_min(self):
-        self.temporary_min -= self.step
+        self.min -= self.step
 
     def decrease_max(self):
-        if self.temporary_max - self.step >= self.temporary_min:
-            self.temporary_max -= self.step
+        if self.max - self.step >= self.min:
+            self.max -= self.step
 
 
 class O2Range(Range):

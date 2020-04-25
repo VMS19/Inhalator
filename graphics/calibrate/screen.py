@@ -2,7 +2,7 @@ import math
 import statistics
 from tkinter import *
 
-from data.configurations import Configurations
+from data.configurations import ConfigurationManager, Point
 from graphics.themes import Theme
 from errors import InvalidCalibrationError
 
@@ -17,7 +17,7 @@ class Calibration(object):
     def __init__(self, parent, root, drivers, observer):
         self.parent = parent
         self.root = root
-        self.config = Configurations.instance()
+        self.cm = ConfigurationManager.instance()
         self.observer = observer
 
         # State
@@ -40,11 +40,12 @@ class Calibration(object):
         self.create_calibration_menu()
 
     def create_calibration_menu(self):
-        button = Button(master=self.frame,
-                             bg=Theme.active().SURFACE,
-                             command=self.calibrate,
-                             fg=Theme.active().TXT_ON_SURFACE,
-                             text="Calibrate")
+        button = Button(
+            master=self.frame,
+            bg=Theme.active().SURFACE,
+            command=self.calibrate,
+            fg=Theme.active().TXT_ON_SURFACE,
+            text="Calibrate")
         self.calibration_buttons = [button]
 
     def read_raw_value(self):
@@ -64,7 +65,7 @@ class Calibration(object):
             self.label.config(text=str(err))
             return False
         else:
-            self.config.save_to_file()
+            self.cm.save()
             return True
 
     def calibrate(self):
@@ -192,11 +193,11 @@ class DifferentialPressureCalibration(Calibration):
 
     def get_difference(self):
         """Get offset drift."""
-        offset = self.average_value_found - Configurations.instance().dp_offset
+        offset = self.average_value_found - self.cm.config.calibration.dp_offset
         return self.drivers.acquire_driver("differential_pressure").pressure_to_flow(offset)
 
     def configure_new_calibration(self):
-        self.config.dp_offset = self.average_value_found
+        self.cm.config.calibration.dp_offset = self.average_value_found
         self.sensor_driver.set_calibration_offset(self.average_value_found)
         self.observer.publish(self.timer.get_current_time())
 
@@ -216,13 +217,15 @@ class OxygenCalibration(Calibration):
         super().__init__(*args)
 
     def create_calibration_menu(self):
-        self.calibrate_point1_button = Button(master=self.frame,
+        self.calibrate_point1_button = Button(
+            master=self.frame,
             bg=Theme.active().SURFACE,
             command=self.calibrate_point1,
             fg=Theme.active().TXT_ON_SURFACE,
-            text=f"Calibrate {self.config.oxygen_point1['x']}%")
+            text=f"Calibrate {self.cm.config.oxygen_point1.x}%")
 
-        self.calibrate_point2_button = Button(master=self.frame,
+        self.calibrate_point2_button = Button(
+            master=self.frame,
             bg=Theme.active().SURFACE,
             command=self.calibrate_level2_point,
             fg=Theme.active().TXT_ON_SURFACE,
@@ -232,13 +235,12 @@ class OxygenCalibration(Calibration):
                                     self.calibrate_point2_button]
 
     def calibrate_point1(self):
-        self.calibrated_point = self.config.oxygen_point1
+        self.calibrated_point = self.cm.config.oxygen_point1
         self.calibrate()
         self.calibrate_point2_button.configure(state="disabled")
 
     def calibrate_level2_point(self):
-        self.calibrated_point = {"x": self.STEP_2_CALIBRATION_PERCENTAGE,
-                                 "y": 0}
+        self.calibrated_point = Point(x=self.STEP_2_CALIBRATION_PERCENTAGE, y=0)
         self.calibrate()
         self.calibrate_point1_button.configure(state="disabled")
 
@@ -250,56 +252,51 @@ class OxygenCalibration(Calibration):
         average_percentage_found = \
             self.sensor_driver.convert_voltage_to_oxygen(
                 self.average_value_found)
-        return average_percentage_found - self.calibrated_point["x"]
+        return average_percentage_found - self.calibrated_point.x
 
     def configure_new_calibration(self):
-        new_calibration_point = {"x": self.calibrated_point["x"],
-                                 "y": self.average_value_found}
+        new_calibration_point = Point(
+            x=self.calibrated_point.x, y=self.average_value_found)
 
-        if self.calibrated_point is self.config.oxygen_point1:
-            other_calibration_point = self.config.oxygen_point2
+        if self.calibrated_point is self.cm.config.oxygen_point1:
+            other_calibration_point = self.cm.config.oxygen_point2
         else:
-            other_calibration_point = self.config.oxygen_point1
+            other_calibration_point = self.cm.config.oxygen_point1
 
         offset, scale = calc_calibration_line(new_calibration_point,
                                               other_calibration_point)
 
         self.sensor_driver.set_oxygen_calibration(offset, scale)
 
-        if self.calibrated_point is self.config.oxygen_point1:
-            self.config.oxygen_point1["x"] = new_calibration_point["x"]
-            self.config.oxygen_point1["y"] = new_calibration_point["y"]
+        if self.calibrated_point is self.cm.config.oxygen_point1:
+            self.cm.config.oxygen_point1 = new_calibration_point
         else:
-            self.config.oxygen_point2["x"] = new_calibration_point["x"]
-            self.config.oxygen_point2["y"] = new_calibration_point["y"]
+            self.cm.config.oxygen_point2 = new_calibration_point
 
 
 def calc_calibration_line(point1, point2):
-    if point1["x"] > point2["x"]:
+    # TODO: GUI screen is definitely not the right place for this.
+    if point1.x > point2.x:
         left_p = point2
         right_p = point1
-    elif point1["x"] < point2["x"]:
+    else:
         left_p = point1
         right_p = point2
 
-    if point1["x"] == point2["x"] or point1["y"] == point2["y"]:
+    if point1.x == point2.x or point1.y == point2.y:
         raise InvalidCalibrationError(
             "Bad calibration.\n"
-            "Two calibration points have same value:\n"
-            f"({int(left_p['x'])}% : {left_p['y']:.5f}V),\n"
-            f"({int(right_p['x'])}% : {right_p['y']:.5f}V)")
+            f"Two calibration points have same value: {left_p}, {right_p}")
 
     # We compute the calibration line on the reversed function:
     # O2 percentage as function of voltage. x is now the 'y' and vise versa.
-    new_scale = (right_p["x"] - left_p["x"]) / (
-        right_p["y"] - left_p["y"])
+    new_scale = (right_p.x - left_p.x) / (
+        right_p.y - left_p.y)
 
     # normal slope should be around 50..
     if new_scale <= 0 or new_scale > 100:
         raise InvalidCalibrationError(
-            f"Bad calibration.\ntoo small slope."
-            f"({int(left_p['x'])}% : {left_p['y']:.5f}V),\n"
-            f"({int(right_p['x'])}% : {right_p['y']:.5f}V)")
+            f"Bad calibration, slope too small: {left_p}, {right_p}.")
 
-    new_offset = point1["x"] - point1["y"] * new_scale
+    new_offset = point1.x - point1.y * new_scale
     return new_offset, new_scale
