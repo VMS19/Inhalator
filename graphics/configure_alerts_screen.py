@@ -94,8 +94,9 @@ class Section(object):
         raise NotImplementedError
 
     def confirm(self):
-        self.range = copy(self.draft_range)
-        self.draft_range = None
+        if self.draft_range is not None:
+            self.range = copy(self.draft_range)
+            self.draft_range = None
 
     def cancel(self):
         self.draft_range = None
