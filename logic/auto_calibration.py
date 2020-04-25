@@ -3,6 +3,15 @@ import logging
 import numpy as np
 
 
+class TimeRange:
+    def __init__(self, start_time, length):
+        self.start_time = start_time
+        self.length = length
+
+    def __contains__(self, timestamp):
+        return timestamp - self.start_time <= self.length
+
+
 class AutoFlowCalibrator:
     def __init__(self, dp_driver, interval_length, iterations,
                  iteration_length, sample_threshold, slope_threshold,
@@ -14,7 +23,7 @@ class AutoFlowCalibrator:
 
         self.log = logging.getLogger(__name__)
         self.interval_start_time = None
-        self.window_start_time = None
+        self.iteration_start_time = None
         self.iterations_count = 0
         self.tail_detector = TailDetector(dp_driver=dp_driver,
                                           sample_threshold=sample_threshold,
@@ -22,37 +31,44 @@ class AutoFlowCalibrator:
                                           min_tail_length=min_tail_length,
                                           grace_length=grace_length)
 
+    @property
+    def interval(self):
+        return TimeRange(self.interval_start_time, self.interval_length)
+
+    @property
+    def iteration(self):
+        return TimeRange(self.iteration_start_time, self.iteration_length)
+
     def get_offset(self, flow_slm, ts):
-        if self.interval_start_time is None:
-            self.log.debug("Starting auto calibration interval")
+        if (self.interval_start_time is None or self.iteration_start_time is None or
+                ts not in self.interval):
+            self.log.debug("Starting a new auto calibration interval")
             self.interval_start_time = ts
+            self.iteration_start_time = ts
+            self.iterations_count = 0
 
-        if self.window_start_time is None:
-            self.log.debug("Starting auto calibration window")
-            self.window_start_time = ts
+        if ts in self.iteration:
+            self.tail_detector.add_sample(flow_slm, ts)
+            return None
 
-        if ts - self.interval_start_time >= self.interval_length:
-            if ts - self.window_start_time < self.iteration_length:
-                self.tail_detector.add_sample(flow_slm, ts)
-            else:
-                self.log.debug("Done accumulating within tail window")
-                tail_offset = self.tail_detector.process()
-                if tail_offset is not None:
-                    self.log.debug("Tail offset is %f DP", tail_offset)
-                    self.log.debug(
-                        "Tail offset is %f L/min",
-                        self.dp_driver.pressure_to_flow(tail_offset))
-                    self.dp_driver.set_calibration_offset(tail_offset)
+        if self.iterations_count == self.iterations:
+            self.log.info("Done accumulating within the interval")
+            self.iterations_count += 1
+            return self.dp_driver.get_calibration_offset()
 
-                self.window_start_time = None
-                self.tail_detector.reset()
-                self.iterations_count += 1
+        if self.iterations_count < self.iterations:
+            self.log.debug("Done accumulating within one iteration")
+            tail_offset = self.tail_detector.process()
+            if tail_offset is not None:
+                self.log.debug("Tail offset is %f L/min",
+                               self.dp_driver.pressure_to_flow(tail_offset))
+                self.log.debug("Writing offset of %f to the driver",
+                               tail_offset)
+                self.dp_driver.set_calibration_offset(tail_offset)
 
-                if self.iterations_count >= self.iterations:
-                    self.log.info("Done accumulating within tail interval")
-                    self.iterations_count = 0
-                    self.interval_start_time = None
-                    return self.dp_driver.get_calibration_offset()
+            self.iteration_start_time = None
+            self.tail_detector.reset()
+            self.iterations_count += 1
 
         return None
 
