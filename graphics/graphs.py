@@ -1,3 +1,5 @@
+from copy import copy
+
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from matplotlib import rcParams
@@ -196,15 +198,12 @@ class AirPressureGraph(Graph):
         super().__init__(*args, **kwargs)
         self.min_threshold = None
         self.max_threshold = None
+        self.range = copy(self.config.thresholds.pressure)
         self.update_thresholds()
 
     def update_thresholds(self):
         min_value = self.config.thresholds.pressure.min
         max_value = self.config.thresholds.pressure.max
-
-        if min_value == self.min_threshold and max_value == self.max_threshold:
-            return  # No change
-
         if self.min_threshold:
             self.min_threshold.remove()
         if self.max_threshold:
@@ -216,9 +215,11 @@ class AirPressureGraph(Graph):
         self.canvas.draw()
         self.save_bg()
 
-    def render(self):
-        super(AirPressureGraph, self).render()
-        self.update_thresholds()
+    def update(self):
+        super(AirPressureGraph, self).update()
+        if self.range != self.config.thresholds.pressure:
+            self.update_thresholds()
+            self.range = copy(self.config.thresholds.pressure)
 
     @property
     def configured_scale(self):
