@@ -211,6 +211,7 @@ class RightPane(object):
             self.lock_thresholds_btn.unlock_button()
             self.are_buttons_locked = True
 
+
 class TopPane(object):
     def __init__(self, parent, events, drivers, measurements):
         self.parent = parent

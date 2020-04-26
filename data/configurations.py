@@ -43,7 +43,8 @@ class Configurations(object):
                  auto_cal_enable=True, auto_cal_interval=3,
                  auto_cal_iterations=1, auto_cal_iteration_length=30,
                  auto_cal_sample_threshold=5, auto_cal_slope_threshold=10,
-                 auto_cal_min_tail=12, auto_cal_grace_length=5):
+                 auto_cal_min_tail=12, auto_cal_grace_length=5,
+                 machine_name='VMS19'):
         self.o2_range = o2_range
         self.volume_range = volume_range
         self.pressure_range = pressure_range
@@ -77,6 +78,7 @@ class Configurations(object):
         self.auto_cal_slope_threshold = auto_cal_slope_threshold
         self.auto_cal_min_tail = auto_cal_min_tail
         self.auto_cal_grace_length = auto_cal_grace_length
+        self.machine_name = machine_name
 
     def __getitem__(self, item):
         return getattr(self, item)
@@ -125,6 +127,8 @@ class Configurations(object):
         try:
             with open(config_file) as f:
                 config = json.load(f)
+
+            machine_name = config['machine_name']
 
             o2 = O2Range(min=config["threshold"]["o2"]["min"],
                          max=config["threshold"]["o2"]["max"],
@@ -207,7 +211,8 @@ class Configurations(object):
                        auto_cal_sample_threshold=auto_cal_sample_threshold,
                        auto_cal_slope_threshold=auto_cal_slope_threshold,
                        auto_cal_min_tail=auto_cal_min_tail,
-                       auto_cal_grace_length=auto_cal_grace_length)
+                       auto_cal_grace_length=auto_cal_grace_length,
+                       machine_name=machine_name)
 
         except Exception as e:
             raise ConfigurationFileError(f"Could not load "
@@ -216,6 +221,7 @@ class Configurations(object):
     def save_to_file(self, config_path=CONFIG_FILE):
         log.info("Saving threshold values to database")
         config = {
+            "machine_name": self.machine_name,
             "threshold": {
                 "o2": {
                     "min": self.o2_range.min,
