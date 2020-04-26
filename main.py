@@ -55,16 +55,12 @@ def configure_logging(level):
                                        backupCount=1)
     file_handler.setLevel(level)
     # create console handler
-    steam_handler = logging.StreamHandler()
-    steam_handler.setLevel(level)
     # create formatter and add it to the handlers
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     file_handler.setFormatter(formatter)
-    steam_handler.setFormatter(formatter)
     # add the handlers to the logger
     logger.addHandler(file_handler)
-    logger.addHandler(steam_handler)
     logger.disabled = not config.log_enabled
     return logger
 
