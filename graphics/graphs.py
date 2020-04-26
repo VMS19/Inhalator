@@ -2,12 +2,12 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from matplotlib import rcParams
 from matplotlib.transforms import Bbox
+from matplotlib import ticker
 from math import ceil
 
 from data.configurations import Configurations
 from graphics.themes import Theme
 
-from tkinter import *
 
 class Graph(object):
     RELX = NotImplemented
@@ -17,7 +17,7 @@ class Graph(object):
     COLOR = NotImplemented
     DPI = 100  # pixels per inch
     ERASE_GAP = 10  # samples to be cleaned from tail, ahead of new sample print
-    GRAPH_BEGIN_OFFSET = 80  # pixel offset from canvas edge, to begin of graph
+    GRAPH_BEGIN_OFFSET = 72  # pixel offset from canvas edge, to begin of graph
 
     def __init__(self, parent, measurements, width, height):
         rcParams.update({'figure.autolayout': True})
@@ -44,15 +44,26 @@ class Graph(object):
         self.figure = Figure(figsize=(self.width/self.DPI,
                                       self.height/self.DPI),
                              dpi=self.DPI, facecolor=Theme.active().SURFACE)
+
         self.axis = self.figure.add_subplot(111, label=self.LABEL)
+        self.axis.set_ylabel(self.YLABEL, labelpad=0)
+
+        # Remove white lines around graph frame
         self.axis.spines["right"].set_visible(False)
         self.axis.spines["bottom"].set_visible(False)
-        self.axis.set_ylabel(self.YLABEL)
+        self.axis.spines["left"].set_visible(False)
+        self.axis.spines["top"].set_visible(False)
 
+        self.axis.tick_params(axis='y', direction='out', length=3, width=1, colors='w')
         # Calibrate x-axis
         self.axis.set_xticks([])
         self.axis.set_xticklabels([])
-        self.axis.tick_params(direction='out', length=0, width=0, colors='w')
+        # Set max number of tick labels in y axis to 7
+        self.axis.yaxis.set_major_locator(ticker.MaxNLocator(nbins=7,
+                                                             integer=True))
+
+        # Make y axis labels aligned
+        self.axis.yaxis.set_major_formatter(self.tick_aligned_format)
 
         # Draw X axis
         self.axis.axhline(y=0, color='white', lw=1)
@@ -91,6 +102,22 @@ class Graph(object):
         self.graph_height = y2 - y1
         bbox = (capture_offset, y1, capture_offset + self.eraser_width, y2)
         self.eraser_bg = self.canvas.copy_from_bbox(bbox)
+
+    @staticmethod
+    @ticker.FuncFormatter
+    def tick_aligned_format(x, pos):
+        """Print positive tick numbers with space placeholder,
+           to align with minus sign of negative numbers
+        """
+        label = f"{x:.0f}"
+        if x >= 0:
+            label = " " + label
+
+        return label
+
+    def save_bg(self):
+        """Capture the current drawing of graph, and render it as background."""
+        self.graph_bg = self.canvas.copy_from_bbox(self.graph_bbox)
 
     def render(self):
         self._redraw_frame()
@@ -194,7 +221,7 @@ class FlowGraph(Graph):
     # We must pick values that are a multiplication of each other, as we
     # "trim" the counter with the modulo of the maximal between them
     ZOOM_OUT_FREQUENCY = 50
-    ZOOM_IN_FREQUENCY = 500
+    ZOOM_IN_FREQUENCY = 200
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -232,7 +259,6 @@ class FlowGraph(Graph):
 
             self.current_min_y, self.current_max_y = original_min, original_max
             self.graph.axes.set_ylim(self.current_min_y, self.current_max_y)
-
             self._redraw_frame()
             self.redraw_graph()
             return
@@ -289,9 +315,7 @@ class AirPressureGraph(Graph):
         if self.max_threshold:
             self.max_threshold.remove()
 
-        # min threshold line
         self.min_threshold = self.axis.axhline(y=min_value, color='red', lw=1)
-        # max threshold line
         self.max_threshold = self.axis.axhline(y=max_value, color='red', lw=1)
 
         self._redraw_frame()

@@ -56,7 +56,7 @@ def sampler(events, measurements, driver_factory):
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
     return Sampler(measurements, events, flow_sensor, pressure_sensor,
-                   a2d, timer, average_window=1)
+                   a2d, timer)
 
 
 @patch("data.alerts.uptime")

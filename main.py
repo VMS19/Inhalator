@@ -24,10 +24,6 @@ from drivers.null_driver import NullDriver
 BYTES_IN_MB = 2 ** 20
 BYTES_IN_GB = 2 ** 30
 
-# the Honeywell differential pressure sensor is very noisy, so we've applied
-# some averaging of the last samples to make the graph smoother
-NOISY_DP_SENSOR_SAMPLES = 6
-
 
 def monitor(target, args, output_path):
     worker_process = multiprocessing.Process(target=target, args=[args])
@@ -188,7 +184,6 @@ def start_app(args):
                           a2d=a2d,
                           timer=timer,
                           save_sensor_values=args.debug,
-                          average_window=NOISY_DP_SENSOR_SAMPLES,
                           telemetry_sender=telemetry_sender)
 
         app = Application(measurements=measurements,

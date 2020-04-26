@@ -1,5 +1,6 @@
 import os
 import time
+from uptime import uptime
 from tkinter import Tk
 
 from graphics.panes import MasterFrame
@@ -7,6 +8,7 @@ from graphics.themes import Theme
 from data.configurations import Configurations, ConfigurationState
 from data.alerts import AlertCodes
 from graphics.calibrate.screen import calc_calibration_line
+from graphics.constants import SCREEN_WIDTH, SCREEN_HEIGHT
 
 
 class Application(object):
@@ -32,6 +34,7 @@ class Application(object):
         self.arm_wd_event = arm_wd_event
         self.sampler = sampler
         self.simulation = simulation
+        self.events = events
         self.frame_interval = 1 / fps
         self.sample_interval = 1 / sample_rate
         self.last_sample_update_ts = 0
@@ -40,12 +43,14 @@ class Application(object):
         self.theme = Theme.choose_theme()  # TODO: Make this configurable
         self.root.protocol("WM_DELETE_WINDOW", self.exit)  # Catches Alt-F4
         self.root.title("Inhalator")
-        self.root.geometry('800x480')
-        self.root.attributes("-fullscreen", True)
+        self.root.geometry(f'{SCREEN_WIDTH}x{SCREEN_HEIGHT}')
 
         if os.uname()[1] == 'raspberrypi':
             # on production we don't want to see the ugly cursor
             self.root.config(cursor="none")
+
+            # We want fullscreen only for the raspberry-pi
+            self.root.attributes("-fullscreen", True)
 
         self.master_frame = MasterFrame(self.root,
                                         measurements=measurements,
@@ -74,6 +79,7 @@ class Application(object):
 
     def render(self):
         self.master_frame.render()
+        self.events.alerts_queue.initial_uptime = uptime()
 
     def gui_update(self):
         self.root.update()
