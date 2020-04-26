@@ -17,7 +17,7 @@ class Graph(object):
     COLOR = NotImplemented
     DPI = 100  # pixels per inch
     ERASE_GAP = 10  # samples to be cleaned from tail, ahead of new sample print
-    GRAPH_BEGIN_OFFSET = 73  # pixel offset from canvas edge, to begin of graph
+    GRAPH_BEGIN_OFFSET = 70  # pixel offset from canvas edge, to begin of graph
 
     def __init__(self, parent, measurements, width, height):
         rcParams.update({'figure.autolayout': True})
