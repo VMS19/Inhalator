@@ -33,6 +33,3 @@ echo "done!"
 echo "reloading daemons (notifying systemd of a change)"
 sudo systemctl daemon-reload
 echo "done!"
-
-sudo echo "starting the service"
-systemctl start inhalator

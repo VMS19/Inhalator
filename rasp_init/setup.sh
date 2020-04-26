@@ -80,8 +80,11 @@ rm -f /etc/xdg/autostart/piwiz.desktop
 idempotent_append "dtoverlay=disable-bt" /boot/config.txt
 
 # set keyboard layout
-raspi-config nonint do_change_locale en_US.UTF-8
-raspi-config nonint do_configure_keyboard us
+if [ $LANG == "en_US.UTF-8" ]
+then
+	raspi-config nonint do_change_locale en_US.UTF-8
+	raspi-config nonint do_configure_keyboard us
+fi
 
 # enable I2C
 sudo raspi-config nonint do_i2c 0
@@ -90,7 +93,7 @@ sudo raspi-config nonint do_i2c 0
 sudo raspi-config nonint do_spi 0
 
 # set timezone
-timedatectl set-timezone 'Asia/Jerusalem'
+[ $(date +"%Z") == "IDT" ] || timedatectl set-timezone 'Asia/Jerusalem'
 
 # add the interpreter from the venv to PATH
 idempotent_append "source /home/pi/Inhalator/.inhalator_env/bin/activate" /home/pi/.bashrc
@@ -109,6 +112,26 @@ idempotent_append "gpio=13=pu" /boot/config.txt
 
 # enable hdmi hotplug
 idempotent_append "hdmi_force_hotplug=1" /boot/config.txt
+
+
+# enable DOK upgrade
+
+# disable the default automounting
+sed -i 's/mount_on_startup=1/mount_on_startup=0/g' /etc/xdg/pcmanfm/LXDE-pi/pcmanfm.conf
+sed -i 's/mount_removable=1/mount_removable=0/g' /etc/xdg/pcmanfm/LXDE-pi/pcmanfm.conf
+
+# add a udev rule to catch the insertion of the DOK
+[ -f /etc/udev/rules.d/90-usbupgrade.rules ] || echo 'KERNEL=="sd[a-z][0-9]", SUBSYSTEMS=="usb", ACTION=="add", RUN+="/bin/systemctl start usb-mount@%k.service"' > /etc/udev/rules.d/90-usbupgrade.rules
+
+# install the mounting service
+[ -f /etc/systemd/system/usb-mount@.service ] || install $INHALATOR_PATH/rasp_init/usb-mount /etc/systemd/system/usb-mount@.service
+
+# create mounting directory
+mkdir -p /mnt/dok
+
+# copy service script
+[ -f /home/pi/mount_usb.sh ] || cp $INHALATOR_PATH/rasp_init/mount_usb.sh /home/pi/mount_usb.sh
+chmod 777 /home/pi/mount_usb.sh
 
 if [ $SETUP ]
 then
