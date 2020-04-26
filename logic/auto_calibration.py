@@ -108,8 +108,8 @@ class TailDetector:
         self.timestamps.append(timestamp)
 
     def check_close_up(self, current_index, in_grace=False):
-        only_grace_cond = not in_grace or self.grace_count >= self.grace_length or \
-                          current_index == len(self.samples) - 1
+        only_grace_cond = (not in_grace or self.grace_count >= self.grace_length or
+                           current_index == len(self.samples) - 1)
         if len(self.samples) > 0 and only_grace_cond:
             tail = self.candidate_indices[:-self.grace_count]
             if len(tail) >= self.min_tail_length:
