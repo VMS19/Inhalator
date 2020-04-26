@@ -29,14 +29,15 @@ INHALATOR_PATH=$(realpath $(dirname $(realpath $0))/..)
 
 if [ $SETUP ]
 then
-	# install dependencies
+	echo "Installing dependencies"
 	apt-get update
 	apt install --assume-yes virtualenv libatlas-base-dev pigpio python3-dev vim
+	apt-get install proftpd -y
+	echo "Creating virtual env"
 	virtualenv $INHALATOR_PATH/.inhalator_env -p $(which python3)
 	source $INHALATOR_PATH/.inhalator_env/bin/activate
 	pip3 install --upgrade pip
 	pip3 install -r $INHALATOR_PATH/requirements.txt
-	apt-get install proftpd -y
 fi
 
 # install as service
@@ -51,10 +52,12 @@ systemctl enable ssh
 systemctl start ssh
 
 # configure network
+echo "Setting up network"
 grep -qF "192.168.1.253" /etc/network/interfaces || echo -e \
 	"auto eth0\niface eth0 inet static\naddress 192.168.1.253/24\nnetmask 255.255.255.0" \
 	>> /etc/network/interfaces
 
+echo "Setting up graphics"
 # set the wallpaper
 cp $INHALATOR_PATH/resources/wallpaper.png /usr/share/rpd-wallpaper/temple.jpg
 
@@ -77,15 +80,18 @@ sed -i 's/#xserver-command=X/xserver-command=X -nocursor/g' /etc/lightdm/lightdm
 rm -f /etc/xdg/autostart/piwiz.desktop
 
 # disable BT
+echo "Disabling bluetooth"
 idempotent_append "dtoverlay=disable-bt" /boot/config.txt
 
 # set keyboard layout
 if [ $LANG == "en_US.UTF-8" ]
 then
+	echo "Setting locale"
 	raspi-config nonint do_change_locale en_US.UTF-8
 	raspi-config nonint do_configure_keyboard us
 fi
 
+echo "Enabling I2C and SPI"
 # enable I2C
 sudo raspi-config nonint do_i2c 0
 
@@ -93,6 +99,7 @@ sudo raspi-config nonint do_i2c 0
 sudo raspi-config nonint do_spi 0
 
 # set timezone
+echo "Setting timezone"
 [ $(date +"%Z") == "IDT" ] || timedatectl set-timezone 'Asia/Jerusalem'
 
 # add the interpreter from the venv to PATH
@@ -103,25 +110,29 @@ idempotent_append "alias ll='ls -l'" /home/pi/.bashrc
 idempotent_append "alias lla='ls -la'" /home/pi/.bashrc
 
 # re-enable file system expansion
+echo "Disabling FS expansion"
 sed -i 's/#init_here/init=\/usr\/lib\/raspi-config\/init_resize.sh/g' /boot/cmdline.txt
 sed -i 's/exit 0 #remove this//g' /etc/rc.local
 sed -i 's/8700000 #//g' /usr/lib/raspi-config/init_resize.sh
 
 # config buzzer io pull up
+echo "Pulling up GPIO-13"
 idempotent_append "gpio=13=pu" /boot/config.txt
 
 # enable hdmi hotplug
+echo "Enabling HDMI hotplug"
 idempotent_append "hdmi_force_hotplug=1" /boot/config.txt
 
-
-# enable DOK upgrade
-
+echo "Enabling USB upgrade"
 # disable the default automounting
 sed -i 's/mount_on_startup=1/mount_on_startup=0/g' /etc/xdg/pcmanfm/LXDE-pi/pcmanfm.conf
 sed -i 's/mount_removable=1/mount_removable=0/g' /etc/xdg/pcmanfm/LXDE-pi/pcmanfm.conf
 
 # add a udev rule to catch the insertion of the DOK
-[ -f /etc/udev/rules.d/90-usbupgrade.rules ] || echo 'KERNEL=="sd[a-z][0-9]", SUBSYSTEMS=="usb", ACTION=="add", RUN+="/bin/systemctl start usb-mount@%k.service"' > /etc/udev/rules.d/90-usbupgrade.rules
+if [ ! -f /etc/udev/rules.d/90-usbupgrade.rules ]
+then
+	echo 'KERNEL=="sd[a-z][0-9]", SUBSYSTEMS=="usb", ACTION=="add", RUN+="/bin/systemctl start usb-mount@%k.service"' > /etc/udev/rules.d/90-usbupgrade.rules
+fi
 
 # install the mounting service
 [ -f /etc/systemd/system/usb-mount@.service ] || install $INHALATOR_PATH/rasp_init/usb-mount /etc/systemd/system/usb-mount@.service
