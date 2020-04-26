@@ -409,13 +409,13 @@ class Sampler(object):
 
         self.auto_calibrator = AutoFlowCalibrator(
             dp_driver=self._flow_sensor,
-            interval_length=self._config.auto_cal_interval,
-            iterations=self._config.auto_cal_iterations,
-            iteration_length=self._config.auto_cal_iteration_length,
-            sample_threshold=self._config.auto_cal_sample_threshold,
-            slope_threshold=self._config.auto_cal_slope_threshold,
-            min_tail_length=self._config.auto_cal_min_tail,
-            grace_length=self._config.auto_cal_grace_length,
+            interval_length=self._config.calibration.auto_calibration.interval,
+            iterations=self._config.calibration.auto_calibration.iterations,
+            iteration_length=self._config.calibration.auto_calibration.iteration_length,
+            sample_threshold=self._config.calibration.auto_calibration.sample_threshold,
+            slope_threshold=self._config.calibration.auto_calibration.slope_threshold,
+            min_tail_length=self._config.calibration.auto_calibration.min_tail,
+            grace_length=self._config.calibration.auto_calibration.grace_length,
         )
 
     def read_single_sensor(self, sensor, alert_code, timestamp):
@@ -492,7 +492,7 @@ class Sampler(object):
         o2_saturation_percentage = max(0,
                                        min(o2_saturation_percentage, 100))
 
-        if self._config.auto_cal_enable:
+        if self._config.calibration.auto_calibration.enable:
             offset = self.auto_calibrator.get_offset(flow_slm=flow_slm,
                                                      ts=ts)
 

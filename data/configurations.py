@@ -46,8 +46,8 @@ class AutoCalibrationConfig:
     iterations: int = 4
     iteration_length: int = 30
     sample_threshold: float = 8
-    slope_threshold: float = 10,
-    min_tail: int = 12,
+    slope_threshold: float = 10
+    min_tail: int = 12
     grace_length: int = 5
 
 
