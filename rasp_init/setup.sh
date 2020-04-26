@@ -84,7 +84,7 @@ echo "Disabling bluetooth"
 idempotent_append "dtoverlay=disable-bt" /boot/config.txt
 
 # set keyboard layout
-if [ $LANG == "en_US.UTF-8" ]
+if [ $LANG != "en_US.UTF-8" ]
 then
 	echo "Setting locale"
 	raspi-config nonint do_change_locale en_US.UTF-8
