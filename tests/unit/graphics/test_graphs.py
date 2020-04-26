@@ -50,7 +50,11 @@ def pressure_graph(measurements) -> AirPressureGraph:
     graph.axis = MagicMock()
     graph.figure = MagicMock()
     graph.config = MagicMock()
+    graph.get_graph_width = MagicMock()
     graph.config.autoscale = True
+
+    graph.graph_width = 200
+    graph.graph_height = 100
     graph.pixels_per_sample = 4
 
     return graph
@@ -68,9 +72,12 @@ def flow_graph(measurements) -> FlowGraph:
     graph.axis = MagicMock()
     graph.figure = MagicMock()
     graph.config = MagicMock()
+    graph.get_graph_width = MagicMock()
     graph.config.autoscale = True
     graph.config.flow_y_scale = (-10, 10)
 
+    graph.graph_width = 200
+    graph.graph_height = 100
     graph.pixels_per_sample = 4
     
     return graph
