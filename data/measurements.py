@@ -21,10 +21,10 @@ class Measurements(object):
         self.battery_percentage = 0
         self.lock = Lock()
 
-    def init_samples_queues(self, init_value):
-        self.flow_measurements = deque([init_value] * self.samples_in_graph,
+    def init_samples_queues(self, init_value, size=0):
+        self.flow_measurements = deque([init_value] * size,
                                        maxlen=self.samples_in_graph)
-        self.pressure_measurements = deque([init_value] * self.samples_in_graph,
+        self.pressure_measurements = deque([init_value] * size,
                                            maxlen=self.samples_in_graph)
 
     def reset(self):
