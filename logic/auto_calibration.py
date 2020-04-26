@@ -61,7 +61,6 @@ class AutoFlowCalibrator:
                                tail_offset)
                 self.dp_driver.set_calibration_offset(tail_offset)
 
-            self.iteration_start_time = None
             self.tail_detector.reset()
             self.iterations_count += 1
             return None
