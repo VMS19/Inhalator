@@ -40,8 +40,8 @@ class AutoFlowCalibrator:
         return TimeRange(self.iteration_start_time, self.iteration_length)
 
     def get_offset(self, flow_slm, ts):
-        if self.interval_start_time is None:
-            self.interval_start_time = ts
+        if self.iteration_start_time is None:
+            self.iteration_start_time = ts
 
         if self.interval_start_time is None or ts not in self.interval:
             self.log.debug("Starting a new auto calibration interval")
