@@ -64,6 +64,7 @@ class AutoFlowCalibrator:
             self.iteration_start_time = None
             self.tail_detector.reset()
             self.iterations_count += 1
+            return None
 
         if self.iterations_count == self.iterations:
             self.log.info("Done accumulating within the interval")
