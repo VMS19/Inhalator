@@ -38,8 +38,6 @@ class MuxI2C(I2cDriver):
             log.error("Could not switch cmd to mux. Is the mux connected?")
             raise I2CWriteError("i2c write failed")
 
-        log.debug("Switch to port {}".format(port))
-
     @contextmanager
     def lock(self, port):
         self.switch_port(port)

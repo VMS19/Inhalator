@@ -11,10 +11,8 @@ class MockSensor(object):
 
     def __init__(self, seq, error_probability=0):
         self.data = cycle(seq)
+        self._calibration_offset = 0
         self.error_probability = error_probability
-
-    def set_calibration_offset(self, offset):
-        pass
 
     def random_error(self):
         exe = random.choice([ValueError, OSError, TimeoutError, ZeroDivisionError])
@@ -24,12 +22,36 @@ class MockSensor(object):
         # We read the sample from the data before raising the exception so that
         # IF an exception will be raise - that sample will be lost.
         sample = next(self.data)
+
         if random.random() < self.error_probability:
             raise self.random_error()
+
         return sample
 
+
+class DifferentialPressureMockSensor(MockSensor):
+    def __init__(self, seq, error_probability=0):
+        super().__init__(seq, error_probability)
+        self._calibration_offset = 0
+
+    def set_calibration_offset(self, offset):
+        self._calibration_offset = offset
+
+    def get_calibration_offset(self):
+        return self._calibration_offset
+
     def read_differential_pressure(self):
-        return 1
+        sample = super().read()
+        return self.flow_to_pressure(sample) - self._calibration_offset
+
+    def read(self, *args, **kwargs):
+        sample = super().read(*args, **kwargs)
+
+        return self.pressure_to_flow(self.flow_to_pressure(sample) -
+                                     self._calibration_offset)
 
     def pressure_to_flow(self, pressure):
         return copysign(abs(pressure) ** 0.5, pressure)
+
+    def flow_to_pressure(self, flow):
+        return copysign(flow ** 2, flow)

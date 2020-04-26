@@ -154,14 +154,14 @@ def test_timestamp_label_on_alert_changes_with_time(
     drivers_factory = MagicMock()
     alert_bar.drivers = drivers_factory
 
-    drivers_factory.acquire_driver("timer").get_time = MagicMock(
+    drivers_factory.acquire_driver("timer").get_current_time = MagicMock(
         return_value=0)
 
     alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.NO_BREATH, 0)
     alert_bar.update()
     assert alert_bar.timestamp_label["text"] == "just now"
 
-    drivers_factory.acquire_driver("timer").get_time = MagicMock(
+    drivers_factory.acquire_driver("timer").get_current_time = MagicMock(
         return_value=60 * 60)
     alert_bar.update()
     assert alert_bar.timestamp_label["text"] == "1 hour ago"
@@ -171,14 +171,14 @@ def test_timestamp_label_resets_on_new_alert(alert_bar: IndicatorAlertBar):
     drivers_factory = MagicMock()
     alert_bar.drivers = drivers_factory
 
-    drivers_factory.acquire_driver("timer").get_time = MagicMock(
+    drivers_factory.acquire_driver("timer").get_current_time = MagicMock(
         return_value=0)
 
     alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.NO_BREATH, 0)
     alert_bar.update()
     assert alert_bar.timestamp_label["text"] == "just now"
 
-    drivers_factory.acquire_driver("timer").get_time = MagicMock(
+    drivers_factory.acquire_driver("timer").get_current_time = MagicMock(
         return_value=60 * 60)
     alert_bar.update()
     assert alert_bar.timestamp_label["text"] == "1 hour ago"

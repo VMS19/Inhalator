@@ -114,7 +114,6 @@ class Application(object):
             except KeyboardInterrupt:
                 break
         self.exit()
-        self.drivers.acquire_driver("aux").stop()
 
     def run_iterations(self, max_iterations, fast_forward=True, render=True):
         if render:
