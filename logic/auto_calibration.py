@@ -40,8 +40,7 @@ class AutoFlowCalibrator:
         return TimeRange(self.iteration_start_time, self.iteration_length)
 
     def get_offset(self, flow_slm, ts):
-        if (self.interval_start_time is None or self.iteration_start_time is None or
-                ts not in self.interval):
+        if self.interval_start_time is None or ts not in self.interval:
             self.log.debug("Starting a new auto calibration interval")
             self.interval_start_time = ts
             self.iteration_start_time = ts
@@ -63,6 +62,7 @@ class AutoFlowCalibrator:
 
             self.tail_detector.reset()
             self.iterations_count += 1
+            self.iteration_start_time = None
             return None
 
         if self.iterations_count == self.iterations:
