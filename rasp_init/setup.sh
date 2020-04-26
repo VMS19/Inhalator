@@ -144,6 +144,11 @@ mkdir -p /mnt/dok
 [ -f /home/pi/mount_usb.sh ] || cp $INHALATOR_PATH/rasp_init/mount_usb.sh /home/pi/mount_usb.sh
 chmod 777 /home/pi/mount_usb.sh
 
+# set log rotation
+sed -i 's/rotate .*/rotate 2/g' /etc/logrotate.d/rsyslog
+sed -i 's/weekly/daily/g' /etc/logrotate.d/rsyslog
+sed -i '/daily/a \\tsize 100m' /etc/logrotate.d/rsyslog
+
 if [ $SETUP ]
 then
 	echo -e "setup done. DON'T FORGET TO CHANGE THE PASSWORD\nDO NOT REBOOT - USE ONLY SHUTDOWN!!!"
