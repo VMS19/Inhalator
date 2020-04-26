@@ -92,6 +92,10 @@ class TailDetector:
         self.candidate_indices = []
         self.grace_count = 0
 
+        #  for debug and plotting purpose
+        self.start_tails_ts = []
+        self.end_tails_ts = []
+
     def reset(self):
         self.samples = []
         self.timestamps = []
@@ -104,11 +108,16 @@ class TailDetector:
         self.timestamps.append(timestamp)
 
     def check_close_up(self, current_index, in_grace=False):
-        if len(self.samples) > 0 and (self.grace_count >= self.grace_length or
-                                      current_index == len(self.samples) - 1):
+        only_grace_cond = (not in_grace or self.grace_count >= self.grace_length or
+                           current_index == len(self.samples) - 1)
+        if len(self.samples) > 0 and only_grace_cond:
             tail = self.candidate_indices[:-self.grace_count]
             if len(tail) >= self.min_tail_length:
-                self.tail_indices += tail[int(len(tail) * 3 / 4):]
+                start_index = int(len(tail) * 3 / 4)
+                self.tail_indices += tail[start_index:]
+
+                self.start_tails_ts.append(self.timestamps[tail[start_index]])
+                self.end_tails_ts.append(self.timestamps[tail[-1]])
 
             self.grace_count = 0
             self.candidate_indices = []
