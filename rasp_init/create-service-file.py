@@ -7,7 +7,7 @@ template = """\
 Description=Inhalator Service
 
 [Service]
-ExecStart={python3_executable} {main_path} -vvv --debug
+ExecStart={python3_executable} {main_path}
 WorkingDirectory={main_dir}
 Environment=DISPLAY={display}
 Environment=XAUTHORITY={xauthority}

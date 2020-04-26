@@ -13,12 +13,12 @@
     "pressure": {
       "min": 10,
       "max": 50,
-      "step": 0.5
+      "step": 1
     },
     "bpm": {
       "min": 5,
       "max": 45,
-      "step": 0.5
+      "step": 1
     },
     "breathing_threshold": 3.5
   },
@@ -43,7 +43,7 @@
     "dp_offset": 0.026,
     "auto_calibration": {
       "enable": true,
-      "interval": 3600,
+      "interval": 1800,
       "iterations": 4,
       "iteration_length": 30,
       "sample_threshold": 8,
@@ -60,7 +60,7 @@
       "y": 0
     },
     "dp_calibration_timeout_hrs": 5,
-    "flow_recalibration_reminder": true
+    "flow_recalibration_reminder": false
   },
   "log_enabled": true,
   "graph_seconds": 12.0,
