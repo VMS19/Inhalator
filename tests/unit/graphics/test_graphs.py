@@ -45,7 +45,7 @@ def pressure_graph(measurements) -> AirPressureGraph:
     parent = MagicMock()
     parent.element = root
 
-    measurements.init_samples_queues(0, measurements.samples_in_graph)
+    measurements.init_samples_queues(0)
     graph = AirPressureGraph(parent=parent, measurements=measurements,
                              width=parent.width, height=parent.height)
     graph.axis = MagicMock()
@@ -68,7 +68,7 @@ def flow_graph(measurements) -> FlowGraph:
     parent = MagicMock()
     parent.element = root
 
-    measurements.init_samples_queues(0, measurements.samples_in_graph)
+    measurements.init_samples_queues(0)
     graph = FlowGraph(parent=parent, measurements=measurements,
                       width=parent.width, height=parent.height)
     graph.axis = MagicMock()
@@ -104,8 +104,7 @@ def test_graph_symmetrically_autoscales_when_value_exceeds_max(flow_graph: FlowG
     flow_graph.current_max_y = 10.0
     flow_graph.GRAPH_MARGINS = 1.2
 
-    flow_graph.measurements.init_samples_queues(10,
-        flow_graph.measurements.samples_in_graph)
+    flow_graph.measurements.init_samples_queues(10)
     flow_graph.display_values[1] += 3
 
     for i in range(flow_graph.ZOOM_OUT_FREQUENCY):
@@ -120,8 +119,7 @@ def test_graph_symmetrically_autoscales_when_value_exceeds_min(flow_graph: FlowG
     flow_graph.current_max_y = 10.0
     flow_graph.GRAPH_MARGINS = 1.2
 
-    flow_graph.measurements.init_samples_queues(-10,
-         flow_graph.measurements.samples_in_graph)
+    flow_graph.measurements.init_samples_queues(-10)
     flow_graph.display_values[1] -= 3
 
     for i in range(flow_graph.ZOOM_OUT_FREQUENCY):
@@ -137,8 +135,7 @@ def test_loose_graph_behaviour(flow_graph: FlowGraph):
     flow_graph.current_max_y = 10.0
     flow_graph.GRAPH_MARGINS = 1.2
 
-    flow_graph.measurements.init_samples_queues(-10,
-        flow_graph.measurements.samples_in_graph)
+    flow_graph.measurements.init_samples_queues(-10)
     flow_graph.display_values[1] -= 3
 
     for i in range(flow_graph.ZOOM_OUT_FREQUENCY):
@@ -154,8 +151,7 @@ def test_pressure_graph_doesnt_autoscale(pressure_graph: AirPressureGraph):
     pressure_graph.current_max_y = 10.0
     pressure_graph.GRAPH_MARGINS = 1.2
 
-    pressure_graph.measurements.init_samples_queues(-10,
-        pressure_graph.measurements.samples_in_graph)
+    pressure_graph.measurements.init_samples_queues(-10)
     pressure_graph.display_values[1] -= 3
 
     for i in range(2000):
@@ -172,8 +168,7 @@ def test_autoscale_can_be_disabled(flow_graph: FlowGraph):
     flow_graph.current_max_y = 10.0
     flow_graph.GRAPH_MARGINS = 1.2
 
-    flow_graph.measurements.init_samples_queues(-10,
-        flow_graph.measurements.samples_in_graph)
+    flow_graph.measurements.init_samples_queues(-10)
     flow_graph.display_values[1] -= 3
 
     for i in range(flow_graph.ZOOM_OUT_FREQUENCY):
@@ -188,8 +183,7 @@ def test_autoscale_zooms_in(flow_graph: FlowGraph):
     flow_graph.current_max_y = 10.0
     flow_graph.GRAPH_MARGINS = 1.2
 
-    flow_graph.measurements.init_samples_queues(-10,
-        flow_graph.measurements.samples_in_graph)
+    flow_graph.measurements.init_samples_queues(-10)
     flow_graph.display_values[1] -= 3
 
     for i in range(flow_graph.ZOOM_OUT_FREQUENCY):
@@ -198,8 +192,7 @@ def test_autoscale_zooms_in(flow_graph: FlowGraph):
     assert flow_graph.current_min_y < -10
     assert flow_graph.current_max_y > 10
 
-    flow_graph.measurements.init_samples_queues(-10,
-        flow_graph.measurements.samples_in_graph)
+    flow_graph.measurements.init_samples_queues(-10)
 
     for i in range(flow_graph.ZOOM_IN_FREQUENCY):
         flow_graph.update()

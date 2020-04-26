@@ -30,7 +30,9 @@ def config():
 
 @pytest.fixture
 def measurements():
-    return Measurements()
+    measurements = Measurements()
+    measurements.init_samples_queues(0, size=0)
+    return measurements
 
 
 @pytest.fixture
