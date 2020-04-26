@@ -51,11 +51,6 @@ class AutoFlowCalibrator:
             self.tail_detector.add_sample(flow_slm, ts)
             return None
 
-        if self.iterations_count == self.iterations:
-            self.log.info("Done accumulating within the interval")
-            self.iterations_count += 1
-            return self.dp_driver.get_calibration_offset()
-
         if self.iterations_count < self.iterations:
             self.log.debug("Done accumulating within one iteration")
             tail_offset = self.tail_detector.process()
@@ -69,6 +64,11 @@ class AutoFlowCalibrator:
             self.iteration_start_time = None
             self.tail_detector.reset()
             self.iterations_count += 1
+
+        if self.iterations_count == self.iterations:
+            self.log.info("Done accumulating within the interval")
+            self.iterations_count += 1
+            return self.dp_driver.get_calibration_offset()
 
         return None
 

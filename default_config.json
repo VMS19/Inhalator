@@ -44,7 +44,7 @@
     "auto_calibration": {
       "enable": true,
       "interval": 3600,
-      "iterations": 7,
+      "iterations": 4,
       "iteration_length": 30,
       "sample_threshold": 8,
       "slope_threshold": 10,
