@@ -198,7 +198,7 @@ class DifferentialPressureCalibration(Calibration):
     def configure_new_calibration(self):
         self.config.dp_offset = self.average_value_found
         self.sensor_driver.set_calibration_offset(self.average_value_found)
-        self.observer.publish(self.timer.get_time())
+        self.observer.publish(self.timer.get_current_time())
 
 
 class OxygenCalibration(Calibration):

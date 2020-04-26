@@ -13,7 +13,6 @@ class WdTask(Thread):
     # Lowering the wd_arm time will help us make sure the main loop
     # refreshes the WD even if a delay in the main loop occurred
     WD_TIMEOUT = 0.2  # 200 msec
-    GRACE_TIME = 4  # We allow the application this much time to start.
 
     def __init__(self, wd, arm_wd_event):
         super(WdTask, self).__init__()
@@ -23,12 +22,7 @@ class WdTask(Thread):
         self.log = logging.getLogger(self.__class__.__name__)
 
     def run(self):
-        self.log.info(
-            f"WD Task started. Waiting {self.GRACE_TIME} seconds for "
-            f"application to start")
-        # Let the application the opportunity to start.
-        time.sleep(self.GRACE_TIME)
-        self.log.info("Grace time passed, arming the dog")
+        self.log.info("WD Task started.")
         self.wd.arm()
         while True:
             time.sleep(self.WD_TIMEOUT)

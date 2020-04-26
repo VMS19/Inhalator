@@ -41,6 +41,16 @@
   },
   "calibration": {
     "dp_offset": 0.026,
+    "auto_calibration": {
+      "enable": true,
+      "interval": 3600,
+      "iterations": 4,
+      "iteration_length": 30,
+      "sample_threshold": 8,
+      "slope_threshold": 10,
+      "min_tail": 12,
+      "grace_length": 5
+    },
     "oxygen_point1": {
       "x": 21,
       "y": 0.3567203

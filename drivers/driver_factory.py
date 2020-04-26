@@ -49,7 +49,7 @@ class DriverFactory(object):
     def acquire_driver(self, driver_name):
         """
         Get a driver by its name. The drivers are lazily created and cached.
-        :param driver_name: The driver name. E.g "aux", "wd", "pressure"
+        :param driver_name: The driver name. E.g "wd", "pressure"
         :return: The appropriate driver object.
         """
         key = (driver_name, self.mock)
@@ -190,11 +190,6 @@ class DriverFactory(object):
         return AlertDriver()
 
     @staticmethod
-    def get_aux_driver():
-        from drivers.aux_sound import SoundViaAux
-        return SoundViaAux.instance()
-
-    @staticmethod
     def get_differential_pressure_driver():
         from drivers.hsc_pressure_sensor import HscPressureSensor
         return HscPressureSensor()
@@ -210,7 +205,7 @@ class DriverFactory(object):
         return MuxI2C()
 
     def get_mock_differential_pressure_driver(self):
-        from drivers.mocks.sensor import MockSensor
+        from drivers.mocks.sensor import DifferentialPressureMockSensor
         simulation_data = self.simulation_data
         if simulation_data == 'dead':
             data = self.generate_mock_dead_man()
@@ -219,7 +214,7 @@ class DriverFactory(object):
         else:
             data = generate_data_from_file('flow', simulation_data)
 
-        return MockSensor(data)
+        return DifferentialPressureMockSensor(data)
 
     def get_mock_pressure_driver(self):
         from drivers.mocks.sensor import MockSensor
@@ -237,7 +232,7 @@ class DriverFactory(object):
         return MockSensor(data, error_probability=self.error_probability)
 
     def get_mock_flow_driver(self):
-        from drivers.mocks.sensor import MockSensor
+        from drivers.mocks.sensor import DifferentialPressureMockSensor
         simulation_data = self.simulation_data
         if simulation_data == 'dead':
             data = self.generate_mock_dead_man()
@@ -250,7 +245,8 @@ class DriverFactory(object):
         else:
             data = generate_data_from_file('flow', simulation_data)
 
-        return MockSensor(data, error_probability=self.error_probability)
+        return DifferentialPressureMockSensor(data,
+                                              error_probability=self.error_probability)
 
     def get_mock_a2d_driver(self):
         from drivers.mocks.a2d_mock import MockA2D
@@ -265,11 +261,6 @@ class DriverFactory(object):
     def get_mock_alert_driver():
         from drivers.mocks.mock_alert_driver import MockAlertDriver
         return MockAlertDriver()
-
-    @staticmethod
-    def get_mock_aux_driver():
-        from drivers.aux_sound import SoundViaAux
-        return SoundViaAux.instance()
 
     @staticmethod
     def get_null_driver():

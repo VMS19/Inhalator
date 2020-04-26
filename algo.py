@@ -2,40 +2,19 @@ import sys
 import time
 import logging
 from enum import Enum
-
 from collections import deque
 
-from numpy import trapz
-from scipy.stats import linregress
-
 from data.alerts import AlertCodes
-from data.configurations import Configurations
 from sample_storage import SamplesStorage
 from errors import UnavailableMeasurmentError
-from computation import RunningAvg
-
+from data.configurations import Configurations
+from logic.auto_calibration import AutoFlowCalibrator
+from logic.computations import RunningAvg, Accumulator, RunningSlope
 
 TRACE = logging.DEBUG - 1
 logging.addLevelName(TRACE, 'TRACE')
 
 BYTES_IN_GB = 2 ** 30
-
-
-class Accumulator(object):
-    def __init__(self):
-        self.samples = deque()
-        self.timestamps = deque()
-
-    def add_sample(self, timestamp, value):
-        self.samples.append(value)
-        self.timestamps.append(timestamp)
-
-    def integrate(self):
-        return trapz(self.samples, x=self.timestamps)
-
-    def reset(self):
-        self.samples.clear()
-        self.timestamps.clear()
 
 
 class RateMeter(object):
@@ -90,37 +69,14 @@ class RateMeter(object):
         return has_timespan_passed or len(self.samples) >= 2
 
 
-class RunningSlope(object):
-
-    def __init__(self, num_samples=10, period_ms=100):
-        self.period_ms = period_ms
-        self.max_samples = num_samples
-        self.data = deque(maxlen=num_samples)
-        self.ts = deque(maxlen=num_samples)
-
-    def reset(self):
-        self.data.clear()
-        self.ts.clear()
-
-    def add_sample(self, value, timestamp=None):
-        if timestamp is None:
-            timestamp = time.time()
-        self.data.append(value)
-        self.ts.append(timestamp)
-        if len(self.data) < self.max_samples:
-            return None  # Not enough data to infer.
-        slope, _, _, _, _ = linregress(self.ts, self.data)
-        return slope
-
-
 class VentilationState(Enum):
     Unknown = 0  # State unknown yet
     Inhale = 1  # Air is flowing to the lungs
     Hold = 2  # PIP is maintained
-    Exhale = 3  # Pressure is relieved, air flowing out
-    PEEP = 4  # Positive low pressure is maintained until next cycle.
-    PreInhale = 5  # Pressure is accumulated
-    PreExhale = 6  # Pressure is relieved
+    PreExhale = 3  # Pressure is relieved
+    Exhale = 4  # Pressure is relieved, air flowing out
+    PEEP = 5  # Positive low pressure is maintained until next cycle.
+    PreInhale = 6  # Pressure is accumulated
 
 
 class VentilationStateMachine(object):
@@ -149,7 +105,7 @@ class VentilationStateMachine(object):
             VentilationState.Hold: deque(maxlen=100),
             VentilationState.Exhale: deque(maxlen=100),
             VentilationState.PreInhale: deque(maxlen=100),
-            VentilationState.PreExhale: deque(maxlen=100)
+            VentilationState.PreExhale: deque(maxlen=100),
         }
 
         # Function to call when entering a state.
@@ -158,14 +114,14 @@ class VentilationStateMachine(object):
             VentilationState.Exhale: self.enter_exhale,
             VentilationState.PreInhale: self.enter_pre_inhale,
             VentilationState.PreExhale: self.enter_pre_exhale,
-            VentilationState.PEEP: self.enter_peep
+            VentilationState.PEEP: self.enter_peep,
         }
         self.exit_handlers = {
             VentilationState.Inhale: self.exit_inhale,
             VentilationState.Exhale: self.exit_exhale,
             VentilationState.PreInhale: self.exit_pre_inhale,
             VentilationState.PreExhale: self.exit_pre_exhale,
-            VentilationState.PEEP: self.exit_peep
+            VentilationState.PEEP: self.exit_peep,
         }
         self.peak_pressure = 0
         self.min_pressure = sys.maxsize
@@ -435,8 +391,7 @@ class VentilationStateMachine(object):
 class Sampler(object):
 
     def __init__(self, measurements, events, flow_sensor, pressure_sensor,
-                 a2d, timer, telemetry_sender=None,
-                 save_sensor_values=False):
+                 a2d, timer, telemetry_sender=None, save_sensor_values=False):
         super(Sampler, self).__init__()
         self.log = logging.getLogger(self.__class__.__name__)
         self._measurements = measurements
@@ -449,6 +404,17 @@ class Sampler(object):
         self.vsm = VentilationStateMachine(measurements, events, telemetry_sender)
         self.storage_handler = SamplesStorage()
         self.save_sensor_values = save_sensor_values
+
+        self.auto_calibrator = AutoFlowCalibrator(
+            dp_driver=self._flow_sensor,
+            interval_length=self._config.auto_cal_interval,
+            iterations=self._config.auto_cal_iterations,
+            iteration_length=self._config.auto_cal_iteration_length,
+            sample_threshold=self._config.auto_cal_sample_threshold,
+            slope_threshold=self._config.auto_cal_slope_threshold,
+            min_tail_length=self._config.auto_cal_min_tail,
+            grace_length=self._config.auto_cal_grace_length,
+        )
 
     def read_single_sensor(self, sensor, alert_code, timestamp):
         try:
@@ -523,6 +489,15 @@ class Sampler(object):
 
         o2_saturation_percentage = max(0,
                                        min(o2_saturation_percentage, 100))
+
+        if self._config.auto_cal_enable:
+            offset = self.auto_calibrator.get_offset(flow_slm=flow_slm,
+                                                     ts=ts)
+
+            if offset is not None:
+                self.log.info("Writing DP offset of %f to config", offset)
+                self._config.dp_offset = offset
+                self._config.save_to_file()
 
         self.vsm.update(
             pressure_cmh2o=pressure_cmh2o,

@@ -29,7 +29,7 @@ def snackbar():
     instance.config = MagicMock(spec=Configurations)
     instance.config.flow_recalibration_reminder = True
 
-    instance.timer.get_time = time_mock
+    instance.timer.get_current_time = time_mock
 
     return instance
 
