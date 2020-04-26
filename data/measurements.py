@@ -11,10 +11,7 @@ class Measurements(object):
         self.avg_insp_volume = 0
         self.avg_exp_volume = 0
         self.sample_interval = 1 / sample_rate
-        self.flow_measurements = deque([0] * self.samples_in_graph,
-                                       maxlen=self.samples_in_graph)
-        self.pressure_measurements = deque([0] * self.samples_in_graph,
-                                           maxlen=self.samples_in_graph)
+        self.init_samples_queues(0)
         self.x_axis = range(0, self.samples_in_graph)
         self.intake_peak_flow = 0
         self.intake_peak_pressure = 0
@@ -23,6 +20,12 @@ class Measurements(object):
         self.o2_saturation_percentage = 20
         self.battery_percentage = 0
         self.lock = Lock()
+
+    def init_samples_queues(self, init_value):
+        self.flow_measurements = deque([init_value] * self.samples_in_graph,
+                                       maxlen=self.samples_in_graph)
+        self.pressure_measurements = deque([init_value] * self.samples_in_graph,
+                                           maxlen=self.samples_in_graph)
 
     def reset(self):
         self.inspiration_volume = 0

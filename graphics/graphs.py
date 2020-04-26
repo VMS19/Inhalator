@@ -98,9 +98,9 @@ class Graph(object):
         # Capture column of pixels, from middle of the clean background,
         # This column will be pasted cyclically on the graph, to clean it.
         capture_offset = x1 + (self.graph_width / 2)
-        self.eraser_width = ceil(self.pixels_per_sample)
+        eraser_width = ceil(self.pixels_per_sample)
         self.graph_height = y2 - y1
-        bbox = (capture_offset, y1, capture_offset + self.eraser_width, y2)
+        bbox = (capture_offset, y1, capture_offset + eraser_width, y2)
         self.eraser_bg = self.canvas.copy_from_bbox(bbox)
 
     @staticmethod
