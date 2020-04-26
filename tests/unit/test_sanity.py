@@ -45,11 +45,11 @@ def test_sampler_inserts_pressure_measurement_to_store(events, measurements, con
     timer = driver_factory.acquire_driver("timer")
     sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
                       a2d, timer)
-    assert measurements.pressure_measurements.qsize() == 0
+    assert len(measurements.pressure_measurements) == 0
     sampler.sampling_iteration()
-    assert measurements.pressure_measurements.qsize() == 1
+    assert len(measurements.pressure_measurements) == 1
     sampler.sampling_iteration()
-    assert measurements.pressure_measurements.qsize() == 2
+    assert len(measurements.pressure_measurements) == 2
 
 
 def test_sampler_alerts_when_pressure_exceeds_maximum(events, measurements, config, driver_factory):
