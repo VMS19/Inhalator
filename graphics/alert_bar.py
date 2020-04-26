@@ -75,6 +75,15 @@ class IndicatorAlertBar(object):
                                    fg=Theme.active().ALERT_BAR_OK_TXT,
                                    bg=Theme.active().ALERT_BAR_OK)
 
+        self.machine_name_frame = Frame(master=self.root,
+                                        bg=Theme.active().ALERT_BAR_OK)
+        self.machine_name = Label(master=self.machine_name_frame,
+                                  font=("Roboto", 15),
+                                  text=self.configs.machine_name,
+                                  fg=Theme.active().ALERT_BAR_OK_TXT,
+                                  bg=Theme.active().ALERT_BAR_OK,
+                                  borderwidth=2, relief="groove")
+
         self.current_alert = Alert(AlertCodes.OK)
 
     @property
@@ -83,13 +92,14 @@ class IndicatorAlertBar(object):
 
     @property
     def frames(self):
-        return [self.bar, self.system_info_frame]
+        return [self.bar, self.system_info_frame, self.machine_name_frame]
 
     @property
     def textual(self):
         """Return all textual tkinter widgets, for color configuration."""
         return [self.version_label, self.timestamp_label,
-                self.message_label, self.battery_label, self.battery_icon]
+                self.message_label, self.battery_label, self.battery_icon,
+                self.machine_name]
 
     def render(self):
         self.bar.place(relx=0, rely=0)
@@ -100,6 +110,9 @@ class IndicatorAlertBar(object):
         self.battery_label.place(relx=0.75, rely=0)
         self.battery_icon.place(relx=0.6, rely=0)
         self.version_label.place(relx=0.3, rely=0.7)
+        self.machine_name_frame.place(relx=0.65, rely=0.05,
+                                      relheight=0.4, relwidth=0.22)
+        self.machine_name.place(relx=0, rely=0)
 
     def update(self):
         # Check mute time limit
