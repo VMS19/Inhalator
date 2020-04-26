@@ -205,7 +205,7 @@ class DriverFactory(object):
         return MuxI2C()
 
     def get_mock_differential_pressure_driver(self):
-        from drivers.mocks.sensor import MockSensor
+        from drivers.mocks.sensor import DifferentialPressureMockSensor
         simulation_data = self.simulation_data
         if simulation_data == 'dead':
             data = self.generate_mock_dead_man()
@@ -214,7 +214,7 @@ class DriverFactory(object):
         else:
             data = generate_data_from_file('flow', simulation_data)
 
-        return MockSensor(data)
+        return DifferentialPressureMockSensor(data)
 
     def get_mock_pressure_driver(self):
         from drivers.mocks.sensor import MockSensor
@@ -232,7 +232,7 @@ class DriverFactory(object):
         return MockSensor(data, error_probability=self.error_probability)
 
     def get_mock_flow_driver(self):
-        from drivers.mocks.sensor import MockSensor
+        from drivers.mocks.sensor import DifferentialPressureMockSensor
         simulation_data = self.simulation_data
         if simulation_data == 'dead':
             data = self.generate_mock_dead_man()
@@ -245,7 +245,8 @@ class DriverFactory(object):
         else:
             data = generate_data_from_file('flow', simulation_data)
 
-        return MockSensor(data, error_probability=self.error_probability)
+        return DifferentialPressureMockSensor(data,
+                                              error_probability=self.error_probability)
 
     def get_mock_a2d_driver(self):
         from drivers.mocks.a2d_mock import MockA2D
