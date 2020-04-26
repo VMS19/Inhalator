@@ -144,13 +144,13 @@ class Graph(object):
         self.print_index += 1
         self.print_index %= self.measurements.samples_in_graph
 
-        # Calculate pixel offset to erase at
+        # Calculate pixel offsets to erase and print at
         self.erase_index = (self.print_index + self.ERASE_GAP) % \
             self.measurements.samples_in_graph
         erase_offset = int(self.erase_index * self.pixels_per_sample) \
             % self.graph_width + self.GRAPH_BEGIN_OFFSET
         print_offset = int(self.print_index * self.pixels_per_sample) \
-                       % self.graph_width + self.GRAPH_BEGIN_OFFSET
+            % self.graph_width + self.GRAPH_BEGIN_OFFSET
 
         # Paste eraser column background, to erase tail sample
         self.figure.canvas.restore_region(self.eraser_bg,
@@ -159,8 +159,9 @@ class Graph(object):
         # Draw line between 2 most recent samples
         self.graph.set_ydata([self.display_values[-2], self.display_values[-1]])
         self.graph.set_xdata([self.print_index, self.print_index + 1])
-
         self.axis.draw_artist(self.graph)
+
+        # Update screen only in printed column and erased column areas
         self.figure.canvas.blit(Bbox.from_bounds(x0=print_offset, y0=0,
                                                  width=self.pixels_per_sample,
                                                  height=self.graph_height))
