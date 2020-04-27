@@ -3,6 +3,7 @@ import time
 from uptime import uptime
 from tkinter import Tk
 
+from data.configurations import ConfigurationManager
 from graphics.panes import MasterFrame
 from graphics.themes import Theme
 from graphics.calibrate.screen import calc_calibration_line
@@ -25,7 +26,7 @@ class Application(object):
     def instance(cls):
         return cls.__instance
 
-    def __init__(self, config, measurements, events, arm_wd_event, drivers, sampler,
+    def __init__(self, measurements, events, arm_wd_event, drivers, sampler,
                  simulation=False, fps=10, sample_rate=70):
         self.should_run = True
         self.drivers = drivers
@@ -51,11 +52,10 @@ class Application(object):
             self.root.attributes("-fullscreen", True)
 
         self.master_frame = MasterFrame(self.root,
-                                        config=config,
                                         measurements=measurements,
                                         events=events,
                                         drivers=drivers)
-        self.config = config
+        self.config = ConfigurationManager.config()
 
         # Load sensors calibrations
         differential_pressure_driver = self.drivers.acquire_driver("differential_pressure")

@@ -171,25 +171,25 @@ def start_app(args):
             enable=cm.config.telemetry.enable,
             url=cm.config.telemetry.url,
             api_key=cm.config.telemetry.api_key)
-        sampler = Sampler(config=cm.config,
-                          measurements=measurements,
-                          events=events,
-                          flow_sensor=flow_sensor,
-                          pressure_sensor=pressure_sensor,
-                          a2d=a2d,
-                          timer=timer,
-                          save_sensor_values=args.debug,
-                          telemetry_sender=telemetry_sender)
+        sampler = Sampler(
+            measurements=measurements,
+            events=events,
+            flow_sensor=flow_sensor,
+            pressure_sensor=pressure_sensor,
+            a2d=a2d,
+            timer=timer,
+            save_sensor_values=args.debug,
+            telemetry_sender=telemetry_sender)
 
-        app = Application(config=cm.config,
-                          measurements=measurements,
-                          events=events,
-                          arm_wd_event=arm_wd_event,
-                          drivers=drivers,
-                          sampler=sampler,
-                          simulation=simulation,
-                          fps=args.fps,
-                          sample_rate=args.sample_rate)
+        app = Application(
+            measurements=measurements,
+            events=events,
+            arm_wd_event=arm_wd_event,
+            drivers=drivers,
+            sampler=sampler,
+            simulation=simulation,
+            fps=args.fps,
+            sample_rate=args.sample_rate)
 
         watchdog_task = WdTask(watchdog, arm_wd_event)
         watchdog_task.start()

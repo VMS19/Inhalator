@@ -15,7 +15,7 @@ from data.observable import Observable
 
 
 class MasterFrame(object):
-    def __init__(self, root, config, drivers, events, measurements):
+    def __init__(self, root, drivers, events, measurements):
         self.root = root
         observer = Observable()
 
@@ -23,8 +23,7 @@ class MasterFrame(object):
         self.left_pane = LeftPane(parent=self, measurements=measurements)
         self.right_pane = RightPane(
             self, events=events, drivers=drivers, observer=observer)
-        self.center_pane = CenterPane(
-            self, measurements=measurements, config=config)
+        self.center_pane = CenterPane(self, measurements=measurements)
         self.top_pane = TopPane(self, events=events, drivers=drivers,
                                 measurements=measurements)
         self.recalibration_bar = RecalibrationSnackbar(self.root,
@@ -100,7 +99,7 @@ class LeftPane(object):
 
 
 class CenterPane(object):
-    def __init__(self, parent, measurements, config):
+    def __init__(self, parent, measurements):
         self.parent = parent
         self.measurements = measurements
 
@@ -115,10 +114,10 @@ class CenterPane(object):
                            height=self.height, width=self.width)
         self.flow_graph = FlowGraph(
             parent=self, measurements=self.measurements, width=self.width,
-            height=self.height/2, config=config)
+            height=self.height/2)
         self.pressure_graph = AirPressureGraph(
             parent=self, measurements=self.measurements, width=self.width,
-            height=self.height/2, config=config)
+            height=self.height/2)
 
     def pop_queue_to_list(self, q, lst):
         # pops all queue values into list, returns if items appended to queue

@@ -26,7 +26,7 @@ class BaseSnackbar(object):
         self.title_foreground = "white"
 
         self.root = root
-        self.config = ConfigurationManager.instance().config
+        self.config = ConfigurationManager.config()
 
         self.log = logging.getLogger(__name__)
 

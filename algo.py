@@ -90,7 +90,7 @@ class VentilationStateMachine(object):
         self.log = logging.getLogger(self.__class__.__name__)
         self.flow_slope = RunningSlope(num_samples=7)
         self.pressure_slope = RunningSlope(num_samples=7)
-        self._config = ConfigurationManager.instance().config
+        self._config = ConfigurationManager.config()
         self.last_breath_timestamp = None
         self.last_telemetry_report = None
         self.last_state = None
@@ -392,7 +392,7 @@ class VentilationStateMachine(object):
 
 
 class Sampler(object):
-    def __init__(self, config, measurements, events, flow_sensor, pressure_sensor,
+    def __init__(self, measurements, events, flow_sensor, pressure_sensor,
                  a2d, timer, telemetry_sender=None,
                  save_sensor_values=False):
         self.log = logging.getLogger(self.__class__.__name__)
@@ -401,21 +401,22 @@ class Sampler(object):
         self._pressure_sensor = pressure_sensor
         self._a2d = a2d
         self._timer = timer
-        self._config = config
+        self._config = ConfigurationManager.config()
         self._events = events
         self.vsm = VentilationStateMachine(measurements, events, telemetry_sender)
         self.storage_handler = SamplesStorage()
         self.save_sensor_values = save_sensor_values
 
+        auto_calibration = self._config.calibration.auto_calibration
         self.auto_calibrator = AutoFlowCalibrator(
             dp_driver=self._flow_sensor,
-            interval_length=self._config.calibration.auto_calibration.interval,
-            iterations=self._config.calibration.auto_calibration.iterations,
-            iteration_length=self._config.calibration.auto_calibration.iteration_length,
-            sample_threshold=self._config.calibration.auto_calibration.sample_threshold,
-            slope_threshold=self._config.calibration.auto_calibration.slope_threshold,
-            min_tail_length=self._config.calibration.auto_calibration.min_tail,
-            grace_length=self._config.calibration.auto_calibration.grace_length,
+            interval_length=auto_calibration.interval,
+            iterations=auto_calibration.iterations,
+            iteration_length=auto_calibration.iteration_length,
+            sample_threshold=auto_calibration.sample_threshold,
+            slope_threshold=auto_calibration.slope_threshold,
+            min_tail_length=auto_calibration.min_tail,
+            grace_length=auto_calibration.grace_length,
         )
 
     def read_single_sensor(self, sensor, alert_code, timestamp):
@@ -499,7 +500,7 @@ class Sampler(object):
             if offset is not None:
                 self.log.info("Writing DP offset of %f to config", offset)
                 self._config.dp_offset = offset
-                self._config.save_to_file()
+                ConfigurationManager.instance().save()
 
         self.vsm.update(
             pressure_cmh2o=pressure_cmh2o,

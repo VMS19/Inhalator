@@ -28,7 +28,7 @@ class IndicatorAlertBar(object):
         self.parent = parent
         self.root = parent.element
         self.events = events
-        self.config = ConfigurationManager.instance().config
+        self.config = ConfigurationManager.config()
         self.drivers = drivers
         self.measurements = measurements
 

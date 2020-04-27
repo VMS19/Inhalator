@@ -40,7 +40,7 @@ def sampler(config, driver_factory, measurements, events, null_driver):
                for name in driver_names}
     if null_driver in driver_names:
         drivers[null_driver] = NullDriver()
-    sampler = Sampler(config, measurements, events, **drivers)
+    sampler = Sampler(measurements=measurements, events=events, **drivers)
     return sampler
 
 

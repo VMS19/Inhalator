@@ -1,3 +1,4 @@
+import json
 from json import JSONDecodeError
 
 import pytest
@@ -54,12 +55,30 @@ def test_partial_config(config_path, configuration_manager):
         The manager will use the configuration values for items present in the
         file, and default values for items which does not present in the file
     """
-    partial = "{\"graph_seconds\": 123.456}"
-    partial_config = Config.parse_raw(partial)
-    assert partial_config.graph_seconds == 123.456
+    # language=JSON
+    redacted = """
+    {
+      "thresholds": {
+        "o2": {
+          "min": 123,
+          "max": 456,
+          "step": 1.0
+        }
+      },
+      "state_machine": {
+        "min_insp_volume_for_inhale": 37.0
+      },
+      "calibration": {
+        "dp_calibration_timeout_hrs": 5,
+        "flow_recalibration_reminder": true
+      },
+      "graph_seconds": 12.0
+    }
+    """
+    partial_config = Config.parse_raw(redacted)
 
     with open(config_path, "w") as f:
-        f.write(partial)
+        f.write(redacted)
     configuration_manager.load()
     assert configuration_manager.config == partial_config
 

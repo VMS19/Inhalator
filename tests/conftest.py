@@ -54,6 +54,11 @@ def sim_sampler(driver_factory, config, measurements, events):
     pressure_sensor = driver_factory.acquire_driver("pressure")
     a2d = driver_factory.acquire_driver("a2d")
     timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(config, measurements, events, flow_sensor,
-                      pressure_sensor, a2d, timer)
+    sampler = Sampler(
+        measurements=measurements,
+        events=events,
+        flow_sensor=flow_sensor,
+        pressure_sensor=pressure_sensor,
+        a2d=a2d,
+        timer=timer)
     return sampler

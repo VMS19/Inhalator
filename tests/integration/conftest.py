@@ -14,9 +14,8 @@ def config(default_config):
 
 
 @pytest.fixture
-def app(config, measurements, events, driver_factory, sim_sampler):
+def app(measurements, events, driver_factory, sim_sampler):
     app = Application(
-        config=config,
         measurements=measurements,
         events=events,
         arm_wd_event=Event(),

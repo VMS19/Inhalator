@@ -102,6 +102,10 @@ class ConfigurationManager(object):
         return cls.__instance
 
     @classmethod
+    def config(cls):
+        return cls.__instance.config
+
+    @classmethod
     def initialize(cls, events, path=CONFIG_FILE):
         log = logging.getLogger(cls.__name__)
         cls.__instance = ConfigurationManager(path)

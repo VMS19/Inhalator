@@ -18,8 +18,8 @@ def pressure_graph(measurements, config) -> AirPressureGraph:
     parent = MagicMock()
     parent.element = root
     graph = AirPressureGraph(
-        parent=parent, measurements=measurements,
-        config=config, width=parent.width, height=parent.height)
+        parent=parent, measurements=measurements, width=parent.width,
+        height=parent.height)
     graph.axis = MagicMock()
     graph.figure = MagicMock()
     return graph
@@ -34,8 +34,8 @@ def flow_graph(measurements, config) -> FlowGraph:
     parent = MagicMock()
     parent.element = root
     graph = FlowGraph(
-        parent=parent, measurements=measurements, config=config,
-        width=parent.width, height=parent.height)
+        parent=parent, measurements=measurements, width=parent.width,
+        height=parent.height)
     graph.axis = MagicMock()
     graph.figure = MagicMock()
     return graph

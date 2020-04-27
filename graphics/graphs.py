@@ -5,6 +5,7 @@ from matplotlib.figure import Figure
 from matplotlib import rcParams
 from matplotlib import ticker
 
+from data.configurations import ConfigurationManager
 from graphics.themes import Theme
 
 
@@ -16,12 +17,12 @@ class Graph(object):
     COLOR = NotImplemented
     DPI = 100  # pixels per inch
 
-    def __init__(self, parent, config, measurements, width, height):
+    def __init__(self, parent, measurements, width, height):
         rcParams.update({'figure.autolayout': True})
         self.parent = parent
         self.root = parent.element
         self.measurements = measurements
-        self.config = config
+        self.config = ConfigurationManager.config()
         self.height = height
         self.width = width
         self.graph_bbox = None
