@@ -108,10 +108,14 @@ class TailDetector:
         self.timestamps.append(timestamp)
 
     def check_close_up(self, current_index, in_grace=False):
-        only_grace_cond = (not in_grace or self.grace_count >= self.grace_length or
-                           current_index == len(self.samples) - 1)
-        if len(self.samples) > 0 and only_grace_cond:
+        #  Remove grace samples from tail
+        if self.grace_count == 0:
+            tail = self.candidate_indices
+
+        else:
             tail = self.candidate_indices[:-self.grace_count]
+
+        if len(tail) > 0 and (not in_grace or current_index == len(self.samples) - 1):
             if len(tail) >= self.min_tail_length:
                 start_index = int(len(tail) * 3 / 4)
                 self.tail_indices += tail[start_index:]
@@ -129,16 +133,20 @@ class TailDetector:
         for index in range(1, len(self.samples)):
             slope = ((self.samples[index] - self.samples[index - 1]) /
                      (self.timestamps[index] - self.timestamps[index - 1]))
+
+            #  Passed the tail value threshold - close tail
             if abs(self.samples[index]) >= self.sample_threshold:
                 self.check_close_up(index)
 
+            #  Both value and slope are in threshold, add point to tail
             elif abs(slope) < self.slope_threshold:
                 self.candidate_indices.append(index)
                 self.grace_count = 0
 
+            #  Passed the tail slope threshold, close tail or increase grace
             else:
                 self.candidate_indices.append(index)
-                self.check_close_up(index, in_grace=True)
+                self.check_close_up(index, in_grace=self.grace_count < self.grace_length)
 
         indices = np.array(self.tail_indices)
         if len(indices) == 0:
@@ -151,5 +159,6 @@ class TailDetector:
                        self.dp_driver.get_calibration_offset()
                        for f in self.samples])
 
+        #  Extract differential pressure at tail timestamps
         tails_dp = dp[indices]
         return np.average(tails_dp)
