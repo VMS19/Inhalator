@@ -44,7 +44,7 @@ class Configurations(object):
                  auto_cal_iterations=1, auto_cal_iteration_length=30,
                  auto_cal_sample_threshold=5, auto_cal_slope_threshold=10,
                  auto_cal_min_tail=12, auto_cal_grace_length=5,
-                 machine_name='VMS19'):
+                 machine_name=''):
         self.o2_range = o2_range
         self.volume_range = volume_range
         self.pressure_range = pressure_range

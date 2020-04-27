@@ -81,8 +81,7 @@ class IndicatorAlertBar(object):
                                   font=("Roboto", 15),
                                   text=self.configs.machine_name,
                                   fg=Theme.active().ALERT_BAR_OK_TXT,
-                                  bg=Theme.active().ALERT_BAR_OK,
-                                  borderwidth=2, relief="groove")
+                                  bg=Theme.active().ALERT_BAR_OK)
 
         self.current_alert = Alert(AlertCodes.OK)
 

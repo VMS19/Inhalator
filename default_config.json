@@ -1,5 +1,5 @@
 {
-  "machine_name": "Machine Name",
+  "machine_name": "",
   "threshold": {
     "o2": {
       "min": 20,
