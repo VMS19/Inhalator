@@ -109,12 +109,8 @@ class TailDetector:
 
     def check_close_up(self, current_index, in_grace=False):
         #  Remove grace samples from tail
-        if self.grace_count == 0:
-            tail = self.candidate_indices
-
-        else:
-            tail = self.candidate_indices[:-self.grace_count]
-
+        tail = self.candidate_indices[:len(self.candidate_indices) - self.grace_count]
+        
         if len(tail) > 0 and (not in_grace or current_index == len(self.samples) - 1):
             if len(tail) >= self.min_tail_length:
                 start_index = int(len(tail) * 3 / 4)
