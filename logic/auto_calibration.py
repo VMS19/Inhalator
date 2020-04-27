@@ -107,11 +107,11 @@ class TailDetector:
         self.samples.append(sample)
         self.timestamps.append(timestamp)
 
-    def check_close_up(self, current_index, in_grace=False):
+    def check_close_up(self, is_last_element, in_grace=False):
         #  Remove grace samples from tail
         tail = self.candidate_indices[:len(self.candidate_indices) - self.grace_count]
 
-        if len(tail) > 0 and (not in_grace or current_index == len(self.samples) - 1):
+        if len(tail) > 0 and (not in_grace or is_last_element):
             if len(tail) >= self.min_tail_length:
                 start_index = int(len(tail) * 3 / 4)
                 self.tail_indices += tail[start_index:]
@@ -132,7 +132,8 @@ class TailDetector:
 
             #  Passed the tail value threshold - close tail
             if abs(self.samples[i]) >= self.sample_threshold:
-                self.check_close_up(i)
+                is_last_element = i == len(self.samples) - 1
+                self.check_close_up(is_last_element)
 
             #  Both value and slope are in threshold, add point to tail
             elif abs(slope) < self.slope_threshold:
@@ -142,7 +143,9 @@ class TailDetector:
             #  Passed the tail slope threshold, close tail or increase grace
             else:
                 self.candidate_indices.append(i)
-                self.check_close_up(i, in_grace=self.grace_count < self.grace_length)
+                is_last_element = i == len(self.samples) - 1
+                self.check_close_up(is_last_element,
+                                    in_grace=self.grace_count < self.grace_length)
 
         indices = np.array(self.tail_indices)
         if len(indices) == 0:
