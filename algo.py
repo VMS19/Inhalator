@@ -358,34 +358,34 @@ class VentilationStateMachine(object):
 
         # either waiting for enough volume for inhale
         # or it's noise and switching to pre exhale
-        smc = self._config.state_machine
+        state_config = self._config.state_machine
         if self.current_state == VentilationState.PreInhale:
             insp_volume = self.inspiration_volume.integrate() * 1000
-            if insp_volume >= smc.min_insp_volume_for_inhale:
+            if insp_volume >= state_config.min_insp_volume_for_inhale:
                 return VentilationState.Inhale
 
             elif (flow_negative_decreasing and
-                  pressure_slope < smc.max_pressure_slope_for_exhale):
+                  pressure_slope < state_config.max_pressure_slope_for_exhale):
                 return VentilationState.PreExhale
 
         # either waiting for enough volume for exhale
         # or it's noise and switching to pre inhale
         if self.current_state == VentilationState.PreExhale:
             exp_volume = self.expiration_volume.integrate() * 1000
-            if exp_volume >= smc.min_exp_volume_for_exhale:
+            if exp_volume >= state_config.min_exp_volume_for_exhale:
                 return VentilationState.Exhale
 
             elif (flow_positive_increasing and
-                  pressure_slope > smc.min_pressure_slope_for_inhale):
+                  pressure_slope > state_config.min_pressure_slope_for_inhale):
                 return VentilationState.PreInhale
 
         # currently at a inhale\exhale state switching reverse pre state
         if self.current_state != VentilationState.Exhale:
-            if flow_negative_decreasing and pressure_slope < smc.max_pressure_slope_for_exhale:
+            if flow_negative_decreasing and pressure_slope < state_config.max_pressure_slope_for_exhale:
                 return VentilationState.PreExhale
 
         if self.current_state != VentilationState.Inhale:
-            if flow_positive_increasing and pressure_slope > smc.min_pressure_slope_for_inhale:
+            if flow_positive_increasing and pressure_slope > state_config.min_pressure_slope_for_inhale:
                 return VentilationState.PreInhale
 
         return self.current_state
@@ -499,7 +499,7 @@ class Sampler(object):
 
             if offset is not None:
                 self.log.info("Writing DP offset of %f to config", offset)
-                self._config.dp_offset = offset
+                self._config.calibration.dp_offset = offset
                 ConfigurationManager.instance().save()
 
         self.vsm.update(

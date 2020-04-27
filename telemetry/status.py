@@ -17,7 +17,7 @@ def get_temperatures():
 
 
 def get_config():
-    return ConfigurationManager.instance().config.json(indent=2)
+    return ConfigurationManager.config().json(indent=2)
 
 
 @dataclass

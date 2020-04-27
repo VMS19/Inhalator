@@ -53,7 +53,7 @@ class Section(object):
     def __init__(self, parent, root):
         self.parent = parent
         self.root = root
-        self.draft_range = self.create_draft_range()
+        self.draft_range = None
 
         self.frame = Frame(self.root, bg="red")
         self.name_label = Label(master=self.frame, font=("Roboto", 15),
@@ -77,13 +77,9 @@ class Section(object):
         self.min_button.configure(
             command=partial(self.parent.on_threshold_button_click, self.min_button))
 
-    def create_draft_range(self):
-        self.draft_range = copy(self.range)
-        return self.draft_range
-
     @property
     def config(self):
-        return ConfigurationManager.instance().config
+        return ConfigurationManager.config()
 
     @property
     def range(self):
@@ -106,6 +102,7 @@ class Section(object):
         self.min_button.configure(text=f"MIN\n{self.draft_range.min}")
 
     def render(self):
+        self.draft_range = copy(self.range)
         self.frame.place(relx=(0.2) * self.INDEX,
                          rely=0, relwidth=0.2, relheight=0.7)
         self.name_label.place(relx=0, rely=0, relwidth=1, relheight=0.17)
@@ -294,7 +291,7 @@ class ConfigureAlarmsScreen(object):
             button.deselect()
 
         else:
-            self.selected_range = button.parent.create_draft_range()
+            self.selected_range = button.parent.draft_range
             self.is_min = is_min
             button.select()
 

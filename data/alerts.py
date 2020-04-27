@@ -130,18 +130,18 @@ class AlertsQueue(object):
         return len(self.active_alerts)
 
     def __str__(self):
-        return f"AlertQueue({str(self.active_alerts)})"
+        return repr(self)
 
     def __repr__(self):
-        return str(self)
+        return f"AlertQueue({str(self.active_alerts)})"
 
     def enqueue_alert(self, alert, timestamp=None):
         if not isinstance(alert, Alert):
             alert = Alert(alert, timestamp)
 
-        grace_time = ConfigurationManager.instance().config.boot_alert_grace_time
-        grace_time = self.initial_uptime + grace_time
-        if alert.is_medical_condition() and uptime() < grace_time:
+        grace_time = ConfigurationManager.config().boot_alert_grace_time
+        grace_time_end = self.initial_uptime + grace_time
+        if alert.is_medical_condition() and uptime() < grace_time_end:
             return
 
         if self.queue.qsize() == self.MAXIMUM_ALERTS_AMOUNT:

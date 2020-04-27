@@ -17,7 +17,7 @@ class Calibration(object):
     def __init__(self, parent, root, drivers, observer):
         self.parent = parent
         self.root = root
-        self.cm = ConfigurationManager.instance()
+        self.config = ConfigurationManager.config()
         self.observer = observer
 
         # State
@@ -65,7 +65,7 @@ class Calibration(object):
             self.label.config(text=str(err))
             return False
         else:
-            self.cm.save()
+            ConfigurationManager.instance().save()
             return True
 
     def calibrate(self):
@@ -193,11 +193,11 @@ class DifferentialPressureCalibration(Calibration):
 
     def get_difference(self):
         """Get offset drift."""
-        offset = self.average_value_found - self.cm.config.calibration.dp_offset
+        offset = self.average_value_found - self.config.calibration.dp_offset
         return self.drivers.acquire_driver("differential_pressure").pressure_to_flow(offset)
 
     def configure_new_calibration(self):
-        self.cm.config.calibration.dp_offset = self.average_value_found
+        self.config.calibration.dp_offset = self.average_value_found
         self.sensor_driver.set_calibration_offset(self.average_value_found)
         self.observer.publish(self.timer.get_current_time())
 
@@ -222,7 +222,7 @@ class OxygenCalibration(Calibration):
             bg=Theme.active().SURFACE,
             command=self.calibrate_point1,
             fg=Theme.active().TXT_ON_SURFACE,
-            text=f"Calibrate {self.cm.config.oxygen_point1.x}%")
+            text=f"Calibrate {self.config.calibration.oxygen_point1.x}%")
 
         self.calibrate_point2_button = Button(
             master=self.frame,
@@ -235,7 +235,7 @@ class OxygenCalibration(Calibration):
                                     self.calibrate_point2_button]
 
     def calibrate_point1(self):
-        self.calibrated_point = self.cm.config.oxygen_point1
+        self.calibrated_point = self.config.calibration.oxygen_point1
         self.calibrate()
         self.calibrate_point2_button.configure(state="disabled")
 
@@ -258,20 +258,20 @@ class OxygenCalibration(Calibration):
         new_calibration_point = Point(
             x=self.calibrated_point.x, y=self.average_value_found)
 
-        if self.calibrated_point is self.cm.config.oxygen_point1:
-            other_calibration_point = self.cm.config.oxygen_point2
+        if self.calibrated_point is self.config.calibration.oxygen_point1:
+            other_calibration_point = self.config.calibration.oxygen_point2
         else:
-            other_calibration_point = self.cm.config.oxygen_point1
+            other_calibration_point = self.config.calibration.oxygen_point1
 
         offset, scale = calc_calibration_line(new_calibration_point,
                                               other_calibration_point)
 
         self.sensor_driver.set_oxygen_calibration(offset, scale)
 
-        if self.calibrated_point is self.cm.config.oxygen_point1:
-            self.cm.config.oxygen_point1 = new_calibration_point
+        if self.calibrated_point is self.config.calibration.oxygen_point1:
+            self.config.calibration.oxygen_point1 = new_calibration_point
         else:
-            self.cm.config.oxygen_point2 = new_calibration_point
+            self.config.calibration.oxygen_point2 = new_calibration_point
 
 
 def calc_calibration_line(point1, point2):
