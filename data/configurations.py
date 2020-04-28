@@ -20,7 +20,7 @@ class Point:
 class ThresholdsConfig:
     o2: O2Range = O2Range(min=20, max=100, step=1)
     volume: VolumeRange = VolumeRange(min=200, max=800, step=10)
-    pressure: PressureRange = PressureRange(min=10, max=45, step=1)
+    pressure: PressureRange = PressureRange(min=10, max=50, step=1)
     respiratory_rate: RespiratoryRateRange = RespiratoryRateRange(min=5, max=45, step=1)
 
 
