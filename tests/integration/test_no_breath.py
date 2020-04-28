@@ -37,6 +37,5 @@ def test_alerts_when_no_breath(app, events, data):
     time_intervals = 1 / DriverFactory.MOCK_SAMPLE_RATE_HZ
     num_of_samples = int(NO_BREATH_TIME / time_intervals)
     app.run_iterations(num_of_samples)
-    assert len(events.alerts_queue) == 1, f"Unexpected alerts: {events.alerts_queue}"
-    assert events.alerts_queue.active_alerts[0] == alerts.AlertCodes.NO_BREATH,\
-        f"Wrong alert: {events.alerts_queue.active_alerts[0]}"
+    assert alerts.AlertCodes.NO_BREATH in events.alerts_queue.active_alerts, \
+        f"NO_BREATH missing from: {events.alerts_queue.active_alerts}"
