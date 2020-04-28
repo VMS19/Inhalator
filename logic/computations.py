@@ -27,19 +27,12 @@ class RunningAvg(object):
 class FirFilter(object):
     """ Finite Impulse Response - Low pass filter
         FIR filter designed with https://www.arc.id.au/FilterDesign.html
-        sampling frequency: 22 Hz
 
-        *0.15 Hz - 0.5 Hz
-        gain = 1
-        desired ripple = 5 dB
-        actual ripple = 0 dB
+        sampling frequency: 22 Hz
+        Pass Band: 0 Hz - 3 Hz
+        Transition Band: 4.5 Hz
+        desired ripple: 80 dB
     """
-    # FILTER_TAPS = [
-    #     -4.4408920985006264e-17,
-    #     4.4408920985006264e-17,
-    #     1,
-    #     4.4408920985006264e-17,
-    #     -4.4408920985006264e-17]
     FILTER_TAPS = [-0.000129,
                     -0.002358,
                     -0.003535,
