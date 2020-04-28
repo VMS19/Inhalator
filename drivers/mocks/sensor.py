@@ -51,10 +51,15 @@ class DifferentialPressureMockSensor(MockSensor):
         return self.flow_to_pressure(sample) - self._calibration_offset
 
     def read(self, *args, **kwargs):
-        sample = super().read(*args, **kwargs)
+        sample = next(self.data)
 
-        return self.pressure_to_flow(self.flow_to_pressure(sample) -
-                                     self._calibration_offset)
+        if random.random() < self.error_probability:
+            raise self.random_error()
+
+        sample_dp = self.flow_to_pressure(sample) + self.offset_drift
+        sample_dp -= self._calibration_offset
+        sample_flow = self.pressure_to_flow(sample_dp)
+        return sample_flow
 
     def pressure_to_flow(self, pressure):
         return copysign(abs(pressure) ** 0.5, pressure)
