@@ -30,7 +30,7 @@ class HscPressureSensor(HoneywellPressureSensor):
         self._calibration_offset = 0
         log.info("HSC pressure sensor initialized")
 
-        self._avg_dp_cmh2o = RunningAvg(max_samples=NOISY_DP_SENSOR_SAMPLES)
+        self._avg_flow = RunningAvg(max_samples=NOISY_DP_SENSOR_SAMPLES)
 
     def set_calibration_offset(self, offset):
         self._calibration_offset = offset
@@ -49,6 +49,5 @@ class HscPressureSensor(HoneywellPressureSensor):
         return super(HscPressureSensor, self).read()
 
     def read(self):
-        dp_cmh2o = self.read_differential_pressure()
-        avg_dp_chmh2o = self._avg_dp_cmh2o.process(dp_cmh2o)
-        return self.pressure_to_flow(avg_dp_chmh2o - self._calibration_offset)
+        dp_cmh2o = self.read_differential_pressure() - self._calibration_offset
+        return self._avg_flow.process(self.pressure_to_flow(dp_cmh2o))
