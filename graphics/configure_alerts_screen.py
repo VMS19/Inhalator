@@ -53,7 +53,7 @@ class Section(object):
     def __init__(self, parent, root):
         self.parent = parent
         self.root = root
-        self.draft_range = None
+        self._draft_range = None
 
         self.frame = Frame(self.root, bg="red")
         self.name_label = Label(master=self.frame, font=("Roboto", 15),
@@ -78,6 +78,12 @@ class Section(object):
             command=partial(self.parent.on_threshold_button_click, self.min_button))
 
     @property
+    def draft_range(self):
+        if self._draft_range is None:
+            self._draft_range = copy(self.range)
+        return self._draft_range
+
+    @property
     def config(self):
         return ConfigurationManager.config()
 
@@ -90,19 +96,18 @@ class Section(object):
         raise NotImplementedError
 
     def confirm(self):
-        if self.draft_range is not None:
-            self.range = copy(self.draft_range)
-            self.draft_range = None
+        if self._draft_range is not None:
+            self.range = copy(self._draft_range)
+            self._draft_range = None
 
     def cancel(self):
-        self.draft_range = None
+        self._draft_range = None
 
     def update(self):
         self.max_button.configure(text=f"MAX\n{self.draft_range.max}")
         self.min_button.configure(text=f"MIN\n{self.draft_range.min}")
 
     def render(self):
-        self.draft_range = copy(self.range)
         self.frame.place(relx=(0.2) * self.INDEX,
                          rely=0, relwidth=0.2, relheight=0.7)
         self.name_label.place(relx=0, rely=0, relwidth=1, relheight=0.17)

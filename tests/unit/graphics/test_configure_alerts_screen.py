@@ -21,18 +21,18 @@ def screen(configuration_manager, driver_factory) -> ConfigureAlarmsScreen:
         observer=Observable())
 
 
-def test_changing_threshold_using_max_button(screen: ConfigureAlarmsScreen, config):
+def test_changing_threshold_using_max_button(screen: ConfigureAlarmsScreen):
     screen.pressure_section.max_button.invoke()
-    assert screen.selected_range == config.thresholds.pressure
+    assert screen.pressure_section.max_button.selected
 
 
-def test_changing_threshold_using_min_button(screen: ConfigureAlarmsScreen, config):
+def test_changing_threshold_using_min_button(screen: ConfigureAlarmsScreen):
     screen.pressure_section.min_button.invoke()
-    assert screen.selected_range == config.thresholds.pressure
+    assert screen.pressure_section.min_button.selected
 
 
 @pytest.mark.parametrize("threshold", ["min", "max"])
-def test_up_down_buttons_on_min(threshold, screen: ConfigureAlarmsScreen, config):
+def test_up_down_buttons(threshold, screen: ConfigureAlarmsScreen, config):
     """
     Test that pressing the up/down buttons updates the text on the corresponding
     button to reflect the changes
@@ -41,9 +41,9 @@ def test_up_down_buttons_on_min(threshold, screen: ConfigureAlarmsScreen, config
     step = config.thresholds.pressure.step
     button = getattr(screen.pressure_section, f"{threshold}_button")
     button.invoke()
-    screen.on_up_button_click()
+    screen.up_or_down_section.up_button.invoke()
     assert f"{pressure + step}" in button["text"]
-    screen.on_down_button_click()
+    screen.up_or_down_section.down_button.invoke()
     assert f"{pressure}" in button["text"]
 
 
@@ -72,7 +72,7 @@ def test_pressing_cancel_undoes_everything(screen: ConfigureAlarmsScreen, config
 def test_pressing_the_same_range_makes_nothing_selected(screen: ConfigureAlarmsScreen):
     screen.pressure_section.max_button.invoke()
     screen.pressure_section.max_button.invoke()
-    assert screen.selected_range is None
+    assert not screen.pressure_section.max_button.selected
 
 
 def test_minimum_cant_go_over_maximum(screen: ConfigureAlarmsScreen, config):
