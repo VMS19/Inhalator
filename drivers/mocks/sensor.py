@@ -2,6 +2,8 @@ from math import copysign
 from itertools import cycle
 from numpy import random
 
+from logic.computations import FirFilter
+
 
 class MockSensor(object):
     """
@@ -13,6 +15,7 @@ class MockSensor(object):
         self.data = cycle(seq)
         self._calibration_offset = 0
         self.error_probability = error_probability
+        self.filter = FirFilter()
 
     def random_error(self):
         exe = random.choice([ValueError, OSError, TimeoutError, ZeroDivisionError])
@@ -26,7 +29,7 @@ class MockSensor(object):
         if random.random() < self.error_probability:
             raise self.random_error()
 
-        return sample
+        return self.filter.process(sample)
 
 
 class DifferentialPressureMockSensor(MockSensor):
