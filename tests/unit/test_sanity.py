@@ -1,6 +1,6 @@
 import pytest
 
-from data.thresholds import O2Range, PressureRange, VolumeRange
+from configuration.thresholds import O2Range, PressureRange, VolumeRange
 from drivers.driver_factory import DriverFactory
 
 

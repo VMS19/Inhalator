@@ -7,7 +7,7 @@ from queue import Queue
 from uptime import uptime
 
 from data.observable import Observable
-from data.configurations import ConfigurationManager
+from configuration.manager import ConfigurationManager
 
 
 class AlertCodes(IntEnum):

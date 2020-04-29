@@ -3,7 +3,7 @@ import pytest
 from pytest import approx
 
 from data.alerts import AlertCodes
-from data.thresholds import VolumeRange
+from configuration.thresholds import VolumeRange
 from tests.data.files import path_to_file
 
 TEST_FILE = path_to_file("2020-04-12-sheba-trial-single-cycle.csv")

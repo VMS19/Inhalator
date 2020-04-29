@@ -3,7 +3,8 @@ from json import JSONDecodeError
 import pytest
 
 from data.alerts import AlertCodes
-from data.configurations import ConfigurationManager, Config
+from configuration.manager import ConfigurationManager
+from configuration.model import Config
 from data.events import Events
 
 

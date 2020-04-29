@@ -7,7 +7,7 @@ from tkinter import *
 
 from data.alerts import Alert, AlertCodes
 from graphics.themes import Theme
-from data.configurations import ConfigurationManager
+from configuration.manager import ConfigurationManager
 from graphics.version import __version__
 
 THIS_DIRECTORY = os.path.dirname(__file__)

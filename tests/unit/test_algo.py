@@ -8,7 +8,7 @@ from pytest import approx
 from algo import VentilationStateMachine, VentilationState
 from logic.computations import RunningSlope
 from data.alerts import AlertCodes
-from data.thresholds import O2Range
+from configuration.thresholds import O2Range
 from drivers.mocks.sinus import add_noise
 
 from tests.utils import SamplesCSVParser

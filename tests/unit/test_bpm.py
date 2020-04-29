@@ -8,8 +8,8 @@ import pytest
 from pytest import approx
 
 from algo import VentilationStateMachine
+from configuration.thresholds import RespiratoryRateRange, VolumeRange
 from data.alerts import AlertCodes
-from data.configurations import *
 from drivers.driver_factory import DriverFactory
 from tests.data.files import path_to_file
 

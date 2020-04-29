@@ -3,7 +3,7 @@ import time
 from uptime import uptime
 from tkinter import Tk
 
-from data.configurations import ConfigurationManager
+from configuration.manager import ConfigurationManager
 from graphics.panes import MasterFrame
 from graphics.themes import Theme
 from graphics.calibrate.screen import calc_calibration_line
