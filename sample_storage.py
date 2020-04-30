@@ -58,4 +58,3 @@ class SamplesStorage:
         unix_time = timestamp.timestamp() * 1000
         time_diff = self._time_diff(timestamp)
         self._write_row([timestamp, unix_time, time_diff, flow, pressure, oxygen, pip, peep, tv_insp, tv_exp, bpm, state, avg_insp_volume, avg_exp_volume])
-
