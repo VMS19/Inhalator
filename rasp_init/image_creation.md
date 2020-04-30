@@ -12,7 +12,7 @@ The first step of creating an image is to flash a template image. The template i
 Templates could be found on the releases page. Download the template accompanying the version you want to install. If you can't find a template file, search in older releases, though make sure you use the most up to date version.  Flash the template to an SD card using dd:
 
     sudo dd bs=4M if=template-1-1-1.img of=/dev/mmcblk0 status=progress conv=fsync
-**Warning!** The `of` argument defines the output file of dd. In this example it's set to `/dev/mmcblk0`, the device file of the SD card. Make sure you enter the correct device, as dd will overwrite anything on it's target device. If you input the wrong device, you can lose data or terminally damage your computer. Use the `lsblk` command to find the correct device file.
+**Warning!** The `of` argument defines the output file of dd. In this example it's set to `/dev/mmcblk0`, the device file of the SD card. Make sure you enter the correct device, as dd will overwrite anything on its target device. If you input the wrong device, you can lose data or terminally damage your computer. Use the `lsblk` command to find the correct device file.
 
 ## Step 2: Change the password
 Insert the flashed SD card into a Raspberry pi. Turn it on, connect it to an Ethernet port (don't turn on WiFi!) and open up a terminal. Change the password using `passwd`. The default password is `raspberry`. Change it to the correct password used by your organization.
@@ -24,7 +24,7 @@ Clone the repository by typing the following while the working directory is `/ho
 After the download is complete, install the app by typing:
 
     sudo Inhalator/rasp_init/setup.sh
-This script will take a few minutes to run. When it's finished, turn of the Raspberry pi using:
+This script will take a few minutes to run. When it's finished, turn off the Raspberry pi using:
 
     sudo shutdown now
 **Do not reboot!** Use only shutdown. Reboot only after the image has been dumped.
@@ -36,7 +36,7 @@ Notice that the `if` argument defines the input file of the command, and should 
 When dd is done, you will have a valid image to flash to many ventilators!
 You can use dd to flash the SD cards, or, on Windows, use an imaging app such as Win32DiskImager.
 ## Bonus: Creating an upgrade package
-If you have an already working ventilator, you might want to update it's software without taking out the SD card and re-flashing it. Luckily, the Inhalator app support software updates. Those updates require an upgrade package: a compressed file of the app. This package is extracted from another Raspberry pi. You can use the same setup used to create the image for creating the upgrade package.
+If you have an already working ventilator, you might want to update its software without taking out the SD card and re-flashing it. Luckily, the Inhalator app support software updates. Those updates require an upgrade package: a compressed file of the app. This package is extracted from another Raspberry pi. You can use the same setup used to create the image for creating the upgrade package.
 After you've finished dumping the SD card, insert it back to the Raspberry pi. Turn it on and wait for the app to launch. Open up a terminal using `ctrl + alt + t`, and type the following:
 
     sudo systemctl stop inhalator.service
