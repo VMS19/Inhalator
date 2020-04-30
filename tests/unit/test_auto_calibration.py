@@ -2,7 +2,6 @@ import os
 
 import pytest
 
-from data.configurations import Configurations
 from drivers.driver_factory import DriverFactory
 from drivers.mocks.sensor import DifferentialPressureMockSensor
 from drivers.mocks.timer import MockTimer
@@ -13,7 +12,6 @@ SIMULATION_FOLDER = "simulation"
 
 @pytest.mark.parametrize('offset', range(-7, 7))
 def test_single_cycle_tail_detection(offset):
-    c = Configurations.instance()
     this_dir = os.path.dirname(__file__)
     file_path = os.path.join(this_dir, SIMULATION_FOLDER,
                              "single_step_cycle.csv")
@@ -22,10 +20,10 @@ def test_single_cycle_tail_detection(offset):
     dp_driver: DifferentialPressureMockSensor = driver_factory.acquire_driver("flow")
     timer: MockTimer = driver_factory.acquire_driver("timer")
     detector = TailDetector(dp_driver,
-                            sample_threshold=c.auto_cal_sample_threshold,
-                            slope_threshold=c.auto_cal_slope_threshold,
+                            sample_threshold=5,
+                            slope_threshold=10,
                             min_tail_length=6,
-                            grace_length=c.auto_cal_grace_length)
+                            grace_length=5)
 
     dp_driver.set_offset_drift(offset)
     for _ in dp_driver.seq:
