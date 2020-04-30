@@ -485,7 +485,9 @@ class Sampler(object):
                                        tv_insp=self._measurements.inspiration_volume,
                                        tv_exp=self._measurements.expiration_volume,
                                        bpm=self._measurements.bpm,
-                                       state=self.vsm.current_state)
+                                       state=self.vsm.current_state,
+                                       avg_insp_volume=self.avg_insp_volume,
+                                       avg_exp_volume=self.avg_exp_volume)
 
         o2_saturation_percentage = max(0,
                                        min(o2_saturation_percentage, 100))
