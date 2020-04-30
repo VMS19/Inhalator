@@ -136,7 +136,7 @@ class TailDetector:
             # Passed the tail value threshold - close tail
             if abs(sample) >= self.sample_threshold:
                 is_last_element = i == len(self.samples) - 1
-                self.check_close_up(is_last_element)
+                self.check_close_up(is_last_element=is_last_element)
 
             # Both value and slope are in threshold, add point to tail
             elif abs(slope) < self.slope_threshold:
@@ -147,7 +147,7 @@ class TailDetector:
             else:
                 self.candidate_indices.append(i)
                 is_last_element = i == len(self.samples) - 1
-                self.check_close_up(is_last_element,
+                self.check_close_up(is_last_element=is_last_element,
                                     in_grace=self.grace_count < self.grace_length)
 
         indices = np.array(self.tail_indices)
