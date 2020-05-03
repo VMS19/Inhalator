@@ -21,7 +21,7 @@ WantedBy=default.target
 
 
 def generate(output_file, python):
-    main_dir = dirname(dirname(abspath(__file__)))
+    main_dir = "/home/pi/Inhalator"
     main_path = join(main_dir, "main.py")
     if not isfile(main_path):
         raise FileNotFoundError(main_path)
