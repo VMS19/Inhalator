@@ -7,7 +7,7 @@ from queue import Queue
 from uptime import uptime
 
 from data.observable import Observable
-from data.configurations import Configurations
+from data.configurations import ConfigurationManager
 
 
 class AlertCodes(IntEnum):
@@ -28,7 +28,7 @@ class AlertCodes(IntEnum):
     # WARNING - You're adding something? look below at is_medical_condition
 
     # system alerts
-    NO_CONFIGURATION_FILE = 1 << 11
+    INVALID_CONFIGURATION_FILE = 1 << 11
     FLOW_SENSOR_ERROR = 1 << 12
     PRESSURE_SENSOR_ERROR = 1 << 13
     OXYGEN_SENSOR_ERROR = 1 << 14
@@ -55,7 +55,7 @@ class Alert(object):
         AlertCodes.BPM_LOW: "Low BPM",
         AlertCodes.OXYGEN_HIGH: "Oxygen Too High",
         AlertCodes.OXYGEN_LOW: "Oxygen Too Low",
-        AlertCodes.NO_CONFIGURATION_FILE: "Configuration Error",
+        AlertCodes.INVALID_CONFIGURATION_FILE: "Configuration Error",
         AlertCodes.FLOW_SENSOR_ERROR: "Flow Sensor Error",
         AlertCodes.PRESSURE_SENSOR_ERROR: "Pressure Sensor Error",
         AlertCodes.OXYGEN_SENSOR_ERROR: "Oxygen Sensor Error",
@@ -81,6 +81,9 @@ class Alert(object):
 
     def is_system_alert(self):
         return 1 << 10 < self.code
+
+    def __repr__(self):
+        return f"Alert(code={self.code}, message={str(self)})"
 
     def __str__(self):
         if self.code in self.ALERT_CODE_TO_MESSAGE:
@@ -118,21 +121,27 @@ class AlertsQueue(object):
         # TODO: For v2.0 maybe, replace self.queue with a proper data structure
         #  such as `deque` and call it `active_alerts`.
         self.active_alerts = deque(maxlen=self.MAXIMUM_HISTORY_COUNT)
-        self.active_alerts_set = set()  # Keeps track for duplicates.
+        self.active_alert_set = set()  # Keeps track for duplicates.
         self.last_alert = Alert(AlertCodes.OK)
         self.observer = Observable()
-        self._config = Configurations.instance()
         self.initial_uptime = uptime()
 
     def __len__(self):
-        return self.queue.qsize()
+        return len(self.active_alerts)
+
+    def __str__(self):
+        return repr(self)
+
+    def __repr__(self):
+        return f"AlertQueue({str(self.active_alerts)})"
 
     def enqueue_alert(self, alert, timestamp=None):
         if not isinstance(alert, Alert):
             alert = Alert(alert, timestamp)
 
-        grace_time = self.initial_uptime + self._config.boot_alert_grace_time
-        if alert.is_medical_condition() and uptime() < grace_time:
+        grace_time = ConfigurationManager.config().boot_alert_grace_time
+        grace_time_end = self.initial_uptime + grace_time
+        if alert.is_medical_condition() and uptime() < grace_time_end:
             return
 
         if self.queue.qsize() == self.MAXIMUM_ALERTS_AMOUNT:
@@ -142,9 +151,9 @@ class AlertsQueue(object):
 
         self.observer.publish(self.last_alert)
         self.queue.put(alert)
-        if alert not in self.active_alerts_set:
+        if alert not in self.active_alert_set:
             self.active_alerts.append(alert)
-            self.active_alerts_set.add(alert)
+            self.active_alert_set.add(alert)
 
     def dequeue_alert(self):
         alert = self.queue.get()
@@ -157,7 +166,7 @@ class AlertsQueue(object):
         # Note that emptying a queue is not thread-safe
         self.queue.queue.clear()
         self.active_alerts.clear()
-        self.active_alerts_set.clear()
+        self.active_alert_set.clear()
 
         self.last_alert = Alert(AlertCodes.OK)
         self.observer.publish(self.last_alert)

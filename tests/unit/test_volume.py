@@ -1,59 +1,32 @@
-import os
-import time
-
 import pytest
 from pytest import approx
 
-from algo import Sampler
-from data import alerts
-from data.measurements import Measurements
-from data.events import Events
-from data.configurations import Configurations
-from data.thresholds import (O2Range, PressureRange,
-                             RespiratoryRateRange, VolumeRange)
+from data.alerts import AlertCodes
+from data.thresholds import O2Range, PressureRange, VolumeRange
 from drivers.driver_factory import DriverFactory
+from tests.data.files import path_to_file
 
-SIMULATION_FOLDER = "simulation"
 
-MICROSECOND = 10 ** -6
-SIMULATION_LENGTH = 1  # seconds
 LOW_THRESHOLD = -50000
 HIGH_THRESHOLD = 50000
 
-SIMULATION_SAMPLES = 1000
+SECONDS_IN_CYCLE = 60 / DriverFactory.MOCK_BPM
+SAMPLES_IN_CYCLE = int(DriverFactory.MOCK_SAMPLE_RATE_HZ * SECONDS_IN_CYCLE)
 
 
 @pytest.fixture
-def driver_factory():
-    return DriverFactory(simulation_mode=True, simulation_data="sinus")
-
-
-@pytest.fixture
-def config():
-    c = Configurations.instance()
-    c.o2_range = O2Range(min=0, max=100)
-    c.pressure_range = PressureRange(min=-1, max=30)
-    c.resp_rate_range = RespiratoryRateRange(min=0, max=30)
-    c.volume_range = VolumeRange(min=100, max=600)
-    c.graph_seconds = 12
-    c.breathing_threshold = 3.5
-    c.log_enabled = False
-    c.boot_alert_grace_time = 0
-    c.auto_cal_enable = False
+def config(default_config):
+    c = default_config
+    c.thresholds.o2 = O2Range(min=0, max=100)
+    c.thresholds.pressure = PressureRange(min=-1, max=30)
+    c.thresholds.volume = VolumeRange(min=100, max=600)
+    c.calibration.auto_calibration.enable = False
     return c
 
 
-@pytest.fixture
-def measurements():
-    return Measurements()
-
-
-@pytest.fixture
-def events():
-    return Events()
-
-
-def test_sampler_volume_calculation(events, measurements, config):
+@pytest.mark.parametrize("data", [path_to_file("single_cycle_good.csv")])
+@pytest.mark.usefixtures("config")
+def test_volume_calculation(sim_sampler, measurements, events, data):
     """Test volume calculation working correctly.
 
     Flow:
@@ -61,23 +34,9 @@ def test_sampler_volume_calculation(events, measurements, config):
         * Simulate constant flow of 1.
         * Validate expected volume.
     """
-    test_samples = 90
-    config.min_exp_volume_for_exhale = 0
-    this_dir = os.path.dirname(__file__)
-    file_path = os.path.join(this_dir, SIMULATION_FOLDER,
-                             "single_cycle_good.csv")
-    driver_factory = DriverFactory(simulation_mode=True,
-                                   simulation_data=file_path)
-
-    flow_sensor = driver_factory.acquire_driver("flow")
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    a2d = driver_factory.acquire_driver("a2d")
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
-
+    test_samples = 90  # in single_cycle_good.csv
     for _ in range(test_samples):
-        sampler.sampling_iteration()
+        sim_sampler.sampling_iteration()
 
     expected_volume = 842
     msg = f"Expected volume of {expected_volume}, received {measurements.inspiration_volume}"
@@ -88,83 +47,16 @@ def test_sampler_volume_calculation(events, measurements, config):
     assert measurements.expiration_volume == approx(expected_exp_volume, rel=0.1), msg
 
 
-def test_alert_on_exhale_volume(events, measurements, config):
-    """Validating alerts are popping for exhale volume and not inhale volume."""
-
-    # initialize application
-    this_dir = os.path.dirname(__file__)
-    file_path = os.path.join(this_dir, SIMULATION_FOLDER,
-                             "pig_sim_cycle.csv")
-    driver_factory = DriverFactory(simulation_mode=True,
-                                   simulation_data=file_path)
-
-    flow_sensor = driver_factory.acquire_driver("flow")
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    a2d = driver_factory.acquire_driver("a2d")
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
-
-    assert len(events.alerts_queue) == 0
-    sampler.sampling_iteration()
-    assert len(events.alerts_queue) == 0
-
-    # Set volume range between the expected exhale volume (28), and not the inhale volume (332).
-    # Validate that there are no alerts about volume (caused by inhale volume)
-    config.volume_range = VolumeRange(0, 50)
-
-    current_time = time.time()
-    while time.time() - current_time < SIMULATION_LENGTH:
-        time.sleep(MICROSECOND)
-        sampler.sampling_iteration()
-
-    assert len(events.alerts_queue) == 0
-
-
-def test_sampler_alerts_when_volume_exceeds_minimum(events, measurements, config, driver_factory):
-    flow_sensor = driver_factory.acquire_driver("flow")
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    a2d = driver_factory.acquire_driver("a2d")
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
-    assert len(events.alerts_queue) == 0
-    sampler.sampling_iteration()
-    assert len(events.alerts_queue) == 0
-
-    config.volume_range = VolumeRange(HIGH_THRESHOLD, HIGH_THRESHOLD)
-
-    current_time = time.time()
-    while time.time() - current_time < SIMULATION_LENGTH:
-        time.sleep(MICROSECOND)
-        sampler.sampling_iteration()
+@pytest.mark.parametrize(
+    ["data", "threshold", "alert_code"],
+    [("sinus", HIGH_THRESHOLD, AlertCodes.VOLUME_LOW),
+     ("sinus", LOW_THRESHOLD, AlertCodes.VOLUME_HIGH)])
+def test_thresholds(sim_sampler, events, config, data, threshold, alert_code):
+    """Verify that alert is raised if we exceed a threshold"""
+    config.thresholds.volume = VolumeRange(threshold, threshold)
+    for _ in range(SAMPLES_IN_CYCLE * 2):
+        sim_sampler.sampling_iteration()
 
     assert len(events.alerts_queue) > 0
-
-    all_alerts = list(events.alerts_queue.queue.queue)
-    assert all(alert == alerts.AlertCodes.VOLUME_LOW for alert in all_alerts)
-
-
-def test_sampler_alerts_when_volume_exceeds_maximum(events, measurements, config, driver_factory):
-    flow_sensor = driver_factory.acquire_driver("flow")
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    a2d = driver_factory.acquire_driver("a2d")
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
-    assert len(events.alerts_queue) == 0
-    sampler.sampling_iteration()
-    assert len(events.alerts_queue) == 0
-
-    config.volume_range = VolumeRange(LOW_THRESHOLD, LOW_THRESHOLD)
-
-    current_time = time.time()
-    while time.time() - current_time < SIMULATION_LENGTH:
-        time.sleep(MICROSECOND)
-        sampler.sampling_iteration()
-
-    assert len(events.alerts_queue) > 0
-
-    all_alerts = list(events.alerts_queue.queue.queue)
-    assert all(alert == alerts.AlertCodes.VOLUME_HIGH for alert in all_alerts)
-
+    all_alerts = list(events.alerts_queue.active_alerts)
+    assert all(alert.code == alert_code for alert in all_alerts)

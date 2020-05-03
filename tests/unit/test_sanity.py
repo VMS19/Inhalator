@@ -1,11 +1,6 @@
 import pytest
 
-from algo import Sampler
-from data.measurements import Measurements
-from data.events import Events
-from data.configurations import Configurations
-from data.thresholds import (O2Range, PressureRange,
-                             RespiratoryRateRange, VolumeRange)
+from data.thresholds import O2Range, PressureRange, VolumeRange
 from drivers.driver_factory import DriverFactory
 
 
@@ -15,72 +10,40 @@ def driver_factory():
 
 
 @pytest.fixture
-def config():
-    c = Configurations.instance()
-    c.o2_range = O2Range(min=0, max=100)
-    c.pressure_range = PressureRange(min=0, max=30)
-    c.resp_rate_range = RespiratoryRateRange(min=0, max=30)
-    c.volume_range = VolumeRange(min=0, max=30)
-    c.graph_seconds = 12
-    c.breathing_threshold = 3.5
-    c.log_enabled = False
-    c.boot_alert_grace_time = 0
+def config(default_config):
+    c = default_config
+    c.thresholds.o2 = O2Range(min=0, max=100)
+    c.thresholds.pressure = PressureRange(min=0, max=30)
+    c.thresholds.volume = VolumeRange(min=0, max=30)
     return c
 
 
-@pytest.fixture
-def measurements():
-    return Measurements()
-
-
-@pytest.fixture
-def events():
-    return Events()
-
-
-def test_sampler_inserts_pressure_measurement_to_store(events, measurements, config, driver_factory):
-    flow_sensor = driver_factory.acquire_driver("flow")
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    a2d = driver_factory.acquire_driver("a2d")
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
+@pytest.mark.usefixtures("config")
+def test_sampler_inserts_pressure_measurement_to_store(sim_sampler, events, measurements):
     assert measurements.pressure_measurements.qsize() == 0
-    sampler.sampling_iteration()
+    sim_sampler.sampling_iteration()
     assert measurements.pressure_measurements.qsize() == 1
-    sampler.sampling_iteration()
+    sim_sampler.sampling_iteration()
     assert measurements.pressure_measurements.qsize() == 2
 
 
-def test_sampler_alerts_when_pressure_exceeds_maximum(events, measurements, config, driver_factory):
-    flow_sensor = driver_factory.acquire_driver("flow")
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    a2d = driver_factory.acquire_driver("a2d")
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
+def test_sampler_alerts_when_pressure_exceeds_maximum(sim_sampler, events, config):
     assert len(events.alerts_queue) == 0
-    sampler.sampling_iteration()
+    sim_sampler.sampling_iteration()
     assert len(events.alerts_queue) == 0
 
-    config.pressure_range = PressureRange(0, 0)
-    sampler.sampling_iteration()
+    config.thresholds.pressure = PressureRange(0, 0)
+    sim_sampler.sampling_iteration()
 
     assert len(events.alerts_queue) == 1
 
 
-def test_sampler_alerts_when_pressure_exceeds_minimum(events, measurements, config, driver_factory):
-    flow_sensor = driver_factory.acquire_driver("flow")
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    a2d = driver_factory.acquire_driver("a2d")
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
+def test_sampler_alerts_when_pressure_exceeds_minimum(sim_sampler, events, config):
     assert len(events.alerts_queue) == 0
-    sampler.sampling_iteration()
+    sim_sampler.sampling_iteration()
     assert len(events.alerts_queue) == 0
 
-    config.pressure_range = PressureRange(0, -100)
-    sampler.sampling_iteration()
+    config.thresholds.pressure = PressureRange(0, -100)
+    sim_sampler.sampling_iteration()
 
     assert len(events.alerts_queue) == 1

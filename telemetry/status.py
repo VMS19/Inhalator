@@ -7,7 +7,7 @@ from pydantic.dataclasses import dataclass
 from uptime import uptime
 
 from algo import VentilationState
-from data.configurations import Configurations
+from data.configurations import ConfigurationManager
 from graphics.version import __version__
 
 
@@ -17,7 +17,7 @@ def get_temperatures():
 
 
 def get_config():
-    return Configurations.instance().__dict__
+    return ConfigurationManager.config().json(indent=2)
 
 
 @dataclass
