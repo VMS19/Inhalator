@@ -21,26 +21,30 @@ class HoneywellPressureSensor(I2cDriver):
     MAX_OUT_PRESSURE = NotImplemented
     MIN_OUT_PRESSURE = NotImplemented
     SENSITIVITY = NotImplemented
-    CMH2O_RATIO = NotImplemented
+    CONVERTION_RATIO = NotImplemented
 
     def _calculate_pressure(self, pressure_reading):
         pressure = (self.MIN_RANGE_PRESSURE +
-                    self.SENSITIVITY * (pressure_reading - self.MIN_OUT_PRESSURE))
-        cmh2o_pressure = pressure * self.CMH2O_RATIO
-        return cmh2o_pressure
+                    self.SENSITIVITY * (
+                                pressure_reading - self.MIN_OUT_PRESSURE))
+        unit_pressure = pressure * self.CONVERTION_RATIO
+        return unit_pressure
 
     def read(self):
-        """ Returns pressure as cmh2o """
+        """ Returns converted pressure."""
         try:
             with mux.lock(self.MUX_PORT):
                 read_size, pressure_raw = \
-                    self._pig.i2c_read_device(self._dev, self.MEASURE_BYTE_COUNT)
+                    self._pig.i2c_read_device(self._dev,
+                                              self.MEASURE_BYTE_COUNT)
             if read_size >= self.MEASURE_BYTE_COUNT:
-                pressure_reading = ((pressure_raw[0] & 0x3F) << 8) | (pressure_raw[1])
+                pressure_reading = ((pressure_raw[0] & 0x3F) << 8) | (
+                pressure_raw[1])
                 return self._calculate_pressure(pressure_reading)
             else:
                 log.warning("Pressure sensor's measure data not ready")
-                raise UnavailableMeasurmentError("Pressure sensor data unavailable")
+                raise UnavailableMeasurmentError(
+                    "Pressure sensor data unavailable")
         except pigpio.error as e:
             log.error("Could not read from pressure sensor. "
                       "Is the pressure sensor connected?.")

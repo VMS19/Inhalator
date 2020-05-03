@@ -41,7 +41,7 @@ def plot_file(file_path, start=0, end=-1):
     # Run the machine
     for index, row in df.iterrows():
         vsm.update(
-            pressure_cmh2o=row[PRESSURE_COLUMN],
+            pressure_inh2o=row[PRESSURE_COLUMN],
             flow_slm=row[FLOW_COLUMN],
             o2_percentage=row[OXYGEN_COLUMN],
             timestamp=row[TIMESTAMP_COLUMN])
@@ -92,7 +92,7 @@ def draw_flow(axes, samples, timestamps, vsm, td):
 
 
 def draw_pressure(axes, samples, timestamp, vsm, td):
-    axes.set_ylabel("Pressure (cmH2O)")
+    axes.set_ylabel("Pressure (inH2o)")
     axes.plot(timestamp, samples, "black")
     axes.vlines(
         vsm.entry_points_ts[VentilationState.Inhale],

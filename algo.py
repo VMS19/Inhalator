@@ -264,7 +264,7 @@ class VentilationStateMachine(object):
         self._measurements.peep_min_pressure = self.min_pressure
         self.min_pressure = sys.maxsize
 
-    def update(self, pressure_cmh2o, flow_slm, o2_percentage, timestamp):
+    def update(self, pressure_inh2o, flow_slm, o2_percentage, timestamp):
         # First time initialization. Not done in __init__ to avoid reading
         # the time in this class, which improves its testability.
         if self.last_breath_timestamp is None:
@@ -290,25 +290,25 @@ class VentilationStateMachine(object):
         # for inhale/exhale integrator respectively.
         self.inspiration_volume.add_sample(timestamp, max(0, flow_lps))
         self.expiration_volume.add_sample(timestamp, abs(min(0, flow_lps)))
-        self._measurements.set_pressure_value(pressure_cmh2o)
+        self._measurements.set_pressure_value(pressure_inh2o)
         self._measurements.set_flow_value(flow_slm)
         self._measurements.set_saturation_percentage(o2_percentage)
 
         # Update peak pressure/flow values
-        self.peak_pressure = max(self.peak_pressure, pressure_cmh2o)
-        self.min_pressure = min(self.min_pressure, pressure_cmh2o)
+        self.peak_pressure = max(self.peak_pressure, pressure_inh2o)
+        self.min_pressure = min(self.min_pressure, pressure_inh2o)
         self.peak_flow = max(self.peak_flow, flow_slm)
 
         # Publish alerts for Pressure
-        if self._config.thresholds.pressure.over(pressure_cmh2o):
+        if self._config.thresholds.pressure.over(pressure_inh2o):
             self.log.warning(
                 "pressure too high %s, top threshold %s",
-                pressure_cmh2o, self._config.thresholds.pressure.max)
+                pressure_inh2o, self._config.thresholds.pressure.max)
             self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_HIGH, timestamp)
-        elif self._config.thresholds.pressure.below(pressure_cmh2o):
+        elif self._config.thresholds.pressure.below(pressure_inh2o):
             self.log.warning(
                 "pressure too low %s, bottom threshold %s",
-                pressure_cmh2o, self._config.thresholds.pressure.min)
+                pressure_inh2o, self._config.thresholds.pressure.min)
             self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW, timestamp)
 
         # Publish alerts for Oxygen
@@ -330,20 +330,20 @@ class VentilationStateMachine(object):
 
         self.check_transition(
             flow_slm=flow_slm,
-            pressure_cmh2o=pressure_cmh2o,
+            pressure_inh2o=pressure_inh2o,
             timestamp=timestamp)
 
         since_last_telem = timestamp - self.last_telemetry_report
         if since_last_telem > self.TELEMETRY_REPORT_MAX_INTERVAL_SEC:
             self.send_telemetry(timestamp)
 
-    def check_transition(self, flow_slm, pressure_cmh2o, timestamp):
-        pressure_slope = self.pressure_slope.add_sample(pressure_cmh2o, timestamp)
+    def check_transition(self, flow_slm, pressure_inh2o, timestamp):
+        pressure_slope = self.pressure_slope.add_sample(pressure_inh2o, timestamp)
         flow_slop = self.flow_slope.add_sample(flow_slm, timestamp)
         if flow_slop is None or pressure_slope is None:
             return  # Not enough data
 
-        next_state = self.infer_state(flow_slop, flow_slm, pressure_slope, pressure_cmh2o)
+        next_state = self.infer_state(flow_slop, flow_slm, pressure_slope, pressure_inh2o)
         if next_state != self.current_state:
             exit_handler = self.exit_handlers.get(self.current_state, None)
             entry_handler = self.entry_handlers.get(next_state, None)
@@ -352,7 +352,7 @@ class VentilationStateMachine(object):
                 self.entry_points_ts[next_state].append(timestamp)
                 self.log.debug("%s -> %s", self.current_state, next_state)
 
-    def infer_state(self, flow_slope, flow_slm, pressure_slope, pressure_cmh2o):
+    def infer_state(self, flow_slope, flow_slm, pressure_slope, pressure_inh2o):
         flow_positive_increasing = flow_slope > 3 and flow_slm > 2
         flow_negative_decreasing = flow_slope < -10 and flow_slm < -2
 
@@ -442,7 +442,7 @@ class Sampler(object):
         flow_slm = self.read_single_sensor(
             self._flow_sensor, AlertCodes.FLOW_SENSOR_ERROR, timestamp)
 
-        pressure_cmh2o = self.read_single_sensor(
+        pressure_inh2o = self.read_single_sensor(
             self._pressure_sensor, AlertCodes.PRESSURE_SENSOR_ERROR, timestamp)
 
         try:
@@ -469,7 +469,7 @@ class Sampler(object):
             self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BATTERY, timestamp)
             self.log.error(e)
 
-        data = (flow_slm, pressure_cmh2o, o2_saturation_percentage)
+        data = (flow_slm, pressure_inh2o, o2_saturation_percentage)
         return [x if x is not None else 0 for x in data]
 
     def sampling_iteration(self):
@@ -477,11 +477,11 @@ class Sampler(object):
 
         # Read from sensors
         result = self.read_sensors(ts)
-        flow_slm, pressure_cmh2o, o2_saturation_percentage = result
+        flow_slm, pressure_inh2o, o2_saturation_percentage = result
 
         if self.save_sensor_values:
             self.storage_handler.write(flow=flow_slm,
-                                       pressure=pressure_cmh2o,
+                                       pressure=pressure_inh2o,
                                        oxygen=o2_saturation_percentage,
                                        pip=self._measurements.intake_peak_pressure,
                                        peep=self._measurements.peep_min_pressure,
@@ -503,7 +503,7 @@ class Sampler(object):
                 ConfigurationManager.instance().save()
 
         self.vsm.update(
-            pressure_cmh2o=pressure_cmh2o,
+            pressure_inh2o=pressure_inh2o,
             flow_slm=flow_slm,
             o2_percentage=o2_saturation_percentage,
             timestamp=ts,

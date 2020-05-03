@@ -12,7 +12,10 @@ NOISY_DP_SENSOR_SAMPLES = 6
 
 
 class HscPressureSensor(HoneywellPressureSensor):
-    """Driver class for HSC differential pressure sensor."""
+    """Driver class for HSCMRRD006MD2A3 differential pressure sensor.
+
+    Returns data in mbar units, gets converted to inch of water.
+    """
     MUX_PORT = 1
     I2C_ADDRESS = 0x28
     MAX_RANGE_PRESSURE = 6  # 6 millibar
@@ -22,7 +25,8 @@ class HscPressureSensor(HoneywellPressureSensor):
     SENSITIVITY = float(MAX_RANGE_PRESSURE - MIN_RANGE_PRESSURE) /\
         float(MAX_OUT_PRESSURE - MIN_OUT_PRESSURE)
     MBAR_CMH2O_RATIO = 1.0197162129779
-    CMH2O_RATIO = MBAR_CMH2O_RATIO
+    MBAR_INH2O_RATIO = 0.40146307866177
+    CONVERTION_RATIO = MBAR_INH2O_RATIO
     SYSTEM_RATIO_SCALE = 36.55
 
     def __init__(self):
@@ -38,9 +42,9 @@ class HscPressureSensor(HoneywellPressureSensor):
     def get_calibration_offset(self):
         return self._calibration_offset
 
-    def pressure_to_flow(self, pressure_cmh2o):
-        flow = (abs(pressure_cmh2o) ** 0.5) * self.SYSTEM_RATIO_SCALE
-        return copysign(flow, pressure_cmh2o)
+    def pressure_to_flow(self, pressure_inh2o):
+        flow = (abs(pressure_inh2o) ** 0.5) * self.SYSTEM_RATIO_SCALE
+        return copysign(flow, pressure_inh2o)
 
     def flow_to_pressure(self, flow):
         return copysign((flow / self.SYSTEM_RATIO_SCALE) ** 2, flow)
@@ -49,5 +53,5 @@ class HscPressureSensor(HoneywellPressureSensor):
         return super(HscPressureSensor, self).read()
 
     def read(self):
-        dp_cmh2o = self.read_differential_pressure() - self._calibration_offset
-        return self._avg_flow.process(self.pressure_to_flow(dp_cmh2o))
+        dp_inh2o = self.read_differential_pressure() - self._calibration_offset
+        return self._avg_flow.process(self.pressure_to_flow(dp_inh2o))

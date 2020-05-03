@@ -62,7 +62,7 @@ class VolumeRange(Range):
 
 class PressureRange(Range):
     NAME = "Pressure"
-    UNIT = "cmH2O"
+    UNIT = "inH2o"
 
 
 class RespiratoryRateRange(Range):

@@ -64,7 +64,7 @@ def test_bpm_calculation_const_rate(cycles, real_data, measurements, events):
     vsm = VentilationStateMachine(measurements, events)
     for t, p, f, o in zip(timestamps, cycle(pressure), cycle(flow), cycle(oxygen)):
         vsm.update(
-            pressure_cmh2o=p,
+            pressure_inh2o=p,
             flow_slm=f,
             o2_percentage=o,
             timestamp=t,

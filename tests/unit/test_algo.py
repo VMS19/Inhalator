@@ -50,7 +50,7 @@ def test_correct_state_transitions(config, measurements, events):
     vsm = VentilationStateMachine(measurements, events)
     for t, p, f, o in parser.samples(start=0, end=200):
         vsm.update(
-            pressure_cmh2o=p,
+            pressure_inh2o=p,
             flow_slm=f,
             o2_percentage=o,
             timestamp=t)

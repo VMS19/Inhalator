@@ -59,7 +59,7 @@ class PressurePeakSummary(GraphSummary):
         return "PIP/PEEP"
 
     def units(self):
-        return "cmH2O"
+        return "inH2o"
 
     def color(self):
         return Theme.active().YELLOW
