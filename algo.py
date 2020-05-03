@@ -5,7 +5,7 @@ from enum import Enum
 from collections import deque
 
 from data.alerts import AlertCodes
-from data.configurations import ConfigurationManager
+from configuration.manager import ConfigurationManager
 from sample_storage import SamplesStorage
 from errors import UnavailableMeasurmentError
 from logic.auto_calibration import AutoFlowCalibrator

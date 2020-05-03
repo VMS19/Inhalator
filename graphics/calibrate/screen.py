@@ -2,7 +2,8 @@ import math
 import statistics
 from tkinter import *
 
-from data.configurations import ConfigurationManager, Point
+from configuration.manager import ConfigurationManager
+from configuration.model import Point
 from graphics.themes import Theme
 from errors import InvalidCalibrationError
 

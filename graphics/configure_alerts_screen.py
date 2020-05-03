@@ -7,7 +7,7 @@ from cached_property import cached_property
 
 from tkinter import *
 
-from data.configurations import ConfigurationManager
+from configuration.manager import ConfigurationManager
 from graphics.calibrate.screen import CalibrationScreen, \
     DifferentialPressureCalibration, OxygenCalibration
 

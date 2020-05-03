@@ -2,7 +2,7 @@ import pytest
 
 from algo import VentilationStateMachine
 from data import alerts
-from data.thresholds import PressureRange
+from configuration.thresholds import PressureRange
 from drivers.driver_factory import DriverFactory
 
 SIMULATION_SAMPLES = 1000

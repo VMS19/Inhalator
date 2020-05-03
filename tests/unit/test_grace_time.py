@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 
 from data import alerts
-from data.thresholds import PressureRange
+from configuration.thresholds import PressureRange
 
 GRACE_TIME = 2
 EPSILON = GRACE_TIME / 1000

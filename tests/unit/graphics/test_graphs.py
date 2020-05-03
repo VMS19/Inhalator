@@ -5,7 +5,7 @@ from tkinter import *
 
 from pytest import approx
 
-from data.configurations import GraphYAxisConfig
+from configuration.model import GraphYAxisConfig
 from graphics.graphs import AirPressureGraph, FlowGraph
 from graphics.themes import Theme, DarkTheme
 

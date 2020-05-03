@@ -1,7 +1,7 @@
 import pytest
 
 from algo import Sampler
-from data.configurations import ConfigurationManager
+from configuration.manager import ConfigurationManager
 from data.events import Events
 from data.measurements import Measurements
 from drivers.driver_factory import DriverFactory

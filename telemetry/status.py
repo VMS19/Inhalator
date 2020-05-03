@@ -7,7 +7,7 @@ from pydantic.dataclasses import dataclass
 from uptime import uptime
 
 from algo import VentilationState
-from data.configurations import ConfigurationManager
+from configuration.manager import ConfigurationManager
 from graphics.version import __version__
 
 

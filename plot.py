@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from algo import VentilationStateMachine, VentilationState
-from data.configurations import ConfigurationManager
+from configuration.manager import ConfigurationManager
 from data.events import Events
 from data.measurements import Measurements
 from drivers.mocks.sensor import DifferentialPressureMockSensor

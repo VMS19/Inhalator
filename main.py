@@ -10,7 +10,7 @@ from threading import Event
 import psutil
 
 from drivers.driver_factory import DriverFactory
-from data.configurations import ConfigurationManager
+from configuration.manager import ConfigurationManager
 from data.measurements import Measurements
 from data.events import Events
 from application import Application

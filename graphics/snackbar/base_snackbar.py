@@ -3,7 +3,7 @@ import logging
 
 from tkinter import *
 
-from data.configurations import ConfigurationManager
+from configuration.manager import ConfigurationManager
 
 
 THIS_FILE = __file__

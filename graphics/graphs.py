@@ -5,7 +5,7 @@ from matplotlib.figure import Figure
 from matplotlib import rcParams
 from matplotlib import ticker
 
-from data.configurations import ConfigurationManager
+from configuration.manager import ConfigurationManager
 from graphics.themes import Theme
 
 
