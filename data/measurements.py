@@ -10,7 +10,7 @@ class Measurements(object):
         self.expiration_volume = 0
         self.avg_insp_volume = 0
         self.avg_exp_volume = 0
-        self.flow_measurements = Queue(maxsize=40)  # TODO: Rename?
+        self.flow_measurements = Queue(maxsize=4000)  # TODO: Rename?
         self.pressure_measurements = Queue(maxsize=40)  # TODO: Rename?
         self.x_axis = range(0, self.max_samples)
         self.intake_peak_flow = 0
@@ -66,4 +66,5 @@ class Measurements(object):
 
     @property
     def max_samples(self):
+        return 4000
         return int(self._seconds_in_graph * self.sample_rate)

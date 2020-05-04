@@ -18,6 +18,7 @@ class MuxI2C(I2cDriver):
         return cls.MUX_INSTANCE
 
     def __new__(cls, *args, **kwargs):
+        cls.opened_port = None
         if cls.MUX_INSTANCE is None:
             cls.MUX_INSTANCE = object.__new__(cls)
 
@@ -27,6 +28,9 @@ class MuxI2C(I2cDriver):
 
     def switch_port(self, port):
         port = int(port)
+        if self.opened_port is not None and self.opened_port == port:
+            return
+
         if port not in range(5):
             raise ValueError("Port should be between 0 and 4 - got {}".format(port))
 
@@ -34,6 +38,7 @@ class MuxI2C(I2cDriver):
             # First, reset the switch
             self._pig.i2c_write_device(self._dev, "\x00")
             self._pig.i2c_write_device(self._dev, str(0b1 << port))
+            self.opened_port = port
         except pigpio.error:
             log.error("Could not switch cmd to mux. Is the mux connected?")
             raise I2CWriteError("i2c write failed")

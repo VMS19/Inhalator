@@ -439,8 +439,11 @@ class Sampler(object):
         :return: Tuple of (flow, pressure, saturation) if there are no errors,
                 or None if an error occurred in any of the drivers.
         """
+        #flow_slm = None
+        #while flow_slm == None:
         flow_slm = self.read_single_sensor(
-            self._flow_sensor, AlertCodes.FLOW_SENSOR_ERROR, timestamp)
+                self._flow_sensor, AlertCodes.FLOW_SENSOR_ERROR, timestamp)
+        return flow_slm
 
         pressure_cmh2o = self.read_single_sensor(
             self._pressure_sensor, AlertCodes.PRESSURE_SENSOR_ERROR, timestamp)
@@ -477,7 +480,8 @@ class Sampler(object):
 
         # Read from sensors
         result = self.read_sensors(ts)
-        flow_slm, pressure_cmh2o, o2_saturation_percentage = result
+        flow_slm, pressure_cmh2o, o2_saturation_percentage = result, 0, 0
+        self._measurements.set_flow_value(flow_slm)
 
         if self.save_sensor_values:
             self.storage_handler.write(flow=flow_slm,
@@ -495,6 +499,7 @@ class Sampler(object):
         o2_saturation_percentage = max(0,
                                        min(o2_saturation_percentage, 100))
 
+        return
         if self._config.calibration.auto_calibration.enable:
             offset = self.auto_calibrator.get_offset(flow_slm=flow_slm,
                                                      ts=ts)

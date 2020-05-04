@@ -94,8 +94,9 @@ class Application(object):
 
     def run(self):
         self.render()
-        sps_avg = RunningAvg(max_samples=10)
+        sps_avg = RunningAvg(max_samples=100)
         i=0
+        j=0
         while self.should_run:
             try:
                 # time_now = time.time()
@@ -110,12 +111,17 @@ class Application(object):
                 # self.arm_wd_event.set()
                 time_now = time.time()
                 avg = sps_avg.process(1 / (time_now - self.last_sample_update_ts))
-                if i == 10:
+                if i == 100:
                     i = 0
                     print(f"sps: {avg}")
+                if j == 1400:
+                    j = 0
+                    self.gui_update()
+
                 self.last_sample_update_ts = time_now
                 self.sample()
                 i += 1
+                j += 1
             except KeyboardInterrupt:
                 break
         self.exit()

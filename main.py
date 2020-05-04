@@ -17,7 +17,7 @@ from application import Application
 from algo import Sampler
 from telemetry.sender import TelemetrySender
 from wd_task import WdTask
-from alert_peripheral_handler import AlertPeripheralHandler
+#from alert_peripheral_handler import AlertPeripheralHandler
 import errors
 from drivers.null_driver import NullDriver
 
@@ -140,7 +140,7 @@ def start_app(args):
         except errors.I2CDeviceNotFoundError:
             flow_sensor = drivers.acquire_driver("null")
 
-        watchdog = drivers.acquire_driver("wd")
+        #watchdog = drivers.acquire_driver("wd")
         try:
             a2d = drivers.acquire_driver("a2d")
         except errors.SPIDriverInitError:
@@ -160,13 +160,14 @@ def start_app(args):
         except errors.InhalatorError:
             rtc = drivers.acquire_driver("null")
 
-        alert_driver = drivers.acquire_driver("alert")
+        #alert_driver = drivers.acquire_driver("alert")
 
         if any(isinstance(driver, NullDriver)
-               for driver in (pressure_sensor, flow_sensor, watchdog, a2d, rtc)):
-            alert_driver.set_system_fault_alert(value=False, mute=False)
+               for driver in (pressure_sensor, flow_sensor, a2d, rtc)):
+            pass
+            #alert_driver.set_system_fault_alert(value=False, mute=False)
 
-        AlertPeripheralHandler(events, drivers).subscribe()
+        #AlertPeripheralHandler(events, drivers).subscribe()
         telemetry_sender = TelemetrySender(
             enable=cm.config.telemetry.enable,
             url=cm.config.telemetry.url,
@@ -191,8 +192,8 @@ def start_app(args):
             fps=args.fps,
             sample_rate=args.sample_rate)
 
-        watchdog_task = WdTask(watchdog, arm_wd_event)
-        watchdog_task.start()
+        #watchdog_task = WdTask(watchdog, arm_wd_event)
+        #watchdog_task.start()
         telemetry_sender.start()
 
         app.run()
