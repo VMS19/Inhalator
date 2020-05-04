@@ -9,6 +9,8 @@ from graphics.themes import Theme
 from graphics.calibrate.screen import calc_calibration_line
 from graphics.constants import SCREEN_WIDTH, SCREEN_HEIGHT
 
+from logic.computations import RunningAvg
+
 
 class Application(object):
     """The Inhalator application"""
@@ -92,18 +94,28 @@ class Application(object):
 
     def run(self):
         self.render()
+        sps_avg = RunningAvg(max_samples=10)
+        i=0
         while self.should_run:
             try:
+                # time_now = time.time()
+                # if (time_now - self.last_gui_update_ts) >= self.frame_interval:
+                #     self.gui_update()
+                #     self.last_gui_update_ts = time_now
+                #
+                # if (time_now - self.last_sample_update_ts) >= self.sample_interval:
+                #     self.sample()
+                #     self.last_sample_update_ts = time_now
+                #
+                # self.arm_wd_event.set()
                 time_now = time.time()
-                if (time_now - self.last_gui_update_ts) >= self.frame_interval:
-                    self.gui_update()
-                    self.last_gui_update_ts = time_now
-
-                if (time_now - self.last_sample_update_ts) >= self.sample_interval:
-                    self.sample()
-                    self.last_sample_update_ts = time_now
-
-                self.arm_wd_event.set()
+                avg = sps_avg.process(1 / (time_now - self.last_sample_update_ts))
+                if i == 10:
+                    i = 0
+                    print(f"sps: {avg}")
+                self.last_sample_update_ts = time_now
+                self.sample()
+                i += 1
             except KeyboardInterrupt:
                 break
         self.exit()
