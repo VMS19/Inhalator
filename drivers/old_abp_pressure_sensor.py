@@ -6,17 +6,17 @@ log = logging.getLogger(__name__)
 
 
 class AbpPressureSensor(HoneywellPressureSensor):
-    """Driver class for ABPMJNN060MG2A3 Flow sensor."""
+    """Driver class for ABPMAND001PG2A3 Flow sensor."""
     MUX_PORT = 0
     I2C_ADDRESS = 0x28
-    MAX_RANGE_PRESSURE = 60  # 60 mbar
-    MIN_RANGE_PRESSURE = 00  # 0 mbar
+    MAX_RANGE_PRESSURE = 0x1  # 1 psi
+    MIN_RANGE_PRESSURE = 0x00  # 0 psi
     MAX_OUT_PRESSURE = 0x399A
     MIN_OUT_PRESSURE = 0x666
     SENSITIVITY = float(MAX_RANGE_PRESSURE - MIN_RANGE_PRESSURE) /\
         float(MAX_OUT_PRESSURE - MIN_OUT_PRESSURE)
-    MBAR_CMH2O_RATIO = 1.0197162129779
-    CMH2O_RATIO = MBAR_CMH2O_RATIO
+    PSI_CMH2O_RATIO = 70.307
+    CMH2O_RATIO = PSI_CMH2O_RATIO
 
     def __init__(self):
         super().__init__()
