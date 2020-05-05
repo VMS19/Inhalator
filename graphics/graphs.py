@@ -64,10 +64,10 @@ class Graph(object):
             linewidth=1,
             animated=True)
 
-        self.slow_values = [0] * len(self.measurements.slow_flow_measurements)
+        self.slow_values = [0] * self.measurements.max_samples
 
         self.slow_graph, = self.axis.plot(
-            range(len(self.slow_values)),
+            range(self.measurements.max_samples),
             self.slow_values,
             color="red",
             linewidth=1,
