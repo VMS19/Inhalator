@@ -114,7 +114,7 @@ class CenterPane(object):
                            height=self.height, width=self.width)
         self.flow_graph = FlowGraph(
             parent=self, measurements=self.measurements, width=self.width,
-            height=self.height/2)
+            height=self.height)
         self.pressure_graph = AirPressureGraph(
             parent=self, measurements=self.measurements, width=self.width,
             height=self.height/2)

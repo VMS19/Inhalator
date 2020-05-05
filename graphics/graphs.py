@@ -115,7 +115,7 @@ class Graph(object):
 
 class FlowGraph(Graph):
     RELX = 0
-    RELY = 0.5
+    RELY = 0
     LABEL = "flow"
     YLABEL = 'Flow [L/min]'
     COLOR = Theme.active().LIGHT_BLUE
@@ -196,6 +196,7 @@ class AirPressureGraph(Graph):
     COLOR = Theme.active().YELLOW
 
     def __init__(self, *args, **kwargs):
+        return
         super().__init__(*args, **kwargs)
         self.min_threshold = None
         self.max_threshold = None
@@ -217,6 +218,7 @@ class AirPressureGraph(Graph):
         self.save_bg()
 
     def update(self):
+        return
         super(AirPressureGraph, self).update()
         if self.range != self.config.thresholds.pressure:
             self.update_thresholds()

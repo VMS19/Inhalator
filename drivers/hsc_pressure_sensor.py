@@ -8,7 +8,7 @@ log = logging.getLogger(__name__)
 
 # the Honeywell differential pressure sensor is very noisy, so we've applied
 # some averaging of the last samples to make the graph smoother
-NOISY_DP_SENSOR_SAMPLES = int((6/22) * 500)
+NOISY_DP_SENSOR_SAMPLES = 25
 
 
 class HscPressureSensor(HoneywellPressureSensor):
