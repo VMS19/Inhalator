@@ -1,5 +1,6 @@
 from queue import Queue
 from threading import Lock
+from time import time
 
 from logic.computations import RunningAvg
 
@@ -24,6 +25,7 @@ class Measurements(object):
         self.lock = Lock()
         self._avg_flow = RunningAvg(max_samples=25)
         self._avg_slow_flow = RunningAvg(max_samples=6)
+        self.last_ts = time()
 
     def reset(self):
         self.inspiration_volume = 0
@@ -42,9 +44,12 @@ class Measurements(object):
                 self.flow_measurements.get()
             self.flow_measurements.put(self._avg_flow.process(new_value))
 
-            if self.slow_flow_measurements.full():
-                self.slow_flow_measurements.get()
-            self.slow_flow_measurements.put(self._avg_slow_flow.process(new_value))
+            ts = time()
+            if ts - self.last_ts >= 1/22:
+                if self.slow_flow_measurements.full():
+                    self.slow_flow_measurements.get()
+                self.slow_flow_measurements.put(self._avg_slow_flow.process(new_value))
+                self.last_ts = ts
 
     def set_pressure_value(self, new_value):
         with self.lock:
