@@ -1,6 +1,7 @@
 from queue import Queue
 from threading import Lock
 
+from logic.computations import RunningAvg
 
 class Measurements(object):
     def __init__(self, seconds_in_graph=12, sample_rate=22):
@@ -21,6 +22,8 @@ class Measurements(object):
         self.o2_saturation_percentage = 20
         self.battery_percentage = 0
         self.lock = Lock()
+        self._avg_flow = RunningAvg(max_samples=25)
+        self._avg_slow_flow = RunningAvg(max_samples=6)
 
     def reset(self):
         self.inspiration_volume = 0
@@ -37,11 +40,11 @@ class Measurements(object):
             # pop last item if queue is full
             if self.flow_measurements.full():
                 self.flow_measurements.get()
-            self.flow_measurements.put(new_value)
+            self.flow_measurements.put(self._avg_flow.process(new_value))
 
             if self.slow_flow_measurements.full():
                 self.slow_flow_measurements.get()
-            self.slow_flow_measurements.put(new_value)
+            self.slow_flow_measurements.put(self._avg_slow_flow.process(new_value))
 
     def set_pressure_value(self, new_value):
         with self.lock:

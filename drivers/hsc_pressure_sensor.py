@@ -30,7 +30,7 @@ class HscPressureSensor(HoneywellPressureSensor):
         self._calibration_offset = 0
         log.info("HSC pressure sensor initialized")
 
-        self._avg_flow = RunningAvg(max_samples=NOISY_DP_SENSOR_SAMPLES)
+
 
     def set_calibration_offset(self, offset):
         self._calibration_offset = offset
