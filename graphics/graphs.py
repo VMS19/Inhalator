@@ -64,6 +64,15 @@ class Graph(object):
             linewidth=1,
             animated=True)
 
+        self.slow_values = [0] * len(self.measurements.slow_flow_measurements)
+
+        self.slow_graph, = self.axis.plot(
+            range(len(self.slow_values)),
+            self.slow_values,
+            color="red",
+            linewidth=1,
+            animated=True)
+
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.root)
 
         # Scaling
@@ -101,6 +110,8 @@ class Graph(object):
         self.figure.canvas.restore_region(self.graph_bg)
         self.graph.set_ydata(self.display_values)
         self.axis.draw_artist(self.graph)
+        self.slow_graph.set_ydata(self.slow_values)
+        self.axis.draw_artist(self.slow_graph)
         self.figure.canvas.blit(self.graph_bbox)
         self.figure.canvas.flush_events()
 

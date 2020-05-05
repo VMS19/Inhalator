@@ -11,6 +11,7 @@ class Measurements(object):
         self.avg_insp_volume = 0
         self.avg_exp_volume = 0
         self.flow_measurements = Queue(maxsize=4000)  # TODO: Rename?
+        self.slow_flow_measurements = Queue(maxsize=4000)  # TODO: Rename?
         self.pressure_measurements = Queue(maxsize=40)  # TODO: Rename?
         self.x_axis = range(0, self.max_samples)
         self.intake_peak_flow = 0
@@ -37,6 +38,10 @@ class Measurements(object):
             if self.flow_measurements.full():
                 self.flow_measurements.get()
             self.flow_measurements.put(new_value)
+
+            if self.slow_flow_measurements.full():
+                self.slow_flow_measurements.get()
+            self.slow_flow_measurements.put(new_value)
 
     def set_pressure_value(self, new_value):
         with self.lock:
