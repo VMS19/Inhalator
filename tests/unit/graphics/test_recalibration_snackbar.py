@@ -6,7 +6,6 @@ from tkinter import Frame
 from freezegun import freeze_time
 
 from graphics.themes import Theme, DarkTheme
-from data.configurations import Configurations
 from data.observable import Observable
 from drivers.driver_factory import DriverFactory
 from graphics.snackbar.recalibration_snackbar import RecalibrationSnackbar
@@ -19,15 +18,14 @@ def time_mock():
 
 
 @pytest.fixture()
-def snackbar():
+def snackbar(config):
+    config.calibration.flow_recalibration_reminder = True
+    config.calibration.dp_calibration_timeout_hrs = 5
     Theme.ACTIVE_THEME = DarkTheme
     driver_factory = DriverFactory(simulation_mode=True)
     instance = RecalibrationSnackbar(root=Frame(),
                                      drivers=driver_factory,
                                      observer=Observable())
-
-    instance.config = MagicMock(spec=Configurations)
-    instance.config.flow_recalibration_reminder = True
 
     instance.timer.get_current_time = time_mock
 
@@ -35,7 +33,6 @@ def snackbar():
 
 
 def test_no_prompt_until_timeout_reached(snackbar):
-    snackbar.config.dp_calibration_timeout_hrs = 5
     snackbar.show = MagicMock()
     with freeze_time("12th Feb 2000 00:00:00"):
         snackbar.update()
@@ -48,7 +45,6 @@ def test_no_prompt_until_timeout_reached(snackbar):
 
 
 def test_prompt_appears_on_timeout(snackbar):
-    snackbar.config.dp_calibration_timeout_hrs = 5
     snackbar.show = MagicMock(side_effect=snackbar.show)
 
     with freeze_time("12th Feb 2000 00:00:00"):
@@ -62,7 +58,6 @@ def test_prompt_appears_on_timeout(snackbar):
 
 
 def test_prompt_stays(snackbar):
-    snackbar.config.dp_calibration_timeout_hrs = 5
     snackbar.show = MagicMock(side_effect=snackbar.show)
 
     with freeze_time("12th Feb 2000 00:00:00"):
@@ -81,7 +76,6 @@ def test_prompt_stays(snackbar):
 
 
 def test_prompt_reappears_after_being_snoozed(snackbar):
-    snackbar.config.dp_calibration_timeout_hrs = 5
     snackbar.show = MagicMock(side_effect=snackbar.show)
 
     with freeze_time("12th Feb 2000 00:00:00"):
@@ -99,7 +93,6 @@ def test_prompt_reappears_after_being_snoozed(snackbar):
 
 
 def test_prompt_reappears_after_calibration(snackbar):
-    snackbar.config.dp_calibration_timeout_hrs = 5
     snackbar.show = MagicMock(side_effect=snackbar.show)
 
     with freeze_time("12th Feb 2000 00:00:00"):
@@ -118,7 +111,6 @@ def test_prompt_reappears_after_calibration(snackbar):
 
 
 def test_time_ago_label_updates(snackbar):
-    snackbar.config.dp_calibration_timeout_hrs = 5
     snackbar.show = MagicMock(side_effect=snackbar.show)
 
     with freeze_time("12th Feb 2000 00:00:00"):
@@ -137,10 +129,8 @@ def test_time_ago_label_updates(snackbar):
         assert "1 day" in snackbar.text_label.cget("text")
 
 
-def test_recalibration_snackbar_can_be_disabled(snackbar):
-    snackbar.config.flow_recalibration_reminder = False
-
-    snackbar.config.dp_calibration_timeout_hrs = 5
+def test_recalibration_snackbar_can_be_disabled(snackbar, config):
+    config.calibration.flow_recalibration_reminder = False
     snackbar.show = MagicMock(side_effect=snackbar.show)
 
     with freeze_time("12th Feb 2000 00:00:00"):

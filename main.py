@@ -10,7 +10,7 @@ from threading import Event
 import psutil
 
 from drivers.driver_factory import DriverFactory
-from data.configurations import Configurations
+from data.configurations import ConfigurationManager
 from data.measurements import Measurements
 from data.events import Events
 from application import Application
@@ -26,7 +26,7 @@ BYTES_IN_GB = 2 ** 30
 
 
 def monitor(target, args, output_path):
-    worker_process = multiprocessing.Process(target=target, args=[args])
+    worker_process = multiprocessing.Process(target=target, args=(args,))
     worker_process.start()
     p = psutil.Process(worker_process.pid)
 
@@ -45,8 +45,6 @@ def monitor(target, args, output_path):
 
 
 def configure_logging(level):
-    config = Configurations.instance()
-
     logger = logging.getLogger()
     logger.setLevel(level)
     # create file handler which logs even debug messages
@@ -61,7 +59,6 @@ def configure_logging(level):
     file_handler.setFormatter(formatter)
     # add the handlers to the logger
     logger.addHandler(file_handler)
-    logger.disabled = not config.log_enabled
     return logger
 
 
@@ -98,6 +95,7 @@ def parse_args():
     return args
 
 
+# noinspection PyUnusedLocal
 def handle_sigterm(signum, frame):
     log = logging.getLogger()
     log.warning("Received SIGTERM. Exiting")
@@ -105,14 +103,16 @@ def handle_sigterm(signum, frame):
 
 
 def start_app(args):
-    signal.signal(signal.SIGTERM, handle_sigterm)
+    log = configure_logging(args.verbose)
     events = Events()
+    cm = ConfigurationManager.initialize(events)
+    signal.signal(signal.SIGTERM, handle_sigterm)
     measurements = Measurements(args.sample_rate if args.simulate else Application.HARDWARE_SAMPLE_RATE)
     arm_wd_event = Event()
     log = configure_logging(args.verbose)
     config = Configurations.instance()
     config.record_sensors = args.record_sensors
-
+    
     # Initialize all drivers, or mocks if in simulation mode
     simulation = args.simulate is not None
     if simulation:
@@ -170,28 +170,29 @@ def start_app(args):
             alert_driver.set_system_fault_alert(value=False, mute=False)
 
         AlertPeripheralHandler(events, drivers).subscribe()
-        config = Configurations.instance()
         telemetry_sender = TelemetrySender(
-            enable=config.telemetry_enable,
-            url=config.telemetry_server_url,
-            api_key=config.telemetry_server_api_key)
-        sampler = Sampler(measurements=measurements,
-                          events=events,
-                          flow_sensor=flow_sensor,
-                          pressure_sensor=pressure_sensor,
-                          a2d=a2d,
-                          timer=timer,
-                          save_sensor_values=args.record_sensors,
-                          telemetry_sender=telemetry_sender)
+            enable=cm.config.telemetry.enable,
+            url=cm.config.telemetry.url,
+            api_key=cm.config.telemetry.api_key)
+        sampler = Sampler(
+            measurements=measurements,
+            events=events,
+            flow_sensor=flow_sensor,
+            pressure_sensor=pressure_sensor,
+            a2d=a2d,
+            timer=timer,
+            save_sensor_values=args.record_sensors,
+            telemetry_sender=telemetry_sender)
 
-        app = Application(measurements=measurements,
-                          events=events,
-                          arm_wd_event=arm_wd_event,
-                          drivers=drivers,
-                          sampler=sampler,
-                          simulation=simulation,
-                          fps=args.fps,
-                          sample_rate=args.sample_rate)
+        app = Application(
+            measurements=measurements,
+            events=events,
+            arm_wd_event=arm_wd_event,
+            drivers=drivers,
+            sampler=sampler,
+            simulation=simulation,
+            fps=args.fps,
+            sample_rate=args.sample_rate)
 
         watchdog_task = WdTask(watchdog, arm_wd_event)
         watchdog_task.start()

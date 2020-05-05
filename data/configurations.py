@@ -1,33 +1,35 @@
-import os
-import json
+from __future__ import annotations
+
 import logging
-from enum import Enum
+import os
+from typing import Optional
 
-from errors import ConfigurationFileError
-from data.thresholds import (RespiratoryRateRange, PressureRange,
-                             VolumeRange, O2Range)
+from pydantic import BaseModel, AnyHttpUrl
+from pydantic.dataclasses import dataclass
 
-THIS_DIRECTORY = os.path.dirname(__file__)
-log = logging.getLogger(__name__)
-
-
-class ConfigurationState(Enum):
-    VALID_CONFIG = 0
-    CONFIG_CORRUPTED = 1
-    DEFAULT_CORRUPTED = 2
+from data.thresholds import PressureRange, VolumeRange, O2Range, RespiratoryRateRange
 
 
-class Configurations(object):
-    """Configurations for the entire project.
+@dataclass
+class Point:
+    x: float
+    y: float
 
-    Note that this class is implemented with the 'Singleton' design pattern,
-    since access to it is needed all across the application and only a single
-    instance of it would make sense.
-    """
-    CONFIG_FILE = os.path.abspath(os.path.join(THIS_DIRECTORY, "..", "config.json"))
-    DEFAULT_CONFIG_FILE = os.path.abspath(os.path.join(THIS_DIRECTORY, "..", "default_config.json"))
 
-    __instance = None
+@dataclass
+class ThresholdsConfig:
+    o2: O2Range = O2Range(min=20, max=100, step=1)
+    volume: VolumeRange = VolumeRange(min=200, max=800, step=10)
+    pressure: PressureRange = PressureRange(min=10, max=50, step=1)
+    respiratory_rate: RespiratoryRateRange = RespiratoryRateRange(min=5, max=45, step=1)
+
+
+@dataclass
+class GraphYAxisConfig:
+    min: float
+    max: float
+    autoscale: bool = False
+
 
     def __init__(self, o2_range, volume_range, pressure_range, resp_rate_range,
                  flow_y_scale, pressure_y_scale, graph_seconds,
@@ -78,214 +80,116 @@ class Configurations(object):
         self.auto_cal_min_tail = auto_cal_min_tail
         self.auto_cal_grace_length = auto_cal_grace_length
 
-    def __getitem__(self, item):
-        return getattr(self, item)
+
+@dataclass
+class StateMachineConfig:
+    min_insp_volume_for_inhale: float = 100
+    min_exp_volume_for_exhale: float = 100
+    min_pressure_slope_for_inhale: float = 3
+    max_pressure_slope_for_exhale: float = 12
+
+
+@dataclass
+class AutoCalibrationConfig:
+    enable: bool = True
+    interval: int = 1800
+    iterations: int = 4
+    iteration_length: int = 30
+    sample_threshold: float = 8
+    slope_threshold: float = 10
+    min_tail: int = 12
+    grace_length: int = 5
+
+
+@dataclass
+class CalibrationConfig:
+    dp_offset: float = 0.026
+    oxygen_point1: Point = Point(x=21, y=0.3567203)
+    oxygen_point2: Point = Point(x=0, y=0)
+    dp_calibration_timeout_hrs: int = 5
+    flow_recalibration_reminder: bool = False
+    auto_calibration: AutoCalibrationConfig = AutoCalibrationConfig()
+
+
+@dataclass
+class GraphsConfig:
+    flow: GraphYAxisConfig = GraphYAxisConfig(min=-40, max=50, autoscale=True)
+    pressure: GraphYAxisConfig = GraphYAxisConfig(min=-10, max=50, autoscale=False)
+
+
+@dataclass
+class TelemetryConfig:
+    enable: bool = False
+    url: Optional[AnyHttpUrl] = None
+    api_key: Optional[str] = None
+
+
+class Config(BaseModel):
+    thresholds: ThresholdsConfig = ThresholdsConfig()
+    graph_y_scale: GraphsConfig = GraphsConfig()
+    state_machine: StateMachineConfig = StateMachineConfig()
+    calibration: CalibrationConfig = CalibrationConfig()
+    graph_seconds: float = 12.0
+    low_battery_percentage: float = 15
+    mute_time_limit: float = 120
+    boot_alert_grace_time: float = 7
+    telemetry: TelemetryConfig = TelemetryConfig()
+
+
+class ConfigurationManager(object):
+    """Manages loading and saving the project's configuration.
+
+    This class has a shared global instance that can be used across the
+    application. It is accessible through the `instance()` method
+    """
+    __instance: ConfigurationManager = None
+    THIS_DIRECTORY = os.path.dirname(__file__)
+    PROJECT_DIRECTORY = os.path.dirname(THIS_DIRECTORY)
+    CONFIG_FILE = os.path.abspath(os.path.join(PROJECT_DIRECTORY, "config.json"))
 
     @classmethod
     def instance(cls):
-        if cls.__instance is not None:
-            return cls.__instance
-
-        cls.__instance = cls._load()
         return cls.__instance
 
     @classmethod
-    def configuration_state(cls):
-        try:
-            cls._parse_config_file(cls.CONFIG_FILE)
-            return ConfigurationState.VALID_CONFIG
-
-        except ConfigurationFileError:
-            try:
-                cls._parse_config_file(cls.DEFAULT_CONFIG_FILE)
-                return ConfigurationState.CONFIG_CORRUPTED
-
-            except ConfigurationFileError:
-                return ConfigurationState.DEFAULT_CORRUPTED
+    def config(cls):
+        return cls.__instance.config
 
     @classmethod
-    def _load(cls):
-        if not os.path.isfile(cls.CONFIG_FILE):
-            # No config.json. Just load defaults. This is not an error.
-            return cls._parse_config_file(cls.DEFAULT_CONFIG_FILE)
-
+    def initialize(cls, events, path=CONFIG_FILE):
+        log = logging.getLogger(cls.__name__)
+        cls.__instance = ConfigurationManager(path)
         try:
-            return cls._parse_config_file(cls.CONFIG_FILE)
-        except ConfigurationFileError:
-            # The second call to _parse_config_file might fail,
-            # we will however let the exception propagate upwards
-            log.exception("Failed to load configuration file %s, "
-                          "defauting to %s",
-                          cls.CONFIG_FILE,
-                          cls.DEFAULT_CONFIG_FILE)
-            return cls._parse_config_file(cls.DEFAULT_CONFIG_FILE)
-
-    @classmethod
-    def _parse_config_file(cls, config_file):
-        try:
-            with open(config_file) as f:
-                config = json.load(f)
-
-            o2 = O2Range(min=config["threshold"]["o2"]["min"],
-                         max=config["threshold"]["o2"]["max"],
-                         step=config["threshold"]["o2"]["step"])
-            volume = VolumeRange(min=config["threshold"]["volume"]["min"],
-                                 max=config["threshold"]["volume"]["max"],
-                                 step=config["threshold"]["volume"]["step"])
-            pressure = PressureRange(min=config["threshold"]["pressure"]["min"],
-                                     max=config["threshold"]["pressure"]["max"],
-                                     step=config["threshold"]["pressure"]["step"])
-            resp_rate = RespiratoryRateRange(min=config["threshold"]["bpm"]["min"],
-                                             max=config["threshold"]["bpm"]["max"],
-                                             step=config["threshold"]["bpm"]["step"])
-
-            flow_y_scale = (config["graph_y_scale"]["flow"]["min"],
-                            config["graph_y_scale"]["flow"]["max"])
-            flow_auto_scale = config["graph_y_scale"]["flow"]["autoscale"]
-            pressure_y_scale = (config["graph_y_scale"]["pressure"]["min"],
-                                config["graph_y_scale"]["pressure"]["max"])
-
-            min_insp_volume_for_inhale = config["state_machine"]["min_insp_volume_for_inhale"]
-            min_exp_volume_for_exhale = config["state_machine"]["min_exp_volume_for_exhale"]
-            min_pressure_slope_for_inhale = config["state_machine"]["min_pressure_slope_for_inhale"]
-            max_pressure_slope_for_exhale = config["state_machine"]["max_pressure_slope_for_exhale"]
-
-            graph_seconds = config["graph_seconds"]
-            breathing_threshold = config["threshold"]["breathing_threshold"]
-            log_enabled = config["log_enabled"]
-            mute_time_limit = config["mute_time_limit"]
-            low_battery_percentage = config["low_battery_percentage"]
-            dp_offset = config["calibration"]["dp_offset"]
-            oxygen_point1 = config["calibration"]["oxygen_point1"]
-            oxygen_point2 = config["calibration"]["oxygen_point2"]
-            dp_calibration_timeout_hrs = config["calibration"]["dp_calibration_timeout_hrs"]
-            flow_recalibration_reminder = config["calibration"]["flow_recalibration_reminder"]
-
-            boot_alert_grace_time = config["boot_alert_grace_time"]
-            telemetry_enable = config["telemetry"]["enable"]
-            telemetry_server_url = config["telemetry"]["url"]
-            telemetry_server_api_key = config["telemetry"]["api_key"]
-
-            auto_cal_enable = config["calibration"]["auto_calibration"]["enable"]
-            auto_cal_interval = config["calibration"]["auto_calibration"]["interval"]
-            auto_cal_iterations = config["calibration"]["auto_calibration"]["iterations"]
-            auto_cal_iteration_length = config["calibration"]["auto_calibration"]["iteration_length"]
-            auto_cal_sample_threshold = config["calibration"]["auto_calibration"]["sample_threshold"]
-            auto_cal_slope_threshold = config["calibration"]["auto_calibration"]["slope_threshold"]
-            auto_cal_min_tail = config["calibration"]["auto_calibration"]["min_tail"]
-            auto_cal_grace_length = config["calibration"]["auto_calibration"]["grace_length"]
-
-            return cls(o2_range=o2,
-                       volume_range=volume,
-                       pressure_range=pressure,
-                       resp_rate_range=resp_rate,
-                       graph_seconds=graph_seconds,
-                       breathing_threshold=breathing_threshold,
-                       log_enabled=log_enabled,
-                       mute_time_limit=mute_time_limit,
-                       flow_y_scale=flow_y_scale,
-                       pressure_y_scale=pressure_y_scale,
-                       min_insp_volume_for_inhale=min_insp_volume_for_inhale,
-                       min_exp_volume_for_exhale=min_exp_volume_for_exhale,
-                       min_pressure_slope_for_inhale=min_pressure_slope_for_inhale,
-                       max_pressure_slope_for_exhale=max_pressure_slope_for_exhale,
-                       low_battery_percentage=low_battery_percentage,
-                       dp_offset=dp_offset,
-                       oxygen_point1=oxygen_point1,
-                       oxygen_point2=oxygen_point2,
-                       boot_alert_grace_time=boot_alert_grace_time,
-                       dp_calibration_timeout_hrs=dp_calibration_timeout_hrs,
-                       telemetry_server_url=telemetry_server_url,
-                       telemetry_server_api_key=telemetry_server_api_key,
-                       telemetry_enable=telemetry_enable,
-                       flow_recalibration_reminder=flow_recalibration_reminder,
-                       autoscale=flow_auto_scale,
-                       auto_cal_enable=auto_cal_enable,
-                       auto_cal_interval=auto_cal_interval,
-                       auto_cal_iterations=auto_cal_iterations,
-                       auto_cal_iteration_length=auto_cal_iteration_length,
-                       auto_cal_sample_threshold=auto_cal_sample_threshold,
-                       auto_cal_slope_threshold=auto_cal_slope_threshold,
-                       auto_cal_min_tail=auto_cal_min_tail,
-                       auto_cal_grace_length=auto_cal_grace_length)
-
+            cls.__instance.load()
+        except FileNotFoundError:
+            # Not considered an error we should alert on.
+            log.info("No config file. Using defaults")
         except Exception as e:
-            raise ConfigurationFileError(f"Could not load "
-                                         f"config file {config_file}") from e
+            log.error("Error loading config file: %s. Using defaults", e)
+            from data.alerts import AlertCodes
+            events.alerts_queue.enqueue_alert(AlertCodes.INVALID_CONFIGURATION_FILE)
+        finally:
+            # We want to save even on successful load because the existing file
+            # might be valid JSON but incomplete, E.g in case of version upgrade.
+            cls.__instance.save()
+        return cls.__instance
 
-    def save_to_file(self, config_path=CONFIG_FILE):
-        log.info("Saving threshold values to database")
-        config = {
-            "threshold": {
-                "o2": {
-                    "min": self.o2_range.min,
-                    "max": self.o2_range.max,
-                    "step": self.o2_range.step
-                },
-                "volume": {
-                    "min": self.volume_range.min,
-                    "max": self.volume_range.max,
-                    "step": self.volume_range.step
-                },
-                "pressure": {
-                    "min": self.pressure_range.min,
-                    "max": self.pressure_range.max,
-                    "step": self.pressure_range.step
-                },
-                "bpm": {
-                    "min": self.resp_rate_range.min,
-                    "max": self.resp_rate_range.max,
-                    "step": self.resp_rate_range.step
-                },
-                "breathing_threshold": self.breathing_threshold
-            },
-            "graph_y_scale": {
-                "flow": {
-                    "min": self.flow_y_scale[0],
-                    "max": self.flow_y_scale[1],
-                    "autoscale": self.autoscale
-                },
-                "pressure": {
-                    "min": self.pressure_y_scale[0],
-                    "max": self.pressure_y_scale[1]
-                }
-            },
-            "state_machine": {
-                "min_insp_volume_for_inhale": self.min_insp_volume_for_inhale,
-                "min_exp_volume_for_exhale": self.min_exp_volume_for_exhale,
-                "min_pressure_slope_for_inhale": self.min_pressure_slope_for_inhale,
-                "max_pressure_slope_for_exhale": self.max_pressure_slope_for_exhale
-            },
-            "log_enabled": self.log_enabled,
-            "graph_seconds": self.graph_seconds,
-            "mute_time_limit": self.mute_time_limit,
-            "low_battery_percentage": self.low_battery_percentage,
-            "calibration": {
-                "dp_offset": self.dp_offset,
-                "auto_calibration": {
-                    "enable": self.auto_cal_enable,
-                    "interval": self.auto_cal_interval,
-                    "iterations": self.auto_cal_iterations,
-                    "iteration_length": self.auto_cal_iteration_length,
-                    "sample_threshold": self.auto_cal_sample_threshold,
-                    "slope_threshold": self.auto_cal_slope_threshold,
-                    "min_tail": self.auto_cal_min_tail,
-                    "grace_length": self.auto_cal_grace_length
-                },
-                "oxygen_point1": self.oxygen_point1,
-                "oxygen_point2": self.oxygen_point2,
-                "dp_calibration_timeout_hrs": self.dp_calibration_timeout_hrs,
-                "flow_recalibration_reminder": self.flow_recalibration_reminder,
-            },
-            "boot_alert_grace_time": self.boot_alert_grace_time,
-            "telemetry": {
-                "enable": self.telemetry_enable,
-                "url": self.telemetry_server_url,
-                "api_key": self.telemetry_server_api_key
-            }
-        }
+    def __init__(self, path):
+        self._path = path
+        self._log = logging.getLogger(self.__class__.__name__)
+        self.config = Config()
 
-        with open(config_path, "w") as config_file:
-            json.dump(config, config_file, indent=4)
-            config_file.flush()
-            os.fsync(config_file.fileno())
+    def load(self):
+        self.config = Config.parse_file(self._path)
+        self._log.info("Configuration loaded from %s", self._path)
+
+    def save(self):
+        try:
+            with open(self._path, "w") as f:
+                f.write(self.config.json(indent=2))
+                f.flush()
+                os.fsync(f.fileno())
+            self._log.info(f"Configuration saved to %s", self._path)
+        except Exception as e:
+            # There's nothing more we can do about it.
+            self._log.error("Error saving configuration: %s", e)

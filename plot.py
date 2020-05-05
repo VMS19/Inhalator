@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from algo import VentilationStateMachine, VentilationState
+from data.configurations import ConfigurationManager
 from data.events import Events
 from data.measurements import Measurements
 from drivers.mocks.sensor import DifferentialPressureMockSensor
@@ -23,8 +24,9 @@ CONVERTERS = {
 
 def plot_file(file_path, start=0, end=-1):
     df = pd.read_csv(file_path, converters=CONVERTERS)[start:end]
-    measurements = Measurements()
+    measurements = Measurements(seconds_in_graph=12)
     events = Events()
+    ConfigurationManager.initialize(events)
     vsm = VentilationStateMachine(measurements, events)
 
     #  define auto calibrator
