@@ -15,6 +15,8 @@ echo " -C /home/pi/ --transform s/Inhalator/$VERSION/" | xargs tar xf /home/pi/i
 # We copy the new version files and then change the service file to point it.
 echo -n "Replacing inhalator service..."
 sudo bash -c "sed -i 's/Inhalator/${VERSION}/' /usr/lib/systemd/user/inhalator.service"
+echo -n "Sync..."
+sudo sync
 
 echo -n "Copying config.json file..."
 sudo cp /home/pi/Inhalator/config.json /home/pi/$VERSION/config.json
@@ -38,8 +40,12 @@ sudo ln -s /home/pi/$VERSION /home/pi/Inhalator
 echo -n "Reseting inhalator service..."
 sudo bash -c "sed -i 's/${VERSION}/Inhalator/' /usr/lib/systemd/user/inhalator.service"
 
-echo -n "Reloading inhalator service"
+echo -n "Reloading inhalator service..."
 sudo systemctl daemon-reload inhalator.service
+
+echo -n "Sync.."
+sudo sync
+
 echo -n "Restarting service... "
 sudo systemctl start inhalator.service 1> /dev/null
 echo "Done."
