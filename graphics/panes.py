@@ -148,6 +148,8 @@ class CenterPane(object):
         #                        self.pressure_graph.display_values)
         self.pop_queue_to_list(self.measurements.flow_measurements,
                                self.flow_graph.display_values)
+        self.pop_queue_to_list(self.measurements.flow_measurements,
+                               self.flow_graph.slow_display_values)
 
         for graph in self.graphs:
             graph.update()
