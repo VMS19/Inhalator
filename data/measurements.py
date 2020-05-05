@@ -26,6 +26,7 @@ class Measurements(object):
         self._avg_flow = RunningAvg(max_samples=25)
         self._avg_slow_flow = RunningAvg(max_samples=6)
         self.last_ts = time()
+        self.last_value = 0
 
     def reset(self):
         self.inspiration_volume = 0
@@ -48,8 +49,14 @@ class Measurements(object):
             if ts - self.last_ts >= 1/22:
                 if self.slow_flow_measurements.full():
                     self.slow_flow_measurements.get()
-                self.slow_flow_measurements.put(self._avg_slow_flow.process(new_value))
+                self.last_value = self._avg_slow_flow.process(new_value)
+                self.slow_flow_measurements.put(self.last_value)
                 self.last_ts = ts
+            else:
+                if self.slow_flow_measurements.full():
+                    self.slow_flow_measurements.get()
+                self.slow_flow_measurements.put(self.last_value)
+
 
     def set_pressure_value(self, new_value):
         with self.lock:
