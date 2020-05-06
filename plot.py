@@ -132,7 +132,6 @@ def save_volumes_to_csv(vsm):
             volumes_file.write(f"{i + 1},{insp},{exp},{ratio}\n")
 
 
-
 def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("csv_path", help="The path to the CSV file")
