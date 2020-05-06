@@ -9,13 +9,15 @@ if [[ -d /home/pi/$VERSION ]]; then
 fi
 
 echo -n "Copying new files.."
-echo " -C /home/pi/ --transform s/Inhalator/$VERSION/" | xargs tar xf /home/pi/inhalator*.tar.gz
+sudo rm -rf /tmp/Inhalator
+sudo tar xf /mnt/dok/inhalator*.tar.gz -C /tmp
+sudo mv /tmp/Inhalator /home/pi/$VERSION
 
 # In order to make the upgrade an atomic action..
 # We copy the new version files and then change the service file to point it.
 echo -n "Replacing inhalator service..."
 sudo bash -c "sed -i 's/Inhalator/${VERSION}/' /usr/lib/systemd/user/inhalator.service"
-echo -n "Sync..."
+echo -n "Sync files to flash..."
 sudo sync
 
 echo -n "Copying config.json file..."
@@ -43,7 +45,7 @@ sudo bash -c "sed -i 's/${VERSION}/Inhalator/' /usr/lib/systemd/user/inhalator.s
 echo -n "Reloading inhalator service..."
 sudo systemctl daemon-reload inhalator.service
 
-echo -n "Sync.."
+echo -n "Sync files to flash.."
 sudo sync
 
 echo -n "Restarting service... "
