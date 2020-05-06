@@ -58,7 +58,7 @@ def test_single_cycle_tail_ts():
 
     detector.process()
     assert len(detector.start_tails_ts) == 1, "only one tail should be found"
-    assert 27.625 == detector.start_tails_ts[0], f"Expected tail to start 27.625, " \
+    assert 27.562 == detector.start_tails_ts[0], f"Expected tail to start 27.562, " \
                                                  f"actually started at {detector.start_tails_ts[0]}"
 
     assert len(detector.end_tails_ts) == 1, "only one tail should be found"
