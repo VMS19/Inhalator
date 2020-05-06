@@ -272,14 +272,14 @@ class VentilationStateMachine(object):
         if self.last_telemetry_report is None:
             self.last_telemetry_report = timestamp
 
-        # First - check how long it was since last breath
-        seconds_from_last_breath = timestamp - self.last_breath_timestamp
-        if seconds_from_last_breath >= self.NO_BREATH_ALERT_TIME_SECONDS:
-            self.log.warning("No breath detected for the last 12 seconds")
-            self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH,
-                                                    timestamp)
-            self.last_breath_timestamp = None
-            self.reset()
+        # # First - check how long it was since last breath
+        # seconds_from_last_breath = timestamp - self.last_breath_timestamp
+        # if seconds_from_last_breath >= self.NO_BREATH_ALERT_TIME_SECONDS:
+        #     self.log.warning("No breath detected for the last 12 seconds")
+        #     self._events.alerts_queue.enqueue_alert(AlertCodes.NO_BREATH,
+        #                                             timestamp)
+        #     self.last_breath_timestamp = None
+        #     self.reset()
 
         # Flow is measured in Liter/minute, so we convert it to liter/seconds
         # because this is our time unit
@@ -295,47 +295,47 @@ class VentilationStateMachine(object):
         self._measurements.set_saturation_percentage(o2_percentage)
 
         # Update peak pressure/flow values
-        self.peak_pressure = max(self.peak_pressure, pressure_cmh2o)
-        self.min_pressure = min(self.min_pressure, pressure_cmh2o)
-        self.peak_flow = max(self.peak_flow, flow_slm)
+        # self.peak_pressure = max(self.peak_pressure, pressure_cmh2o)
+        # self.min_pressure = min(self.min_pressure, pressure_cmh2o)
+        # self.peak_flow = max(self.peak_flow, flow_slm)
 
-        # Publish alerts for Pressure
-        if self._config.thresholds.pressure.over(pressure_cmh2o):
-            self.log.warning(
-                "pressure too high %s, top threshold %s",
-                pressure_cmh2o, self._config.thresholds.pressure.max)
-            self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_HIGH, timestamp)
-        elif self._config.thresholds.pressure.below(pressure_cmh2o):
-            self.log.warning(
-                "pressure too low %s, bottom threshold %s",
-                pressure_cmh2o, self._config.thresholds.pressure.min)
-            self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW, timestamp)
-
-        # Publish alerts for Oxygen
-        # Oxygen too high
-        if self._config.thresholds.o2.over(o2_percentage):
-            self.log.warning(
-                f"Oxygen percentage too high "
-                f"({o2_percentage}% > {self._config.thresholds.o2.max}%)")
-            self._events.alerts_queue.enqueue_alert(
-                AlertCodes.OXYGEN_HIGH, timestamp)
-
-            # Oxygen too low
-        elif self._config.thresholds.o2.below(o2_percentage):
-            self.log.warning(
-                f"Oxygen percentage too low "
-                f"({o2_percentage}% < {self._config.thresholds.o2.min}%)")
-            self._events.alerts_queue.enqueue_alert(
-                AlertCodes.OXYGEN_LOW, timestamp)
+        # # Publish alerts for Pressure
+        # if self._config.thresholds.pressure.over(pressure_cmh2o):
+        #     self.log.warning(
+        #         "pressure too high %s, top threshold %s",
+        #         pressure_cmh2o, self._config.thresholds.pressure.max)
+        #     self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_HIGH, timestamp)
+        # elif self._config.thresholds.pressure.below(pressure_cmh2o):
+        #     self.log.warning(
+        #         "pressure too low %s, bottom threshold %s",
+        #         pressure_cmh2o, self._config.thresholds.pressure.min)
+        #     self._events.alerts_queue.enqueue_alert(AlertCodes.PRESSURE_LOW, timestamp)
+        #
+        # # Publish alerts for Oxygen
+        # # Oxygen too high
+        # if self._config.thresholds.o2.over(o2_percentage):
+        #     self.log.warning(
+        #         f"Oxygen percentage too high "
+        #         f"({o2_percentage}% > {self._config.thresholds.o2.max}%)")
+        #     self._events.alerts_queue.enqueue_alert(
+        #         AlertCodes.OXYGEN_HIGH, timestamp)
+        #
+        #     # Oxygen too low
+        # elif self._config.thresholds.o2.below(o2_percentage):
+        #     self.log.warning(
+        #         f"Oxygen percentage too low "
+        #         f"({o2_percentage}% < {self._config.thresholds.o2.min}%)")
+        #     self._events.alerts_queue.enqueue_alert(
+        #         AlertCodes.OXYGEN_LOW, timestamp)
 
         self.check_transition(
             flow_slm=flow_slm,
             pressure_cmh2o=pressure_cmh2o,
             timestamp=timestamp)
 
-        since_last_telem = timestamp - self.last_telemetry_report
-        if since_last_telem > self.TELEMETRY_REPORT_MAX_INTERVAL_SEC:
-            self.send_telemetry(timestamp)
+        # since_last_telem = timestamp - self.last_telemetry_report
+        # if since_last_telem > self.TELEMETRY_REPORT_MAX_INTERVAL_SEC:
+        #     self.send_telemetry(timestamp)
 
     def check_transition(self, flow_slm, pressure_cmh2o, timestamp):
         pressure_slope = self.pressure_slope.add_sample(pressure_cmh2o, timestamp)
@@ -443,11 +443,10 @@ class Sampler(object):
         #while flow_slm == None:
         flow_slm = self.read_single_sensor(
                 self._flow_sensor, AlertCodes.FLOW_SENSOR_ERROR, timestamp)
-        return flow_slm
 
         pressure_cmh2o = self.read_single_sensor(
             self._pressure_sensor, AlertCodes.PRESSURE_SENSOR_ERROR, timestamp)
-
+        return flow_slm, pressure_cmh2o, 0
         try:
             o2_saturation_percentage = self._a2d.read_oxygen()
         except Exception as e:
@@ -480,7 +479,7 @@ class Sampler(object):
 
         # Read from sensors
         result = self.read_sensors(ts)
-        flow_slm, pressure_cmh2o, o2_saturation_percentage = result, 0, 0
+        flow_slm, pressure_cmh2o, o2_saturation_percentage = result
         self._measurements.set_flow_value(flow_slm)
 
         if self.save_sensor_values:
@@ -499,7 +498,7 @@ class Sampler(object):
         o2_saturation_percentage = max(0,
                                        min(o2_saturation_percentage, 100))
 
-        return
+        """
         if self._config.calibration.auto_calibration.enable:
             offset = self.auto_calibrator.get_offset(flow_slm=flow_slm,
                                                      ts=ts)
@@ -508,7 +507,7 @@ class Sampler(object):
                 self.log.info("Writing DP offset of %f to config", offset)
                 self._config.calibration.dp_offset = offset
                 ConfigurationManager.instance().save()
-
+        """
         self.vsm.update(
             pressure_cmh2o=pressure_cmh2o,
             flow_slm=flow_slm,
