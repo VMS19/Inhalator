@@ -47,3 +47,7 @@ class ConfigurationFileError(BaseException):
 
 class UnavailableMeasurmentError(InhalatorError):
     pass
+
+
+class SensorDiagnosticError(InhalatorError):
+    pass
