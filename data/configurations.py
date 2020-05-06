@@ -83,6 +83,7 @@ class Config(BaseModel):
     low_battery_percentage: float = 15
     mute_time_limit: float = 120
     boot_alert_grace_time: float = 7
+    machine_name: str = ""
     telemetry: TelemetryConfig = TelemetryConfig()
 
 
