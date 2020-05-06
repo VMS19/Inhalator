@@ -361,6 +361,7 @@ class VentilationStateMachine(object):
         state_config = self._config.state_machine
         if self.current_state == VentilationState.PreInhale:
             insp_volume = self.inspiration_volume.integrate() * 1000
+            print(f"insp_volume: {insp_volume}")
             if insp_volume >= state_config.min_insp_volume_for_inhale:
                 return VentilationState.Inhale
 
@@ -372,6 +373,7 @@ class VentilationStateMachine(object):
         # or it's noise and switching to pre inhale
         if self.current_state == VentilationState.PreExhale:
             exp_volume = self.expiration_volume.integrate() * 1000
+            print(f"exp_volume: {exp_volume}")
             if exp_volume >= state_config.min_exp_volume_for_exhale:
                 return VentilationState.Exhale
 
