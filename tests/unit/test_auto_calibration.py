@@ -39,7 +39,7 @@ def test_single_cycle_tail_detection(offset):
 def test_single_cycle_tail_ts():
     this_dir = os.path.dirname(__file__)
     file_path = os.path.join(this_dir, SIMULATION_FOLDER,
-                             "single_step_cycle.csv")
+                             "single_cycle_good.csv")
     driver_factory = DriverFactory(simulation_mode=True,
                                    simulation_data=file_path)
     dp_driver: DifferentialPressureMockSensor = driver_factory.acquire_driver("flow")
@@ -58,10 +58,10 @@ def test_single_cycle_tail_ts():
 
     detector.process()
     assert len(detector.start_tails_ts) == 1, "only one tail should be found"
-    assert 27.562 == detector.start_tails_ts[0], f"Expected tail to start 27.562, " \
+    assert 27.679 == detector.start_tails_ts[0], f"Expected tail to start 27.679, " \
                                                  f"actually started at {detector.start_tails_ts[0]}"
 
     assert len(detector.end_tails_ts) == 1, "only one tail should be found"
-    assert 27.967 == detector.end_tails_ts[0], f"Expected tail to start 27.625, " \
+    assert 27.916 == detector.end_tails_ts[0], f"Expected tail to start 27.916, " \
                                                f"actually started at {detector.end_tails_ts[0]}"
 
