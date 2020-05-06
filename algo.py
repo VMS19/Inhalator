@@ -177,6 +177,8 @@ class VentilationStateMachine(object):
 
     def exit_inhale(self, timestamp):
         insp_volume_ml = self.inspiration_volume.integrate() * 1000
+        print(f"insp_volume: {insp_volume_ml}")
+
         self.log.debug("TV insp: : %sml", insp_volume_ml)
         self._measurements.avg_insp_volume = self.avg_insp_volume.process(insp_volume_ml)
         self._measurements.inspiration_volume = insp_volume_ml
@@ -196,6 +198,7 @@ class VentilationStateMachine(object):
     def exit_exhale(self, timestamp):
         # Update final expiration volume
         exp_volume_ml = self.expiration_volume.integrate() * 1000
+        print(f"exp_volume: {exp_volume_ml}")
         self.log.debug("TV exp: : %sml", exp_volume_ml)
         self._measurements.avg_exp_volume = self.avg_exp_volume.process(exp_volume_ml)
         self._measurements.expiration_volume = exp_volume_ml
@@ -361,7 +364,7 @@ class VentilationStateMachine(object):
         state_config = self._config.state_machine
         if self.current_state == VentilationState.PreInhale:
             insp_volume = self.inspiration_volume.integrate() * 1000
-            print(f"insp_volume: {insp_volume}")
+
             if insp_volume >= state_config.min_insp_volume_for_inhale:
                 return VentilationState.Inhale
 
@@ -373,7 +376,6 @@ class VentilationStateMachine(object):
         # or it's noise and switching to pre inhale
         if self.current_state == VentilationState.PreExhale:
             exp_volume = self.expiration_volume.integrate() * 1000
-            print(f"exp_volume: {exp_volume}")
             if exp_volume >= state_config.min_exp_volume_for_exhale:
                 return VentilationState.Exhale
 
