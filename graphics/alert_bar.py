@@ -25,7 +25,7 @@ class IndicatorAlertBar(object):
         "baseline_battery_unknown_white_18dp.png")
     R_LETTER_PATH = os.path.join(RESOURCES_DIRECTORY, "r_letter.png")
 
-    def __init__(self, parent, events, drivers, measurements):
+    def __init__(self, parent, events, drivers, measurements, record_sensors):
         self.parent = parent
         self.root = parent.element
         self.events = events
@@ -81,7 +81,7 @@ class IndicatorAlertBar(object):
 
         record_sensors_image = {True: self.r_letter_image, False: None}
         self.record_sensors = Label(master=self.system_info_frame,
-                                    image=record_sensors_image[self.config.record_sensors],
+                                    image=record_sensors_image[record_sensors],
                                     fg=Theme.active().ALERT_BAR_OK_TXT,
                                     bg=Theme.active().ALERT_BAR_OK)
 
