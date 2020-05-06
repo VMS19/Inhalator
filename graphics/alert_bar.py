@@ -80,7 +80,7 @@ class IndicatorAlertBar(object):
                                         bg=Theme.active().ALERT_BAR_OK)
         self.machine_name = Label(master=self.machine_name_frame,
                                   font=("Roboto", 15),
-                                  text=self.configs.machine_name,
+                                  text=self.config.machine_name,
                                   fg=Theme.active().ALERT_BAR_OK_TXT,
                                   bg=Theme.active().ALERT_BAR_OK)
 
