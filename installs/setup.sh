@@ -17,7 +17,7 @@ sudo mv /tmp/Inhalator /home/pi/$VERSION
 # We copy the new version files and then change the service file to point it.
 echo -n "Replacing inhalator service..."
 sudo bash -c "sed -i 's/Inhalator/${VERSION}/' /usr/lib/systemd/user/inhalator.service"
-echo -n "Sync files to flash..."
+echo -n "Sync files to flush..."
 sudo sync
 
 echo -n "Copying config.json file..."
@@ -45,7 +45,7 @@ sudo bash -c "sed -i 's/${VERSION}/Inhalator/' /usr/lib/systemd/user/inhalator.s
 echo -n "Reloading inhalator service..."
 sudo systemctl daemon-reload inhalator.service
 
-echo -n "Sync files to flash.."
+echo -n "Sync files to flush.."
 sudo sync
 
 echo -n "Restarting service... "
