@@ -1,4 +1,4 @@
-from os.path import dirname, join, abspath, isfile
+from os.path import join, isfile
 import argparse
 
 
@@ -7,7 +7,7 @@ template = """\
 Description=Inhalator Service
 
 [Service]
-ExecStart={python3_executable} {main_path} -vvv --debug
+ExecStart={python3_executable} {main_path}
 WorkingDirectory={main_dir}
 Environment=DISPLAY={display}
 Environment=XAUTHORITY={xauthority}
@@ -21,7 +21,7 @@ WantedBy=default.target
 
 
 def generate(output_file, python):
-    main_dir = dirname(dirname(abspath(__file__)))
+    main_dir = "/home/pi/Inhalator"
     main_path = join(main_dir, "main.py")
     if not isfile(main_path):
         raise FileNotFoundError(main_path)

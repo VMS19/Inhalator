@@ -1,0 +1,7 @@
+[Unit]
+Description=Mount USB drive on %i
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStart=/home/pi/mount_usb.sh %I

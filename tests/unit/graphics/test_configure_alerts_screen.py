@@ -1,110 +1,93 @@
-import time
 from tkinter import Frame
 
 import pytest
 
-from data.configurations import Configurations
-from data.measurements import Measurements
 from data.observable import Observable
-from drivers.driver_factory import DriverFactory
 from graphics.configure_alerts_screen import ConfigureAlarmsScreen
 from graphics.themes import Theme, DarkTheme
 
 
 @pytest.fixture
-def screen() -> ConfigureAlarmsScreen:
-    Theme.ACTIVE_THEME = DarkTheme()
-    measurements = Measurements()
-    drivers = DriverFactory(simulation_mode=True, simulation_data='sinus')
+def data():
+    return "sinus"  # Applies for all test in this file.
 
-    return ConfigureAlarmsScreen(root=Frame(),
-                                 drivers=drivers,
-                                 observer=Observable())
+
+@pytest.fixture
+def screen(configuration_manager, driver_factory) -> ConfigureAlarmsScreen:
+    Theme.ACTIVE_THEME = DarkTheme()
+    return ConfigureAlarmsScreen(
+        root=Frame(),
+        drivers=driver_factory,
+        observer=Observable())
 
 
 def test_changing_threshold_using_max_button(screen: ConfigureAlarmsScreen):
-    screen.pressure_section.max_button.publish()
-    assert screen.selected_threshold == Configurations.instance().pressure_range
+    screen.pressure_section.max_button.invoke()
+    assert screen.pressure_section.max_button.selected
 
 
 def test_changing_threshold_using_min_button(screen: ConfigureAlarmsScreen):
-    screen.pressure_section.min_button.publish()
-    assert screen.selected_threshold == Configurations.instance().pressure_range
+    screen.pressure_section.min_button.invoke()
+    assert screen.pressure_section.min_button.selected
 
 
-def test_up_down_buttons_on_min(screen: ConfigureAlarmsScreen):
-    min_pressure = Configurations.instance().pressure_range.min
-    step = Configurations.instance().pressure_range.step
+@pytest.mark.parametrize("threshold", ["min", "max"])
+def test_up_down_buttons(threshold, screen: ConfigureAlarmsScreen, config):
+    """
+    Test that pressing the up/down buttons updates the text on the corresponding
+    button to reflect the changes
+    """
+    pressure = getattr(config.thresholds.pressure, threshold)
+    step = config.thresholds.pressure.step
+    button = getattr(screen.pressure_section, f"{threshold}_button")
+    button.invoke()
+    screen.up_or_down_section.up_button.invoke()
+    assert f"{pressure + step}" in button["text"]
+    screen.up_or_down_section.down_button.invoke()
+    assert f"{pressure}" in button["text"]
 
-    screen.pressure_section.min_button.publish()
+
+def test_min_changes_only_when_confirmed(screen: ConfigureAlarmsScreen, config):
+    min_pressure = config.thresholds.pressure.min
+    step = config.thresholds.pressure.step
+
+    screen.pressure_section.min_button.invoke()
     screen.on_up_button_click()
-    assert Configurations.instance().pressure_range.temporary_min == min_pressure + step
-    screen.on_down_button_click()
-    assert Configurations.instance().pressure_range.temporary_min == min_pressure
-
-
-def test_min_changes_only_when_confirmed(screen: ConfigureAlarmsScreen):
-    min_pressure = Configurations.instance().pressure_range.min
-    step = Configurations.instance().pressure_range.step
-
-    screen.pressure_section.min_button.publish()
-    screen.on_up_button_click()
-    assert Configurations.instance().pressure_range.min == min_pressure
+    assert config.thresholds.pressure.min == min_pressure
     screen.confirm()
-    assert Configurations.instance().pressure_range.min == min_pressure + step
+    assert config.thresholds.pressure.min == min_pressure + step
 
 
-def test_up_down_buttons_on_max(screen: ConfigureAlarmsScreen):
-    max_pressure = Configurations.instance().pressure_range.max
-    step = Configurations.instance().pressure_range.step
+def test_pressing_cancel_undoes_everything(screen: ConfigureAlarmsScreen, config):
+    max_pressure = config.thresholds.pressure.max
 
-    screen.pressure_section.max_button.publish()
-    screen.on_up_button_click()
-    assert Configurations.instance().pressure_range.temporary_max == max_pressure + step
-    screen.on_down_button_click()
-    assert Configurations.instance().pressure_range.temporary_max == max_pressure
-
-
-def test_pressing_cancel_undoes_everything(screen: ConfigureAlarmsScreen):
-    max_pressure = Configurations.instance().pressure_range.max
-
-    screen.pressure_section.max_button.publish()
+    screen.pressure_section.max_button.invoke()
     screen.on_up_button_click()
     screen.on_up_button_click()
     screen.on_up_button_click()
     screen.cancel()
-
-    assert Configurations.instance().pressure_range.max == max_pressure
+    assert config.thresholds.pressure.max == max_pressure
 
 
 def test_pressing_the_same_range_makes_nothing_selected(screen: ConfigureAlarmsScreen):
-    screen.pressure_section.max_button.publish()
-    screen.pressure_section.max_button.publish()
-    assert screen.selected_threshold == None
+    screen.pressure_section.max_button.invoke()
+    screen.pressure_section.max_button.invoke()
+    assert not screen.pressure_section.max_button.selected
 
-def test_minimum_cant_go_over_maximum(screen: ConfigureAlarmsScreen):
-    config = Configurations.instance()
-    config.pressure_range.min = 0
-    config.pressure_range.max = 0
-    screen.pressure_section.min_button.publish()  # Click the min button
+
+def test_minimum_cant_go_over_maximum(screen: ConfigureAlarmsScreen, config):
+    config.thresholds.pressure.min = 0
+    config.thresholds.pressure.max = 0
+    screen.pressure_section.min_button.invoke()  # Click the min button
     screen.on_up_button_click()  # Raise it
-
-    assert config.pressure_range.temporary_min == 0
-
-    # Revert changes since Configurations is a Singleton and we don't
-    # want it to interact with other tests
-    screen.cancel()
+    screen.confirm()
+    assert config.thresholds.pressure.min == 0
 
 
-def test_maxmimum_cant_go_under_minimum(screen: ConfigureAlarmsScreen):
-    config = Configurations.instance()
-    config.pressure_range.min = 0
-    config.pressure_range.max = 0
-    screen.pressure_section.max_button.publish()  # Click the min button
+def test_maximum_cant_go_under_minimum(screen: ConfigureAlarmsScreen, config):
+    config.thresholds.pressure.min = 0
+    config.thresholds.pressure.max = 0
+    screen.pressure_section.max_button.invoke()  # Click the min button
     screen.on_down_button_click()  # Lower it
-
-    assert config.pressure_range.temporary_max == 0
-
-    # Revert changes since Configurations is a Singleton and we don't
-    # want it to interact with other tests
-    screen.cancel()
+    screen.confirm()
+    assert config.thresholds.pressure.max == 0

@@ -1,17 +1,14 @@
 import time
-from unittest.mock import MagicMock
 
 import freezegun
+import pytest
 from pytest import approx
 
 
-from algo import VentilationStateMachine, VentilationState, Sampler
+from algo import VentilationStateMachine, VentilationState
 from logic.computations import RunningSlope
 from data.alerts import AlertCodes
-from data.configurations import Configurations
-from data.events import Events
-from data.measurements import Measurements
-from drivers.driver_factory import DriverFactory
+from data.thresholds import O2Range
 from drivers.mocks.sinus import add_noise
 
 from tests.utils import SamplesCSVParser
@@ -46,12 +43,11 @@ def test_slope_straight_line_with_noise():
 
 
 @freezegun.freeze_time("2000-02-12")
-def test_correct_state_transitions():
-    c = Configurations.instance()
-    c.min_exp_volume_for_exhale = 0
-    c.boot_alert_grace_time = 0
+def test_correct_state_transitions(config, measurements, events):
+    config.state_machine.min_exp_volume_for_exhale = 0
+    config.boot_alert_grace_time = 0
     parser = SamplesCSVParser()
-    vsm = VentilationStateMachine(Measurements(), Events())
+    vsm = VentilationStateMachine(measurements, events)
     for t, p, f, o in parser.samples(start=0, end=200):
         vsm.update(
             pressure_cmh2o=p,
@@ -66,76 +62,16 @@ def test_correct_state_transitions():
     assert exhale_entry == approx(time.time() + 4.64647368421053, rel=0.1)
 
 
-def test_alert_is_published_on_high_o2():
-    measurements = Measurements()
-    events = Events()
-    drivers = DriverFactory(simulation_mode=True, simulation_data='sinus')
-
-    flow = drivers.acquire_driver('flow')
-    pressure = drivers.acquire_driver('pressure')
-    a2d = drivers.acquire_driver('a2d')
-    timer = drivers.acquire_driver('timer')
-
-    a2d.read_oxygen = MagicMock(return_value=600)
-
-    Configurations.instance().o2_range.max = 99
-
-    sampler = Sampler(measurements=measurements, events=events,
-                      flow_sensor=flow, pressure_sensor=pressure, a2d=a2d,
-                      timer=timer)
-
-    assert len(events.alerts_queue) == 0
-
-    sampler.sampling_iteration()
-
-    assert any(alert == AlertCodes.OXYGEN_HIGH for alert in events.alerts_queue.queue.queue)
-
-    measurements = Measurements()
-    events = Events()
-    drivers = DriverFactory(simulation_mode=True, simulation_data='sinus')
-
-    flow = drivers.acquire_driver('flow')
-    pressure = drivers.acquire_driver('pressure')
-    a2d = drivers.acquire_driver('a2d')
-    timer = drivers.acquire_driver('timer')
-
-    a2d.read_oxygen = MagicMock(return_value=600)
-
-    Configurations.instance().o2_range.max = 99
-
-    sampler = Sampler(measurements=measurements, events=events,
-                      flow_sensor=flow, pressure_sensor=pressure, a2d=a2d,
-                      timer=timer)
-
-    assert len(events.alerts_queue) == 0
-
-    sampler.sampling_iteration()
-
-    assert any(alert == AlertCodes.OXYGEN_HIGH for alert in
-               events.alerts_queue.queue.queue)
-
-
-def test_alert_is_published_on_low_o2():
-    measurements = Measurements()
-    events = Events()
-    drivers = DriverFactory(simulation_mode=True, simulation_data='sinus')
-
-    flow = drivers.acquire_driver('flow')
-    pressure = drivers.acquire_driver('pressure')
-    a2d = drivers.acquire_driver('a2d')
-    timer = drivers.acquire_driver('timer')
-
-    a2d.read_oxygen = MagicMock(return_value=0)
-
-    Configurations.instance().o2_range.min = 20
-
-    sampler = Sampler(measurements=measurements, events=events,
-                      flow_sensor=flow, pressure_sensor=pressure, a2d=a2d,
-                      timer=timer)
-
-    assert len(events.alerts_queue) == 0
-
-    sampler.sampling_iteration()
-
-    assert any(alert == AlertCodes.OXYGEN_LOW for alert in
-               events.alerts_queue.queue.queue)
+@pytest.mark.parametrize(
+    ["o2_range", "o2_read", "alert_code"],
+    [(O2Range(min=20, max=99), 100, AlertCodes.OXYGEN_HIGH),
+     (O2Range(min=20, max=99), 19, AlertCodes.OXYGEN_LOW),
+     (O2Range(min=20, max=99), 21, None)]
+)
+def test_o2_alerts(measurements, config, events, o2_range, o2_read, alert_code):
+    config.thresholds.o2 = o2_range
+    vsm = VentilationStateMachine(measurements=measurements, events=events)
+    vsm.update(20, 10, o2_read, 0)
+    assert len(events.alerts_queue) == 0 if alert_code is None else 1
+    if alert_code is not None:
+        assert events.alerts_queue.active_alerts[0] == alert_code

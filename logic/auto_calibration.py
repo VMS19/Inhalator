@@ -92,6 +92,10 @@ class TailDetector:
         self.candidate_indices = []
         self.grace_count = 0
 
+        # for debug and plotting purpose
+        self.start_tails_ts = []
+        self.end_tails_ts = []
+
     def reset(self):
         self.samples = []
         self.timestamps = []
@@ -103,12 +107,23 @@ class TailDetector:
         self.samples.append(sample)
         self.timestamps.append(timestamp)
 
-    def check_close_up(self, current_index, in_grace=False):
-        if len(self.samples) > 0 and (self.grace_count >= self.grace_length or
-                                      current_index == len(self.samples) - 1):
-            tail = self.candidate_indices[:-self.grace_count]
+    def traverse_samples(self):
+        for i in range(1, len(self.samples)):
+            slope = ((self.samples[i] - self.samples[i - 1]) /
+                     (self.timestamps[i] - self.timestamps[i - 1]))
+            yield self.samples[i], slope
+
+    def check_close_up(self, is_last_element, in_grace=False):
+        # Remove grace samples from tail
+        tail = self.candidate_indices[:len(self.candidate_indices) - self.grace_count]
+
+        if len(tail) > 0 and (not in_grace or is_last_element):
             if len(tail) >= self.min_tail_length:
-                self.tail_indices += tail[int(len(tail) * 3 / 4):]
+                start_index = int(len(tail) * 3 / 4)
+                self.tail_indices += tail[start_index:]
+
+                self.start_tails_ts.append(self.timestamps[tail[start_index]])
+                self.end_tails_ts.append(self.timestamps[tail[-1]])
 
             self.grace_count = 0
             self.candidate_indices = []
@@ -117,19 +132,23 @@ class TailDetector:
             self.grace_count += 1
 
     def process(self):
-        for index in range(1, len(self.samples)):
-            slope = ((self.samples[index] - self.samples[index - 1]) /
-                     (self.timestamps[index] - self.timestamps[index - 1]))
-            if abs(self.samples[index]) >= self.sample_threshold:
-                self.check_close_up(index)
+        for i, (sample, slope) in enumerate(self.traverse_samples()):
+            # Passed the tail value threshold - close tail
+            if abs(sample) >= self.sample_threshold:
+                is_last_element = i == len(self.samples) - 1
+                self.check_close_up(is_last_element=is_last_element)
 
+            # Both value and slope are in threshold, add point to tail
             elif abs(slope) < self.slope_threshold:
-                self.candidate_indices.append(index)
+                self.candidate_indices.append(i)
                 self.grace_count = 0
 
+            # Passed the tail slope threshold, close tail or increase grace
             else:
-                self.candidate_indices.append(index)
-                self.check_close_up(index, in_grace=True)
+                self.candidate_indices.append(i)
+                is_last_element = i == len(self.samples) - 1
+                self.check_close_up(is_last_element=is_last_element,
+                                    in_grace=self.grace_count < self.grace_length)
 
         indices = np.array(self.tail_indices)
         if len(indices) == 0:
@@ -142,5 +161,6 @@ class TailDetector:
                        self.dp_driver.get_calibration_offset()
                        for f in self.samples])
 
+        # Extract differential pressure at tail timestamps
         tails_dp = dp[indices]
         return np.average(tails_dp)
