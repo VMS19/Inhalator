@@ -15,7 +15,7 @@ from data.observable import Observable
 
 
 class MasterFrame(object):
-    def __init__(self, root, drivers, events, measurements, record_sensors):
+    def __init__(self, root, drivers, events, measurements, record_sensors=False):
         self.root = root
         observer = Observable()
 
@@ -213,7 +213,7 @@ class RightPane(object):
 
 
 class TopPane(object):
-    def __init__(self, parent, events, drivers, measurements, record_sensors):
+    def __init__(self, parent, events, drivers, measurements, record_sensors=False):
         self.parent = parent
         self.events = events
 
