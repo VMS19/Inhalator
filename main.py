@@ -87,9 +87,9 @@ def parse_args():
                         help="To run memory usage analysis for application,"
                              "give path to output csv file")
     parser.add_argument(
-        "--debug", "-d",
+        "--record-sensors", "-d",
         help="Whether to save the sensor values to a CSV file (inhalator.csv)",
-        action='store_true')
+        type=int, choices=[0, 1])
     args = parser.parse_args()
     args.verbose = max(0, logging.WARNING - (10 * args.verbose))
     return args
@@ -109,6 +109,11 @@ def start_app(args):
     signal.signal(signal.SIGTERM, handle_sigterm)
     measurements = Measurements(args.sample_rate if args.simulate else Application.HARDWARE_SAMPLE_RATE)
     arm_wd_event = Event()
+
+    if args.record_sensors is None:
+        record_sensors = cm.config.record_sensors
+    else:
+        record_sensors = bool(args.record_sensors)
 
     # Initialize all drivers, or mocks if in simulation mode
     simulation = args.simulate is not None
@@ -178,7 +183,7 @@ def start_app(args):
             pressure_sensor=pressure_sensor,
             a2d=a2d,
             timer=timer,
-            save_sensor_values=args.debug,
+            save_sensor_values=record_sensors,
             telemetry_sender=telemetry_sender)
 
         app = Application(
@@ -189,7 +194,8 @@ def start_app(args):
             sampler=sampler,
             simulation=simulation,
             fps=args.fps,
-            sample_rate=args.sample_rate)
+            sample_rate=args.sample_rate,
+            record_sensors=record_sensors)
 
         watchdog_task = WdTask(watchdog, arm_wd_event)
         watchdog_task.start()

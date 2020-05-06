@@ -27,7 +27,7 @@ class Application(object):
         return cls.__instance
 
     def __init__(self, measurements, events, arm_wd_event, drivers, sampler,
-                 simulation=False, fps=10, sample_rate=70):
+                 simulation=False, fps=10, sample_rate=70, record_sensors=False):
         self.should_run = True
         self.drivers = drivers
         self.arm_wd_event = arm_wd_event
@@ -54,7 +54,8 @@ class Application(object):
         self.master_frame = MasterFrame(self.root,
                                         measurements=measurements,
                                         events=events,
-                                        drivers=drivers)
+                                        drivers=drivers,
+                                        record_sensors=record_sensors)
         self.config = ConfigurationManager.config()
 
         # Load sensors calibrations
