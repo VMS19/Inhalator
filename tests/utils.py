@@ -4,6 +4,7 @@ import time
 
 THIS_DIRECTORY = os.path.dirname(__file__)
 
+
 class SamplesCSVParser(object):
     FLOW = "flow"
     OXYGEN = "oxygen"

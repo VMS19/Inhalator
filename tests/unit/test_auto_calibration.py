@@ -25,7 +25,7 @@ def test_single_cycle_tail_detection(offset):
                             min_tail_length=6,
                             grace_length=5)
 
-    dp_driver.set_offset_drift(offset)
+    dp_driver.offset_drift = offset
     for _ in dp_driver.seq:
         ts = timer.get_time()
         flow_slm = dp_driver.read()

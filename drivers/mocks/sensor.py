@@ -31,9 +31,6 @@ class MockSensor(object):
 
         return sample
 
-    def set_offset_drift(self, offset):
-        self.offset_drift = offset
-
 
 class DifferentialPressureMockSensor(MockSensor):
     def __init__(self, seq, error_probability=0):
