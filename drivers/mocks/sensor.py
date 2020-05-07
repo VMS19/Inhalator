@@ -11,7 +11,9 @@ class MockSensor(object):
     """
 
     def __init__(self, seq, error_probability=0):
+        # Duplicate the received sequence
         self.data, self.seq = tee(seq)
+
         self.data = cycle(self.data)
         self._calibration_offset = 0
         self.error_probability = error_probability
