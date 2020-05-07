@@ -1,5 +1,3 @@
-import argparse
-
 import consts
 from script_classes.remote_ssh_script import RemoteSSHScript
 
@@ -20,12 +18,12 @@ def print_stream_lines(stream_name, stream):
 
 
 class RemoteWDMute(RemoteSSHScript):
-    _parser = argparse.ArgumentParser(prog="remote-WD-mute", description="Mute remote's WD.")
-    _parser.add_argument("hostname", type=str, help="Remote's hostname/IP.")
-    _parser.add_argument("username", type=str, help="Remote's username.")
-    _parser.add_argument("password", type=str, help="Remote's password.")
+    def __init__(self, init=False, parser_args=None):
+        super(RemoteWDMute, self).__init__(init=init, parser_args=parser_args)
+        self._parser.prog = "remote-WD-mute"
+        self._parser.description = "Mute remote's WD."
 
-    def run(self):
+    def _main(self):
         """Main logic of the script that inherits the SSH script."""
         print(f'Running "{WD_STFU}" on remote')
         _, stdout, stderr = self._ssh_client.exec_command(WD_STFU)

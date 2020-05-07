@@ -1,5 +1,4 @@
 import ntpath
-import argparse
 from datetime import datetime
 
 import consts
@@ -24,14 +23,14 @@ def print_stream_lines(stream_name, stream):
 
 
 class UpgradeScript(RemoteScpScript):
-    _parser = argparse.ArgumentParser(prog="upgrade-script", description="Change the version on the remote inhalator monitor.")
-    _parser.add_argument("hostname", type=str, help="Remote's hostname/IP.")
-    _parser.add_argument("username", type=str, help="Remote's username.")
-    _parser.add_argument("password", type=str, help="Remote's password.")
-    _parser.add_argument("version_tarball_path", type=str, help="Local version's tarball file path.")
-    _parser.add_argument("-d", "--debug", action="store_true")
+    def __init__(self, init=False, parser_args=None):
+        super(UpgradeScript, self).__init__(init=init, parser_args=parser_args)
+        self._parser.prog = "upgrade-script"
+        self._parser.description = "Change the version on the remote inhalator monitor."
+        self._parser.add_argument("version_tarball_path", type=str, help="Local version's tarball file path.")
+        self._parser.add_argument("-d", "--debug", action="store_true")   
 
-    def run(self):
+    def _main(self):
         """Main logic of the script that inherits the SSH script."""
         tarball_basename = ntpath.basename(self._args.version_tarball_path)
         # Muting the wd.

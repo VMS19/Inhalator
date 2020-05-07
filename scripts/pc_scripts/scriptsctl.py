@@ -8,10 +8,10 @@ from scp_transfer_script import ScpTransferScript
 
 
 scripts = [
-    RemoteWDMute,
-    RemoteRTCUpdate,
-    ScpTransferScript,
-    UpgradeScript
+    RemoteWDMute(),
+    RemoteRTCUpdate(),
+    ScpTransferScript(),
+    UpgradeScript()
 ]
 scripts_names = [script.get_script_name() for script in scripts]
 running_scripts_text = []
