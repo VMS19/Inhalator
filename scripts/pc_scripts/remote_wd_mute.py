@@ -18,16 +18,17 @@ def print_stream_lines(stream_name, stream):
 
 
 class RemoteWDMute(RemoteSSHScript):
-    def __init__(self, init=False, parser_args=None):
-        super(RemoteWDMute, self).__init__(init=init, parser_args=parser_args)
+    def __init__(self):
+        super(RemoteWDMute, self).__init__()
         self._parser.prog = "remote-WD-mute"
         self._parser.description = "Mute remote's WD."
 
-    def _main(self):
+    def _main(self, args, pre_run_variables):
         """Main logic of the script that inherits the SSH script."""
         print(f'Running "{WD_STFU}" on remote')
-        _, stdout, stderr = self._ssh_client.exec_command(WD_STFU)
+        ssh_client = pre_run_variables["ssh_client"]
+        ssh_client.exec_command(WD_STFU)
 
 
 if __name__ == "__main__":
-    RemoteWDMute.new().run()
+    RemoteWDMute().run()

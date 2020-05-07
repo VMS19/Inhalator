@@ -23,22 +23,24 @@ def print_stream_lines(stream_name, stream):
 
 
 class UpgradeScript(RemoteScpScript):
-    def __init__(self, init=False, parser_args=None):
-        super(UpgradeScript, self).__init__(init=init, parser_args=parser_args)
+    def __init__(self):
+        super(UpgradeScript, self).__init__()
         self._parser.prog = "upgrade-script"
         self._parser.description = "Change the version on the remote inhalator monitor."
         self._parser.add_argument("version_tarball_path", type=str, help="Local version's tarball file path.")
         self._parser.add_argument("-d", "--debug", action="store_true")   
 
-    def _main(self):
+    def _main(self, args, pre_run_variables):
         """Main logic of the script that inherits the SSH script."""
-        tarball_basename = ntpath.basename(self._args.version_tarball_path)
+        ssh_client = pre_run_variables["ssh_client"]
+        scp_client = pre_run_variables["scp_client"]
+        tarball_basename = ntpath.basename(args.version_tarball_path)
         # Muting the wd.
-        self._ssh_client.exec_command(WD_STFU)
+        ssh_client.exec_command(WD_STFU)
         print("Finished running the WD mute script.")
         # Transfering the version tarball.
         before_transfer_datetime = datetime.now()
-        self._scp_client.put(self._args.version_tarball_path, "/home/pi/")
+        scp_client.put(args.version_tarball_path, "/home/pi/")
         after_transfer_datetime = datetime.now()
         print("Finished transfering the version's tarball.")
         # Running the script to stop the service, install the new version and start the service again.
@@ -60,9 +62,9 @@ class UpgradeScript(RemoteScpScript):
             cmd = cmd
             print(f"Running \"{cmd}\" on remote.")
             before_cmd_exec = datetime.now()
-            _, stdout, stderr = self._ssh_client.exec_command(cmd)
+            _, stdout, stderr = ssh_client.exec_command(cmd)
 
-            if self._args.debug:
+            if args.debug:
                 print_stream_lines("stdout", stdout)
                 print_stream_lines("stderr", stderr)
             after_cmd_exec = datetime.now()
@@ -85,4 +87,4 @@ class UpgradeScript(RemoteScpScript):
 
 
 if __name__ == "__main__":
-    UpgradeScript.new().run()
+    UpgradeScript().run()

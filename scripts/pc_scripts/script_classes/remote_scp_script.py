@@ -4,11 +4,16 @@ from .remote_ssh_script import RemoteSSHScript
 
 
 class RemoteScpScript(RemoteSSHScript):
-    def __init__(self, init=False, parser_args=None):
-        super(RemoteScpScript, self).__init__(init=init, parser_args=parser_args)
-        if init:
-            self._scp_client = scp.SCPClient(self._ssh_client.get_transport())
+    def _pre_run(self, args):
+        variables = super(RemoteScpScript, self)._pre_run(args)
 
-    def __del__(self):
-        if self._initiated and hasattr(self, '_scp_client') and self._scp_client is not None:
-            self._scp_client.close()
+        scp_client = scp.SCPClient(variables["ssh_client"].get_transport())
+
+        variables["scp_client"] = scp_client
+
+        return variables
+
+    def _post_run(self, args, pre_run_variables):
+        if "scp_client" in pre_run_variables and pre_run_variables["scp_client"] is not None:
+            pre_run_variables["scp_client"].close()
+        super(RemoteScpScript, self)._post_run(args, pre_run_variables)

@@ -4,25 +4,31 @@ import argparse
 
 
 class Script(object):
-    def __init__(self, init=False, parser_args=None):
+    def __init__(self):
         self._parser = argparse.ArgumentParser()
-        self._initiated = init
-        if init:
-            self._args = self._parser.parse_args(args=parser_args)
-
-    @classmethod
-    def new(cls, parser_args=None):
-        return cls(init=True, parser_args=parser_args)
 
     @abc.abstractmethod
-    def _main(self):
+    def _main(self, args, pre_run_variables):
         """Main logic of the script."""
         pass
 
-    def run(self):
+    def _pre_run(self, args):
+        return {}
+
+    def _post_run(self, args, pre_run_variables):
+        pass
+
+    def validate_parser_args(self, parser_args=None):
+        self._parser.parse_args(args=parser_args)
+
+    def run(self, parser_args=None):
         """Execution of the script with it's args."""
-        if self._initiated:
-            self._main()
+        args = self._parser.parse_args(args=parser_args)
+        pre_run_variables = self._pre_run(args=args)
+        try:
+            self._main(args=args, pre_run_variables=pre_run_variables)
+        finally:
+            self._post_run(args=args, pre_run_variables=pre_run_variables)
 
     def get_script_name(cls):
         return cls._parser.prog
