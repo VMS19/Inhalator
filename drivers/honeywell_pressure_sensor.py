@@ -1,8 +1,8 @@
+"""Generic driver for honeywell sensors."""
 import pigpio
 import logging
 
-from errors import I2CReadError, UnavailableMeasurmentError, \
-    SensorDiagnosticError
+from errors import I2CReadError, SensorDiagnosticError
 
 from .i2c_driver import I2cDriver
 from .mux_i2c import MuxI2C
@@ -14,6 +14,7 @@ mux = MuxI2C()
 
 class HoneywellPressureSensor(I2cDriver):
     """Driver class for Honeywell pressure and DP sensors."""
+
     MUX_PORT = NotImplemented
     I2C_ADDRESS = 0x28
     MEASURE_BYTE_COUNT = 0x2
@@ -35,11 +36,12 @@ class HoneywellPressureSensor(I2cDriver):
         return cmh2o_pressure
 
     def read(self):
-        """ Returns pressure as cmh2o """
+        """Return pressure as cmh2o."""
         try:
             with mux.lock(self.MUX_PORT):
-                read_size, pressure_raw = self._pig.i2c_read_device(self._dev,
-                        self.MEASURE_BYTE_COUNT)
+                read_size, pressure_raw = \
+                    self._pig.i2c_read_device(self._dev,
+                                              self.MEASURE_BYTE_COUNT)
 
             if read_size >= self.MEASURE_BYTE_COUNT:
                 status_reading = (pressure_raw[0] >> 6) & 0x03
@@ -63,11 +65,10 @@ class HoneywellPressureSensor(I2cDriver):
 
         elif status == self.STATUS_STALE_DATA:
             log.warning("Sensor's measure data not ready. sampling too fast?")
-            """We don't raise UnavailableMeasurmentError, 
-            so the read will return the previously read value.
-            Another possible behaviour that should be considered, is to 
-            retry reading, until new measurement is available (normal status).
-            """
+            # We don't raise UnavailableMeasurmentError,
+            # so the read will return the previously read value.
+            # Another possible behaviour that should be considered, is to
+            # retry reading, until new measurement is available (normal status).
 
         elif status == self.STATUS_DIAGNOSTIC_COND:
             log.error("Sensor diagnostic fault indicated")
