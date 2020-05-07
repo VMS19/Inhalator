@@ -63,10 +63,9 @@ class HoneywellPressureSensor(I2cDriver):
 
         elif status == self.STATUS_STALE_DATA:
             log.warning("Sensor's measure data not ready. sampling too fast?")
-            # raise UnavailableMeasurmentError("Sensor data unavailable")
-            """We don't raise error, so the read will return the 
-            previously read value.
-            Other possible behaviour that should be considered, is to 
+            """We don't raise UnavailableMeasurmentError, 
+            so the read will return the previously read value.
+            Another possible behaviour that should be considered, is to 
             retry reading, until new measurement is available (normal status).
             """
 
