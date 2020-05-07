@@ -12,7 +12,10 @@ ITERATIONS = 10
 
 
 class ErrorAfter(object):
-    # Callable that will raise `CallableExhausted` exception after `limit` calls
+    """
+    Callable that will raise `CallableExhausted`
+    exception after `limit` calls
+    """
     def __init__(self, limit):
         self.limit = limit
         self.calls = 0
@@ -27,17 +30,16 @@ class CallableExhausted(Exception):
     pass
 
 
-class WdEvent(object):
-    def isSet(self):
-        return True
-
-    def clear(self):
-        return True
-
-
+@patch('threading.Event.isSet', side_effect=[True] * ITERATIONS)
 @patch('drivers.mocks.mock_wd_driver.MockWdDriver.arm', side_effect=ErrorAfter(ITERATIONS))
-def test_wd_task(mocked_wd):
-    watchdog = WdTask(DriverFactory.get_mock_wd_driver(), WdEvent())
+def test_wd_task(mocked_wd, mocked_event):
+    """
+    Test wd task works correctly.
+
+    Expect:
+        WD will arm X times in X * WD_TIMEOUT seconds
+    """
+    watchdog = WdTask(DriverFactory.get_mock_wd_driver(), Event())
     
     start = time.time()
     with pytest.raises(CallableExhausted):
