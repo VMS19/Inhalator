@@ -1,19 +1,18 @@
 from queue import Queue
 from threading import Lock
 
-from data.configurations import Configurations
-
 
 class Measurements(object):
-    def __init__(self, sample_rate=22):
+    def __init__(self, seconds_in_graph=12, sample_rate=22):
+        self._seconds_in_graph = seconds_in_graph
+        self.sample_rate = sample_rate
         self.inspiration_volume = 0
         self.expiration_volume = 0
         self.avg_insp_volume = 0
         self.avg_exp_volume = 0
         self.flow_measurements = Queue(maxsize=40)  # TODO: Rename?
         self.pressure_measurements = Queue(maxsize=40)  # TODO: Rename?
-        self.sample_interval = 1 / sample_rate
-        self.x_axis = range(0, self._amount_of_samples_in_graph)
+        self.x_axis = range(0, self.max_samples)
         self.intake_peak_flow = 0
         self.intake_peak_pressure = 0
         self.peep_min_pressure = 0
@@ -66,6 +65,5 @@ class Measurements(object):
         self.battery_percentage = percentage
 
     @property
-    def _amount_of_samples_in_graph(self):
-        config = Configurations.instance()
-        return int(config.graph_seconds / self.sample_interval)
+    def max_samples(self):
+        return int(self._seconds_in_graph * self.sample_rate)

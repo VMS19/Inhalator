@@ -1,57 +1,28 @@
-import os
-
 import pytest
-from threading import Event
 
-from algo import Sampler
-from application import Application
-from data import alerts
-from data.configurations import Configurations
-from data.events import Events
-from data.measurements import Measurements
+from data.alerts import AlertCodes
 from data.observable import Observable
-from data.thresholds import O2Range, PressureRange, RespiratoryRateRange, \
-    VolumeRange
-from drivers.driver_factory import DriverFactory
+
 from graphics.configure_alerts_screen import ConfigureAlarmsScreen
+from tests.data.files import path_to_file
 
 SAMPLES_AMOUNT = 604
-
-@pytest.fixture
-def driver_factory():
-    this_dir = os.path.dirname(__file__)
-    file_path = os.path.join(this_dir, "03-04-2020.csv")
-    return DriverFactory(simulation_mode=True, simulation_data=file_path)
+TEST_FILE = path_to_file("03-04-2020.csv")
 
 
-@pytest.fixture
-def config():
-    c = Configurations.instance()
-    c.o2_range = O2Range(min=0, max=100)
-    c.pressure_range = PressureRange(min=-1, max=30)
-    c.resp_rate_range = RespiratoryRateRange(min=0, max=30)
-    c.volume_range = VolumeRange(min=100, max=600)
-    c.graph_seconds = 12
-    c.breathing_threshold = 3.5
-    c.log_enabled = False
-    c.boot_alert_grace_time = 0
-    return c
-
-
-@pytest.fixture
-def measurements():
-    return Measurements()
-
-
-@pytest.fixture
-def events():
-    return Events()
-
-
-@pytest.mark.parametrize("alert_type", ['pressure', 'volume', 'oxygen'])
-def test_sampler_alerts_when_sensor_exceeds_maximum(events, measurements, config, driver_factory,
-                                                    alert_type):
-    """Check that relevant alert is sent when sensor pass the maximum threshold
+@pytest.mark.parametrize("data", [TEST_FILE])
+@pytest.mark.parametrize(
+    ["sensor", "expected_alert", "threshold"],
+    [("pressure", AlertCodes.PRESSURE_HIGH, "max"),
+     ("pressure", AlertCodes.PRESSURE_LOW, "min"),
+     ("volume", AlertCodes.VOLUME_HIGH, "max"),
+     ("volume", AlertCodes.VOLUME_LOW, "min"),
+     ("oxygen", AlertCodes.OXYGEN_HIGH, "max"),
+     ("oxygen", AlertCodes.OXYGEN_LOW, "min"), ])
+def test_sampler_alerts_when_sensor_exceeds_threshold(
+        events, app, config, driver_factory, sensor, expected_alert,
+        threshold, data):
+    """Check that relevant alert is sent when sensor pass the threshold
 
     The test iterate over the three sensors and for each one run the test.
 
@@ -61,112 +32,39 @@ def test_sampler_alerts_when_sensor_exceeds_maximum(events, measurements, config
         * Increase the relevant sensor minimum threshold to be equal to maximum
         * Run lung simulation and check that there is an alert for passing high threshold
     """
-    arm_wd_event = Event()
-    flow_sensor = driver_factory.acquire_driver("flow")
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    a2d = driver_factory.acquire_driver("a2d")
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
-
-    app = Application(measurements=measurements,
-                      events=events,
-                      arm_wd_event=arm_wd_event,
-                      drivers=driver_factory,
-                      sampler=sampler,
-                      simulation=True,)
-
     app.run_iterations(SAMPLES_AMOUNT)
     assert len(events.alerts_queue) == 0
 
-    configure_alerts_screen = ConfigureAlarmsScreen(app.master_frame.element,
-                                                    drivers=driver_factory,
-                                                    observer=Observable())
-    configure_alerts_screen.show()
-    getattr(configure_alerts_screen, f"{alert_type}_section").max_button.publish()
+    config_screen = ConfigureAlarmsScreen(
+        app.master_frame.element,
+        drivers=driver_factory,
+        observer=Observable())
+    config_screen.show()
+    section = getattr(config_screen, f"{sensor}_section")
+    button = getattr(section, f"{threshold}_button")
+    button.invoke()
     app.gui_update()
 
-    sensor = alert_type
-    if alert_type == "oxygen":
-        sensor = 'o2'
+    range_name = sensor
+    if sensor == "oxygen":
+        range_name = 'o2'
 
-    max_val = config[f"{sensor}_range"].max
-    min_val = config[f"{sensor}_range"].min
-    step_size = config.pressure_range.step
-    steps = int((max_val - min_val) / step_size)
+    sensor_range = getattr(config.thresholds, range_name)
+    steps = int((sensor_range.max - sensor_range.min) / sensor_range.step)
+
+    click = {
+        "max": config_screen.on_down_button_click,
+        "min": config_screen.on_up_button_click
+    }.get(threshold)
     for _ in range(steps):
-        configure_alerts_screen.on_down_button_click()
+        click()
 
-    configure_alerts_screen.confirm()
+    config_screen.confirm()
     app.gui_update()
 
     app.run_iterations(SAMPLES_AMOUNT, render=False)
-    app.root.destroy()
     assert len(events.alerts_queue) > 0
 
-    all_alerts = list(events.alerts_queue.queue.queue)
-    expected_alert = alerts.AlertCodes[f"{alert_type}_high".upper()]
-    assert all(alert == expected_alert for alert in all_alerts)
-
-
-@pytest.mark.parametrize("alert_type", ['pressure', 'volume', 'oxygen'])
-def test_sampler_alerts_when_sensor_exceeds_minimum(events, measurements, config, driver_factory,
-                                                    alert_type):
-    """Check that relevant alert is sent when sensor pass the minimum threshold
-
-    The test iterate over the three sensors and for each one run the test.
-
-    Flow:
-        * Run lung simulation and check that there aren't any alerts
-        * Open configuration screen
-        * Increase the relevant sensor maximum threshold to be equal to minimum
-        * Run lung simulation and check that there is an alert for passing low threshold
-    """
-    arm_wd_event = Event()
-    flow_sensor = driver_factory.acquire_driver("flow")
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    a2d = driver_factory.acquire_driver("a2d")
-    timer = driver_factory.acquire_driver("timer")
-    sampler = Sampler(measurements, events, flow_sensor, pressure_sensor,
-                      a2d, timer)
-
-    app = Application(measurements=measurements,
-                      events=events,
-                      arm_wd_event=arm_wd_event,
-                      drivers=driver_factory,
-                      sampler=sampler,
-                      simulation=True,)
-
-    app.run_iterations(SAMPLES_AMOUNT)
-    assert len(events.alerts_queue) == 0
-
-    configure_alerts_screen = ConfigureAlarmsScreen(app.master_frame.element,
-                                                    drivers=driver_factory,
-                                                    observer=Observable())
-    configure_alerts_screen.show()
-    getattr(configure_alerts_screen, f"{alert_type}_section").min_button.publish()
-    app.gui_update()
-
-    sensor = alert_type
-    if alert_type == "oxygen":
-        sensor = 'o2'
-
-    max_val = config[f"{sensor}_range"].max
-    min_val = config[f"{sensor}_range"].min
-    step_size = config.pressure_range.step
-    steps = int((max_val - min_val) / step_size)
-    for _ in range(steps):
-        configure_alerts_screen.on_up_button_click()
-
-    configure_alerts_screen.confirm()
-    app.gui_update()
-
-    app.run_iterations(SAMPLES_AMOUNT, render=False)
-    app.root.destroy()
-    assert len(events.alerts_queue) > 0
-
-    all_alerts = list(events.alerts_queue.queue.queue)
-    expected_alert = alerts.AlertCodes[f"{alert_type}_low".upper()]
-    assert all(alert == expected_alert for alert in all_alerts)
-
-
+    all_alerts = list(events.alerts_queue.active_alerts)
+    assert all(alert == expected_alert for alert in all_alerts),\
+        f"Unexpected alert {events.alerts_queue.active_alerts}"

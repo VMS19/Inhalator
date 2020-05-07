@@ -1,9 +1,11 @@
+from copy import copy
+
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from matplotlib import rcParams
 from matplotlib import ticker
 
-from data.configurations import Configurations
+from data.configurations import ConfigurationManager
 from graphics.themes import Theme
 
 
@@ -20,12 +22,11 @@ class Graph(object):
         self.parent = parent
         self.root = parent.element
         self.measurements = measurements
-        self.config = Configurations.instance()
+        self.config = ConfigurationManager.config()
         self.height = height
         self.width = width
         self.graph_bbox = None
         self.graph_bg = None
-        self.current_min_y, self.current_max_y = self.configured_scale
 
         self.figure = Figure(figsize=(self.width/self.DPI,
                                       self.height/self.DPI),
@@ -55,7 +56,7 @@ class Graph(object):
         self.axis.axhline(y=0, color='white', lw=1)
 
         # Configure graph
-        self.display_values = [0] * self.measurements._amount_of_samples_in_graph
+        self.display_values = [0] * self.measurements.max_samples
         self.graph, = self.axis.plot(
             self.measurements.x_axis,
             self.display_values,
@@ -66,7 +67,9 @@ class Graph(object):
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.root)
 
         # Scaling
-        self.graph.axes.set_ylim(*self.configured_scale)
+        self.current_min_y = self.configured_scale.min
+        self.current_max_y = self.configured_scale.max
+        self.graph.axes.set_ylim(self.current_min_y, self.current_max_y)
         self.figure.tight_layout()
 
     @staticmethod
@@ -130,7 +133,7 @@ class FlowGraph(Graph):
 
     @property
     def configured_scale(self):
-        return self.config.flow_y_scale
+        return self.config.graph_y_scale.flow
 
     def autoscale(self):
         """Symmetrically rescale the Y-axis."""
@@ -143,7 +146,8 @@ class FlowGraph(Graph):
 
         # Once every <self.ZOOM_IN_FREQUENCY> calls we want to try and
         # zoom back-in
-        original_min, original_max = self.configured_scale
+        original_min = self.configured_scale.min
+        original_max = self.configured_scale.max
 
         if (self.current_iteration % self.ZOOM_IN_FREQUENCY == 0 and
                 new_max_y <= original_max < self.current_max_y and
@@ -178,7 +182,7 @@ class FlowGraph(Graph):
         self.render()
 
     def update(self):
-        if self.config.autoscale:
+        if self.configured_scale.autoscale:
             self.autoscale()
 
         super().update()
@@ -195,13 +199,12 @@ class AirPressureGraph(Graph):
         super().__init__(*args, **kwargs)
         self.min_threshold = None
         self.max_threshold = None
-        self.config.pressure_range.observer.subscribe(self, self.update_thresholds)
-        self.update_thresholds((self.config.pressure_range.min,
-                                self.config.pressure_range.max))
+        self.range = copy(self.config.thresholds.pressure)
+        self.update_thresholds()
 
-    def update_thresholds(self, range):
-        min_value, max_value = range
-
+    def update_thresholds(self):
+        min_value = self.config.thresholds.pressure.min
+        max_value = self.config.thresholds.pressure.max
         if self.min_threshold:
             self.min_threshold.remove()
         if self.max_threshold:
@@ -213,9 +216,15 @@ class AirPressureGraph(Graph):
         self.canvas.draw()
         self.save_bg()
 
+    def update(self):
+        super(AirPressureGraph, self).update()
+        if self.range != self.config.thresholds.pressure:
+            self.update_thresholds()
+            self.range = copy(self.config.thresholds.pressure)
+
     @property
     def configured_scale(self):
-        return self.config.pressure_y_scale
+        return self.config.graph_y_scale.pressure
 
     @property
     def element(self):

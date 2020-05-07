@@ -6,17 +6,14 @@ from drivers.driver_factory import DriverFactory
 from drivers.mocks.sensor import DifferentialPressureMockSensor
 from drivers.mocks.timer import MockTimer
 from logic.auto_calibration import TailDetector
+from tests.data.files import path_to_file
 
 SIMULATION_FOLDER = "simulation"
 
 
-@pytest.mark.parametrize('offset', range(-7, 7))
-def test_single_cycle_tail_detection(offset):
-    this_dir = os.path.dirname(__file__)
-    file_path = os.path.join(this_dir, SIMULATION_FOLDER,
-                             "single_step_cycle.csv")
-    driver_factory = DriverFactory(simulation_mode=True,
-                                   simulation_data=file_path)
+@pytest.mark.parametrize("data", [path_to_file("single_step_cycle.csv")])
+@pytest.mark.parametrize("offset", range(-7, 7))
+def test_single_cycle_tail_detection(offset, data, driver_factory):
     dp_driver: DifferentialPressureMockSensor = driver_factory.acquire_driver("flow")
     timer: MockTimer = driver_factory.acquire_driver("timer")
     detector = TailDetector(dp_driver,
@@ -36,12 +33,8 @@ def test_single_cycle_tail_detection(offset):
     assert result == pytest.approx(offset, rel=0.001)
 
 
-def test_single_cycle_tail_ts():
-    this_dir = os.path.dirname(__file__)
-    file_path = os.path.join(this_dir, SIMULATION_FOLDER,
-                             "single_cycle_good.csv")
-    driver_factory = DriverFactory(simulation_mode=True,
-                                   simulation_data=file_path)
+@pytest.mark.parametrize("data", [path_to_file("single_cycle_good.csv")])
+def test_single_cycle_tail_ts(data, driver_factory):
     dp_driver: DifferentialPressureMockSensor = driver_factory.acquire_driver("flow")
     timer: MockTimer = driver_factory.acquire_driver("timer")
     detector = TailDetector(dp_driver,
@@ -57,11 +50,8 @@ def test_single_cycle_tail_ts():
         detector.add_sample(flow_slm, ts)
 
     detector.process()
-    assert len(detector.start_tails_ts) == 1, "only one tail should be found"
-    assert 27.679 == detector.start_tails_ts[0], f"Expected tail to start 27.679, " \
-                                                 f"actually started at {detector.start_tails_ts[0]}"
+    assert len(detector.start_tails_ts) == len(detector.end_tails_ts) == 1, \
+        "only one tail should be found"
 
-    assert len(detector.end_tails_ts) == 1, "only one tail should be found"
-    assert 27.916 == detector.end_tails_ts[0], f"Expected tail to start 27.916, " \
-                                               f"actually started at {detector.end_tails_ts[0]}"
-
+    tail = detector.start_tails_ts[0], detector.end_tails_ts[0]
+    assert tail == (27.679, 27.916)

@@ -3,10 +3,9 @@ import time
 from uptime import uptime
 from tkinter import Tk
 
+from data.configurations import ConfigurationManager
 from graphics.panes import MasterFrame
 from graphics.themes import Theme
-from data.configurations import Configurations, ConfigurationState
-from data.alerts import AlertCodes
 from graphics.calibrate.screen import calc_calibration_line
 from graphics.constants import SCREEN_WIDTH, SCREEN_HEIGHT
 
@@ -28,7 +27,7 @@ class Application(object):
         return cls.__instance
 
     def __init__(self, measurements, events, arm_wd_event, drivers, sampler,
-                 simulation=False, fps=10, sample_rate=70):
+                 simulation=False, fps=10, sample_rate=70, record_sensors=False):
         self.should_run = True
         self.drivers = drivers
         self.arm_wd_event = arm_wd_event
@@ -55,23 +54,18 @@ class Application(object):
         self.master_frame = MasterFrame(self.root,
                                         measurements=measurements,
                                         events=events,
-                                        drivers=drivers)
-
-        # We want to alert that config.json is corrupted
-        if Configurations.configuration_state() == ConfigurationState.CONFIG_CORRUPTED:
-            events.alerts_queue.enqueue_alert(AlertCodes.NO_CONFIGURATION_FILE)
-            # TODO: Move this logic to Configurations.
-            Configurations.instance().save_to_file()  # Create config file for future use.
-
-        self.config = Configurations.instance()
+                                        drivers=drivers,
+                                        record_sensors=record_sensors)
+        self.config = ConfigurationManager.config()
 
         # Load sensors calibrations
         differential_pressure_driver = self.drivers.acquire_driver("differential_pressure")
-        differential_pressure_driver.set_calibration_offset(self.config.dp_offset)
+        differential_pressure_driver.set_calibration_offset(self.config.calibration.dp_offset)
         oxygen_driver = self.drivers.acquire_driver("a2d")
-        oxygen_driver.set_oxygen_calibration(*calc_calibration_line(
-                                             self.config.oxygen_point1,
-                                             self.config.oxygen_point2))
+        oxygen_driver.set_oxygen_calibration(
+            *calc_calibration_line(
+                self.config.calibration.oxygen_point1,
+                self.config.calibration.oxygen_point2))
 
     def exit(self):
         self.root.quit()

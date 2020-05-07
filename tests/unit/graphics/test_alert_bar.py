@@ -12,7 +12,7 @@ from graphics.themes import Theme, DarkTheme
 
 
 @pytest.fixture
-def alert_bar() -> IndicatorAlertBar:
+def alert_bar(config) -> IndicatorAlertBar:
     Theme.ACTIVE_THEME = DarkTheme()
     parent = MagicMock()
     parent.element = Frame()
@@ -23,8 +23,6 @@ def alert_bar() -> IndicatorAlertBar:
 
     bar = IndicatorAlertBar(parent=parent, events=events, drivers=drivers,
                             measurements=measurements)
-
-    bar.configs.low_battery_percentage = 15
     measurements.battery_percentage = 90
 
     return bar
@@ -39,9 +37,9 @@ def test_on_alert(alert_bar: IndicatorAlertBar):
     assert alert_bar.message_label["text"] == "Low Volume"
 
 
-def test_mute_disappears_after_some_time(alert_bar: IndicatorAlertBar):
+def test_mute_disappears_after_some_time(alert_bar: IndicatorAlertBar, config):
     alert_bar.events.mute_alerts._alerts_muted = True
-    alert_bar.configs.mute_time_limit = 120  # Seconds
+    config.mute_time_limit = 120  # Seconds
 
     with freezegun.freeze_time("12 February 2000 00:00:00"):
         mute_time = time.time()
@@ -59,24 +57,24 @@ def test_mute_alerts(alert_bar: IndicatorAlertBar):
 
     alert_bar.events.mute_alerts._alerts_muted = True
     alert_bar.events.mute_alerts.mute_alerts(False)
-    assert alert_bar.events.mute_alerts._alerts_muted == False
+    assert not alert_bar.events.mute_alerts._alerts_muted
 
     alert_bar.events.mute_alerts._alerts_muted = False
     alert_bar.events.mute_alerts.mute_alerts(True)
-    assert alert_bar.events.mute_alerts._alerts_muted == True
+    assert alert_bar.events.mute_alerts._alerts_muted
 
     alert_bar.events.mute_alerts._alerts_muted = True
     alert_bar.events.mute_alerts.mute_alerts()
-    assert alert_bar.events.mute_alerts._alerts_muted == False
+    assert not alert_bar.events.mute_alerts._alerts_muted
 
     alert_bar.events.mute_alerts._alerts_muted = False
     alert_bar.events.mute_alerts.mute_alerts()
-    assert alert_bar.events.mute_alerts._alerts_muted == True
+    assert alert_bar.events.mute_alerts._alerts_muted
 
 
-def test_mute_does_not_disappear_immediately(alert_bar: IndicatorAlertBar):
+def test_mute_does_not_disappear_immediately(alert_bar: IndicatorAlertBar, config):
     alert_bar.events.mute_alerts._alerts_muted = True
-    alert_bar.configs.mute_time_limit = 120  # Seconds
+    config.mute_time_limit = 120  # Seconds
 
     with freezegun.freeze_time("12 February 2000 00:00:00"):
         mute_time = time.time()
@@ -215,9 +213,9 @@ def test_alert_on_low_oxygen(alert_bar: IndicatorAlertBar):
     assert alert_bar.message_label["text"] == "Oxygen Too Low"
 
 
-def test_on_low_battery(alert_bar: IndicatorAlertBar):
+def test_on_low_battery(alert_bar: IndicatorAlertBar, config):
     alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.OK)
-    alert_bar.configs.low_battery_percentage = 15
+    config.low_battery_percentage = 15
     alert_bar.measurements.battery_percentage = 4
     alert_bar.update()
 

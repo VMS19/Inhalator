@@ -7,27 +7,25 @@ from graphics.graph_summaries import VolumeSummary, BPMSummary, \
 from graphics.right_menu_options import (MuteAlertsButton,
                                          ClearAlertsButton,
                                          LockThresholdsButton,
-                                         OpenConfigureAlertsScreenButton,
-                                         OpenAlertsHistoryScreenButton)
+                                         OpenConfigureAlertsScreenButton)
 from graphics.snackbar.recalibration_snackbar import RecalibrationSnackbar
-from graphics.snackbar.lock_snackbar import LockSnackbar
 from graphics.constants import SCREEN_HEIGHT, SCREEN_WIDTH
 from graphics.themes import Theme
 from data.observable import Observable
 
 
 class MasterFrame(object):
-    def __init__(self, root, drivers, events, measurements):
+    def __init__(self, root, drivers, events, measurements, record_sensors=False):
         self.root = root
         observer = Observable()
 
         self.master_frame = Frame(master=self.root, bg="black")
-        self.left_pane = LeftPane(self, measurements=measurements)
-        self.right_pane = RightPane(self, events=events, drivers=drivers,
-                                    observer=observer)
+        self.left_pane = LeftPane(parent=self, measurements=measurements)
+        self.right_pane = RightPane(
+            self, events=events, drivers=drivers, observer=observer)
         self.center_pane = CenterPane(self, measurements=measurements)
         self.top_pane = TopPane(self, events=events, drivers=drivers,
-                                measurements=measurements)
+                                measurements=measurements, record_sensors=record_sensors)
         self.recalibration_bar = RecalibrationSnackbar(self.root,
                                                        drivers,
                                                        observer)
@@ -114,10 +112,12 @@ class CenterPane(object):
 
         self.frame = Frame(master=self.root, bg=Theme.active().SURFACE,
                            height=self.height, width=self.width)
-        self.flow_graph = FlowGraph(self, self.measurements, self.width,
-                                    self.height/2)
-        self.pressure_graph = AirPressureGraph(self, self.measurements,
-                                               self.width, self.height/2)
+        self.flow_graph = FlowGraph(
+            parent=self, measurements=self.measurements, width=self.width,
+            height=self.height/2)
+        self.pressure_graph = AirPressureGraph(
+            parent=self, measurements=self.measurements, width=self.width,
+            height=self.height/2)
 
     def pop_queue_to_list(self, q, lst):
         # pops all queue values into list, returns if items appended to queue
@@ -141,14 +141,13 @@ class CenterPane(object):
         for graph in self.graphs:
             graph.render()
 
-
     def update(self):
-        # Get measurments from peripherals
+        # Get measurements from peripherals
 
         self.pop_queue_to_list(self.measurements.pressure_measurements,
-            self.pressure_graph.display_values)
+                               self.pressure_graph.display_values)
         self.pop_queue_to_list(self.measurements.flow_measurements,
-            self.flow_graph.display_values)
+                               self.flow_graph.display_values)
 
         for graph in self.graphs:
             graph.update()
@@ -178,6 +177,7 @@ class RightPane(object):
         self.are_buttons_locked = False
         self.lockable_buttons = [self.mute_alerts_btn, self.configure_alerts_btn,
                                  self.clear_alerts_btn]
+
     @property
     def buttons(self):
         return (self.mute_alerts_btn,
@@ -211,8 +211,9 @@ class RightPane(object):
             self.lock_thresholds_btn.unlock_button()
             self.are_buttons_locked = True
 
+
 class TopPane(object):
-    def __init__(self, parent, events, drivers, measurements):
+    def __init__(self, parent, events, drivers, measurements, record_sensors=False):
         self.parent = parent
         self.events = events
 
@@ -230,7 +231,8 @@ class TopPane(object):
         self.alerts_bar = IndicatorAlertBar(self,
                                             events=events,
                                             drivers=drivers,
-                                            measurements=measurements)
+                                            measurements=measurements,
+                                            record_sensors=record_sensors)
 
     @property
     def element(self):

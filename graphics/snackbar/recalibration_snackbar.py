@@ -12,27 +12,29 @@ class RecalibrationSnackbar(BaseSnackbar):
     def __init__(self, root, drivers, observer):
         super().__init__(root)
 
-        self.calibrate_button = Button(master=self.buttons_frame,
-                                       background=self.background_color,
-                                       foreground=self.calibrate_button_color,
-                                       activebackground=self.background_color,
-                                       activeforeground=self.calibrate_button_color,
-                                       font=("Roboto", 14, "bold"),
-                                       highlightthickness=0,
-                                       bd=0,
-                                       command=self.on_calibrate,
-                                       text="CALIBRATE")
+        self.calibrate_button = Button(
+            master=self.buttons_frame,
+            background=self.background_color,
+            foreground=self.calibrate_button_color,
+            activebackground=self.background_color,
+            activeforeground=self.calibrate_button_color,
+            font=("Roboto", 14, "bold"),
+            highlightthickness=0,
+            bd=0,
+            command=self.on_calibrate,
+            text="CALIBRATE")
 
-        self.snooze_button = Button(master=self.buttons_frame,
-                                    background=self.background_color,
-                                    foreground=self.snooze_button_color,
-                                    activebackground=self.background_color,
-                                    activeforeground=self.snooze_button_color,
-                                    bd=0,
-                                    highlightthickness=0,
-                                    command=self.on_snooze,
-                                    font=("Roboto", 14, "bold"),
-                                    text="NOT NOW")
+        self.snooze_button = Button(
+            master=self.buttons_frame,
+            background=self.background_color,
+            foreground=self.snooze_button_color,
+            activebackground=self.background_color,
+            activeforeground=self.snooze_button_color,
+            bd=0,
+            highlightthickness=0,
+            command=self.on_snooze,
+            font=("Roboto", 14, "bold"),
+            text="NOT NOW")
 
         self.drivers = drivers
         self.timer = drivers.acquire_driver("timer")
@@ -44,7 +46,7 @@ class RecalibrationSnackbar(BaseSnackbar):
         super().show()
 
         self.log.warning(f"User has not calibrated air-flow sensor for at "
-                         f"least {self.config.dp_calibration_timeout_hrs} "
+                         f"least {self.config.calibration.dp_calibration_timeout_hrs} "
                          f"hours. Flow recalibration notice has been "
                          f"popped-up")
 
@@ -56,7 +58,7 @@ class RecalibrationSnackbar(BaseSnackbar):
         self.hide()
 
     def update(self):
-        if not self.config.flow_recalibration_reminder:
+        if not self.config.calibration.flow_recalibration_reminder:
             return
 
         # we don't want to notify about recalibration right away when
@@ -69,7 +71,7 @@ class RecalibrationSnackbar(BaseSnackbar):
 
         next_calibration_time = (
             self.last_dp_calibration_ts +
-            self.config.dp_calibration_timeout_hrs * HOURS_TO_SECONDS)
+            self.config.calibration.dp_calibration_timeout_hrs * HOURS_TO_SECONDS)
 
         if not self.shown and now >= next_calibration_time:
             self.show()
