@@ -1,4 +1,5 @@
 import argparse
+from csv import DictWriter
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -110,10 +111,12 @@ def save_events_to_csv(vsm, td):
     end_tail = [(ts, 'end tail') for ts in td.end_tails_ts]
 
     events = sorted(inhales + exhales + start_tail + end_tail)
-    with open("events.csv", 'w') as event_file:
-        event_file.write("timestamp,event\n")
+    with open('events.csv', 'w', newline='') as events_file:
+        fieldnames = ['timestamp', 'event']
+        writer = DictWriter(events_file, fieldnames=fieldnames)
+        writer.writeheader()
         for ts, event in events:
-            event_file.write(f"{ts},{event}\n")
+            writer.writerow({'timestamp': ts, 'event': event})
 
 
 def save_volumes_to_csv(vsm):
@@ -126,10 +129,14 @@ def save_volumes_to_csv(vsm):
         exhales = exhales[1:]
 
     insp_exp = [insp / exp for insp, exp in zip(inhales, exhales)]
-    with open("volumes.csv", 'w') as volumes_file:
-        volumes_file.write("#breath,exp_vol,insp_vol,insp/exp\n")
+    with open("volumes.csv", 'w', newline='') as volumes_file:
+        fieldnames = ['breath', 'exp_vol', 'insp_vol', 'insp/exp']
+        writer = DictWriter(volumes_file, fieldnames=fieldnames)
+        writer.writeheader()
         for i, (insp, exp, ratio) in enumerate(zip(inhales, exhales, insp_exp)):
-            volumes_file.write(f"{i + 1},{insp},{exp},{ratio}\n")
+            row = {'breath': i + 1, 'exp_vol': exp,
+                   'insp_vol': insp, 'insp/exp': ratio}
+            writer.writerow(row)
 
 
 def parse_arguments():
