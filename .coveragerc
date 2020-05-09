@@ -4,6 +4,12 @@ branch = True
 omit =
     tests/*
     drivers/mocks/*
+    drivers/debug/*
+    drivers/sfm3200_flow_sensor.py
+    drivers/sdp8_pressure_sensor.py
+    drivers/hce_pressure_sensor.py
+    scripts/*
+    plot.py
     .tox/*
 
 
