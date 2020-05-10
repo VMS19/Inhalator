@@ -1,6 +1,7 @@
 from math import copysign
 from itertools import cycle
 from numpy import random
+from itertools import tee
 
 
 class MockSensor(object):
@@ -10,9 +11,13 @@ class MockSensor(object):
     """
 
     def __init__(self, seq, error_probability=0):
-        self.data = cycle(seq)
+        # Duplicate the received sequence
+        self.data, self.seq = tee(seq)
+
+        self.data = cycle(self.data)
         self._calibration_offset = 0
         self.error_probability = error_probability
+        self.offset_drift = 0
 
     def random_error(self):
         exe = random.choice([ValueError, OSError, TimeoutError, ZeroDivisionError])
@@ -21,7 +26,7 @@ class MockSensor(object):
     def read(self, *args, **kwargs):
         # We read the sample from the data before raising the exception so that
         # IF an exception will be raise - that sample will be lost.
-        sample = next(self.data)
+        sample = next(self.data) + self.offset_drift
 
         if random.random() < self.error_probability:
             raise self.random_error()
@@ -45,10 +50,15 @@ class DifferentialPressureMockSensor(MockSensor):
         return self.flow_to_pressure(sample) - self._calibration_offset
 
     def read(self, *args, **kwargs):
-        sample = super().read(*args, **kwargs)
+        sample = next(self.data)
 
-        return self.pressure_to_flow(self.flow_to_pressure(sample) -
-                                     self._calibration_offset)
+        if random.random() < self.error_probability:
+            raise self.random_error()
+
+        sample_dp = self.flow_to_pressure(sample) + self.offset_drift
+        sample_dp -= self._calibration_offset
+        sample_flow = self.pressure_to_flow(sample_dp)
+        return sample_flow
 
     def pressure_to_flow(self, pressure):
         return copysign(abs(pressure) ** 0.5, pressure)

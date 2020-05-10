@@ -23,8 +23,9 @@ class IndicatorAlertBar(object):
     BATTERY_MISSING_PATH = os.path.join(
         RESOURCES_DIRECTORY,
         "baseline_battery_unknown_white_18dp.png")
+    R_LETTER_PATH = os.path.join(RESOURCES_DIRECTORY, "r_letter.png")
 
-    def __init__(self, parent, events, drivers, measurements):
+    def __init__(self, parent, events, drivers, measurements, record_sensors=False):
         self.parent = parent
         self.root = parent.element
         self.events = events
@@ -58,6 +59,7 @@ class IndicatorAlertBar(object):
                                             file=self.BATTERY_LOW_PATH)
         self.battery_missing_image = PhotoImage(name="missing",
                                                 file=self.BATTERY_MISSING_PATH)
+        self.r_letter_image = PhotoImage(name="r_letter", file=self.R_LETTER_PATH)
 
         self.battery_icon = Label(master=self.system_info_frame,
                                   image=self.battery_ok_image,
@@ -76,6 +78,14 @@ class IndicatorAlertBar(object):
                                    fg=Theme.active().ALERT_BAR_OK_TXT,
                                    bg=Theme.active().ALERT_BAR_OK)
 
+
+        record_sensors_image = {True: self.r_letter_image, False: None}
+        self.record_sensors = Label(master=self.system_info_frame,
+                                    image=record_sensors_image[record_sensors],
+                                    fg=Theme.active().ALERT_BAR_OK_TXT,
+                                    bg=Theme.active().ALERT_BAR_OK)
+
+
         self.current_alert = Alert(AlertCodes.OK)
 
     @property
@@ -90,7 +100,8 @@ class IndicatorAlertBar(object):
     def textual(self):
         """Return all textual tkinter widgets, for color configuration."""
         return [self.version_label, self.timestamp_label,
-                self.message_label, self.battery_label, self.battery_icon]
+                self.message_label, self.battery_label,
+                self.battery_icon, self.record_sensors]
 
     def render(self):
         self.bar.place(relx=0, rely=0)
@@ -101,6 +112,7 @@ class IndicatorAlertBar(object):
         self.battery_label.place(relx=0.75, rely=0)
         self.battery_icon.place(relx=0.6, rely=0)
         self.version_label.place(relx=0.3, rely=0.7)
+        self.record_sensors.place(relx=0.35, rely=0)
 
     def update(self):
         # Check mute time limit

@@ -1,4 +1,5 @@
 import argparse
+from csv import DictWriter
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -32,10 +33,10 @@ def plot_file(file_path, start=0, end=-1):
     #  define auto calibrator
     tail_detector = TailDetector(
         dp_driver=DifferentialPressureMockSensor([0]),
-        sample_threshold=vsm._config.auto_cal_sample_threshold,
-        slope_threshold=vsm._config.auto_cal_slope_threshold,
-        min_tail_length=vsm._config.auto_cal_min_tail,
-        grace_length=vsm._config.auto_cal_grace_length
+        sample_threshold=vsm._config.calibration.auto_calibration.sample_threshold,
+        slope_threshold=vsm._config.calibration.auto_calibration.slope_threshold,
+        min_tail_length=vsm._config.calibration.auto_calibration.min_tail,
+        grace_length=vsm._config.calibration.auto_calibration.grace_length
     )
 
     # Run the machine
@@ -49,8 +50,7 @@ def plot_file(file_path, start=0, end=-1):
 
     tail_detector.process()
     fig, (ax_pressure, ax_flow) = plt.subplots(2, 1, sharex="all")
-    draw_pressure(ax_pressure, df[PRESSURE_COLUMN], df[TIMESTAMP_COLUMN], vsm,
-                  tail_detector)
+    draw_pressure(ax_pressure, df[PRESSURE_COLUMN], df[TIMESTAMP_COLUMN], vsm)
     draw_flow(ax_flow, df[FLOW_COLUMN], df[TIMESTAMP_COLUMN], vsm,
               tail_detector)
 
@@ -60,6 +60,8 @@ def plot_file(file_path, start=0, end=-1):
         if hasattr(window, "showMaximized"):
             getattr(window, "showMaximized")()
 
+    save_events_to_csv(vsm, tail_detector)
+    save_volumes_to_csv(vsm)
     plt.show()
 
 
@@ -91,7 +93,7 @@ def draw_flow(axes, samples, timestamps, vsm, td):
         axes.annotate(f"{round(vol)}ml", (ts, -25), color="red")
 
 
-def draw_pressure(axes, samples, timestamp, vsm, td):
+def draw_pressure(axes, samples, timestamp, vsm):
     axes.set_ylabel("Pressure (cmH2O)")
     axes.plot(timestamp, samples, "black")
     axes.vlines(
@@ -100,6 +102,41 @@ def draw_pressure(axes, samples, timestamp, vsm, td):
     axes.vlines(
         vsm.entry_points_ts[VentilationState.Exhale],
         ymin=0, ymax=30, colors="r", linestyle="dashed")
+
+
+def save_events_to_csv(vsm, td):
+    inhales = [(ts, 'inhale') for ts in vsm.entry_points_ts[VentilationState.Inhale]]
+    exhales = [(ts, 'exhale') for ts in vsm.entry_points_ts[VentilationState.Exhale]]
+    start_tail = [(ts, 'start tail') for ts in td.start_tails_ts]
+    end_tail = [(ts, 'end tail') for ts in td.end_tails_ts]
+
+    events = sorted(inhales + exhales + start_tail + end_tail)
+    with open('events.csv', 'w', newline='') as events_file:
+        fieldnames = ['timestamp', 'event']
+        writer = DictWriter(events_file, fieldnames=fieldnames)
+        writer.writeheader()
+        for ts, event in events:
+            writer.writerow({'timestamp': ts, 'event': event})
+
+
+def save_volumes_to_csv(vsm):
+    inhales = [x for _, x in vsm.insp_volumes]
+    exhales = [x for _, x in vsm.exp_volumes]
+    if len(inhales) > len(exhales):
+        inhales = inhales[:-1]
+
+    elif len(inhales) < len(exhales):
+        exhales = exhales[1:]
+
+    insp_exp = [insp / exp for insp, exp in zip(inhales, exhales)]
+    with open("volumes.csv", 'w', newline='') as volumes_file:
+        fieldnames = ['breath', 'exp_vol', 'insp_vol', 'insp/exp']
+        writer = DictWriter(volumes_file, fieldnames=fieldnames)
+        writer.writeheader()
+        for i, (insp, exp, ratio) in enumerate(zip(inhales, exhales, insp_exp)):
+            row = {'breath': i + 1, 'exp_vol': exp,
+                   'insp_vol': insp, 'insp/exp': ratio}
+            writer.writerow(row)
 
 
 def parse_arguments():
