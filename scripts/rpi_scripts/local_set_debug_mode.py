@@ -19,16 +19,14 @@ Type=simple
 WantedBy=default.target
 """
 
+
 def main(is_debug):
     service_content = SYSTEMD_SERVICE.format("-d -vvv" if is_debug
                                              else "")
 
-
     with open(SERVICE_PATH, "w") as service_file:
         service_file.write(service_content)
-    
-    #os.system("(cd Inhalator && git reset --hard)")
-    
+
     os.system("rm /home/pi/Inhalator/config.json")
     os.system("chmod 777 /home/pi/Inhalator/inhalator.*")
     os.system("""sed -i 's/"boot_alert_grace_time" : 5/"boot_alert_grace_time" : -5099766400/' /home/pi/Inhalator/default_config.json""")
