@@ -1,6 +1,6 @@
 import time
 from threading import Event
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 import pytest
 
@@ -20,7 +20,7 @@ class ErrorAfter(object):
         self.limit = limit
         self.calls = 0
 
-    def __call__(self):
+    def __call__(self, tmp=None):
         self.calls += 1
         if self.calls > self.limit:
             raise CallableExhausted
@@ -41,9 +41,29 @@ def test_wd_task(mocked_wd, mocked_event):
     """
     watchdog = WdTask(DriverFactory.get_mock_wd_driver(), Event())
     
-    start = time.time()
+    time.sleep = Mock()
     with pytest.raises(CallableExhausted):
         watchdog.run()
-    end = time.time()
 
-    assert end - start - ITERATIONS * watchdog.WD_TIMEOUT < 0.02
+    assert time.sleep.call_count == ITERATIONS
+
+
+@patch('threading.Event.isSet', side_effect=[False] * ITERATIONS)
+@patch('time.sleep', side_effect=ErrorAfter(ITERATIONS))
+def test_wd_task_unarmed(mocked_wd, mocked_event):
+    """
+    Test the wd task when the application doesn't respond.
+
+    Expect:
+        wd will not arm.
+    """
+    wd_mock = DriverFactory.get_mock_wd_driver()
+    watchdog = WdTask(wd_mock, Event())
+
+    wd_mock.arm = Mock()
+
+    with pytest.raises(CallableExhausted):
+        watchdog.run()
+    
+    # There is always one arm right at the begging of the function.
+    assert wd_mock.arm.call_count == 1
