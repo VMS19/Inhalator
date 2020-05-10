@@ -15,7 +15,7 @@ class SetDebugMode(Script):
         self._parser.add_argument("--debug", action="store_true",
                                   help="Whether to enable debug mode or not")
 
-    def _main(self, args):
+    def _main(self, args, pre_run_variables):
         service_content = f"""
 [Unit]
 Description=Inhalator Service

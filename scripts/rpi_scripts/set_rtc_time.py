@@ -14,7 +14,7 @@ class SetRTCTime(Script):
         self._parser.prog = "set-RTC-time"
         self._parser.description = "Set the RTC time."
 
-    def _main(self, args):
+    def _main(self, args, pre_run_variables):
         rtc = None
         try:
             rtc = Rv8523Rtc()

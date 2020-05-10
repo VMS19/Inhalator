@@ -11,7 +11,7 @@ class MuteWD(Script):
         self._parser.prog = "mute-wd"
         self._parser.description = "Locally mute the WD."
 
-    def _main(self, args):
+    def _main(self, args, pre_run_variables):
         watchdog = WdDriver()
         while True:
             watchdog.arm()
