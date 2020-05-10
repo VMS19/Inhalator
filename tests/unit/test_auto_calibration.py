@@ -54,4 +54,4 @@ def test_single_cycle_tail_ts(data, driver_factory):
         "only one tail should be found"
 
     tail = detector.start_tails_ts[0], detector.end_tails_ts[0]
-    assert tail == (27.679, 27.916)
+    assert tail == (27.562, 27.863)
