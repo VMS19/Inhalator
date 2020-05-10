@@ -8,7 +8,7 @@ from scipy.stats import linregress
 
 
 class RunningAvg:
-    """Average values using a sliding window of samples."""
+    """Average values over a sliding window of samples."""
 
     def __init__(self, max_samples):
         self.samples = deque(maxlen=max_samples)
