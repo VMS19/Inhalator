@@ -1,5 +1,5 @@
-import consts
-from script_classes.remote_ssh_script import RemoteSSHScript
+from scripts_utils import consts
+from scripts_utils.remote_ssh_script import RemoteSSHScript
 
 
 def print_stream_lines(stream_name, stream):

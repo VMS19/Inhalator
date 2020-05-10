@@ -1,8 +1,8 @@
 import ntpath
 from datetime import datetime
 
-import consts
-from script_classes.remote_scp_script import RemoteScpScript
+from scripts_utils import consts
+from scripts_utils.remote_scp_script import RemoteScpScript
 
 
 REMOTE_TRANSFER_DEST_PATH = "/home/pi"

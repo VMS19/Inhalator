@@ -1,4 +1,4 @@
-from script_classes.remote_ssh_script import RemoteSSHScript
+from scripts_utils.remote_ssh_script import RemoteSSHScript
 
 
 GET_MAC_CMDLINE = "cat /sys/class/net/eth0/address"

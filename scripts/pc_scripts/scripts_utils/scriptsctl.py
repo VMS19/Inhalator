@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from script_classes.script import Script
+from scripts_utils.script import Script
 from remote_wd_mute import RemoteWDMute
 from upgrade_script import UpgradeScript
 from rtc_update_script import RemoteRTCUpdate

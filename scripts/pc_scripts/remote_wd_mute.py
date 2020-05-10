@@ -1,5 +1,5 @@
-import consts
-from script_classes.remote_ssh_script import RemoteSSHScript
+from scripts_utils import consts
+from scripts_utils.remote_ssh_script import RemoteSSHScript
 
 WD_STFU = f"PYTHONPATH={consts.INHALATOR_REPO_FOLDER_PATH} python3 {consts.INHALATOR_REPO_FOLDER_PATH}/{consts.RPI_SCRIPTS_FOLDER}/wd_stfu.py &"
 
