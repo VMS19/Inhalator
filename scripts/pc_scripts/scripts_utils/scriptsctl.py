@@ -2,10 +2,6 @@
 import shlex
 
 from scripts_utils.script import Script
-from remote_wd_mute import RemoteWDMute
-from upgrade_script import UpgradeScript
-from rtc_update_script import RemoteRTCUpdate
-from scp_transfer_script import ScpTransferScript
 
 
 def print_script_info(script):

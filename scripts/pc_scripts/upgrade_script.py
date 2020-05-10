@@ -28,7 +28,7 @@ class UpgradeScript(RemoteScpScript):
         self._parser.prog = "upgrade-script"
         self._parser.description = "Change the version on the remote inhalator monitor."
         self._parser.add_argument("version_tarball_path", type=str, help="Local version's tarball file path.")
-        self._parser.add_argument("-d", "--debug", action="store_true")   
+        self._parser.add_argument("-d", "--debug", action="store_true")
 
     def _main(self, args, pre_run_variables):
         """Main logic of the script that inherits the SSH script."""
