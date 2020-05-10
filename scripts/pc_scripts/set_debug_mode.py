@@ -1,5 +1,5 @@
-from scripts_utils import consts
-from scripts_utils.remote_ssh_script import RemoteSSHScript
+from scripts.scripts_utils import consts
+from scripts.scripts_utils.remote_ssh_script import RemoteSSHScript
 
 
 def print_stream_lines(stream_name, stream):
@@ -28,7 +28,7 @@ class SetDebugMode(RemoteSSHScript):
         ssh_client = pre_run_variables["ssh_client"]
 
         set_debug_mode_parameters = "--debug" if args.debug else ""
-        set_debug_mode_cmdline = f"sudo PYTHONPATH={consts.INHALATOR_REPO_FOLDER_PATH} python3 {consts.INHALATOR_REPO_FOLDER_PATH}/{consts.RPI_SCRIPTS_FOLDER}/local_set_debug_mode.py {set_debug_mode_parameters}"
+        set_debug_mode_cmdline = f"sudo PYTHONPATH={consts.INHALATOR_REPO_FOLDER_PATH} python3 {consts.INHALATOR_REPO_FOLDER_PATH}/{consts.RPI_SCRIPTS_FOLDER}/set_debug_mode.py {set_debug_mode_parameters}"
 
         print("Running set_debug_mode!")
         print(f"Executing: '{set_debug_mode_cmdline}'")

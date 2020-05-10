@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import shlex
 
-from scripts_utils.script import Script
+from scripts.scripts_utils.script import Script
 
 
 def print_script_info(script):

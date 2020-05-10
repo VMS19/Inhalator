@@ -1,23 +1,30 @@
-import sys
 import os
-from drivers.rv8523_rtc import Rv8523Rtc
+import sys
 from datetime import datetime
+
+from drivers.rv8523_rtc import Rv8523Rtc
+from scripts.scripts_utils.script import Script
 
 sys.path.append(os.path.dirname('.'))
 
 
-def main():
-    rtc = None
+class SetRTCTime(Script):
+    def __init__(self):
+        super(SetRTCTime, self).__init__()
+        self._parser.prog = "set-RTC-time"
+        self._parser.description = "Set the RTC time."
 
-    try:
-        rtc = Rv8523Rtc()
-        cur_date = datetime.now()
-        print('setting rtc time as ', cur_date)
-        rtc.set_rtc_time(cur_date)
-    finally:
-        if rtc is not None:
-            rtc.close()
+    def _main(self, args):
+        rtc = None
+        try:
+            rtc = Rv8523Rtc()
+            current_datetime = datetime.now()
+            print('setting rtc time as ', current_datetime)
+            rtc.set_rtc_time(current_datetime)
+        finally:
+            if rtc is not None:
+                rtc.close()
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    SetRTCTime().run()

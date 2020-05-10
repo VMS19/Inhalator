@@ -1,8 +1,8 @@
 import ntpath
 from datetime import datetime
 
-from scripts_utils import consts
-from scripts_utils.remote_scp_script import RemoteScpScript
+from scripts.scripts_utils import consts
+from scripts.scripts_utils.remote_scp_script import RemoteScpScript
 
 
 REMOTE_TRANSFER_DEST_PATH = "/home/pi"
@@ -47,7 +47,7 @@ class UpgradeScript(RemoteScpScript):
         print("")
 
         UPGRADE_SCRIPT = [
-            f"sudo systemctl stop {consts.INHALATOR_SERVICE_NAME}",
+            f"sudo systemctl stop {consts.INHALATOR_SERVICE_FILENAME}",
             f"sudo rm -rf {consts.INHALATOR_REPO_FOLDER_PATH}",
             f"tar xf {REMOTE_TRANSFER_DEST_PATH}/{tarball_basename} -C {consts.INHALATOR_REPO_FOLDER_PATH} --warning=no-timestamp",
             f"sudo rm -f {REMOTE_TRANSFER_DEST_PATH}/{tarball_basename}",
@@ -55,7 +55,7 @@ class UpgradeScript(RemoteScpScript):
             f"sudo sync",
             f"sync",
             f"sleep 1",
-            f"sudo systemctl start {consts.INHALATOR_SERVICE_NAME}",
+            f"sudo systemctl start {consts.INHALATOR_SERVICE_FILENAME}",
         ]
 
         for cmd in UPGRADE_SCRIPT:

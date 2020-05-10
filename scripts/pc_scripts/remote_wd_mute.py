@@ -1,7 +1,7 @@
-from scripts_utils import consts
-from scripts_utils.remote_ssh_script import RemoteSSHScript
+from scripts.scripts_utils import consts
+from scripts.scripts_utils.remote_ssh_script import RemoteSSHScript
 
-WD_STFU = f"PYTHONPATH={consts.INHALATOR_REPO_FOLDER_PATH} python3 {consts.INHALATOR_REPO_FOLDER_PATH}/{consts.RPI_SCRIPTS_FOLDER}/wd_stfu.py &"
+WD_STFU = f"PYTHONPATH={consts.INHALATOR_REPO_FOLDER_PATH} python3 {consts.INHALATOR_REPO_FOLDER_PATH}/{consts.RPI_SCRIPTS_FOLDER}/mute_wd.py &"
 
 
 def print_stream_lines(stream_name, stream):

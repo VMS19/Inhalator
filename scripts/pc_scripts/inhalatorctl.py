@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from scripts_utils.scriptsctl import ScriptsCTL
+from scripts.scripts_utils.scriptsctl import ScriptsCTL
 from get_mac import GetMAC
 from ftp_save_logs import FTPSaveLogs
 from set_debug_mode import SetDebugMode

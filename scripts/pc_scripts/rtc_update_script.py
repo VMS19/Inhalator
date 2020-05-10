@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from scripts_utils import consts
-from scripts_utils.remote_ssh_script import RemoteSSHScript
+from scripts.scripts_utils import consts
+from scripts.scripts_utils.remote_ssh_script import RemoteSSHScript
 
 
 SET_RTC_TIME_CMD = f"PYTHONPATH={consts.INHALATOR_REPO_FOLDER_PATH} python3 {consts.INHALATOR_REPO_FOLDER_PATH}/{consts.RPI_SCRIPTS_FOLDER}/set_rtc_time.py"

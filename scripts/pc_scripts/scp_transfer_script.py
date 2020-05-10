@@ -1,4 +1,4 @@
-from scripts_utils.remote_scp_script import RemoteScpScript
+from scripts.scripts_utils.remote_scp_script import RemoteScpScript
 
 
 class ScpTransferScript(RemoteScpScript):

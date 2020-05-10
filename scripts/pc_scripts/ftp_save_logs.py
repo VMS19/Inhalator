@@ -5,7 +5,7 @@ import logging
 import re
 from pathlib import Path
 
-from scripts_utils.remote_ftp_script import RemoteFTPScript
+from scripts.scripts_utils.remote_ftp_script import RemoteFTPScript
 
 CSV_FILE_OUTPUT = 'inhalator.csv'
 ALERTS_CSV_OUTPUT = 'alerts.csv'
