@@ -30,40 +30,41 @@ class CallableExhausted(Exception):
     pass
 
 
+@patch('time.sleep')
 @patch('threading.Event.isSet', side_effect=[True] * ITERATIONS)
-@patch('drivers.mocks.mock_wd_driver.MockWdDriver.arm', side_effect=ErrorAfter(ITERATIONS))
-def test_wd_task(mocked_wd, mocked_event):
+def test_wd_task(mocked_event, mock_sleep):
     """
     Test wd task works correctly.
 
     Expect:
         WD will arm X times in X * WD_TIMEOUT seconds
     """
-    watchdog = WdTask(DriverFactory.get_mock_wd_driver(), Event())
-    
-    time.sleep = Mock()
+    wd_mock = Mock()
+    wd_mock.arm.side_effect = ErrorAfter(ITERATIONS)
+
+    watchdog = WdTask(wd_mock, Event())
+
     with pytest.raises(CallableExhausted):
         watchdog.run()
 
-    assert time.sleep.call_count == ITERATIONS
+    assert mock_sleep.call_count == ITERATIONS
 
 
 @patch('threading.Event.isSet', side_effect=[False] * ITERATIONS)
 @patch('time.sleep', side_effect=ErrorAfter(ITERATIONS))
-def test_wd_task_unarmed(mocked_wd, mocked_event):
+def test_wd_task_unarmed(mocked_sleep, mocked_event):
     """
     Test the wd task when the application doesn't respond.
 
     Expect:
         wd will not arm.
     """
-    wd_mock = DriverFactory.get_mock_wd_driver()
+    wd_mock = Mock()
     watchdog = WdTask(wd_mock, Event())
-
-    wd_mock.arm = Mock()
 
     with pytest.raises(CallableExhausted):
         watchdog.run()
     
     # There is always one arm right at the begging of the function.
     assert wd_mock.arm.call_count == 1
+
