@@ -64,7 +64,9 @@ class HoneywellPressureSensor(I2cDriver):
             return
 
         elif status == self.STATUS_STALE_DATA:
-            log.warning("Sensor's measure data not ready. sampling too fast?")
+            log.warning("Sensor's measure data not ready. "
+                        "Returning previously read value. "
+                        "Sampling too fast?")
             # We don't raise UnavailableMeasurmentError,
             # so the read will return the previously read value.
             # Another possible behaviour that should be considered, is to
@@ -78,4 +80,4 @@ class HoneywellPressureSensor(I2cDriver):
             log.warning("Sensor unexpectedly in command mode")
 
         else:
-            log.warning("Invalid sensor status code")
+            log.warning(f"Invalid sensor status code: {status}")
