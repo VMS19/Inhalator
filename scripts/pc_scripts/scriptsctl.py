@@ -15,16 +15,10 @@ def print_script_info(script):
 
 
 class ScriptsCTL(Script):
-    def __init__(self):
+    def __init__(self, scripts):
         super(ScriptsCTL, self).__init__()
 
-        self._scripts = [
-            RemoteWDMute(),
-            RemoteRTCUpdate(),
-            ScpTransferScript(),
-            UpgradeScript()
-        ]
-
+        self._scripts = scripts
         self._scripts_names = [script.get_script_name() for script in self._scripts]
         self._running_scripts_text = []
 
@@ -90,4 +84,10 @@ class ScriptsCTL(Script):
 
 
 if __name__ == "__main__":
-    ScriptsCTL().run()
+    scripts = [
+        RemoteWDMute(),
+        RemoteRTCUpdate(),
+        ScpTransferScript(),
+        UpgradeScript()
+    ]
+    ScriptsCTL(scripts=scripts).run()
