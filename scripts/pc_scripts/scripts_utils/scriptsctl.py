@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import shlex
+
 from scripts_utils.script import Script
 from remote_wd_mute import RemoteWDMute
 from upgrade_script import UpgradeScript
@@ -39,12 +41,12 @@ class ScriptsCTL(Script):
                                             'Dependency: --rs/--run-scripts')
 
     def _parse_script_cmd(self, script_cmd, args):
-        script_cmdline = script_cmd.split()
+        script_cmdline = shlex.split(script_cmd)
         script_name = script_cmdline[0]
         script_arguments = script_cmdline[1:] if len(script_cmdline) > 1 else []
 
         if args.common_arguments is not None:
-            script_arguments = args.common_arguments.split() + script_arguments
+            script_arguments = shlex.split(args.common_arguments) + script_arguments
 
         if script_name not in self._scripts_names:
             raise ValueError("Invalid script name was given.")
@@ -81,4 +83,3 @@ class ScriptsCTL(Script):
                 script_cmd = args.run_scripts
                 script = self._parse_script_cmd(script_cmd, args)
                 script.run()
-
