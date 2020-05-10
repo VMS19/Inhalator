@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 from scriptsctl import ScriptsCTL
+from get_mac import GetMAC
+from set_debug_mode import SetDebugMode
 from remote_wd_mute import RemoteWDMute
 from upgrade_script import UpgradeScript
 from rtc_update_script import RemoteRTCUpdate
@@ -28,6 +30,8 @@ class InhalatorCTL(ScriptsCTL):
 
 if __name__ == "__main__":
     scripts = [
+        GetMAC(),
+        SetDebugMode(),
         RemoteWDMute(),
         RemoteRTCUpdate(),
         ScpTransferScript(),

@@ -82,12 +82,3 @@ class ScriptsCTL(Script):
                 script = self._parse_script_cmd(script_cmd, args)
                 script.run()
 
-
-if __name__ == "__main__":
-    scripts = [
-        RemoteWDMute(),
-        RemoteRTCUpdate(),
-        ScpTransferScript(),
-        UpgradeScript()
-    ]
-    ScriptsCTL(scripts=scripts).run()
