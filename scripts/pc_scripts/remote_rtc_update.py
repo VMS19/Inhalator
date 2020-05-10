@@ -4,7 +4,7 @@ from scripts.scripts_utils import consts
 from scripts.scripts_utils.remote_ssh_script import RemoteSSHScript
 
 
-SET_RTC_TIME_CMD = f"PYTHONPATH={consts.INHALATOR_REPO_FOLDER_PATH} python3 {consts.INHALATOR_REPO_FOLDER_PATH}/{consts.RPI_SCRIPTS_FOLDER}/set_rtc_time.py"
+UPDATE_RTC_TIME_CMD = f"PYTHONPATH={consts.INHALATOR_REPO_FOLDER_PATH} python3 {consts.INHALATOR_REPO_FOLDER_PATH}/{consts.RPI_SCRIPTS_FOLDER}/update_rtc_time.py"
 
 
 def print_stream_lines(stream_name, stream):
@@ -23,7 +23,7 @@ def print_stream_lines(stream_name, stream):
 class RemoteRTCUpdate(RemoteSSHScript):
     def __init__(self):
         super(RemoteRTCUpdate, self).__init__()
-        self._parser.prog = "remote-RTC-update"
+        self._parser.prog = "remote-rtc-update"
         self._parser.description = "Update remote's RTC."
 
     def _main(self, args, pre_run_variables):
@@ -35,7 +35,7 @@ class RemoteRTCUpdate(RemoteSSHScript):
         print_stream_lines("stdout", stdout)
         print_stream_lines("stderr", stderr)
 
-        _, stdout, stderr = ssh_client.exec_command(SET_RTC_TIME_CMD)
+        _, stdout, stderr = ssh_client.exec_command(UPDATE_RTC_TIME_CMD)
 
         print_stream_lines("stdout", stdout)
         print_stream_lines("stderr", stderr)

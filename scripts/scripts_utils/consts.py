@@ -1,3 +1,4 @@
+"""Constants for the inhalator project's files and paths."""
 INHALATOR_SERVICE_NAME = "inhalator"
 INHALATOR_SERVICE_FILENAME = f"{INHALATOR_SERVICE_NAME}.service"
 INHALATOR_REPO_FOLDER_PATH = "/home/pi/Inhalator"

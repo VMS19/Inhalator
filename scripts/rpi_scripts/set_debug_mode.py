@@ -8,6 +8,7 @@ SERVICE_PATH = f"/usr/lib/systemd/user/{consts.INHALATOR_SERVICE_FILENAME}"
 
 
 class SetDebugMode(Script):
+    """Script that change the debug mode of the main inhalator software."""
     def __init__(self):
         super(SetDebugMode, self).__init__()
         self._parser.prog = "set-debug-mode"
@@ -16,6 +17,12 @@ class SetDebugMode(Script):
                                   help="Whether to enable debug mode or not")
 
     def _main(self, args, pre_run_variables):
+        """
+        Change the debug mode of the main inhalator software according to the 'debug' argument.
+        :param args: the script's arguments passed from the argument parser.
+        :param pre_run_variables: the script's variables set from the pre run function.
+        """
+        # The new inhalator service file content.
         service_content = f"""
 [Unit]
 Description=Inhalator Service

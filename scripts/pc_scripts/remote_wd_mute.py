@@ -20,7 +20,7 @@ def print_stream_lines(stream_name, stream):
 class RemoteWDMute(RemoteSSHScript):
     def __init__(self):
         super(RemoteWDMute, self).__init__()
-        self._parser.prog = "remote-WD-mute"
+        self._parser.prog = "remote-wd-mute"
         self._parser.description = "Mute remote's WD."
 
     def _main(self, args, pre_run_variables):

@@ -1,10 +1,10 @@
 from scripts.scripts_utils.remote_scp_script import RemoteScpScript
 
 
-class ScpTransferScript(RemoteScpScript):
+class ScpTransfer(RemoteScpScript):
     def __init__(self):
-        super(ScpTransferScript, self).__init__()
-        self._parser.prog = "Scp-transfer-script"
+        super(ScpTransfer, self).__init__()
+        self._parser.prog = "scp-transfer"
         self._parser.description = "Transfer files to a remote location via SSH."
         self._parser.add_argument("files", type=str, nargs="+", help="File/s to transfer.")
         self._parser.add_argument("remote_path", type=str, help="Remote's destination path for the file/s.")
@@ -16,4 +16,4 @@ class ScpTransferScript(RemoteScpScript):
 
 
 if __name__ == "__main__":
-    ScpTransferScript().run()
+    ScpTransfer().run()

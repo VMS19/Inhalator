@@ -5,8 +5,8 @@ from ftp_save_logs import FTPSaveLogs
 from set_debug_mode import SetDebugMode
 from remote_wd_mute import RemoteWDMute
 from upgrade_script import UpgradeScript
-from rtc_update_script import RemoteRTCUpdate
-from scp_transfer_script import ScpTransferScript
+from remote_rtc_update import RemoteRTCUpdate
+from scp_transfer import ScpTransfer
 
 
 class InhalatorCTL(ScriptsCTL):
@@ -37,6 +37,6 @@ if __name__ == "__main__":
         RemoteWDMute(),
         UpgradeScript(),
         RemoteRTCUpdate(),
-        ScpTransferScript()
+        ScpTransfer()
     ]
     InhalatorCTL(scripts=scripts).run()

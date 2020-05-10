@@ -8,13 +8,19 @@ from scripts.scripts_utils.script import Script
 sys.path.append(os.path.dirname('.'))
 
 
-class SetRTCTime(Script):
+class UpdateRTCTime(Script):
+    """Script that updates the hardware RTC time by the current datetime."""
     def __init__(self):
-        super(SetRTCTime, self).__init__()
-        self._parser.prog = "set-RTC-time"
-        self._parser.description = "Set the RTC time."
+        super(UpdateRTCTime, self).__init__()
+        self._parser.prog = "update-rtc-time"
+        self._parser.description = "Update the RTC time by the current datetime."
 
     def _main(self, args, pre_run_variables):
+        """
+        Update the RTC time according to the current datetime.
+        :param args: the script's arguments passed from the argument parser.
+        :param pre_run_variables: the script's variables set from the pre run function.
+        """
         rtc = None
         try:
             rtc = Rv8523Rtc()
@@ -27,4 +33,4 @@ class SetRTCTime(Script):
 
 
 if __name__ == '__main__':
-    SetRTCTime().run()
+    UpdateRTCTime().run()
