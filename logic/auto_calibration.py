@@ -1,9 +1,13 @@
+"""Calibrating the flow graphs automatically by identifying "tails"."""
+# pylint: disable=too-many-arguments
+# pylint: disable=too-few-public-methods,too-many-instance-attributes
 import logging
 
 import numpy as np
 
 
 class TimeRange:
+    """Data class for holding a time-frame."""
     def __init__(self, start_time, length):
         self.start_time = start_time
         self.length = length
@@ -13,6 +17,7 @@ class TimeRange:
 
 
 class AutoFlowCalibrator:
+    """Timing auto-calibration intervals."""
     def __init__(self, dp_driver, interval_length, iterations,
                  iteration_length, sample_threshold, slope_threshold,
                  min_tail_length, grace_length):
@@ -39,19 +44,19 @@ class AutoFlowCalibrator:
     def iteration(self):
         return TimeRange(self.iteration_start_time, self.iteration_length)
 
-    def get_offset(self, flow_slm, ts):
+    def get_offset(self, flow_slm, timestamp):
         if self.iteration_start_time is None:
             self.log.debug("Starting a new auto calibration iteration")
-            self.iteration_start_time = ts
+            self.iteration_start_time = timestamp
 
-        if self.interval_start_time is None or ts not in self.interval:
+        if self.interval_start_time is None or timestamp not in self.interval:
             self.log.debug("Starting a new auto calibration interval")
-            self.interval_start_time = ts
-            self.iteration_start_time = ts
+            self.interval_start_time = timestamp
+            self.iteration_start_time = timestamp
             self.iterations_count = 0
 
-        if ts in self.iteration:
-            self.tail_detector.add_sample(flow_slm, ts)
+        if timestamp in self.iteration:
+            self.tail_detector.add_sample(flow_slm, timestamp)
             return None
 
         if self.iterations_count < self.iterations:
@@ -78,6 +83,8 @@ class AutoFlowCalibrator:
 
 
 class TailDetector:
+    """Detecting tail on a sequence of samples."""
+
     def __init__(self, dp_driver, sample_threshold, slope_threshold,
                  min_tail_length, grace_length):
         self.dp_driver = dp_driver
@@ -157,10 +164,10 @@ class TailDetector:
         if len(self.tail_indices) < self.min_tail_length:
             return None
 
-        dp = np.array([self.dp_driver.flow_to_pressure(f) +
-                       self.dp_driver.get_calibration_offset()
-                       for f in self.samples])
+        dp_values = np.array([self.dp_driver.flow_to_pressure(f) +
+                              self.dp_driver.get_calibration_offset()
+                              for f in self.samples])
 
         # Extract differential pressure at tail timestamps
-        tails_dp = dp[indices]
+        tails_dp = dp_values[indices]
         return np.average(tails_dp)
