@@ -1,4 +1,3 @@
-import time
 from threading import Event
 from unittest.mock import patch, Mock
 
@@ -20,7 +19,7 @@ class ErrorAfter(object):
         self.limit = limit
         self.calls = 0
 
-    def __call__(self, tmp=None):
+    def __call__(self, _seconds=None):
         self.calls += 1
         if self.calls > self.limit:
             raise CallableExhausted
@@ -65,6 +64,6 @@ def test_wd_task_unarmed(mocked_sleep, mocked_event):
     with pytest.raises(CallableExhausted):
         watchdog.run()
     
-    # There is always one arm right at the begging of the function.
+    # There is always one arm right at the beginning of the function.
     assert wd_mock.arm.call_count == 1
 
