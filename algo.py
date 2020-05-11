@@ -497,7 +497,7 @@ class Sampler(object):
 
         if self._config.calibration.auto_calibration.enable:
             offset = self.auto_calibrator.get_offset(flow_slm=flow_slm,
-                                                     ts=ts)
+                                                     timestamp=ts)
 
             if offset is not None:
                 self.log.info("Writing DP offset of %f to config", offset)
