@@ -1,13 +1,11 @@
 """Copy log files from the raspberry to a local CSV file."""
 import csv
-import ftplib
 import io
 import logging
-import argparse
 import re
 from pathlib import Path
 
-RPI_IP = '192.168.43.234'
+from scripts.scripts_utils.remote_ftp_script import RemoteFTPScript
 
 CSV_FILE_OUTPUT = 'inhalator.csv'
 ALERTS_CSV_OUTPUT = 'alerts.csv'
@@ -71,16 +69,6 @@ def configure_logger():
     return logger
 
 
-def parse_cli_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--csv_output', default=CSV_FILE_OUTPUT)
-    parser.add_argument('-a', '--alerts_output', nargs='?', type=str, const=ALERTS_CSV_OUTPUT)
-    parser.add_argument('-i', '--ip', default=RPI_IP, required=True)
-    parser.add_argument('-d', '--delete', action='store_true')
-    parser.add_argument('-o', '--output', default=LOG_FILE_PATH)
-    return parser.parse_args()
-
-
 def remote_sensor_data_files(ftp):
     log_files = ftp.nlst('Inhalator/inhalator.csv*')
     return sorted(log_files, reverse=True)
@@ -138,35 +126,44 @@ def delete_files_conversation(logger, ip):
     return answer == 'y'
 
 
-def main():
-    cli_args = parse_cli_args()
-    logger = configure_logger()
+class FTPSaveLogs(RemoteFTPScript):
+    """Script that control and save the logs of the remote inhalator via FTP."""
+    def __init__(self):
+        super(FTPSaveLogs, self).__init__()
+        self._parser.prog = "ftp-save-logs"
+        self._parser.description = "Remotely control the inhalator logs and give access to it via FTP."
+        self._parser.add_argument('-c', '--csv_output', default=CSV_FILE_OUTPUT)
+        self._parser.add_argument('-a', '--alerts_output', nargs='?', type=str, const=ALERTS_CSV_OUTPUT)
+        self._parser.add_argument('-d', '--delete', action='store_true')
+        self._parser.add_argument('-o', '--output', default=LOG_FILE_PATH)
 
-    with ftplib.FTP(cli_args.ip, user='pi', passwd='raspberry') as ftp:
-        if cli_args.delete:
-            if delete_files_conversation(logger, cli_args.ip):
+    def _main(self, args, pre_run_variables):
+        """Control and save the logs of the remote inhalator via FTP."""
+        logger = configure_logger()
+
+        ftp_client = pre_run_variables["ftp_client"]
+
+        if args.delete:
+            if delete_files_conversation(logger, args.hostname):
                 logger.info('Deleting Raspberry logs')
-                delete_sensor_values_files(ftp)
-                delete_log_file(ftp)
+                delete_sensor_values_files(ftp_client)
+                delete_log_file(ftp_client)
                 logger.info("Raspberry data deleted !")
-
         else:
             # Copy files from RPi to local storage.
             logger.info("Copying data files from Raspberry(%s) to %s",
-                        cli_args.ip, cli_args.csv_output)
-            copy_sensor_data(cli_args.csv_output, ftp, logger)
-            logger.info('Saved sensor data at %s', cli_args.csv_output)
-
+                        args.hostname, args.csv_output)
+            copy_sensor_data(args.csv_output, ftp_client, logger)
+            logger.info('Saved sensor data at %s', args.csv_output)
             logger.info('Copying log file')
-            copy_log(ftp, cli_args.output)
-            if cli_args.alerts_output is not None:
-                alerts_extractor = AlertsExtractor(cli_args.output, cli_args.alerts_output, logger)
+            copy_log(ftp_client, args.output)
+            if args.alerts_output is not None:
+                alerts_extractor = AlertsExtractor(args.output, args.alerts_output, logger)
                 logger.info('Parsing alerts log into CSV')
-                alerts_extractor.convert_log_to_csv()
-                logger.info("Saved alerts at %s", cli_args.alerts_output)
+                alerts_extractor.convert_log_to_cssv()
+                logger.info("Saved alerts at %s", args.alerts_output)
+        logger.info("Finished")
 
-    logger.info("Finished")
 
-
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    FTPSaveLogs().run()
