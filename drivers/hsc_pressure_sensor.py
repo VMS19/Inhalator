@@ -32,6 +32,7 @@ class HscPressureSensor(HoneywellPressureSensor):
         super().__init__()
         self._calibration_offset = 0
         self._o2_compensation_ratio = 1
+        self._o2_saturation = 21
         log.info("HSC pressure sensor initialized")
 
         self._avg_flow = RunningAvg(max_samples=NOISY_DP_SENSOR_SAMPLES)
@@ -43,6 +44,12 @@ class HscPressureSensor(HoneywellPressureSensor):
         return self._calibration_offset
 
     def set_o2_compensation(self, o2_percentage):
+        # update compensation only when o2 changes more than 5%
+        if abs(self._o2_saturation - o2_percentage) < 5:
+            return
+
+        self._o2_saturation = o2_percentage
+
         o2_percentage /= 100
         corrected_density = \
             (o2_percentage * self.DENSITY_O2 +
