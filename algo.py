@@ -495,7 +495,10 @@ class Sampler(object):
         o2_saturation_percentage = max(0,
                                        min(o2_saturation_percentage, 100))
 
-        self._flow_sensor.set_o2_compensation(o2_saturation_percentage)
+        try:
+            self._flow_sensor.set_o2_compensation(o2_saturation_percentage)
+        except Exception as e:
+            self.log.exception(e)
 
         if self._config.calibration.auto_calibration.enable:
             offset = self.auto_calibrator.get_offset(flow_slm=flow_slm,
