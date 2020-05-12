@@ -1,5 +1,5 @@
 import logging
-from math import copysign
+from math import copysign, sqrt
 
 from logic.computations import RunningAvg
 from .honeywell_pressure_sensor import HoneywellPressureSensor
@@ -24,10 +24,14 @@ class HscPressureSensor(HoneywellPressureSensor):
     MBAR_CMH2O_RATIO = 1.0197162129779
     CMH2O_RATIO = MBAR_CMH2O_RATIO
     SYSTEM_RATIO_SCALE = 36.55
+    DENSITY_AIR = 1.205  # Kg/m3
+    DENSITY_O2 = 1.331  # Kg/m3
+    DENSITY_REST_OF_GASSES = 1.1715  # Kg/m3
 
     def __init__(self):
         super().__init__()
         self._calibration_offset = 0
+        self._o2_compensation_ratio = 1
         log.info("HSC pressure sensor initialized")
 
         self._avg_flow = RunningAvg(max_samples=NOISY_DP_SENSOR_SAMPLES)
@@ -38,8 +42,17 @@ class HscPressureSensor(HoneywellPressureSensor):
     def get_calibration_offset(self):
         return self._calibration_offset
 
+    def set_o2_compensation(self, o2_percentage):
+        o2_percentage /= 100
+        corrected_density = \
+            (o2_percentage * self.DENSITY_O2 +
+             (1-o2_percentage) * self.DENSITY_REST_OF_GASSES)
+
+        self._o2_compensation_ratio = sqrt(self.DENSITY_AIR / corrected_density)
+
     def pressure_to_flow(self, pressure_cmh2o):
-        flow = (abs(pressure_cmh2o) ** 0.5) * self.SYSTEM_RATIO_SCALE
+        flow = (sqrt(abs(pressure_cmh2o))) * self.SYSTEM_RATIO_SCALE\
+               * self._o2_compensation_ratio
         return copysign(flow, pressure_cmh2o)
 
     def flow_to_pressure(self, flow):
