@@ -56,6 +56,9 @@ class HscPressureSensor(HoneywellPressureSensor):
              (1-o2_percentage) * self.DENSITY_REST_OF_GASSES)
 
         self._o2_compensation_ratio = sqrt(self.DENSITY_AIR / corrected_density)
+        log.debug(f"HSC pressure sensor updated comensation ratio "
+                  f"for {self._o2_saturation}% oxygen saturation: "
+                  f"{self._o2_compensation_ratio}")
 
     def pressure_to_flow(self, pressure_cmh2o):
         flow = (sqrt(abs(pressure_cmh2o))) * self.SYSTEM_RATIO_SCALE\
