@@ -21,13 +21,14 @@ def print_stream_lines(stream_name, stream):
 
 
 class RemoteRTCUpdate(RemoteSSHScript):
+    """Script that update the remote's rtc according to the current datetime via SSH."""
     def __init__(self):
         super(RemoteRTCUpdate, self).__init__()
         self._parser.prog = "remote-rtc-update"
         self._parser.description = "Update remote's RTC."
 
     def _main(self, args, pre_run_variables):
-        """Main logic of the script that inherits the SSH script."""
+        """Update the remote's rtc according to the current datetime via SSH."""
         ssh_client = pre_run_variables["ssh_client"]
         current_datetime = datetime.now()
 

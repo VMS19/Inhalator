@@ -18,13 +18,14 @@ def print_stream_lines(stream_name, stream):
 
 
 class GetMAC(RemoteSSHScript):
+    """Script that get the mac address of the remote via SSH."""
     def __init__(self):
         super(GetMAC, self).__init__()
         self._parser.prog = "get-mac"
         self._parser.description = "Get remote's MAC address."
 
     def _main(self, args, pre_run_variables):
-        """Main logic of the script that inherits the SSH script."""
+        """Get the mac address of the remote via SSH."""
         ssh_client = pre_run_variables["ssh_client"]
 
         _, stdout, stderr = ssh_client.exec_command(GET_MAC_CMDLINE)

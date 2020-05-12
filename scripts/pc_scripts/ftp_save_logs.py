@@ -127,6 +127,7 @@ def delete_files_conversation(logger, ip):
 
 
 class FTPSaveLogs(RemoteFTPScript):
+    """Script that control and save the logs of the remote inhalator via FTP."""
     def __init__(self):
         super(FTPSaveLogs, self).__init__()
         self._parser.prog = "ftp-save-logs"
@@ -137,7 +138,7 @@ class FTPSaveLogs(RemoteFTPScript):
         self._parser.add_argument('-o', '--output', default=LOG_FILE_PATH)
 
     def _main(self, args, pre_run_variables):
-        """Main logic of the script that inherits the SSH script."""
+        """Control and save the logs of the remote inhalator via FTP."""
         logger = configure_logger()
 
         ftp_client = pre_run_variables["ftp_client"]

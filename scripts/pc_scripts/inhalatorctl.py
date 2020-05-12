@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Control all the remote RPi scripts."""
 from scripts.scripts_utils.scriptsctl import ScriptsCTL
 from get_mac import GetMAC
 from ftp_save_logs import FTPSaveLogs
@@ -10,6 +11,7 @@ from scp_transfer import ScpTransfer
 
 
 class InhalatorCTL(ScriptsCTL):
+    """Script for giving information about different remote RPi scripts and allowing to execute them all together."""
     def __init__(self, scripts):
         super(InhalatorCTL, self).__init__(scripts)
         self._parser.prog = "inhalator-ctl"
@@ -19,9 +21,11 @@ class InhalatorCTL(ScriptsCTL):
         self._parser.add_argument("password", type=str, help="Remote's password.")
 
     def _main(self, args, pre_run_variables):
+        """Give information about different remote RPi scripts and allow executing them all together."""
+        # Add the remote arguments to the common arguments of the scripts if asked to run the scripts
         if args.run_scripts:
-            ssh_args = (args.hostname, args.username, args.password)
-            ssh_common_arguments = " ".join(ssh_args)
+            remote_args = (args.hostname, args.username, args.password)
+            ssh_common_arguments = " ".join(remote_args)
             if args.common_arguments:
                 args.common_arguments = ssh_common_arguments + args.common_arguments
             else:

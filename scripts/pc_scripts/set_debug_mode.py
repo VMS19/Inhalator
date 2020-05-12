@@ -16,6 +16,7 @@ def print_stream_lines(stream_name, stream):
 
 
 class SetDebugMode(RemoteSSHScript):
+    """Script that set the debug mode of the remote inhalator."""
     def __init__(self):
         super(SetDebugMode, self).__init__()
         self._parser.prog = "set-debug-mode"
@@ -24,7 +25,7 @@ class SetDebugMode(RemoteSSHScript):
                                   help="Whether to enable debug mode or not")
 
     def _main(self, args, pre_run_variables):
-        """Main logic of the script that inherits the SSH script."""
+        """Set the debug mode of the remote inhalator."""
         ssh_client = pre_run_variables["ssh_client"]
 
         set_debug_mode_parameters = "--debug" if args.debug else ""

@@ -23,6 +23,7 @@ def print_stream_lines(stream_name, stream):
 
 
 class UpgradeScript(RemoteScpScript):
+    """Script that upgrade the remote inhalator's version."""
     def __init__(self):
         super(UpgradeScript, self).__init__()
         self._parser.prog = "upgrade-script"
@@ -31,7 +32,7 @@ class UpgradeScript(RemoteScpScript):
         self._parser.add_argument("-d", "--debug", action="store_true")
 
     def _main(self, args, pre_run_variables):
-        """Main logic of the script that inherits the SSH script."""
+        """Upgrade the remote inhalator's version."""
         ssh_client = pre_run_variables["ssh_client"]
         scp_client = pre_run_variables["scp_client"]
         tarball_basename = ntpath.basename(args.version_tarball_path)
