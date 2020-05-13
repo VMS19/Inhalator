@@ -24,9 +24,11 @@ class HscPressureSensor(HoneywellPressureSensor):
     MBAR_CMH2O_RATIO = 1.0197162129779
     CMH2O_RATIO = MBAR_CMH2O_RATIO
     SYSTEM_RATIO_SCALE = 36.55
-    DENSITY_AIR = 1.205  # Kg/m3
-    DENSITY_O2 = 1.331  # Kg/m3
-    DENSITY_REST_OF_GASSES = 1.1715  # Kg/m3
+    DENSITY_AIR = 1.205  # Kg/m3. in 20 degrees celsius, 1 atm
+    DENSITY_O2 = 1.331  # Kg/m3. in 20 degrees celsius, 1 atm
+    O2_IN_AIR = 0.2095  # 20.95%
+    DENSITY_REST_OF_GASSES = \
+        (DENSITY_AIR - O2_IN_AIR * DENSITY_O2) / (1 - O2_IN_AIR)
 
     def __init__(self):
         super().__init__()
@@ -44,21 +46,27 @@ class HscPressureSensor(HoneywellPressureSensor):
         return self._calibration_offset
 
     def set_o2_compensation(self, o2_percentage):
-        # update compensation only when o2 changes more than 5%
-        if abs(self._o2_saturation - o2_percentage) < 5:
+        """Update oxygen saturation, for flow calculation correction.
+
+        Calculate the density of air with updated oxygen saturation,
+        and calculate gas density compensation ratio, to be used
+        for correct flow calculation based on Bernoulli's law.
+        """
+        if abs(self._o2_saturation - o2_percentage) < 3:
+            # Don't waste time on minor o2 saturation changes
             return
 
         self._o2_saturation = o2_percentage
 
         o2_percentage /= 100
-        corrected_density = \
+        correct_density = \
             (o2_percentage * self.DENSITY_O2 +
              (1 - o2_percentage) * self.DENSITY_REST_OF_GASSES)
 
-        self._o2_compensation_ratio = sqrt(self.DENSITY_AIR / corrected_density)
-        log.debug(f"HSC pressure sensor updated comensation ratio "
-                  f"for {self._o2_saturation}% oxygen saturation: "
-                  f"{self._o2_compensation_ratio}")
+        self._o2_compensation_ratio = sqrt(self.DENSITY_AIR / correct_density)
+        log.debug("HSC differential pressure sensor updated compensation ratio "
+                  "for %d%% oxygen saturation: %d", self._o2_saturation,
+                  self._o2_compensation_ratio)
 
     def pressure_to_flow(self, pressure_cmh2o):
         flow = (sqrt(abs(pressure_cmh2o))) * self.SYSTEM_RATIO_SCALE\
