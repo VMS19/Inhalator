@@ -68,12 +68,12 @@ class Sfm3200(I2cDriver):
                 crc_calc = self._crc8(data[:2])
                 if not crc_calc == expected_crc:
                     log.error(f"CRC mismatch while reading data from flow sensor."
-                              "{crc_calc} - expected {expected_crc}")
+                              f"{crc_calc} - expected {expected_crc}")
                     raise FlowSensorCRCError("CRC mismatch")
 
             else:
                 log.error(f"Too much data received, "
-                          "got {len(data)} expected 3. data: {data}")
+                          f"got {len(data)} expected 3. data: {data}")
                 raise I2CReadError("Too much data read, invalid state")
 
         elif read_size == 0:

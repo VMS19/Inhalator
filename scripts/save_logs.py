@@ -110,7 +110,7 @@ def copy_sensor_data(output_file, ftp, logger):
 def copy_log(ftp, output_path):
     open(output_path, 'w').close()  # create empty file
     with open(output_path, 'ab') as out_file:
-        ftp.retrbinary(f'RETR Inhalator/inhalator.log', out_file.write)
+        ftp.retrbinary('RETR Inhalator/inhalator.log', out_file.write)
 
 
 def delete_sensor_values_files(ftp):

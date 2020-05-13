@@ -45,6 +45,9 @@ class DifferentialPressureMockSensor(MockSensor):
     def get_calibration_offset(self):
         return self._calibration_offset
 
+    def set_o2_compensation(self, o2_percentage):
+        pass
+
     def read_differential_pressure(self):
         sample = super().read()
         return self.flow_to_pressure(sample) - self._calibration_offset
