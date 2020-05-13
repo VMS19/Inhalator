@@ -9,7 +9,6 @@ from data.configurations import ConfigurationManager
 from sample_storage import SamplesStorage
 from errors import UnavailableMeasurmentError
 from logic.auto_calibration import AutoFlowCalibrator
-from drivers.hsc_pressure_sensor import HscPressureSensor
 from logic.computations import RunningAvg, Accumulator, RunningSlope
 
 TRACE = logging.DEBUG - 1
@@ -496,7 +495,8 @@ class Sampler(object):
         o2_saturation_percentage = max(0,
                                        min(o2_saturation_percentage, 100))
 
-        if self._flow_sensor is HscPressureSensor:
+        if getattr(self._flow_sensor, "set_o2_compensation", None):
+            # Update o2 compensation only for relevant DP sensor drivers
             self._flow_sensor.set_o2_compensation(o2_saturation_percentage)
 
         if self._config.calibration.auto_calibration.enable:
