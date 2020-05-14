@@ -115,6 +115,8 @@ class ConfigurationManager(object):
         except FileNotFoundError:
             # Not considered an error we should alert on.
             log.info("No config file. Using defaults")
+            from graphics.snackbar.default_config_snackbar import DefaultConfigSnackbar
+            DefaultConfigSnackbar.config_exists = False
         except Exception as e:
             log.error("Error loading config file: %s. Using defaults", e)
             from data.alerts import AlertCodes

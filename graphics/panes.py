@@ -9,6 +9,7 @@ from graphics.right_menu_options import (MuteAlertsButton,
                                          LockThresholdsButton,
                                          OpenConfigureAlertsScreenButton)
 from graphics.snackbar.recalibration_snackbar import RecalibrationSnackbar
+from graphics.snackbar.default_config_snackbar import DefaultConfigSnackbar
 from graphics.constants import SCREEN_HEIGHT, SCREEN_WIDTH
 from graphics.themes import Theme
 from data.observable import Observable
@@ -29,6 +30,9 @@ class MasterFrame(object):
         self.recalibration_bar = RecalibrationSnackbar(self.root,
                                                        drivers,
                                                        observer)
+
+        if not DefaultConfigSnackbar.config_exists:
+            DefaultConfigSnackbar(self.root).show()
 
     @property
     def panes(self):
