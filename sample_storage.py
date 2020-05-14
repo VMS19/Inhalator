@@ -1,3 +1,4 @@
+import os
 import csv
 import datetime
 import logging
@@ -21,7 +22,6 @@ class SamplesStorage:
                'state',
                'tv_insp_displayed',
                'tv_exp_displayed']
-    HEADERS_FILE = 'headers.csv'
 
     def __init__(self, file_name_template='inhalator.csv',
                  max_file_size=BYTES_IN_GB, max_files=3):  # 3GB can store more than 2 weeks of data.
@@ -34,8 +34,8 @@ class SamplesStorage:
         self._write_headers_file()
 
     def _write_headers_file(self):
-        with open(self.HEADERS_FILE, 'w') as f:
-            csv.writer(f).writerow(self.COLUMNS)
+        if not os.stat(self.file_name).st_size:
+            self._write_row(self.COLUMNS)
 
     def _configure_logger(self):
         logger = logging.getLogger('samples_storage')
