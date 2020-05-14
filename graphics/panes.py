@@ -31,9 +31,6 @@ class MasterFrame(object):
                                                        drivers,
                                                        observer)
 
-        if not DefaultConfigSnackbar.config_exists:
-            DefaultConfigSnackbar(self.root).show()
-
     @property
     def panes(self):
         return [self.top_pane, self.center_pane,
