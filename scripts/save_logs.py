@@ -140,7 +140,7 @@ def main():
     cli_args = parse_cli_args()
     logger = configure_logger()
 
-    with ftplib.FTP(cli_args.ip, user='pi', passwd='oxygen101') as ftp:
+    with ftplib.FTP(cli_args.ip, user='pi', passwd='raspberry') as ftp:
         if cli_args.delete:
             if delete_files_conversation(logger, cli_args.ip):
                 logger.info('Deleting Raspberry logs')
