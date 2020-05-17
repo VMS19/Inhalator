@@ -17,23 +17,13 @@ def test_read_oxygen(raw, real, a2d_driver):
    
 
 def test_battery_exists_true(a2d_driver):
-    """
-    Test battery existence function when exists
-    
-    Expect:
-        Return True.
-    """
+    """Test battery existence function when exists"""
     a2d_driver._spi.xfer.return_value = (15, 85, 56)
     assert a2d_driver.read_battery_existence()
 
 
 def test_battery_existence_false(a2d_driver):
-    """
-    Test battery existence function when doesn't exist
-    
-    Expect:
-        Return False.
-    """
+    """Test battery existence function when doesn't exist"""
     a2d_driver._spi.xfer.return_value = (0, 0, 0)
     assert not a2d_driver.read_battery_existence()
 
