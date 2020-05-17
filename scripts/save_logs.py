@@ -14,7 +14,6 @@ ALERTS_CSV_OUTPUT = 'alerts.csv'
 LOG_FILE_PATH = 'inhalator.log'
 
 REMOTE_LOG_FILE = 'Inhalator/inhalator.log'
-REMOTE_HEADERS_FILE = 'Inhalator/headers.csv'
 
 
 class AlertsExtractor:
@@ -100,7 +99,6 @@ def copy_sensor_data(output_file, ftp, logger):
     open(output_file, 'w').close()  # create empty file
     with open(output_file, 'ab') as out_file:
         log_files = remote_sensor_data_files(ftp)
-        log_files.insert(0, REMOTE_HEADERS_FILE)
         amount = len(log_files)
         for i, log_file in enumerate(log_files):
             logger.info("Copying %s / %s", i + 1, amount)
@@ -142,7 +140,7 @@ def main():
     cli_args = parse_cli_args()
     logger = configure_logger()
 
-    with ftplib.FTP(cli_args.ip, user='pi', passwd='raspberry') as ftp:
+    with ftplib.FTP(cli_args.ip, user='pi', passwd='oxygen101') as ftp:
         if cli_args.delete:
             if delete_files_conversation(logger, cli_args.ip):
                 logger.info('Deleting Raspberry logs')
