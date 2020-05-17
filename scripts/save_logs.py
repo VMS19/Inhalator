@@ -14,7 +14,6 @@ ALERTS_CSV_OUTPUT = 'alerts.csv'
 LOG_FILE_PATH = 'inhalator.log'
 
 REMOTE_LOG_FILE = 'Inhalator/inhalator.log'
-REMOTE_HEADERS_FILE = 'Inhalator/headers.csv'
 
 
 class AlertsExtractor:
@@ -100,7 +99,6 @@ def copy_sensor_data(output_file, ftp, logger):
     open(output_file, 'w').close()  # create empty file
     with open(output_file, 'ab') as out_file:
         log_files = remote_sensor_data_files(ftp)
-        log_files.insert(0, REMOTE_HEADERS_FILE)
         amount = len(log_files)
         for i, log_file in enumerate(log_files):
             logger.info("Copying %s / %s", i + 1, amount)
@@ -110,7 +108,7 @@ def copy_sensor_data(output_file, ftp, logger):
 def copy_log(ftp, output_path):
     open(output_path, 'w').close()  # create empty file
     with open(output_path, 'ab') as out_file:
-        ftp.retrbinary(f'RETR Inhalator/inhalator.log', out_file.write)
+        ftp.retrbinary('RETR Inhalator/inhalator.log', out_file.write)
 
 
 def delete_sensor_values_files(ftp):
