@@ -59,7 +59,7 @@ class Application(object):
                                         record_sensors=record_sensors)
         self.config = ConfigurationManager.config()
 
-        if not ConfigurationManager.config_exists:
+        if not ConfigurationManager.loaded_from_defaults:
             DefaultConfigSnackbar(self.root).show()
 
         # Load sensors calibrations

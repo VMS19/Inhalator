@@ -97,7 +97,7 @@ class ConfigurationManager(object):
     THIS_DIRECTORY = os.path.dirname(__file__)
     PROJECT_DIRECTORY = os.path.dirname(THIS_DIRECTORY)
     CONFIG_FILE = os.path.abspath(os.path.join(PROJECT_DIRECTORY, "config.json"))
-    config_exists = True
+    loaded_from_defaults = True
 
     @classmethod
     def instance(cls):
@@ -116,7 +116,7 @@ class ConfigurationManager(object):
         except FileNotFoundError:
             # Not considered an error we should alert on.
             log.info("No config file. Using defaults")
-            cls.config_exists = False
+            cls.loaded_from_defaults = False
         except Exception as e:
             log.error("Error loading config file: %s. Using defaults", e)
             from data.alerts import AlertCodes
