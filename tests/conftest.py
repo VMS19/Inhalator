@@ -50,10 +50,10 @@ def driver_factory(data):
 
 @pytest.fixture
 def sim_sampler(driver_factory, config, measurements, events):
-    flow_sensor = driver_factory.acquire_driver("flow")
-    pressure_sensor = driver_factory.acquire_driver("pressure")
-    a2d = driver_factory.acquire_driver("a2d")
-    timer = driver_factory.acquire_driver("timer")
+    flow_sensor = driver_factory.flow
+    pressure_sensor = driver_factory.pressure
+    a2d = driver_factory.a2d
+    timer = driver_factory.timer
     sampler = Sampler(
         measurements=measurements,
         events=events,

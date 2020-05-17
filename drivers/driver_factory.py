@@ -12,6 +12,21 @@ def generate_data_from_file(sensor, file_path):
             yield float(row[sensor])
 
 
+def production(func):
+    @property
+    def check_for_mock(*args):
+        self = args[0]
+        if self.mock:
+            driver = getattr(self, f"mock_{func.__name__}", None)
+            if driver is None:
+                raise ValueError(f"Unsupported driver {func.__name__}")
+            return driver
+
+        return func(*args)
+
+    return check_for_mock
+
+
 class DriverFactory(object):
     MOCK_SAMPLE_RATE_HZ = 50  # 20ms between reads assumed
     MOCK_BPM = 15  # Breathes per minutes to simulate
@@ -46,21 +61,18 @@ class DriverFactory(object):
         self.drivers_cache = {}
         self.log = logging.getLogger(self.__class__.__name__)
 
-    def acquire_driver(self, driver_name):
+    def _acquire_driver(self, driver_class, *args, **kwargs):
         """
-        Get a driver by its name. The drivers are lazily created and cached.
-        :param driver_name: The driver name. E.g "wd", "pressure"
+        Get a driver. The drivers are lazily created and cached.
+        :param driver_class: The driver class.
         :return: The appropriate driver object.
         """
-        key = (driver_name, self.mock)
+        key = (driver_class.__name__, self.mock)
         driver = self.drivers_cache.get(key)
         if driver is not None:
             return driver
-        method_name = f"get{'_mock' if self.mock else ''}_{driver_name}_driver"
-        method = getattr(self, method_name, None)
-        if method is None:
-            raise ValueError(f"Unsupported driver {driver_name}")
-        driver = method()
+
+        driver = driver_class(*args, **kwargs)
         self.drivers_cache[key] = driver
         return driver
 
@@ -92,7 +104,7 @@ class DriverFactory(object):
             freq=self.MOCK_BPM / 60.0)
 
         # upper limit is `PIP - PEEP` and not simply PIP because we will raise
-        # the entire signal by PEEP later
+        # the _entireacquire_driver signal by PEEP later
         samples = truncate(
             samples, lower_limit=0, upper_limit=self.MOCK_PIP - self.MOCK_PEEP)
 
@@ -148,76 +160,68 @@ class DriverFactory(object):
             upper_limit=self.MOCK_O2_SATURATION_AMPLITUDE)
         return samples
 
-    @staticmethod
-    def get_timer_driver():
+    @production
+    def timer(self):
         from drivers.timer import Timer
-        return Timer()
+        return self._acquire_driver(Timer)
 
-    def get_mock_timer_driver(self):
-        from drivers.mocks.timer import MockTimer
-        if self.simulation_data == "sinus" or self.simulation_data == "dead" \
-                or self.simulation_data == "noiseless_sinus":
-            time_series = [0, 1 / self.MOCK_SAMPLE_RATE_HZ]
-        elif self.simulation_data == "noise":
-            time_series = [0, self.VALID_SLOPE_INTERVALS]
-        else:
-            time_series = generate_data_from_file("time elapsed (seconds)", self.simulation_data)
-        return MockTimer(time_series=time_series)
-
-    @staticmethod
-    def get_pressure_driver():
+    @production
+    def pressure(self):
         from drivers.abp_pressure_sensor import AbpPressureSensor
-        return AbpPressureSensor()
+        return self._acquire_driver(AbpPressureSensor)
 
-    @staticmethod
-    def get_flow_driver():
+    @production
+    def flow(self):
         from drivers.hsc_pressure_sensor import HscPressureSensor
-        return HscPressureSensor()
+        return self._acquire_driver(HscPressureSensor)
 
-    @staticmethod
-    def get_a2d_driver():
+    @production
+    def a2d(self):
         from drivers.ads7844_a2d import Ads7844A2D
-        return Ads7844A2D()
+        return self._acquire_driver(Ads7844A2D)
 
-    @staticmethod
-    def get_wd_driver():
+    @production
+    def wd(self):
         from drivers.wd_driver import WdDriver
-        return WdDriver()
+        return self._acquire_driver(WdDriver)
 
-    @staticmethod
-    def get_alert_driver():
+    @production
+    def alert(self):
         from drivers.alert_driver import AlertDriver
-        return AlertDriver()
+        return self._acquire_driver(AlertDriver)
 
-    @staticmethod
-    def get_differential_pressure_driver():
+    @production
+    def differential_pressure(self):
         from drivers.hsc_pressure_sensor import HscPressureSensor
-        return HscPressureSensor()
+        return self._acquire_driver(HscPressureSensor)
 
-    @staticmethod
-    def get_rtc_driver():
+    @production
+    def rtc(self):
         from drivers.rv8523_rtc import Rv8523Rtc
-        return Rv8523Rtc()
+        return self._acquire_driver(Rv8523Rtc)
 
-    @staticmethod
-    def get_mux_driver():
+    @production
+    def mux(self):
         from drivers.mux_i2c import MuxI2C
-        return MuxI2C()
+        return self._acquire_driver(MuxI2C)
 
-    def get_mock_differential_pressure_driver(self):
+    @property
+    def mock_differential_pressure(self):
         from drivers.mocks.sensor import DifferentialPressureMockSensor
-        simulation_data = self.simulation_data
-        if simulation_data == 'dead':
+
+        if self.simulation_data == 'dead':
             data = self.generate_mock_dead_man()
-        elif simulation_data == 'sinus':
+        elif self.simulation_data == 'sinus':
             data = self.generate_mock_air_flow_data()
         else:
-            data = generate_data_from_file('flow', simulation_data)
+            data = generate_data_from_file('flow', self.simulation_data)
 
-        return DifferentialPressureMockSensor(data)
+        return self._acquire_driver(DifferentialPressureMockSensor, data)
 
-    def get_mock_pressure_driver(self):
+    @property
+    def mock_pressure(self):
         from drivers.mocks.sensor import MockSensor
+
         data_source = self.simulation_data
         if data_source == 'dead':
             data = self.generate_mock_dead_man()
@@ -229,50 +233,67 @@ class DriverFactory(object):
             data = self.generate_mock_noise()
         else:
             data = generate_data_from_file('pressure', data_source)
-        return MockSensor(data, error_probability=self.error_probability)
 
-    def get_mock_flow_driver(self):
+        return self._acquire_driver(MockSensor, data, error_probability=self.error_probability)
+
+    @property
+    def mock_flow(self):
         from drivers.mocks.sensor import DifferentialPressureMockSensor
-        simulation_data = self.simulation_data
-        if simulation_data == 'dead':
+
+        if self.simulation_data == 'dead':
             data = self.generate_mock_dead_man()
-        elif simulation_data == 'sinus':
+        elif self.simulation_data == 'sinus':
             data = self.generate_mock_air_flow_data()
-        elif simulation_data == 'noiseless_sinus':
+        elif self.simulation_data == 'noiseless_sinus':
             data = self.generate_mock_air_flow_data_noiseless()
-        elif simulation_data == "noise":
+        elif self.simulation_data == "noise":
             data = self.generate_mock_noise()
         else:
-            data = generate_data_from_file('flow', simulation_data)
+            data = generate_data_from_file('flow', self.simulation_data)
 
-        return DifferentialPressureMockSensor(data,
-                                              error_probability=self.error_probability)
+        return self._acquire_driver(DifferentialPressureMockSensor, data,
+                                    error_probability=self.error_probability)
 
-    def get_mock_a2d_driver(self):
+    @property
+    def mock_timer(self):
+        from drivers.mocks.timer import MockTimer
+
+        if self.simulation_data == "sinus" or self.simulation_data == "dead" \
+                or self.simulation_data == "noiseless_sinus":
+            time_series = [0, 1 / self.MOCK_SAMPLE_RATE_HZ]
+        elif self.simulation_data == "noise":
+            time_series = [0, self.VALID_SLOPE_INTERVALS]
+        else:
+            time_series = generate_data_from_file("time elapsed (seconds)", self.simulation_data)
+
+        return self._acquire_driver(MockTimer, time_series=time_series)
+
+    @property
+    def mock_a2d(self):
         from drivers.mocks.a2d_mock import MockA2D
-        return MockA2D()
+        return self._acquire_driver(MockA2D)
 
-    @staticmethod
-    def get_mock_wd_driver():
+    @property
+    def mock_wd(self):
         from drivers.mocks.mock_wd_driver import MockWdDriver
-        return MockWdDriver()
+        return self._acquire_driver(MockWdDriver)
 
-    @staticmethod
-    def get_mock_alert_driver():
+    @property
+    def mock_alert(self):
         from drivers.mocks.mock_alert_driver import MockAlertDriver
-        return MockAlertDriver()
+        return self._acquire_driver(MockAlertDriver)
 
-    @staticmethod
-    def get_null_driver():
+    @property
+    def null(self):
         from drivers.null_driver import NullDriver
-        return NullDriver()
+        return self._acquire_driver(NullDriver)
 
-    @staticmethod
-    def get_mock_rtc_driver():
+    @property
+    def mock_rtc(self):
         from drivers.mocks.mock_rv8523_rtc_driver import MockRv8523Rtc
-        return MockRv8523Rtc()
+        return self._acquire_driver(MockRv8523Rtc)
 
-    @staticmethod
-    def get_mock_mux_driver():
+    @property
+    def mock_mux(self):
         from unittest.mock import MagicMock
-        return MagicMock()
+        return self._acquire_driver(MagicMock)

@@ -131,30 +131,30 @@ def start_app(args):
         # Must initialize mux before pressure and flow drivers! do not reorder
         try:
             # mux driver is singleton. initialize it and driver factory cache it
-            drivers.acquire_driver("mux")
+            drivers.mux
         except errors.I2CDeviceNotFoundError:
             pass
 
         try:
-            pressure_sensor = drivers.acquire_driver("pressure")
+            pressure_sensor = drivers.pressure
         except errors.I2CDeviceNotFoundError:
-            pressure_sensor = drivers.acquire_driver("null")
+            pressure_sensor = drivers.null
 
         try:
-            flow_sensor = drivers.acquire_driver("differential_pressure")
+            flow_sensor = drivers.differential_pressure
         except errors.I2CDeviceNotFoundError:
-            flow_sensor = drivers.acquire_driver("null")
+            flow_sensor = drivers.null
 
-        watchdog = drivers.acquire_driver("wd")
+        watchdog = drivers.wd
         try:
-            a2d = drivers.acquire_driver("a2d")
+            a2d = drivers.a2d
         except errors.SPIDriverInitError:
-            a2d = drivers.acquire_driver("null")
+            a2d = drivers.null
 
-        timer = drivers.acquire_driver("timer")
+        timer = drivers.timer
 
         try:
-            rtc = drivers.acquire_driver("rtc")
+            rtc = drivers.rtc
             try:
                 rtc.set_system_time()
             except RuntimeError:
@@ -163,9 +163,9 @@ def start_app(args):
                 log.exception("RTC returned invalid time")
 
         except errors.InhalatorError:
-            rtc = drivers.acquire_driver("null")
+            rtc = drivers.null
 
-        alert_driver = drivers.acquire_driver("alert")
+        alert_driver = drivers.alert
 
         if any(isinstance(driver, NullDriver)
                for driver in (pressure_sensor, flow_sensor, watchdog, a2d, rtc)):

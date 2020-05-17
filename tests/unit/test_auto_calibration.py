@@ -14,8 +14,8 @@ SIMULATION_FOLDER = "simulation"
 @pytest.mark.parametrize("data", [path_to_file("single_step_cycle.csv")])
 @pytest.mark.parametrize("offset", range(-7, 7))
 def test_single_cycle_tail_detection(offset, data, driver_factory):
-    dp_driver: DifferentialPressureMockSensor = driver_factory.acquire_driver("flow")
-    timer: MockTimer = driver_factory.acquire_driver("timer")
+    dp_driver: DifferentialPressureMockSensor = driver_factory.flow
+    timer: MockTimer = driver_factory.timer
     detector = TailDetector(dp_driver,
                             sample_threshold=5,
                             slope_threshold=10,
@@ -35,8 +35,8 @@ def test_single_cycle_tail_detection(offset, data, driver_factory):
 
 @pytest.mark.parametrize("data", [path_to_file("single_cycle_good.csv")])
 def test_single_cycle_tail_ts(data, driver_factory):
-    dp_driver: DifferentialPressureMockSensor = driver_factory.acquire_driver("flow")
-    timer: MockTimer = driver_factory.acquire_driver("timer")
+    dp_driver: DifferentialPressureMockSensor = driver_factory.flow
+    timer: MockTimer = driver_factory.timer
     detector = TailDetector(dp_driver,
                             sample_threshold=5,
                             slope_threshold=10,

@@ -36,7 +36,7 @@ def config(default_config):
 @pytest.fixture
 def sampler(config, driver_factory, measurements, events, null_driver):
     driver_names = {"flow_sensor", "pressure_sensor", "a2d", "timer"}
-    drivers = {name: driver_factory.acquire_driver(name.replace("_sensor", ""))
+    drivers = {name: getattr(driver_factory, name.replace("_sensor", ""))
                for name in driver_names}
     if null_driver in driver_names:
         drivers[null_driver] = NullDriver()

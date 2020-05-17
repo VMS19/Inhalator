@@ -10,10 +10,10 @@ from errors import UnavailableMeasurmentError
 @pytest.fixture
 def mock_drivers(fault_sensors, error, read_val=0):
     df = DriverFactory(simulation_mode=True, simulation_data='sinus')
-    flow = df.acquire_driver('flow')
-    pressure = df.acquire_driver('pressure')
-    a2d = df.acquire_driver('a2d')
-    timer = df.acquire_driver('timer')
+    flow = df.flow
+    pressure = df.pressure
+    a2d = df.a2d
+    timer = df.timer
 
     flow.read = MagicMock(return_value=read_val)
     pressure.read = MagicMock(return_value=read_val)

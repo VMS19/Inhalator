@@ -59,9 +59,9 @@ class Application(object):
         self.config = ConfigurationManager.config()
 
         # Load sensors calibrations
-        differential_pressure_driver = self.drivers.acquire_driver("differential_pressure")
+        differential_pressure_driver = self.drivers.differential_pressure
         differential_pressure_driver.set_calibration_offset(self.config.calibration.dp_offset)
-        oxygen_driver = self.drivers.acquire_driver("a2d")
+        oxygen_driver = self.drivers.a2d
         oxygen_driver.set_oxygen_calibration(
             *calc_calibration_line(
                 self.config.calibration.oxygen_point1,

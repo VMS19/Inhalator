@@ -37,7 +37,7 @@ class RecalibrationSnackbar(BaseSnackbar):
             text="NOT NOW")
 
         self.drivers = drivers
-        self.timer = drivers.acquire_driver("timer")
+        self.timer = drivers.timer
         self.observer = observer
         self.last_dp_calibration_ts = None
         observer.subscribe(self, self.on_calibration_done)
