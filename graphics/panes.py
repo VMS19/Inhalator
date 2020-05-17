@@ -9,7 +9,6 @@ from graphics.right_menu_options import (MuteAlertsButton,
                                          LockThresholdsButton,
                                          OpenConfigureAlertsScreenButton)
 from graphics.snackbar.recalibration_snackbar import RecalibrationSnackbar
-from graphics.snackbar.default_config_snackbar import DefaultConfigSnackbar
 from graphics.constants import SCREEN_HEIGHT, SCREEN_WIDTH
 from graphics.themes import Theme
 from data.observable import Observable

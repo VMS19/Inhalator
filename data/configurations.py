@@ -116,7 +116,6 @@ class ConfigurationManager(object):
         except FileNotFoundError:
             # Not considered an error we should alert on.
             log.info("No config file. Using defaults")
-            log.error("File not found!")
             cls.config_exists = False
         except Exception as e:
             log.error("Error loading config file: %s. Using defaults", e)
@@ -143,7 +142,7 @@ class ConfigurationManager(object):
                 f.write(self.config.json(indent=2))
                 f.flush()
                 os.fsync(f.fileno())
-            self._log.info(f"Configuration saved to {self._path}")
+            self._log.info("Configuration saved to %s", self._path)
         except Exception as e:
             # There's nothing more we can do about it.
             self._log.error("Error saving configuration: %s", e)

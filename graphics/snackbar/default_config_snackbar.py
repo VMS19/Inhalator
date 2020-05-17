@@ -17,15 +17,10 @@ class DefaultConfigSnackbar(BaseSnackbar):
             font=("Roboto", 14, "bold"),
             highlightthickness=0,
             bd=0,
-            command=self.dismiss,
+            command=self.hide,
             text="Dismiss")
         
         self.dismiss_button.pack(anchor="e", side="right")
         self.text_label.configure(text="No configuration file was found\n\t"
                                        "Loading from default configuration...")
 
-    def show(self):
-        super().show()
-
-    def dismiss(self):
-        self.hide()
