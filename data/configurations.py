@@ -140,7 +140,7 @@ class ConfigurationManager(object):
                 f.write(self.config.json(indent=2))
                 f.flush()
                 os.fsync(f.fileno())
-            self._log.info(f"Configuration saved to {self._path}")
+            self._log.info("Configuration saved to ", self._path)
         except Exception as e:
             # There's nothing more we can do about it.
             self._log.error("Error saving configuration: %s", e)

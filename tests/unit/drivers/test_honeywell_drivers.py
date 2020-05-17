@@ -50,7 +50,7 @@ def test_hsc_pressure_sensor_read_avg(hsc_driver):
 
 
 @pytest.mark.parametrize('raw, flow, pressure',
-    zip(HSC_RAW_DATA,HSC_REAL_FLOW, HSC_TO_PRESSURE))
+    zip(HSC_RAW_DATA, HSC_REAL_FLOW, HSC_TO_PRESSURE))
 def test_hsc_flow_to_pressure(raw, flow, pressure, hsc_driver):
     """Test hsc flow to pressure convertion"""
     pigpio_mock = hsc_driver._pig
