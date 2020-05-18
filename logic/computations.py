@@ -90,4 +90,5 @@ class RunningButterworth:
 
         w = self.fc / (self.sps / 2)
         b, a = signal.butter(5, w, 'low')
-        return signal.filtfilt(b, a, self.samples)
+        samples_list = list(self.samples)
+        return signal.filtfilt(b, a, samples_list)
