@@ -8,6 +8,7 @@ from graphics.panes import MasterFrame
 from graphics.themes import Theme
 from graphics.calibrate.screen import calc_calibration_line
 from graphics.constants import SCREEN_WIDTH, SCREEN_HEIGHT
+from graphics.snackbar.default_config_snackbar import DefaultConfigSnackbar
 
 
 class Application(object):
@@ -57,6 +58,9 @@ class Application(object):
                                         drivers=drivers,
                                         record_sensors=record_sensors)
         self.config = ConfigurationManager.config()
+
+        if ConfigurationManager.loaded_from_defaults:
+            DefaultConfigSnackbar(self.root).show()
 
         # Load sensors calibrations
         differential_pressure_driver = self.drivers.acquire_driver("differential_pressure")
