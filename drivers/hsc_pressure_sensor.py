@@ -1,14 +1,15 @@
 import logging
 from math import copysign
 
-from logic.computations import RunningAvg
+from logic.computations import RunningAvg, RunningButterworth
 from .honeywell_pressure_sensor import HoneywellPressureSensor
 
 log = logging.getLogger(__name__)
 
 # the Honeywell differential pressure sensor is very noisy, so we've applied
 # some averaging of the last samples to make the graph smoother
-NOISY_DP_SENSOR_SAMPLES = 6
+NOISY_DP_SENSOR_SAMPLES = 100
+SPS = 22
 
 
 class HscPressureSensor(HoneywellPressureSensor):
@@ -30,7 +31,8 @@ class HscPressureSensor(HoneywellPressureSensor):
         self._calibration_offset = 0
         log.info("HSC pressure sensor initialized")
 
-        self._avg_flow = RunningAvg(max_samples=NOISY_DP_SENSOR_SAMPLES)
+        # self._avg_flow = RunningAvg(max_samples=NOISY_DP_SENSOR_SAMPLES)
+        self.filter_flow = RunningButterworth(sps=SPS, fc=22/5, max_samples=NOISY_DP_SENSOR_SAMPLES)
 
     def set_calibration_offset(self, offset):
         self._calibration_offset = offset
@@ -50,4 +52,4 @@ class HscPressureSensor(HoneywellPressureSensor):
 
     def read(self):
         dp_cmh2o = self.read_differential_pressure() - self._calibration_offset
-        return self._avg_flow.process(self.pressure_to_flow(dp_cmh2o))
+        return self.filter_flow.process(self.pressure_to_flow(dp_cmh2o))

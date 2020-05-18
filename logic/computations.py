@@ -5,6 +5,7 @@ from collections import deque
 
 from numpy import trapz
 from scipy.stats import linregress
+from scipy import signal
 
 
 class RunningAvg:
@@ -67,3 +68,26 @@ class RunningSlope:
             return None  # Not enough data to infer.
         slope, _, _, _, _ = linregress(self.timestamps, self.data)
         return slope
+
+
+class RunningButterworth:
+    """Average values over a sliding window of samples."""
+
+    def __init__(self, max_samples, sps, fc):
+        self.fc = fc
+        self.sps = sps
+        self.samples = deque(maxlen=max_samples)
+
+    def reset(self):
+        self.samples.clear()
+
+    def process(self, value):
+        if value is not None:
+            self.samples.append(value)
+
+        if len(self.samples) < self.samples.maxlen:
+            return 0
+
+        w = self.fc / (self.sps / 2)
+        b, a = signal.butter(5, w, 'low')
+        return signal.filtfilt(b, a, self.samples)
