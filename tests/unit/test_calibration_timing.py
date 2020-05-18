@@ -13,17 +13,18 @@ def driver_factory():
 
 @patch("logic.auto_calibration.TailDetector.process")
 @patch("drivers.mocks.sensor.DifferentialPressureMockSensor.get_calibration_offset")
-@pytest.mark.parametrize("interval, iteration_len, count",
-                         [(100, 4, 2), (1800, 4, 1), (50, 2, 4)])
+@pytest.mark.parametrize("interval, iteration_len, get_offset_count, process_count",
+                         [(100, 4, 10, 40), (1800, 4, 1, 4), (50, 2, 20, 80)])
 def test_calibration_timing(mock_pressure, mock_tail, interval, iteration_len,
-                            count, sim_sampler):
-    sim_sampler.auto_calibrator.interval_length = interval
-    sim_sampler.auto_calibrator.iteration_length = iteration_len
+                            get_offset_count, process_count, sim_sampler):
+    calibrator = sim_sampler.auto_calibrator
 
-    for i in range(10000):
-        sim_sampler.sampling_iteration()
+    calibrator.interval_length = interval
+    calibrator.iteration_length = iteration_len
 
-    assert mock_pressure.call_count == count
+    for i in range(1000):
+        calibrator.get_offset(None, i)
+
+    assert mock_pressure.call_count == get_offset_count
+    assert mock_tail.call_count == process_count
     
-
-
