@@ -5,6 +5,7 @@ from data.configurations import ConfigurationManager
 from data.events import Events
 from data.measurements import Measurements
 from drivers.driver_factory import DriverFactory
+from unittest.mock import patch
 
 
 @pytest.fixture
@@ -46,6 +47,29 @@ def measurements(default_config):
 @pytest.fixture
 def driver_factory(data):
     return DriverFactory(simulation_mode=True, simulation_data=data)
+
+
+@pytest.yield_fixture
+def abp_driver():
+    with patch('drivers.i2c_driver.pigpio.pi') as pigpio_mock:
+        patch('drivers.mux_i2c.MuxI2C.lock')
+        from drivers.abp_pressure_sensor import AbpPressureSensor
+        yield AbpPressureSensor()
+
+
+@pytest.yield_fixture
+def hsc_driver():
+    with patch('drivers.i2c_driver.pigpio.pi') as pigpio_mock:
+        patch('drivers.mux_i2c.MuxI2C.lock')
+        from drivers.hsc_pressure_sensor import HscPressureSensor
+        yield HscPressureSensor()
+
+
+@pytest.yield_fixture
+def a2d_driver():
+    with patch('spidev.SpiDev') as spidev_mock:
+        from drivers.ads7844_a2d import Ads7844A2D
+        yield Ads7844A2D()
 
 
 @pytest.fixture
