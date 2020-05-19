@@ -67,7 +67,7 @@ class Sfm3200(I2cDriver):
                 expected_crc = data[2]
                 crc_calc = self._crc8(data[:2])
                 if not crc_calc == expected_crc:
-                    log.error("CRC mismatch while reading data from flow sensor."
+                    log.error("CRC mismatch while reading data from flow sensor. "
                               "%s - expected %s", crc_calc, expected_crc)
                     raise FlowSensorCRCError("CRC mismatch")
 

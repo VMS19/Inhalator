@@ -24,7 +24,7 @@ class Calibration(object):
         self.average_value_found = None
 
         self.drivers = drivers
-        self.sensor_driver = getattr(drivers, self.CALIBRATED_DRIVER, None)
+        self.sensor_driver = getattr(drivers, self.CALIBRATED_DRIVER)
         self.timer = drivers.timer
         self.watch_dog = drivers.wd
 
