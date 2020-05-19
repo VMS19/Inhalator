@@ -1,5 +1,4 @@
 import os
-import gc
 import time
 from datetime import datetime
 from argparse import Namespace
@@ -25,14 +24,7 @@ SAMPLES_NAMES = ["pig_sim_extreme_in_exhale_both.csv",
                  "pig_sim_extreme_in_inhale_pass_threshold.csv"]
 
 
-def teardown_function(function):
-    """Cleaning up.."""
-    for obj in gc.get_objects():
-        if isinstance(obj, Tk):
-            obj.destroy()
-
-
-class ErrorAfter(object):
+class ErrorAfter():
     """
     Callable that will raise `KeyboardInterrupt`
     exception after `limit` calls
@@ -49,25 +41,20 @@ class ErrorAfter(object):
         return datetime.timestamp(datetime.now())
 
 
-class InhalatorCSVParser(object):
+class InhalatorCSVParser():
     def __init__(self, sensors):
-        self.data = []
-        for sensor in sensors:
-            self.data.append(
-                generate_data_from_file(sensor, RECORDED_SAMPLES))
+        self.data = [generate_data_from_file(sensor, RECORDED_SAMPLES) for sensor in sensors]
 
     def samples(self):
-        zipped = []
-        for sensor in self.data:
-            zipped.append(next(sensor))
-        return zipped
+        return [next(sensor) for sensor in self.data]
 
 
 @pytest.mark.parametrize("csv_name", SAMPLES_NAMES)
 @patch("time.time", side_effect=ErrorAfter(TIME_ITERATIONS))
 def test_main_loop_values(time_mock, csv_name):
-    """
-    Run the main loop and makes sure nothing breaks.
+    """Run the main loop and makes sure nothing breaks.
+    
+    Play a simulation using the app, record the samples and verify them.
     """
     try:
         os.remove(RECORDED_SAMPLES)
@@ -76,7 +63,7 @@ def test_main_loop_values(time_mock, csv_name):
 
     args = Namespace(error=0, fps=25, memory_usage_output=None,
                      record_sensors=1, sample_rate=22,
-                      simulate=path_to_file(csv_name), verbose=30)
+                     simulate=path_to_file(csv_name), verbose=30)
 
     start_app(args)
 
@@ -84,8 +71,8 @@ def test_main_loop_values(time_mock, csv_name):
     inhalator_parser = InhalatorCSVParser(["pressure", "flow"])
 
     # time, pressure, flow, oxygen
-    for samples in sampler_parser.samples(start=0, end=170):
+    for _time, pressure, flow, _oxygen in sampler_parser.samples(start=0, end=170):
         inhalator_sample = inhalator_parser.samples()
 
-        assert samples[PRESSURE] == pytest.approx(inhalator_sample[0])
-        assert samples[FLOW] == pytest.approx(inhalator_sample[1], abs=1)
+        assert pressure == pytest.approx(inhalator_sample[0])
+        assert flow == pytest.approx(inhalator_sample[1], abs=1)
