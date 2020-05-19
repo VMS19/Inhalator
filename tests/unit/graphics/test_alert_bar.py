@@ -139,9 +139,9 @@ def test_timestamp_label_is_empty_when_alert_changes_to_ok(
 
 
 def test_timestamp_label_on_alert(alert_bar: IndicatorAlertBar):
-    alert_bar.events.alerts_queue.last_alert = Alert(AlertCodes.NO_BREATH,
-                                                     alert_bar.drivers.
-                                                     timer.get_current_time())
+    alert_bar.events.alerts_queue.last_alert = Alert(
+        AlertCodes.NO_BREATH,
+        alert_bar.drivers.timer.get_current_time())
     alert_bar.update()
 
     assert alert_bar.timestamp_label["text"] == "just now"
