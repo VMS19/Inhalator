@@ -198,10 +198,10 @@ class DriverFactory(object):
     def mock_differential_pressure(self):
         from drivers.mocks.sensor import DifferentialPressureMockSensor
 
-        data_source = {'dead': self.generate_mock_dead_man,
-                       'sinus': self.generate_mock_air_flow_data}
+        data_sources = {'dead': self.generate_mock_dead_man,
+                        'sinus': self.generate_mock_air_flow_data}
 
-        data = self._get_data(data_source, 'flow')
+        data = self._get_data(data_sources, 'flow')
 
         return DifferentialPressureMockSensor(data)
 
@@ -209,12 +209,12 @@ class DriverFactory(object):
     def mock_pressure(self):
         from drivers.mocks.sensor import MockSensor
 
-        data_source = {'dead': self.generate_mock_dead_man,
-                       'sinus': self.generate_mock_pressure_data,
-                       'noiseless_sinus': self.generate_mock_pressure_data_noiseless,
-                       'noise': self.generate_mock_noise}
+        data_sources = {'dead': self.generate_mock_dead_man,
+                        'sinus': self.generate_mock_pressure_data,
+                        'noiseless_sinus': self.generate_mock_pressure_data_noiseless,
+                        'noise': self.generate_mock_noise}
 
-        data = self._get_data(data_source, 'pressure')
+        data = self._get_data(data_sources, 'pressure')
 
         return MockSensor(data, error_probability=self.error_probability)
 
@@ -222,12 +222,12 @@ class DriverFactory(object):
     def mock_flow(self):
         from drivers.mocks.sensor import DifferentialPressureMockSensor
 
-        data_source = {'dead': self.generate_mock_dead_man,
-                       'sinus': self.generate_mock_air_flow_data,
-                       'noiseless_sinus': self.generate_mock_air_flow_data_noiseless,
-                       'noise': self.generate_mock_noise}
+        data_sources = {'dead': self.generate_mock_dead_man,
+                        'sinus': self.generate_mock_air_flow_data,
+                        'noiseless_sinus': self.generate_mock_air_flow_data_noiseless,
+                        'noise': self.generate_mock_noise}
 
-        data = self._get_data(data_source, 'flow')
+        data = self._get_data(data_sources, 'flow')
 
         return DifferentialPressureMockSensor(data,
                                               error_probability=self.error_probability)
