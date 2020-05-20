@@ -3,12 +3,10 @@ import time
 from datetime import datetime
 from argparse import Namespace
 from unittest.mock import patch
-from tkinter import Tk
 
 import pytest
 
 from main import start_app
-from application import Application
 from tests.data.files import path_to_file
 from tests.utils import SamplesCSVParser
 from drivers.driver_factory import generate_data_from_file
@@ -70,9 +68,8 @@ def test_main_loop_values(time_mock, csv_name):
     sampler_parser = SamplesCSVParser(path_to_file(csv_name))
     inhalator_parser = InhalatorCSVParser(["pressure", "flow"])
 
-    # time, pressure, flow, oxygen
     for _time, pressure, flow, _oxygen in sampler_parser.samples(start=0, end=170):
-        inhalator_sample = inhalator_parser.samples()
+        recorded_pressure, recorded_flow = inhalator_parser.samples()
 
-        assert pressure == pytest.approx(inhalator_sample[0])
-        assert flow == pytest.approx(inhalator_sample[1], abs=1)
+        assert pressure == pytest.approx(recorded_pressure)
+        assert flow == pytest.approx(recorded_flow, abs=1)
