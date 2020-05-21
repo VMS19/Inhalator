@@ -190,7 +190,7 @@ class DriverFactory(object):
 
     def _get_data(self, data_source, data_type):
         source = data_source.get(self.simulation_data)
-        if source:
+        if source is not None:
             return source()
         return generate_data_from_file(data_type, self.simulation_data)
 
