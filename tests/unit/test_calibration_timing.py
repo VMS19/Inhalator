@@ -8,7 +8,7 @@ from drivers.driver_factory import DriverFactory
 @pytest.fixture
 def calibrator():
     return AutoFlowCalibrator(
-        dp_driver=DriverFactory(True).acquire_driver("differential_pressure"),
+        dp_driver=DriverFactory(True).differential_pressure,
         interval_length=100,
         iterations=4,
         iteration_length=4,
