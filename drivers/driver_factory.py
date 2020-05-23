@@ -158,6 +158,8 @@ class DriverFactory(object):
         from drivers.hsc_pressure_sensor import HscPressureSensor
         return cached_property(self.flow, HscPressureSensor)
 
+    differential_pressure = flow
+
     @production
     def a2d(self):
         from drivers.ads7844_a2d import Ads7844A2D
@@ -174,11 +176,6 @@ class DriverFactory(object):
         return cached_property(self.alert, AlertDriver)
 
     @production
-    def differential_pressure(self):
-        from drivers.hsc_pressure_sensor import HscPressureSensor
-        return cached_property(self.differential_pressure, HscPressureSensor)
-
-    @production
     def rtc(self):
         from drivers.rv8523_rtc import Rv8523Rtc
         return cached_property(self.rtc, Rv8523Rtc)
@@ -193,17 +190,6 @@ class DriverFactory(object):
         if source is not None:
             return source()
         return generate_data_from_file(data_type, self.simulation_data)
-
-    @property
-    def mock_differential_pressure(self):
-        from drivers.mocks.sensor import DifferentialPressureMockSensor
-
-        data_sources = {'dead': self.generate_mock_dead_man,
-                        'sinus': self.generate_mock_air_flow_data}
-
-        data = self._get_data(data_sources, 'flow')
-
-        return DifferentialPressureMockSensor(data)
 
     @property
     def mock_pressure(self):

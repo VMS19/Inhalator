@@ -22,7 +22,7 @@ SAMPLES_NAMES = ["pig_sim_extreme_in_exhale_both.csv",
                  "pig_sim_extreme_in_inhale_pass_threshold.csv"]
 
 
-class ErrorAfter():
+class ErrorAfter:
     """
     Callable that will raise `KeyboardInterrupt`
     exception after `limit` calls
@@ -41,7 +41,8 @@ class ErrorAfter():
 
 class InhalatorCSVParser():
     def __init__(self, sensors):
-        self.data = [generate_data_from_file(sensor, RECORDED_SAMPLES) for sensor in sensors]
+        self.data = [generate_data_from_file(sensor, RECORDED_SAMPLES)
+                     for sensor in sensors]
 
     def samples(self):
         return [next(sensor) for sensor in self.data]
