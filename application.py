@@ -63,16 +63,16 @@ class Application(object):
             DefaultConfigSnackbar(self.root).show()
 
         # Load sensors calibrations
-        differential_pressure_driver = self.drivers.acquire_driver("differential_pressure")
+        differential_pressure_driver = self.drivers.differential_pressure
         differential_pressure_driver.set_calibration_offset(self.config.calibration.dp_offset)
-        oxygen_driver = self.drivers.acquire_driver("a2d")
+        oxygen_driver = self.drivers.a2d
         oxygen_driver.set_oxygen_calibration(
             *calc_calibration_line(
                 self.config.calibration.oxygen_point1,
                 self.config.calibration.oxygen_point2))
 
     def exit(self):
-        self.root.destroy()
+        self.root.quit()
         self.should_run = False
 
     def render(self):

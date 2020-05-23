@@ -22,7 +22,7 @@ class WdTask(Thread):
         self.log = logging.getLogger(self.__class__.__name__)
 
     def run(self):
-        self.log.info("WD Task started.")
+        self.log.info("WD Task started")
         self.wd.arm()
         while True:
             time.sleep(self.WD_TIMEOUT)

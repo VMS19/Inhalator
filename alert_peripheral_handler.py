@@ -5,7 +5,7 @@ class AlertPeripheralHandler(object):
 
     def __init__(self, events, drivers):
         self.events = events
-        self.alert_driver = drivers.acquire_driver("alert")
+        self.alert_driver = drivers.alert
 
     def subscribe(self):
         self.events.alerts_queue.observer.subscribe(self, self.on_new_alert)

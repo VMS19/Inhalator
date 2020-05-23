@@ -24,9 +24,9 @@ class Calibration(object):
         self.average_value_found = None
 
         self.drivers = drivers
-        self.sensor_driver = drivers.acquire_driver(self.CALIBRATED_DRIVER)
-        self.timer = drivers.acquire_driver("timer")
-        self.watch_dog = drivers.acquire_driver("wd")
+        self.sensor_driver = getattr(drivers, self.CALIBRATED_DRIVER)
+        self.timer = drivers.timer
+        self.watch_dog = drivers.wd
 
         self.frame = Frame(master=self.root)
         self.label = Label(master=self.frame,
@@ -194,7 +194,7 @@ class DifferentialPressureCalibration(Calibration):
     def get_difference(self):
         """Get offset drift."""
         offset = self.average_value_found - self.config.calibration.dp_offset
-        return self.drivers.acquire_driver("differential_pressure").pressure_to_flow(offset)
+        return self.drivers.differential_pressure.pressure_to_flow(offset)
 
     def configure_new_calibration(self):
         self.config.calibration.dp_offset = self.average_value_found

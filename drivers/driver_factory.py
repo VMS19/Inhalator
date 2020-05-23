@@ -1,6 +1,7 @@
 import csv
-
 import logging
+import functools
+from cached_property import cached_property
 
 from drivers.mocks.sinus import sinus, truncate, add_noise, zero
 
@@ -10,6 +11,18 @@ def generate_data_from_file(sensor, file_path):
         reader = csv.DictReader(f)
         for row in reader:
             yield float(row[sensor])
+
+
+def production(func):
+    @property
+    @functools.wraps(func)
+    def check_for_mock(self, *args):
+        if self.mock:
+            return getattr(self, f"mock_{func.__name__}")
+
+        return func(*args)
+
+    return check_for_mock
 
 
 class DriverFactory(object):
@@ -45,24 +58,6 @@ class DriverFactory(object):
         self.error_probability = error_probability
         self.drivers_cache = {}
         self.log = logging.getLogger(self.__class__.__name__)
-
-    def acquire_driver(self, driver_name):
-        """
-        Get a driver by its name. The drivers are lazily created and cached.
-        :param driver_name: The driver name. E.g "wd", "pressure"
-        :return: The appropriate driver object.
-        """
-        key = (driver_name, self.mock)
-        driver = self.drivers_cache.get(key)
-        if driver is not None:
-            return driver
-        method_name = f"get{'_mock' if self.mock else ''}_{driver_name}_driver"
-        method = getattr(self, method_name, None)
-        if method is None:
-            raise ValueError(f"Unsupported driver {driver_name}")
-        driver = method()
-        self.drivers_cache[key] = driver
-        return driver
 
     def close_all_drivers(self):
         for (driver_name, ismock), driver in self.drivers_cache.items():
@@ -148,131 +143,118 @@ class DriverFactory(object):
             upper_limit=self.MOCK_O2_SATURATION_AMPLITUDE)
         return samples
 
-    @staticmethod
-    def get_timer_driver():
+    @production
+    def timer(self):
         from drivers.timer import Timer
-        return Timer()
+        return cached_property(self.timer, Timer)
 
-    def get_mock_timer_driver(self):
-        from drivers.mocks.timer import MockTimer
-        if self.simulation_data == "sinus" or self.simulation_data == "dead" \
-                or self.simulation_data == "noiseless_sinus":
-            time_series = [0, 1 / self.MOCK_SAMPLE_RATE_HZ]
-        elif self.simulation_data == "noise":
-            time_series = [0, self.VALID_SLOPE_INTERVALS]
-        else:
-            time_series = generate_data_from_file("time elapsed (seconds)", self.simulation_data)
-        return MockTimer(time_series=time_series)
-
-    @staticmethod
-    def get_pressure_driver():
+    @production
+    def pressure(self):
         from drivers.abp_pressure_sensor import AbpPressureSensor
-        return AbpPressureSensor()
+        return cached_property(self.pressure, AbpPressureSensor)
 
-    @staticmethod
-    def get_flow_driver():
+    @production
+    def flow(self):
         from drivers.hsc_pressure_sensor import HscPressureSensor
-        return HscPressureSensor()
+        return cached_property(self.flow, HscPressureSensor)
 
-    @staticmethod
-    def get_a2d_driver():
+    differential_pressure = flow
+
+    @production
+    def a2d(self):
         from drivers.ads7844_a2d import Ads7844A2D
-        return Ads7844A2D()
+        return cached_property(self.a2d, Ads7844A2D)
 
-    @staticmethod
-    def get_wd_driver():
+    @production
+    def wd(self):
         from drivers.wd_driver import WdDriver
-        return WdDriver()
+        return cached_property(self.wd, WdDriver)
 
-    @staticmethod
-    def get_alert_driver():
+    @production
+    def alert(self):
         from drivers.alert_driver import AlertDriver
-        return AlertDriver()
+        return cached_property(self.alert, AlertDriver)
 
-    @staticmethod
-    def get_differential_pressure_driver():
-        from drivers.hsc_pressure_sensor import HscPressureSensor
-        return HscPressureSensor()
-
-    @staticmethod
-    def get_rtc_driver():
+    @production
+    def rtc(self):
         from drivers.rv8523_rtc import Rv8523Rtc
-        return Rv8523Rtc()
+        return cached_property(self.rtc, Rv8523Rtc)
 
-    @staticmethod
-    def get_mux_driver():
+    @production
+    def mux(self):
         from drivers.mux_i2c import MuxI2C
-        return MuxI2C()
+        return cached_property(self.mux, MuxI2C)
 
-    def get_mock_differential_pressure_driver(self):
-        from drivers.mocks.sensor import DifferentialPressureMockSensor
-        simulation_data = self.simulation_data
-        if simulation_data == 'dead':
-            data = self.generate_mock_dead_man()
-        elif simulation_data == 'sinus':
-            data = self.generate_mock_air_flow_data()
-        else:
-            data = generate_data_from_file('flow', simulation_data)
+    def _get_data(self, data_source, data_type):
+        source = data_source.get(self.simulation_data)
+        if source is not None:
+            return source()
+        return generate_data_from_file(data_type, self.simulation_data)
 
-        return DifferentialPressureMockSensor(data)
-
-    def get_mock_pressure_driver(self):
+    @property
+    def mock_pressure(self):
         from drivers.mocks.sensor import MockSensor
-        data_source = self.simulation_data
-        if data_source == 'dead':
-            data = self.generate_mock_dead_man()
-        elif data_source == 'sinus':
-            data = self.generate_mock_pressure_data()
-        elif data_source == 'noiseless_sinus':
-            data = self.generate_mock_pressure_data_noiseless()
-        elif data_source == "noise":
-            data = self.generate_mock_noise()
-        else:
-            data = generate_data_from_file('pressure', data_source)
+
+        data_sources = {'dead': self.generate_mock_dead_man,
+                        'sinus': self.generate_mock_pressure_data,
+                        'noiseless_sinus': self.generate_mock_pressure_data_noiseless,
+                        'noise': self.generate_mock_noise}
+
+        data = self._get_data(data_sources, 'pressure')
+
         return MockSensor(data, error_probability=self.error_probability)
 
-    def get_mock_flow_driver(self):
+    @property
+    def mock_flow(self):
         from drivers.mocks.sensor import DifferentialPressureMockSensor
-        simulation_data = self.simulation_data
-        if simulation_data == 'dead':
-            data = self.generate_mock_dead_man()
-        elif simulation_data == 'sinus':
-            data = self.generate_mock_air_flow_data()
-        elif simulation_data == 'noiseless_sinus':
-            data = self.generate_mock_air_flow_data_noiseless()
-        elif simulation_data == "noise":
-            data = self.generate_mock_noise()
-        else:
-            data = generate_data_from_file('flow', simulation_data)
+
+        data_sources = {'dead': self.generate_mock_dead_man,
+                        'sinus': self.generate_mock_air_flow_data,
+                        'noiseless_sinus': self.generate_mock_air_flow_data_noiseless,
+                        'noise': self.generate_mock_noise}
+
+        data = self._get_data(data_sources, 'flow')
 
         return DifferentialPressureMockSensor(data,
                                               error_probability=self.error_probability)
 
-    def get_mock_a2d_driver(self):
+    @property
+    def mock_timer(self):
+        from drivers.mocks.timer import MockTimer
+
+        if self.simulation_data in ["sinus", "dead", "noiseless_sinus", "noise"]:
+            time_series = [0, 1 / self.MOCK_SAMPLE_RATE_HZ]
+        else:
+            time_series = generate_data_from_file("time elapsed (seconds)", self.simulation_data)
+
+        return MockTimer(time_series=time_series)
+
+    @property
+    def mock_a2d(self):
         from drivers.mocks.a2d_mock import MockA2D
         return MockA2D()
 
-    @staticmethod
-    def get_mock_wd_driver():
+    @property
+    def mock_wd(self):
         from drivers.mocks.mock_wd_driver import MockWdDriver
         return MockWdDriver()
 
-    @staticmethod
-    def get_mock_alert_driver():
+    @property
+    def mock_alert(self):
         from drivers.mocks.mock_alert_driver import MockAlertDriver
         return MockAlertDriver()
 
-    @staticmethod
-    def get_null_driver():
+    @property
+    def null(self):
         from drivers.null_driver import NullDriver
         return NullDriver()
 
-    @staticmethod
-    def get_mock_rtc_driver():
+    @property
+    def mock_rtc(self):
         from drivers.mocks.mock_rv8523_rtc_driver import MockRv8523Rtc
         return MockRv8523Rtc()
 
-    @staticmethod
-    def get_mock_mux_driver():
+    @property
+    def mock_mux(self):
         from unittest.mock import MagicMock
         return MagicMock()
