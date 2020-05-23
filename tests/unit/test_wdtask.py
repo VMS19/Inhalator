@@ -27,6 +27,7 @@ def test_wd_task(time_mock):
     assert arms_count == ITERATIONS + 1
 
     sleeps = [call.args[0] for call in time_mock.mock_calls]
+    print(sleeps)
     # The arming through the WD driver should be at least 50Hz
     assert all(sleep <= 0.5 for sleep in sleeps)
 
