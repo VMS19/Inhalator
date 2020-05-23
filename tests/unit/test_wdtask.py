@@ -1,69 +1,56 @@
-from threading import Event
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, MagicMock
 
 import pytest
+import numpy as np
 
 from wd_task import WdTask
-from drivers.mocks.mock_wd_driver import MockWdDriver
-from drivers.driver_factory import DriverFactory
 
 ITERATIONS = 10
 
 
-class ErrorAfter(object):
-    """
-    Callable that will raise `CallableExhausted`
-    exception after `limit` calls
-    """
-    def __init__(self, limit):
-        self.limit = limit
-        self.calls = 0
-
-    def __call__(self, _seconds=None):
-        self.calls += 1
-        if self.calls > self.limit:
-            raise CallableExhausted
-
-
-class CallableExhausted(Exception):
-    pass
-
-
 @patch('time.sleep')
-@patch('threading.Event.isSet', side_effect=[True] * ITERATIONS)
-def test_wd_task(mocked_event, mock_sleep):
+def test_wd_task(time_mock):
     """
     Test wd task works correctly.
 
     Expect:
         WD will arm X times in X * WD_TIMEOUT seconds
     """
-    wd_mock = Mock()
-    wd_mock.arm.side_effect = ErrorAfter(ITERATIONS)
+    wd_mock = MagicMock()
 
-    watchdog = WdTask(wd_mock, Event())
+    event_mock = MagicMock(isSet=MagicMock(side_effect=[True] * ITERATIONS))
+    watchdog = WdTask(wd_mock, event_mock)
 
-    with pytest.raises(CallableExhausted):
+    with pytest.raises(StopIteration):
         watchdog.run()
 
-    assert mock_sleep.call_count == ITERATIONS
+    arms_count = wd_mock.arm.call_count
+    assert arms_count == ITERATIONS + 1
+
+    diffs = np.diff([call.args[0] for call in time_mock.mock_calls])
+    # The arming through the WD driver should be at least 50Hz
+    assert all(diff < 0.5 for diff in diffs)
 
 
-@patch('threading.Event.isSet', side_effect=[False] * ITERATIONS)
-@patch('time.sleep', side_effect=ErrorAfter(ITERATIONS))
-def test_wd_task_unarmed(mocked_sleep, mocked_event):
+@patch('time.sleep', MagicMock())
+def test_wd_task_unarmed():
     """
     Test the wd task when the application doesn't respond.
 
     Expect:
-        wd will not arm.
+        wd will not arm, except from the first arming that it always does.
     """
     wd_mock = Mock()
-    watchdog = WdTask(wd_mock, Event())
+    event_mock = MagicMock(isSet=MagicMock(side_effect=[False] * ITERATIONS))
+    watchdog = WdTask(wd_mock, event_mock)
 
-    with pytest.raises(CallableExhausted):
+    with pytest.raises(StopIteration):
         watchdog.run()
-    
-    # There is always one arm right at the beginning of the function.
-    assert wd_mock.arm.call_count == 1
 
+    # Make sure we checked ITERATIONS+1 times before the mock has
+    # been exhausted
+    assert event_mock.isSet.call_count == ITERATIONS + 1
+
+    # Apart from the first arming at start, there should be no arming, as
+    # the application is not up and running
+    assert wd_mock.arm.call_count == 1
