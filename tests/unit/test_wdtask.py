@@ -1,7 +1,6 @@
 from unittest.mock import patch, Mock, MagicMock
 
 import pytest
-import numpy as np
 
 from wd_task import WdTask
 
@@ -27,9 +26,9 @@ def test_wd_task(time_mock):
     arms_count = wd_mock.arm.call_count
     assert arms_count == ITERATIONS + 1
 
-    diffs = np.diff([call.args[0] for call in time_mock.mock_calls])
+    sleeps = [call.args[0] for call in time_mock.mock_calls]
     # The arming through the WD driver should be at least 50Hz
-    assert all(diff < 0.5 for diff in diffs)
+    assert all(sleep <= 0.5 for sleep in sleeps)
 
 
 @patch('time.sleep', MagicMock())

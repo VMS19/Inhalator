@@ -222,10 +222,8 @@ class DriverFactory(object):
     def mock_timer(self):
         from drivers.mocks.timer import MockTimer
 
-        if self.simulation_data in ["sinus", "dead", "noiseless_sinus"]:
+        if self.simulation_data in ["sinus", "dead", "noiseless_sinus", "noise"]:
             time_series = [0, 1 / self.MOCK_SAMPLE_RATE_HZ]
-        elif self.simulation_data == "noise":
-            time_series = [0, self.VALID_SLOPE_INTERVALS]
         else:
             time_series = generate_data_from_file("time elapsed (seconds)", self.simulation_data)
 
