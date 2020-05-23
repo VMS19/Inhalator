@@ -72,7 +72,7 @@ class Application(object):
                 self.config.calibration.oxygen_point2))
 
     def exit(self):
-        self.root.destroy()
+        self.root.quit()
         self.should_run = False
 
     def render(self):

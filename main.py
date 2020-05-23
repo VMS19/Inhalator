@@ -123,6 +123,7 @@ def start_app(args):
         log.info("Error probability: %s", args.error)
 
     drivers = None
+    app = None
     try:
         drivers = DriverFactory(simulation_mode=simulation,
                                 simulation_data=args.simulate,
@@ -205,6 +206,9 @@ def start_app(args):
     finally:
         if drivers is not None:
             drivers.close_all_drivers()
+
+        if app is not None:
+            app.root.destroy()
 
 
 def main():
